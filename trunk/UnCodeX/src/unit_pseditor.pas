@@ -173,12 +173,13 @@ var
   i: integer;
   mi: TMenuItem;
 begin
+  lb_Output.Items.Add(frm_UnCodeX.ps_Main.About);
 	ScriptSaved := true;
-  sd_Save.InitialDir := ExtractFilePath(ParamStr(0));
-  od_Open.InitialDir := ExtractFilePath(ParamStr(0));
+  sd_Save.InitialDir := PascalScriptDir;
+  od_Open.InitialDir := PascalScriptDir;
   sl := TStringList.Create;
   try
-	  if (GetFiles(ExtractFilePath(ParamStr(0))+'*.ups', faAnyfile, sl)) then begin
+	  if (GetFiles(PascalScriptDir+'*'+UPSEXT, faAnyfile, sl)) then begin
     	sl.Sort;
   		for i := 0 to sl.count-1 do begin
 	  	  mi := TMenuItem.Create(pm_Macros);

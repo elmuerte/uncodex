@@ -877,7 +877,7 @@ object frm_PSEditor: Tfrm_PSEditor
       Caption = 'Run'
       Enabled = False
       Hint = 'Run the compiled script'
-      ImageIndex = 18
+      ImageIndex = 32
       ShortCut = 120
       OnExecute = ac_RunExecute
     end

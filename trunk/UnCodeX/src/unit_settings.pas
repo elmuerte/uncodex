@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   program settings window
- $Id: unit_settings.pas,v 1.37 2004-07-24 14:35:13 elmuerte Exp $
+ $Id: unit_settings.pas,v 1.38 2004-08-03 13:53:01 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -212,6 +212,9 @@ type
     lbl_ExtCmtFile: TLabel;
     ed_ExtCmtFile: TEdit;
     btn_ExtCmtFile: TBitBtn;
+    lbl_UPSDIR: TLabel;
+    ed_UPSDIR: TEdit;
+    btn_UPSDIR: TBitBtn;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -287,6 +290,7 @@ type
     procedure FormKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure btn_ExtCmtFileClick(Sender: TObject);
+    procedure btn_UPSDIRClick(Sender: TObject);
   private
   public
     TagChanged: boolean;
@@ -928,6 +932,16 @@ procedure Tfrm_Settings.btn_ExtCmtFileClick(Sender: TObject);
 begin
 	od_BrowseIni.FileName := ed_ExtCmtFile.Text;
   if (od_BrowseIni.Execute) then ed_ExtCmtFile.Text := od_BrowseIni.FileName;
+end;
+
+procedure Tfrm_Settings.btn_UPSDIRClick(Sender: TObject);
+var
+  dir: string;
+begin
+  dir := ed_UPSDIR.Text;
+  if SelectDirectory('Select the UnCodeX Pascal Script directory', '', dir) then begin
+    ed_UPSDIR.Text := dir;
+  end;
 end;
 
 end.
