@@ -1,0 +1,23 @@
+<html>
+<head>
+	<title>UnCodeX - Comment PreProcessor</title>
+	<link href="default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">Comment PreProcessor</div>
+</div>
+
+<div class="content">
+<h1>Comment PreProcessor (CPP)</h1>
+Writing a Comment PreProcessor is easy, all you have to do is write a console application that reads the comments from the standard input and write the processed comments to the standard output.<br>
+Because starting an application for every comment generates a lot of overhead UnCodeX will only start the CPP once and write all comments to it. Each comment is seperated by an ASCII char 4 (End Of Transmission or ^D). Your output will also need to seperate each comment with a ^D. Also make sure you flush your output, it's best to disable output buffering.
+<p>
+For an example CPP check the UnCodeX CVS repository, there's a project called 'ucxcpp'.
+</div>
+</div>
+</body>
+</html>
