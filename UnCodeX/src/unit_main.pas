@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.124 2004-09-16 18:36:59 elmuerte Exp $
+ $Id: unit_main.pas,v 1.125 2004-10-17 13:17:19 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -669,6 +669,7 @@ procedure Tfrm_UnCodeX.LoadState;
 var
   fs: TFileStream;
   res: boolean;
+  node: TTreeNode;
 begin
   if (not FileExists(StateFile)) then exit;
   StatusReport('Loading state from '+StateFile);
@@ -687,8 +688,13 @@ begin
       tv_Classes.Items.AlphaSort(true);
       tv_Classes.Tag := TV_ALWAYSEXPAND;
       tv_Packages.Tag := TV_ALWAYSEXPAND;
-      if (ExpandObject and (tv_Classes.Items.Count > 0)) then
-        tv_Classes.Items.GetFirstNode.Expand(false);
+      if (ExpandObject and (tv_Classes.Items.Count > 0)) then begin
+      	node := tv_Classes.Items.GetFirstNode;
+        while (CompareText(node.Text, 'object') <> 0) do begin
+					node := node.getNextSibling;
+        end;
+        node.Expand(false);
+      end;
       StatusReport('State loaded');
     end
     else begin
@@ -2039,6 +2045,7 @@ begin
     with (ActiveControl as TTreeView) do begin
       if (TObject(Selected.Data).ClassType <> TUClass) then exit;
       if (ThreadCreate) then begin
+        lb_Log.Clear;
       	LastAnalyseTime := Now;
         runningthread := TClassAnalyser.Create(TUClass(Selected.Data), statusReport);
         runningthread.OnTerminate := ThreadTerminate;
@@ -3233,7 +3240,7 @@ end;
 procedure Tfrm_UnCodeX.pm_ClassTreePopup(Sender: TObject);
 begin
   with (ActiveControl as TTreeView) do begin
-    if (Selected = nil) then begin
+    if ((Selected = nil) or (Selected.Data = nil)) then begin
       mi_ClassName.Visible := false;
       mi_PackageName.Visible := false;
       mi_Analyseclass.Visible := false;

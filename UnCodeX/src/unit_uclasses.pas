@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   definitions for Unreal Classes
- $Id: unit_uclasses.pas,v 1.32 2004-08-09 13:25:15 elmuerte Exp $
+ $Id: unit_uclasses.pas,v 1.33 2004-10-17 13:17:19 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -33,7 +33,7 @@ uses
 
 const
 	// used for output module compatibility testing
-	UCLASSES_REV: LongInt = 1;  
+	UCLASSES_REV: LongInt = 2;  
 
 type
 	TUCommentType = (ctSource, ctExtern, ctInherited);
@@ -164,26 +164,29 @@ type
 
   TUClass = class(TUObject)
   public
-    filename:   string;
-    package:    TUPackage;
-    parent:     TUClass;
-    parentname: string;
-    modifiers:  string;
-    priority:   integer;
-    consts:     TUConstList;
-    properties: TUPropertyList;
-    enums:      TUEnumList;
-    structs:    TUStructList;
-    states:     TUstateList;
-    functions:  TUFunctionList;
-    delegates:  TUFunctionList;
-    treenode:   TObject; // class tree node
-    treenode2:  TObject; // the second tree node (PackageTree)
-    filetime:   integer; // used for checking for changed files
-    defaultproperties: string; // AS IS
-    tagged:     boolean;
-    children:   TUClassList; // not owned, don't free, don't save
-    deps:				TUClassList; // dependency list, not owned, don't free (NOT USED)
+    filename:   				string;
+    package:    				TUPackage;
+    parent:     				TUClass;
+    parentname: 				string;
+    modifiers:  				string;
+    // TODO:
+    isInterface:				boolean; // true if not a class but interface
+    //implements:         TUClassList; // implements these interfaces
+    priority:   				integer;
+    consts:     				TUConstList;
+    properties: 				TUPropertyList;
+    enums:      				TUEnumList;
+    structs:    				TUStructList;
+    states:     				TUstateList;
+    functions:  				TUFunctionList;
+    delegates:  				TUFunctionList;
+    treenode:   				TObject; // class tree node
+    treenode2:  				TObject; // the second tree node (PackageTree)
+    filetime:   				integer; // used for checking for changed files
+    defaultproperties: 	string; // AS IS
+    tagged:     				boolean;
+    children:   				TUClassList; // not owned, don't free, don't save
+    deps:								TUClassList; // dependency list, not owned, don't free (NOT USED)
     constructor Create;
     destructor Destroy; override;
     function FullName: string;

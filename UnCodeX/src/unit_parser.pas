@@ -3,7 +3,7 @@
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
             Based on the TParser class by Borland Software Corporation
- $Id: unit_parser.pas,v 1.18 2004-07-17 22:59:51 elmuerte Exp $
+ $Id: unit_parser.pas,v 1.19 2004-10-17 13:17:19 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -31,6 +31,10 @@ uses
   Classes, SysUtils, RTLConsts;
 
 type
+	TUCParser = class;
+
+	TProcessMacro = procedure(Sender: TUCParser) of object;
+
   TUCParser = class(TObject)
   private
     FStream: TStream;
@@ -46,6 +50,7 @@ type
     FSaveChar: Char;
     FToken: Char;
     CopyInitComment: boolean;
+    FProcessMacro: TProcessMacro;
     procedure ReadBuffer;
     procedure SkipBlanks;
     function NextTokenTmp: Char;
@@ -61,11 +66,13 @@ type
     function GetCopyData(flush: boolean = true): string;
     property SourceLine: Integer read FSourceLine;
     property Token: Char read FToken;
+    property ProcessMacro: TProcessMacro write FProcessMacro;
   end;
 
 const
   toComment = Char(6);
   toName = Char(7);
+  toMacro = char(8);
 
 implementation
 
@@ -103,8 +110,13 @@ end;
 
 function TUCParser.NextToken: Char;
 begin
-  result := NextTokenTmp;
-  while ((result = toComment) and (result <> toEOF)) do result := NextTokenTmp;
+  repeat
+  	result := NextTokenTmp;
+    if (result = toMacro) then begin
+    	if (assigned(FProcessMacro)) then FProcessMacro(self);
+			result := toComment;  // macro processed, get the real next token
+    end;
+  until ((result <> toComment) or (result = toEOF));
 end;
 
 function TUCParser.NextTokenTmp: Char;
@@ -161,7 +173,7 @@ begin
         Result := toName;
       end;
     { number }
-    '-', '0'..'9':
+    '-', '+', '0'..'9':
       begin
       	Result := toInteger;
         Inc(P);
@@ -192,7 +204,7 @@ begin
         else begin
           Inc(P);
           Inc(FSourceLine); // next line
-          Result := toComment; // not realy a comment but we just ignore it
+          Result := toMacro;
         end;
       end;
     { possible comment }
@@ -211,7 +223,7 @@ begin
             end;
             Inc(P);
             Inc(FSourceLine); // next line
-            Result := toComment; // not realy a comment but we just ignore it
+            Result := toComment;
             if (CopyInitComment) then begin
               SetString(CommentString, FTokenPtr, P - FTokenPtr);
               FCopyStream.WriteString(CommentString);
@@ -266,7 +278,7 @@ begin
   FSourcePtr := P;
   FToken := Result;
   if (FullCopy) then begin
-  	if ((not FCIgnoreComments) or (Result <> toComment)) then FCopyStream.WriteString(TokenString);
+  	if ((not FCIgnoreComments) or ((Result <> toComment) or (Result <> toMacro))) then FCopyStream.WriteString(TokenString);
   end;
 end;
 

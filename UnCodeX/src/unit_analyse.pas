@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.42 2004-09-26 17:30:47 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.43 2004-10-17 13:17:18 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -66,6 +66,7 @@ type
     procedure ExecuteList;
     function ExecuteSingle: integer;
     function GetSecondaryComment(ref :string): string;
+    procedure pMacro(Sender: TUCParser);
   public
     constructor Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false; myClassList: TObjectHash = nil); overload;
     constructor Create(uclass: TUClass; status: TStatusReport; onlynew: boolean = false; myClassList: TObjectHash = nil); overload;
@@ -252,6 +253,7 @@ begin
   fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
   p := TUCParser.Create(fs);
   try
+  	p.ProcessMacro := pMacro;
     uclass.consts.Clear;
     uclass.properties.Clear;
     uclass.enums.Clear;
@@ -777,6 +779,11 @@ begin
   end;
   uclass.states.Add(result);
   unguard;
+end;
+
+procedure TClassAnalyser.pMacro(Sender: TUCParser);
+begin
+  log('Got macro: '+trim(Sender.TokenString));
 end;
 
 procedure TClassAnalyser.AnalyseClass;
