@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.130 2004-12-20 22:22:30 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.131 2004-12-21 08:53:43 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -71,6 +71,7 @@ type
   function StrRepeat(line: string; count: integer): string;
   function iFindFile(filename: string): string;
   function iFindDir(dirname: string; var output: string): boolean;
+  function ResolveFilename(uclass: TUClass; udecl: TUDeclaration): string;
   function CopyFile(filename, target: string): boolean;
   function GetFiles(path: string; Attr: Integer; var files: TStringList): boolean;
   function FindFiles(base, path, mask: string; Attr: Integer; var files: TStringList; append: boolean = false): boolean;
@@ -232,6 +233,14 @@ begin
   end;
 end;
 {$ENDIF}
+
+function ResolveFilename(uclass: TUClass; udecl: TUDeclaration): string;
+begin
+  result := uclass.FullFileName;
+  if (udecl <> nil) then begin
+			if (udecl.definedIn <> '') then result := iFindFile(ExpandFileName(uclass.package.PackageDir+udecl.definedIn));
+  end;
+end;
 
 function CopyFile(filename, target: string): boolean;
 {$IFDEF MSWINDOWS}

@@ -156,13 +156,13 @@ object frm_About: Tfrm_About
       'Michiel '#39'El Muerte'#39' Hendriks'
       ''
       'All rights belong to their respectfull owners.'
-      'For the complete license read the LICENSE.TXT '
-      'file in the program'#39's directory.'
+      'The license can be found in "Help->License"'
       ''
       'Uses Andrey Sorokin'#39's TRegExpr'
       'Uses Ciaran McCreesh'#39's Hashes Library'
       'Uses The Helpware Group'#39's HTML Help API Unit'
-      'Uses Emil M. Santos'#39's FastShareMem')
+      'Uses Emil M. Santos'#39's FastShareMem'
+      'Uses RemObjects'#39' PascalScript')
     ParentColor = True
     ReadOnly = True
     TabOrder = 0

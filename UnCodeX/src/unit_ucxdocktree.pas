@@ -6,7 +6,7 @@
   Purpose:
     Replacement docktree
 
-  $Id: unit_ucxdocktree.pas,v 1.9 2004-12-19 16:39:50 elmuerte Exp $
+  $Id: unit_ucxdocktree.pas,v 1.10 2004-12-21 08:53:44 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -56,7 +56,6 @@ type
 var
   OnChangeVisibility: TOnChangeVisibility;
   OnStartDockDrag: TOnDockStartDrag;
-
 
 implementation
 
@@ -146,19 +145,26 @@ procedure TUCXDockTree.PaintDockFrame(Canvas: TCanvas; Control: TControl; const 
     end;
   end;
 
+var
+  tx: integer;
 begin
+  tx := 0;
   with ARect do begin
+    Canvas.Brush.Style := bsClear;
+    Canvas.Font.Size := 7;
+    Canvas.Font.Name := 'Arial';
     if (DockSite.Align in [alTop, alBottom]) then
     begin
-      DrawGrabberLine(Left+3, Top+1, Left+5, Bottom-2);
-      DrawGrabberLine(Left+6, Top+1, Left+8, Bottom-2);
+      DrawGrabberLine(Left+3, Top+1+tx, Left+5, Bottom-2);
+      DrawGrabberLine(Left+6, Top+1+tx, Left+8, Bottom-2);
     end
     else
     begin
-      DrawGrabberLine(Left+2, Top+3, Right-2, Top+5);
-      DrawGrabberLine(Left+2, Top+6, Right-2, Top+8);
+      Canvas.TextOut(Left+1, Top, Control.Name);
+      tx := Canvas.TextWidth(Control.Name)+2;
+      DrawGrabberLine(Left+2+tx, Top+3, Right-2, Top+5);
+      DrawGrabberLine(Left+2+tx, Top+6, Right-2, Top+8);
     end;
-    //Canvas.TextOut(Left, Top, Control.Name);
   end;
 end;
 

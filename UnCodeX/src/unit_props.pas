@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Class property inpector frame
 
-  $Id: unit_props.pas,v 1.23 2004-12-08 20:09:05 elmuerte Exp $
+  $Id: unit_props.pas,v 1.24 2004-12-21 08:53:44 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -392,7 +392,8 @@ begin
   if (lv_Properties.Selected = nil) then exit;
   if (lv_Properties.Selected.Data = nil) then exit;
   if (frm_UnCodeX.Visible and frm_UnCodeX.mi_SourceSnoop.Checked) then begin
-    frm_UnCodeX.OpenSourceInline(TUClass(lv_Properties.Selected.Data), TUDeclaration(lv_Properties.Selected.SubItems.Objects[0]), StrToIntDef(lv_Properties.Selected.SubItems[1], 1)-1, 0);
+    frm_UnCodeX.OpenSourceInline(ResolveFilename(TUClass(lv_Properties.Selected.Data), TUDeclaration(lv_Properties.Selected.SubItems.Objects[0])),
+      StrToIntDef(lv_Properties.Selected.SubItems[1], 1)-1, 0, TUClass(lv_Properties.Selected.Data));
   end;
 end;
 
