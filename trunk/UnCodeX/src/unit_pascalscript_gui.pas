@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   PascalScript routines for the GUI
- $Id: unit_pascalscript_gui.pas,v 1.4 2004-08-03 07:02:35 elmuerte Exp $
+ $Id: unit_pascalscript_gui.pas,v 1.5 2004-08-05 13:31:15 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -28,14 +28,14 @@ unit unit_pascalscript_gui;
 interface
 
 uses
-  Classes, uPSComponent, Dialogs, windows, forms;
+  Classes, uPSComponent, Dialogs, windows, forms, SysUtils, Controls;
 
 	procedure RegisterPSGui(ps: TPSScript);
   procedure LinkPSGui(ps: TPSScript);
 
 implementation
 
-uses unit_main, unit_uclasses, unit_utils;
+uses unit_main, unit_uclasses, unit_utils, unit_rungame;
 
 { Actions -- begin}
 { Class Tree }
@@ -150,6 +150,43 @@ end;
 function acRun: boolean;
 begin
 	result := frm_UnCodeX.ac_Run.Execute;
+end;
+
+// open run dialog with profile preselected
+function acRunEx(profile: string; autorun: boolean): boolean;
+var
+	i: integer;
+  found: boolean;
+	lst: TStringList;
+begin
+	result := false;
+  found := false;
+  with (Tfrm_Run.Create(Application)) do begin
+    for i := 0 to cb_PreSets.Items.Count-1 do begin
+			if (CompareText(cb_PreSets.Items[i], profile) = 0) then begin
+        cb_PreSets.ItemIndex := i;
+        cb_PreSets.OnChange(cb_PreSets);
+        found := true;
+        break;
+      end;
+    end;
+    if (not autorun) then begin
+      result := ShowModal = mrOk;
+    end
+    else begin
+    	if (not found) then exit;
+      lst := TStringList.Create;
+      try
+        lst.Delimiter := ' ';
+        lst.QuoteChar := '"';
+        lst.DelimitedText := ed_Args.Text;
+				frm_UnCodeX.ExecuteProgram(ed_Exe.Text, lst, cb_Priority.ItemIndex);
+        result := true;
+      finally;
+    		lst.Free;
+      end;
+    end;
+  end;
 end;
 
 { HTML }
@@ -267,6 +304,7 @@ begin
   ps.AddFunction(@acRecreateTree, 'function acRecreateTree: boolean;');
   ps.AddFunction(@acRenameClass, 'function acRenameClass: boolean;');
   ps.AddFunction(@acRun, 'function acRun: boolean;');
+  ps.AddFunction(@acRunEx, 'function acRunEx(profile: string; autorun: boolean): boolean;');
   ps.AddFunction(@acRunServer, 'function acRunServer: boolean;');
   ps.AddFunction(@acSaveState, 'function acSaveState: boolean;');
   ps.AddFunction(@acSettings, 'function acSettings: boolean;');
