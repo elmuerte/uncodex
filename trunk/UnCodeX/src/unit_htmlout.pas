@@ -534,6 +534,10 @@ begin
     replacement := TUClass(data).filename;
     result := true;
   end
+  else if (CompareText(replacement, 'class_fileage') = 0) then begin
+    replacement := DateTimeToStr(FileDateToDateTime(TUClass(data).filetime));
+    result := true;
+  end
   else if (CompareText(replacement, 'class_children') = 0) then begin
     replacement := '';
     if (TUClass(data).treenode = nil) then begin
@@ -873,6 +877,10 @@ begin
     replacement := TUConst(data).value;
     result := true;
   end
+  else if (CompareText(replacement, 'const_srcline') = 0) then begin
+    replacement := IntToStr(TUConst(data).srcline);
+    result := true;
+  end
 end;
 
 function THTMLOutput.replaceClassVar(var replacement: string; data: TObject = nil): boolean;
@@ -895,6 +903,10 @@ begin
     replacement := TUProperty(data).modifiers;
     result := true;
   end
+  else if (CompareText(replacement, 'var_srcline') = 0) then begin
+    replacement := IntToStr(TUProperty(data).srcline);
+    result := true;
+  end
 end;
 
 function THTMLOutput.replaceClassEnum(var replacement: string; data: TObject = nil): boolean;
@@ -915,6 +927,10 @@ begin
   end
   else if (CompareText(replacement, 'enum_options_break') = 0) then begin
     replacement := StringReplace(TUEnum(data).options, ',', ',<br />', [rfReplaceAll]);
+    result := true;
+  end
+  else if (CompareText(replacement, 'enum_srcline') = 0) then begin
+    replacement := IntToStr(TUEnum(data).srcline);
     result := true;
   end
 end;
@@ -946,6 +962,10 @@ begin
     replacement := StringReplace(replacement, ';', ';<br>'+#13#10, [rfReplaceAll]);
     result := true;
   end
+  else if (CompareText(replacement, 'struct_srcline') = 0) then begin
+    replacement := IntToStr(TUStruct(data).srcline);
+    result := true;
+  end
 end;
 
 function THTMLOutput.replaceClassFunction(var replacement: string; data: TObject = nil): boolean;
@@ -975,6 +995,10 @@ begin
   else if (CompareText(replacement, 'function_state') = 0) then begin
     if (TUFunction(data).state <> nil) then replacement := TUFunction(data).state.name
       else replacement := '';
+    result := true;
+  end
+  else if (CompareText(replacement, 'function_srcline') = 0) then begin
+    replacement := IntToStr(TUFunction(data).srcline);
     result := true;
   end
 end;

@@ -221,8 +221,11 @@ var
   DoInit: boolean = true;
   PackageList: TUPackageList;
   ClassList: TUClassList;
+  // class search vars
   searchclass: string;
-  CSprops: array[0..1] of boolean;
+  CSprops: array[0..2] of boolean;
+  OpenFind: boolean = false; // only on startup
+
   IsBatching: boolean = false;
   CmdStack: TStringList;
   ConfigFile: string;
@@ -939,7 +942,7 @@ begin
     ActiveControl := tv_Classes;
   end;
   CSprops[1] := FTSRegexp;
-  if (SearchQuery('Find a class', 'Enter the name of the class you want to find', searchclass, CSprops, CSHistory, ['&Search class body', '&Regular expression'])) then begin
+  if (SearchQuery('Find a class', 'Enter the name of the class you want to find', searchclass, CSprops, CSHistory, ['&Search class body', '&Regular expression (only with body search)', '&Compare strict (not on body search)'])) then begin
     (ActiveControl as TTreeView).Selected := nil;
     ac_FindNext.Execute;
   end;
@@ -1060,7 +1063,7 @@ end;
 procedure Tfrm_UnCodeX.ac_HTMLHelpExecute(Sender: TObject);
 begin
   if (not FileExists(HHCPath+PATHDELIM+COMPILER)) then begin
-    MessageDlg('Yu first have to define the path to the HTML Help Workshop in '+#13+#10+'the program settings.', mtError, [mbOK], 0);
+    MessageDlg('You first have to define the path to the HTML Help Workshop in '+#13+#10+'the program settings.', mtError, [mbOK], 0);
     exit;
   end;
   if (ThreadCreate) then begin
@@ -1243,6 +1246,7 @@ end;
 procedure Tfrm_UnCodeX.ac_FindNextExecute(Sender: TObject);
 var
   i,j: integer;
+  res: boolean;
 begin
   if (searchclass = '') then begin
     ac_FindClass.Execute;
@@ -1265,14 +1269,17 @@ begin
       if (Selected <> nil) then j := Selected.AbsoluteIndex+1
         else j := 0;
       for i := j to Items.Count-1 do begin
-        if (AnsiContainsText(items[i].Text, searchclass)) then begin
+        if (CSprops[2]) then res := AnsiCompareText(items[i].Text, searchclass) = 0
+          else res := AnsiContainsText(items[i].Text, searchclass);
+        if (res) then begin
           Select(items[i]);
+          if (OpenFind) then ac_OpenClass.Execute;
           exit;
         end;
       end;
     end;
   end;
-  statustext := 'No more classes containing '''+searchclass+''' found';
+  statustext := 'No more classes matching '''+searchclass+''' found';
   searchclass := '';
 end;
 

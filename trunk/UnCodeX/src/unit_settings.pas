@@ -109,6 +109,14 @@ type
     btn_LogColor: TBitBtn;
     lb_LogLayout: TListBox;
     cb_ExpandObject: TCheckBox;
+    ts_ProgramOptions: TTabSheet;
+    gb_ProgramOptions: TGroupBox;
+    Edit1: TEdit;
+    lbl_StateFile: TLabel;
+    CheckBox1: TCheckBox;
+    Edit2: TEdit;
+    CheckBox2: TCheckBox;
+    CheckBox3: TCheckBox;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);

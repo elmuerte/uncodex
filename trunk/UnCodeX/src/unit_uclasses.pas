@@ -11,6 +11,7 @@ type
   TUConst = class(TObject)
     name:       string;
     value:      string;
+    srcline:    integer;
   end;
 
   TUConstList = class(TObjectList)
@@ -26,6 +27,7 @@ type
     name:       string;
     ptype:      string;
     modifiers:  string;
+    srcline:    integer;
   end;
 
   TUPropertyList = class(TObjectList)
@@ -40,6 +42,7 @@ type
   TUEnum = class(TObject)
     name:       string;
     options:    string;
+    srcline:    integer;
   end;
 
   TUEnumList = class(TObjectList)
@@ -57,6 +60,7 @@ type
     modifiers:  string;
     data:       string;
     // need more here ??
+    srcline:    integer;
   end;
 
   TUStructList = class(TObjectList)
@@ -72,6 +76,7 @@ type
     name:       string;
     extends:    string;
     modifiers:  string;
+    srcline:    integer;
   end;
 
   TUStateList = class(TObjectList)
@@ -92,6 +97,7 @@ type
     modifiers:  string;
     params:     string;
     state:      TUState;
+    srcline:    integer;
   end;
 
   TUFunctionList = class(TObjectList)
@@ -121,6 +127,8 @@ type
     states:     TUstateList;
     functions:  TUFunctionList;
     treenode:   TTreeNode;
+    filetime:   integer;
+    //defaultproperties: string??; FIXME:
     constructor Create;
     destructor Destroy; override;
   end;

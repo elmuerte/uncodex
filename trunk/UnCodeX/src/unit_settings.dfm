@@ -41,7 +41,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_Layout
+    ActivePage = ts_ProgramOptions
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -809,6 +809,67 @@ object frm_Settings: Tfrm_Settings
           Height = 17
           Caption = 'Expand '#39'Object'#39' on startup'
           TabOrder = 8
+        end
+      end
+    end
+    object ts_ProgramOptions: TTabSheet
+      Caption = 'Program Options'
+      ImageIndex = 9
+      TabVisible = False
+      object gb_ProgramOptions: TGroupBox
+        Left = 0
+        Top = 0
+        Width = 433
+        Height = 368
+        Align = alClient
+        Caption = 'Program Options'
+        TabOrder = 0
+        object lbl_StateFile: TLabel
+          Left = 8
+          Top = 16
+          Width = 41
+          Height = 13
+          Caption = 'State file'
+        end
+        object Edit1: TEdit
+          Left = 8
+          Top = 32
+          Width = 385
+          Height = 21
+          TabOrder = 0
+          Text = 'Edit1'
+        end
+        object CheckBox1: TCheckBox
+          Left = 8
+          Top = 56
+          Width = 97
+          Height = 17
+          Caption = 'Properties file'
+          TabOrder = 1
+        end
+        object Edit2: TEdit
+          Left = 8
+          Top = 72
+          Width = 385
+          Height = 21
+          TabOrder = 2
+          Text = 'Edit2'
+        end
+        object CheckBox2: TCheckBox
+          Left = 8
+          Top = 104
+          Width = 113
+          Height = 17
+          Caption = 'Minimize on close'
+          TabOrder = 3
+        end
+        object CheckBox3: TCheckBox
+          Left = 8
+          Top = 120
+          Width = 113
+          Height = 17
+          Caption = 'CheckBox3'
+          TabOrder = 4
         end
       end
     end

@@ -11,6 +11,7 @@ type
 
   TRedirectStruct = packed record
     Find: string[64];
+    OpenFind: boolean;
     Batch: string[255];
     NewHandle: integer;
   end;
@@ -23,7 +24,7 @@ type
   
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '042 Beta';
+  APPVERSION = '043 Beta';
 
   PATHDELIM = '\';
   WILDCARD = '*.*';
