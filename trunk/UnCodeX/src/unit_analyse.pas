@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.26 2003-12-22 16:08:37 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.27 2003-12-22 16:26:59 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -508,13 +508,11 @@ begin
   p.NextToken;
   pBrackets; // possible operator precendence
   // function <mod> ...
-  last := '';
   while (isFunctionModifier(p.TokenString)) do begin
     if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
-    result.modifiers := result.modifiers+last;
-    last := p.TokenString;
+    result.modifiers := result.modifiers+p.TokenString;
     p.NextToken;
-    last := last+pBrackets;
+    result.modifiers := result.modifiers+pBrackets;
   end;
   result.return := p.TokenString; // optional return
   p.NextToken;
