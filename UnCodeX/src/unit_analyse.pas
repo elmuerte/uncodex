@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.28 2004-02-23 22:02:47 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.29 2004-03-11 20:55:31 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -55,7 +55,7 @@ type
     function pBrackets(exclude: boolean = false): string;
     function pSquareBrackets: string;
     function pAngleBrackets: string;
-    function pCurlyBrackets: string;
+    function pCurlyBrackets(ignoreFirst: boolean = false): string;
     procedure ExecuteList;
     procedure ExecuteSingle;
   public
@@ -93,6 +93,7 @@ const
   KEYWORD_Replication = 'replication';
   KEYWORD_Array = 'array';
   KEYWORD_Ignores = 'ignores';
+  UNREAL2_AT_NAME = '@';
 
 var
 	FunctionModifiers: TStringList;
@@ -249,13 +250,14 @@ begin
 end;
 
 // Process {...}
-function TClassAnalyser.pCurlyBrackets: string;
+function TClassAnalyser.pCurlyBrackets(ignoreFirst: boolean = false): string;
 var
   bcount: integer;
 begin
   result := '';
-  bcount := 0;
-  if (p.Token = '{') then begin
+  if (ignoreFirst) then bcount := 1
+  	else bcount := 0;
+  if ((p.Token = '{') or (ignoreFirst)) then begin
     Inc(bcount);
     result := p.TokenString;
     p.NextToken;
@@ -279,8 +281,16 @@ begin
   result.name := p.TokenString;
   result.srcline := p.SourceLine;
   p.NextToken; // =
+  p.GetCopyData();
+  p.FullCopy := true;
+  p.FCIgnoreComments := true;
   p.NextToken;
-  result.value := p.TokenString;
+  while (p.Token <> ';') do p.NextToken;
+  result.value := p.GetCopyData();
+  Delete(result.value, length(result.value), 1); // strip ;
+  result.value := trim(result.value);
+  p.FullCopy := false;
+  p.FCIgnoreComments := false;
   p.NextToken; // = ;
   uclass.consts.Add(result);
 end;
@@ -451,12 +461,10 @@ end;
 // <modifiers> function <return> <name> ( <params>, <param> )
 function TClassAnalyser.pFunc: TUFunction;
 var
-  bcount: integer;
   last: string;
 const
   OPERATOR_NAMES: set of char = ['+', '-', '!', '<', '>', '=', '~', '*', '|', '^', '&'];
 begin
-  bcount := 0;
   result := TUFunction.Create;
   result.srcline := p.SourceLine;
   while not (p.TokenSymbolIs(KEYWORD_function) or p.TokenSymbolIs(KEYWORD_event) or
@@ -465,15 +473,7 @@ begin
     p.TokenSymbolIs(KEYWORD_state) or (p.token = toEOF)) do begin
     if (instate) then begin
       if (p.Token = ':') then begin // state labels
-        bcount := 1;
-        while (bcount > 0) do begin
-          p.NextToken;
-          case (p.token) of
-            '{' : Inc(bcount);
-            '}' : Dec(bcount);
-          end;
-        end;
-        p.NextToken;
+        pCurlyBrackets(true);
         currentState := nil;
         instate := false;
         result.Free;
@@ -539,6 +539,7 @@ begin
     p.NextToken; 
   end;
   p.FullCopy := true;
+  p.FCIgnoreComments := true;
   p.GetCopyData;
   p.NextToken; // (
   while (p.Token <> ')') do p.NextToken;
@@ -546,18 +547,10 @@ begin
   Delete(result.params, Length(result.params), 1);
   result.params := trim(result.params);
   p.FullCopy := false;
+  p.FCIgnoreComments := false;
   p.NextToken; // )
-  if (p.Token <> ';') then begin
-    if (p.Token = '{') then bcount := 1;
-    while (bcount > 0) do begin
-     p.NextToken;
-     case (p.token) of
-        '{' : Inc(bcount);
-        '}' : Dec(bcount);
-      end;
-    end;
-  end;
-  p.NextToken; // = } or ;
+  if (p.Token <> ';') then pCurlyBrackets()
+  else p.NextToken; // = } or ;
   result.state := currentState;
   if (currentState <> nil) then begin
     currentState.functions.Add(result);
@@ -576,17 +569,26 @@ begin
   p.NextToken; // name
   pBrackets;
   result.name := p.TokenString;
+  if (result.name = UNREAL2_AT_NAME) then begin
+    p.NextToken; // after @
+    result.name := result.name+p.TokenString;
+  end;
   p.NextToken;
   if (p.TokenSymbolIs(KEYWORD_extends) or p.TokenSymbolIs(KEYWORD_expands)) then begin
     p.NextToken; // extends
     result.extends := p.TokenString;
+    if (result.extends = UNREAL2_AT_NAME) then begin
+    	p.NextToken; // after @
+  	  result.extends := result.extends+p.TokenString;
+	  end;
     p.NextToken;
   end;
   if (p.Token = '{') then begin
     p.NextToken;
     instate := true;
-    if (p.TokenSymbolIs(KEYWORD_ignores)) then begin
+    while (p.TokenSymbolIs(KEYWORD_ignores)) do begin
       while (p.Token <> ';') do p.NextToken;
+      p.NextToken;
     end;
   end;
   currentState := Result;
@@ -652,8 +654,10 @@ begin
       p.NextToken;
       uclass.defaultproperties := p.TokenString;
       p.FullCopy := true;
+      p.FCIgnoreComments := true;
       pCurlyBrackets();
       p.FullCopy := false;
+      p.FCIgnoreComments := false;
       uclass.defaultproperties := uclass.defaultproperties+p.GetCopyData(true);
       continue;
     end;
@@ -665,6 +669,11 @@ begin
     if (p.TokenSymbolIs(KEYWORD_cpptext)) then begin
       p.NextToken;
       pCurlyBrackets();
+      continue;
+    end;
+    if ((p.Token = UNREAL2_AT_NAME) and instate) then begin
+    	p.NextToken;
+      pCurlyBrackets(true);
       continue;
     end;
     if ((p.Token = '}') and instate) then begin

@@ -13,6 +13,15 @@
 
 <div class="content">
 
+<h2>Changes since 166</h2>
+<ul>
+<li>implemented Unreal 2's extended constans features: const name = sizeof(class);<br />
+	Now everything after the = is used;
+<li>multiple "ignores" lines after a state declaration are now stripped, fixes the state processing
+<li>Added Unreal 2's "@ name" features for state declarations and state labels
+<li>stripped comments from places where they shouldn't belong (function params, etc)
+</ul>
+
 <h2>Changes since 165</h2>
 <ul>
 <li>Initial and trailing '*' in block comments are now ignored (e.g. "/******* some text ******/" results in "some text" )
