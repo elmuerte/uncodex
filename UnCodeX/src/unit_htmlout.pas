@@ -6,12 +6,12 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.68 2005-03-17 14:14:43 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.69 2005-03-18 08:42:20 elmuerte Exp $
 *******************************************************************************}
 
 {
   UnCodeX - UnrealScript source browser & documenter
-  Copyright (C) 2003, 2004  Michiel Hendriks
+  Copyright (C) 2003-2005  Michiel Hendriks
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public

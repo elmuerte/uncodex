@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.137 2005-03-13 09:25:20 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.138 2005-03-18 08:42:20 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -212,7 +212,7 @@ end;
 var
   fcm: TFilenameCaseMatch;
 begin
-  result := ExpandFileNameCase(filename, fcm);
+  result := ExpandFileNameCase(ExpandFileName(filename), fcm);
   if (fcm = mkAmbiguous) then begin
     Log('Warning: two or more matches for '+filename, ltWarn);
   end;

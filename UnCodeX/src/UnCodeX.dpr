@@ -6,12 +6,12 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.56 2004-12-30 09:40:20 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.57 2005-03-18 08:42:20 elmuerte Exp $
 *******************************************************************************}
 
 {
   UnCodeX - UnrealScript source browser & documenter
-  Copyright (C) 2003, 2004  Michiel Hendriks
+  Copyright (C) 2003-2005  Michiel Hendriks
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -30,8 +30,6 @@
 program UnCodeX;
 
 {$R 'hilight_preview.res' 'hilight_preview.rc'}
-{%File 'defines.inc'}
-{%ToDo 'UnCodeX.todo'}
 {$I defines.inc}
 
 uses
