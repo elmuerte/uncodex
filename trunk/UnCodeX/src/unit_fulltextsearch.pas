@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Full Text Search (+ regular expressions) thread
- $Id: unit_fulltextsearch.pas,v 1.9 2003-11-04 19:35:27 elmuerte Exp $
+ $Id: unit_fulltextsearch.pas,v 1.10 2003-12-15 20:25:58 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -207,7 +207,7 @@ begin
   result := false;
   linecnt := 0;
   lineptr := 0;
-  filename := uclass.package.path+PATHDELIM+CLASSDIR+PATHDELIM+uclass.filename;
+  filename := uclass.package.path+PATHDELIM+uclass.filename;
   if (not FileExists(filename)) then exit;
   fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
   try

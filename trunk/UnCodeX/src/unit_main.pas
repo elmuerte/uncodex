@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.65 2003-12-03 19:49:31 elmuerte Exp $
+ $Id: unit_main.pas,v 1.66 2003-12-15 20:25:58 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -2570,7 +2570,14 @@ end;
 procedure Tfrm_UnCodeX.pm_ClassTreePopup(Sender: TObject);
 begin
   with (ActiveControl as TTreeView) do begin
-    if (TObject(Selected.Data).ClassType = TUClass) then begin
+    if (Selected = nil) then begin
+      mi_ClassName.Visible := false;
+      mi_PackageName.Visible := false;
+      mi_Analyseclass.Visible := false;
+      mi_ShowProperties.Visible := false;
+      mi_Compile.Visible := false;
+    end
+    else if (TObject(Selected.Data).ClassType = TUClass) then begin
       mi_ClassName.Visible := true;
       mi_ClassName.Caption := TUClass(Selected.Data).name;
       mi_PackageName.Caption := TUClass(Selected.Data).package.name;
