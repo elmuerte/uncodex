@@ -1958,11 +1958,11 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Left = 40
     Top = 168
   end
-  object EXEC: TDdeServerConvEx
+  object EXEC: TDdeServerConv
     Left = 8
     Top = 240
   end
-  object cmd: TDdeServerItemEx
+  object cmd: TDdeServerItem
     ServerConv = EXEC
     Lines.Strings = (
       '')

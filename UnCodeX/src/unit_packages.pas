@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Unreal Package scanner, searches for classes in directories
- $Id: unit_packages.pas,v 1.17 2003-12-03 10:31:23 elmuerte Exp $
+ $Id: unit_packages.pas,v 1.18 2003-12-03 19:49:31 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -266,6 +266,7 @@ begin
     knownpackages.Free;
     {$IFDEF __USE_TREEVIEW}
     packagetree.EndUpdate;
+    classtree.GetFirstNode.Expand(false);
     classtree.EndUpdate;
     {$ENDIF}
   end;

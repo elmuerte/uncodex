@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   General definitions
- $Id: unit_definitions.pas,v 1.70 2003-12-03 10:31:23 elmuerte Exp $
+ $Id: unit_definitions.pas,v 1.71 2003-12-03 19:49:31 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -62,12 +62,6 @@ const
   APPPLATFORM = 'GNU\Linux';
   {$ENDIF}
 
-  {$IFDEF MSWINDOWS}
-  PATHDELIM = '\';
-  {$ENDIF}
-  {$IFDEF LINUX}
-  PATHDELIM = '/';
-  {$ENDIF}
   WILDCARD = '*.*';
   SOURCECARD = '*.uc';
   CLASSDIR = 'Classes';
@@ -76,7 +70,7 @@ const
   UCXPACKAGEINFO = 'uncodex.ini';
   DEFAULTPDF = 'PackageDescriptions.ini';
   KEYWORDFILE1 = 'keywords1.list';
-  KEYWORDFILE2 = 'keywords1.list';
+  KEYWORDFILE2 = 'keywords2.list';
 
   // Full Text search tokens
   FTS_LN_BEGIN = ' #';

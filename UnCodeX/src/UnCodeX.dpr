@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
- $Id: UnCodeX.dpr,v 1.25 2003-11-04 19:35:26 elmuerte Exp $
+ $Id: UnCodeX.dpr,v 1.26 2003-12-03 19:49:31 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 program UnCodeX;
@@ -43,7 +43,6 @@ uses
   unit_utils in 'unit_utils.pas',
   unit_searchform in 'unit_searchform.pas' {frm_SearchForm},
   unit_clpipe in 'unit_clpipe.pas',
-  DdeManEx in 'DdeManEx.pas',
   unit_license in 'unit_license.pas' {frm_License};
 
 {$R *.res}
