@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   loading/saving the tree state
- $Id: unit_treestate.pas,v 1.22 2004-07-30 11:18:51 elmuerte Exp $
+ $Id: unit_treestate.pas,v 1.23 2004-08-09 13:25:15 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -175,7 +175,6 @@ begin
       Writer.WriteString(uclass.structs[i].name);
       Writer.WriteString(uclass.structs[i].parent);
       Writer.WriteString(uclass.structs[i].modifiers);
-      Writer.WriteString(uclass.structs[i].data);
       Writer.WriteInteger(uclass.structs[i].srcline);
       Writer.WriteString(uclass.structs[i].comment);
       Writer.WriteInteger(Ord(uclass.structs[i].CommentType));
@@ -300,7 +299,7 @@ begin
         ustruct.name := Reader.ReadString;
         ustruct.parent := Reader.ReadString;
         ustruct.modifiers := Reader.ReadString;
-        ustruct.data := Reader.ReadString;
+        if (version < 209) then Reader.ReadString;
         ustruct.srcline := Reader.ReadInteger;
         if (version >= 150) then ustruct.comment := Reader.ReadString;
         if (version >= 209) then ustruct.CommentType := TUCommentType(Reader.ReadInteger);

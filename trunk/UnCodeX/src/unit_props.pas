@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   property inspector frame
- $Id: unit_props.pas,v 1.13 2004-08-02 19:58:58 elmuerte Exp $
+ $Id: unit_props.pas,v 1.14 2004-08-09 13:25:15 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -94,9 +94,14 @@ var
   return: string;
   lasttag: string;
 begin
+	result := false;
   lv_Properties.Items.BeginUpdate;
   lv_Properties.Items.Clear;
 
+  if (uclass = nil) then begin
+    lv_Properties.Items.EndUpdate;
+    exit;
+  end;
   li := lv_Properties.Items.Add;
   li.Caption := '-';
   li.SubItems.Add('Constants');

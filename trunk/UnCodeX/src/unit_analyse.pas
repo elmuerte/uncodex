@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.39 2004-07-28 21:31:44 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.40 2004-08-09 13:25:15 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -568,16 +568,6 @@ begin
     end;
   end;
   result.name := last;
-  result.data := p.TokenString;
-  //{$DEFINE USTRUCT_FULLCOPY}
-  {$IF USTRUCT_FULLCOPY}
-  p.FullCopy := true;
-  p.GetCopyData(true);// preflush
-  pCurlyBrackets();
-  p.FullCopy := false;
-  result.data := result.data+p.GetCopyData(true);
-  {$ELSE}
-  result.data := '';
   OverWriteUstruct := result;
   UseOverWriteStruct := true;
   p.NextToken; // = {
@@ -595,7 +585,6 @@ begin
   end;
   p.NextToken; // = {
   UseOverWriteStruct := false;
-  {$IFEND}
   if (p.Token = ';') then p.NextToken; // = ;
   if (result.comment = '') then begin
   	result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);

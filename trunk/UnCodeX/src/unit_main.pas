@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.120 2004-08-03 20:31:42 elmuerte Exp $
+ $Id: unit_main.pas,v 1.121 2004-08-09 13:25:15 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -476,6 +476,7 @@ var
   // used for -reuse
   PrevInst, RestoreHandle: HWND;
   AppInstanceId: integer = 0;
+  LastBuildTime, LastAnalyseTime: TDateTime;
 
 // config vars
 var
@@ -615,7 +616,10 @@ begin
   ac_Abort.Enabled := false;
   if (IsBatching) then NextBatchCommand
   else begin
-    if (TreeUpdated and fr_Props.Visible) then fr_Props.LoadClass;
+    if (TreeUpdated and fr_Props.Visible) then begin
+    	fr_Props.uclass := SelectedUClass;
+			fr_Props.LoadClass;
+    end;
   end;
 end;
 
@@ -1486,6 +1490,7 @@ procedure Tfrm_UnCodeX.DeleteClass(uclass: TUClass; recurse: boolean = false);
 var
 	i: integer;
   fos: TSHFileOpStruct;
+  s: string;
 begin
 	if (recurse) then begin
 		for i := 0 to uclass.children.Count-1 do begin
@@ -1493,19 +1498,21 @@ begin
 	  end;
   end;
   Log('Deleting class to recycle bin: '+uclass.name);
+
+  s := uclass.package.path+PATHDELIM+uclass.filename;
+  SetLength(s,Length(s)+1);
+	s[Length(s)]:=#0;
   FillChar(fos, sizeof(fos), 0);
   fos.wFunc := FO_DELETE;
-  fos.pFrom := PChar(uclass.package.path+PATHDELIM+uclass.filename);
-  fos.fFlags := FOF_ALLOWUNDO or FOF_NOCONFIRMATION;
-  ShFileOperation(fos);
-  for i := 0 to TTreeNode(uclass.package.treenode).Count-1 do begin
-		if (TTreeNode(uclass.package.treenode).Item[i].Data = uclass) then begin
-			TTreeNode(uclass.package.treenode).Item[i].Delete;
-      break;
-    end;
+  fos.pFrom := PChar(s);
+  fos.fFlags := FOF_ALLOWUNDO or FOF_NOCONFIRMATION or FOF_NOERRORUI;
+  if (ShFileOperation(fos) <> 0) then begin
+		Log('Error deleting file: '+s);
+    exit;
   end;
   uclass.package.classes.Remove(uclass);
-  TTreeNode(uclass.treenode).Delete;
+  if (uclass.treenode <> nil) then TTreeNode(uclass.treenode).Delete;
+  if (uclass.treenode2 <> nil) then TTreeNode(uclass.treenode2).Delete;
   ClassList.Remove(uclass);
   TreeUpdated := true;
 end;
@@ -2028,6 +2035,7 @@ begin
     with (ActiveControl as TTreeView) do begin
       if (TObject(Selected.Data).ClassType <> TUClass) then exit;
       if (ThreadCreate) then begin
+      	LastAnalyseTime := Now;
         runningthread := TClassAnalyser.Create(TUClass(Selected.Data), statusReport);
         runningthread.OnTerminate := ThreadTerminate;
         runningthread.Resume;
@@ -2054,6 +2062,7 @@ begin
     ClassList.Clear;
     SelectedUClass := nil;
     SelectedUPackage := nil;
+    LastBuildTime := now;
     runningthread := TPackageScanner.Create(SourcePaths, tv_Packages.Items,
           tv_Classes.items, statusReport, PackageList, ClassList,
           PackagePriority, IgnorePackages, unit_rtfhilight.ClassesHash, GPDF);
@@ -2078,6 +2087,7 @@ procedure Tfrm_UnCodeX.ac_AnalyseAllExecute(Sender: TObject);
 begin
   if (ThreadCreate) then begin
     lb_Log.Items.Clear;
+    LastAnalyseTime := Now;
     runningthread := TClassAnalyser.Create(ClassList, statusReport);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
@@ -2841,6 +2851,7 @@ procedure Tfrm_UnCodeX.ac_AnalyseModifiedExecute(Sender: TObject);
 begin
   if (ThreadCreate) then begin
     lb_Log.Items.Clear;
+    LastAnalyseTime := Now;
     runningthread := TClassAnalyser.Create(ClassList, statusReport, true);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;

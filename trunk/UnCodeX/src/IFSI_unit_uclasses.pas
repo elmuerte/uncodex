@@ -719,14 +719,6 @@ procedure TUStructproperties_R(Self: TUStruct; var T: TUPropertyList);
 Begin T := Self.properties; end;
 
 (*----------------------------------------------------------------------------*)
-procedure TUStructdata_W(Self: TUStruct; const T: string);
-Begin Self.data := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUStructdata_R(Self: TUStruct; var T: string);
-Begin T := Self.data; end;
-
-(*----------------------------------------------------------------------------*)
 procedure TUStructmodifiers_W(Self: TUStruct; const T: string);
 Begin Self.modifiers := T; end;
 
@@ -974,7 +966,6 @@ begin
   begin
     RegisterPropertyHelper(@TUStructparent_R,@TUStructparent_W,'parent');
     RegisterPropertyHelper(@TUStructmodifiers_R,@TUStructmodifiers_W,'modifiers');
-    RegisterPropertyHelper(@TUStructdata_R,@TUStructdata_W,'data');
     RegisterPropertyHelper(@TUStructproperties_R,@TUStructproperties_W,'properties');
     RegisterConstructor(@TUStruct.Create, 'Create');
   end;

@@ -16,6 +16,7 @@ object frm_Tags: Tfrm_Tags
   FormStyle = fsStayOnTop
   KeyPreview = True
   OldCreateOrder = False
+  OnActivate = FormActivate
   OnClose = FormClose
   OnCreate = FormCreate
   OnDblClick = FormDblClick
