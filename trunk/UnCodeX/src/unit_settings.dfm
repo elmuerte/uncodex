@@ -48,6 +48,8 @@ object frm_Settings: Tfrm_Settings
     Style = tsFlatButtons
     TabOrder = 1
     object ts_SourcePaths: TTabSheet
+      HelpType = htKeyword
+      HelpKeyword = 'sourcepaths'
       Caption = 'Source Paths'
       TabVisible = False
       object gb_SourcePaths: TGroupBox
@@ -159,6 +161,8 @@ object frm_Settings: Tfrm_Settings
       end
     end
     object ts_PackagePriority: TTabSheet
+      HelpType = htKeyword
+      HelpKeyword = 'packagepriority'
       Caption = 'Package Priority'
       ImageIndex = 1
       TabVisible = False
@@ -302,6 +306,8 @@ object frm_Settings: Tfrm_Settings
       end
     end
     object ts_IgnorePackages: TTabSheet
+      HelpType = htKeyword
+      HelpKeyword = 'ignorepackages'
       Caption = 'Ignore Packages'
       ImageIndex = 6
       TabVisible = False
@@ -380,6 +386,8 @@ object frm_Settings: Tfrm_Settings
       end
     end
     object ts_HTMLOutput: TTabSheet
+      HelpType = htKeyword
+      HelpKeyword = 'htmloutput'
       Caption = 'HTML Output'
       ImageIndex = 2
       TabVisible = False
@@ -453,6 +461,8 @@ object frm_Settings: Tfrm_Settings
       end
     end
     object ts_HTMLHelp: TTabSheet
+      HelpType = htKeyword
+      HelpKeyword = 'mshtmlhelp'
       Caption = 'MS HTML Help'
       ImageIndex = 3
       TabVisible = False
@@ -525,6 +535,8 @@ object frm_Settings: Tfrm_Settings
       end
     end
     object ts_Compile: TTabSheet
+      HelpType = htKeyword
+      HelpKeyword = 'compile'
       Caption = 'Compile'
       ImageIndex = 4
       TabVisible = False
@@ -585,6 +597,8 @@ object frm_Settings: Tfrm_Settings
       end
     end
     object ts_GameServer: TTabSheet
+      HelpType = htKeyword
+      HelpKeyword = 'gameserver'
       Caption = 'Game Server'
       ImageIndex = 5
       TabVisible = False
@@ -680,6 +694,8 @@ object frm_Settings: Tfrm_Settings
       end
     end
     object ts_FullTextSearch: TTabSheet
+      HelpType = htKeyword
+      HelpKeyword = 'fulltextsearch'
       Caption = 'Full Text Search'
       ImageIndex = 7
       TabVisible = False
@@ -749,6 +765,8 @@ object frm_Settings: Tfrm_Settings
       end
     end
     object ts_Layout: TTabSheet
+      HelpType = htKeyword
+      HelpKeyword = 'layout'
       Caption = 'Layout'
       ImageIndex = 8
       TabVisible = False
@@ -894,6 +912,8 @@ object frm_Settings: Tfrm_Settings
       end
     end
     object ts_ProgramOptions: TTabSheet
+      HelpType = htKeyword
+      HelpKeyword = 'programoptions'
       Caption = 'Program Options'
       ImageIndex = 9
       TabVisible = False
@@ -1013,17 +1033,26 @@ object frm_Settings: Tfrm_Settings
     TabOrder = 0
     OnClick = lb_SettingsClick
   end
+  object btn_Help: TBitBtn
+    Left = 592
+    Top = 72
+    Width = 75
+    Height = 25
+    TabOrder = 4
+    OnClick = btn_HelpClick
+    Kind = bkHelp
+  end
   object sd_SaveFile: TSaveDialog
     DefaultExt = '*.chm'
     Filter = 'HTML Help files|*.chm|All Files|*.*'
     Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
     Title = 'HTML Help output file'
     Left = 592
-    Top = 72
+    Top = 104
   end
   object pm_CompilerPlaceholders: TPopupMenu
     Left = 592
-    Top = 104
+    Top = 136
     object mi_Classname: TMenuItem
       Caption = 'Class name'
       OnClick = mi_ClassnameClick
@@ -1054,11 +1083,11 @@ object frm_Settings: Tfrm_Settings
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
     Title = 'Select executable'
     Left = 592
-    Top = 136
+    Top = 168
   end
   object pm_OpenResultPlaceHolders: TPopupMenu
     Left = 624
-    Top = 104
+    Top = 136
     object mi_ClassName2: TMenuItem
       Caption = 'Class name'
       OnClick = mi_ClassName2Click
@@ -1100,7 +1129,7 @@ object frm_Settings: Tfrm_Settings
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
     Title = 'Select an .ini file'
     Left = 624
-    Top = 136
+    Top = 168
   end
   object fd_Font: TFontDialog
     Font.Charset = DEFAULT_CHARSET
@@ -1112,12 +1141,12 @@ object frm_Settings: Tfrm_Settings
     MaxFontSize = 0
     Options = [fdForceFontExist]
     Left = 592
-    Top = 168
+    Top = 200
   end
   object cd_Color: TColorDialog
     Ctl3D = True
     Options = [cdFullOpen, cdAnyColor]
     Left = 624
-    Top = 168
+    Top = 200
   end
 end

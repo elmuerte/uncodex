@@ -251,7 +251,8 @@ object frm_About: Tfrm_About
       'file in the program'#39's directory.'
       ''
       'Uses Andrey Sorokin'#39's TRegExpr'
-      'Uses Ciaran McCreesh'#39's Hashes Library')
+      'Uses Ciaran McCreesh'#39's Hashes Library'
+      'Uses The Helpware Group'#39's HTML Help API Unit')
     ParentColor = True
     ReadOnly = True
     TabOrder = 0

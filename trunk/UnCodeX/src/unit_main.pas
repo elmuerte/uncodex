@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, Menus, StdCtrls, unit_packages, ExtCtrls, unit_uclasses,
-  IniFiles, ShellApi, AppEvnts, ImgList, ActnList, ToolWin, StrUtils, Clipbrd;
+  IniFiles, ShellApi, AppEvnts, ImgList, ActnList, ToolWin, StrUtils, Clipbrd,
+  hh, hh_funcs;
 
 const
   WM_APPBAR                      = WM_USER+$100;
@@ -189,6 +190,8 @@ type
     procedure ac_VTLeftExecute(Sender: TObject);
     procedure ac_VSavePositionExecute(Sender: TObject);
     procedure ac_VSaveSizeExecute(Sender: TObject);
+    procedure mi_Help2Click(Sender: TObject);
+    procedure ac_HelpExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -259,6 +262,8 @@ var
   // used for -reuse
   PrevInst, RestoreHandle: HWND;
   AppInstanceId: integer = 0;
+  // help system
+  hh_Help: THookHelpSystem;
 
 // config vars
 var
@@ -348,7 +353,6 @@ procedure Tfrm_UnCodeX.SaveState;
 var
   fs: TFileStream;
 begin
-  if (not TreeUpdated) then exit;
   StatusReport('Saving state to '+StateFile);
   Application.ProcessMessages;
   fs := TFileStream.Create(StateFile, fmCreate or fmShareExclusive);
@@ -713,6 +717,7 @@ var
   sl: TStringList;
   i: integer;
 begin
+  hh_Help := THookHelpSystem.Create(ExtractFilePath(ParamStr(0))+'UnCodeX-help.chm', '', htHHAPI);
   Caption := APPTITLE+' - '+APPVERSION;
   Application.Title := Caption;
   if (ConfigFile = '') then ConfigFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ini';
@@ -1075,7 +1080,7 @@ begin
     ActiveControl := tv_Classes;
   end;
   CSprops[1] := FTSRegexp;
-  if (SearchQuery('Find a class', 'Enter the name of the class you want to find', searchclass, CSprops, CSHistory, ['&Search class body', '&Regular expression (only with body search)', '&Compare strict (not on body search)'])) then begin
+  if (SearchQuery('Find a class', 'Enter the name of the class you want to find', searchclass, CSprops, CSHistory, ['&Search class body', '&Regular expression (only with body search)', '&Compare strict (not with body search)'])) then begin
     (ActiveControl as TTreeView).Selected := nil;
     ac_FindNext.Execute;
   end;
@@ -1083,6 +1088,8 @@ end;
 
 procedure Tfrm_UnCodeX.FormDestroy(Sender: TObject);
 begin
+  hh_Help.Free;
+  HHCloseAll;
   UnregisterAppBar;
   PackagePriority.Free;
   PackageList.Free;
@@ -1143,7 +1150,7 @@ begin
     Action := caMinimize;
   end
   else begin
-    SaveState;
+    if (TreeUpdated) then SaveState;
     ini := TMemIniFile.Create(ConfigFile);
     try
       ini.WriteBool('Layout', 'MenuBar', mi_MenuBar.Checked);
@@ -1570,6 +1577,17 @@ end;
 procedure Tfrm_UnCodeX.ac_VSaveSizeExecute(Sender: TObject);
 begin
   // nop
+end;
+
+procedure Tfrm_UnCodeX.mi_Help2Click(Sender: TObject);
+begin
+  hh_Help.HelpTopic('');
+end;
+
+procedure Tfrm_UnCodeX.ac_HelpExecute(Sender: TObject);
+begin
+  if (ActiveControl <> nil) then hh_Help.HelpTopic('window_main.html#'+ActiveControl.HelpKeyword)
+  else hh_Help.HelpTopic('');
 end;
 
 end.
