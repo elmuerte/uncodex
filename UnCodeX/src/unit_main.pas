@@ -241,6 +241,7 @@ type
     procedure re_SourceSnoopMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure ae_AppEventException(Sender: TObject; E: Exception);
+    procedure tv_ClassesKeyPress(Sender: TObject; var Key: Char);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -311,7 +312,8 @@ var
   PackageList: TUPackageList;
   ClassList: TUClassList;
   // class search vars
-  SearchConfig: TClassSearch; 
+  SearchConfig: TClassSearch;
+  InlineSearch: string; 
   {searchclass: string;
   CSprops: array[0..2] of boolean;}
   OpenFind: boolean = false; // only on startup
@@ -2169,6 +2171,32 @@ end;
 procedure Tfrm_UnCodeX.ae_AppEventException(Sender: TObject; E: Exception);
 begin
   Log('Unhandled exception: ('+e.ClassName+') '+e.Message);
+end;
+
+procedure Tfrm_UnCodeX.tv_ClassesKeyPress(Sender: TObject; var Key: Char);
+begin
+  {if (Key = #27) then begin
+    Key := #0; // reset key
+    SearchConfig.query := '';
+  end
+  else if(Key = #8) then begin
+    Key := #0; // reset key
+    Delete(SearchConfig.query, Length(SearchConfig.query), 1);
+    // find previous
+  end
+  else if ((Key >= #32) and (Key < #127)) then begin
+    SearchConfig.Wrapped := true;
+    SearchConfig.isRegex := false;
+    SearchConfig.isBodySearch := false;
+    SearchConfig.isStrict := false;
+    SearchConfig.isFromTop := false;
+    SearchConfig.query := SearchConfig.query+Key;
+    Key := #0; // reset key
+    ac_FindNext.Execute;
+  end;
+  if (SearchConfig.query = '') then StatusReport('')
+  else StatusReport('Searching for: '+SearchConfig.query);
+  tmr_StatusText.OnTimer(Sender);}
 end;
 
 initialization

@@ -81,6 +81,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     OnDblClick = tv_ClassesDblClick
     OnExpanding = tv_ClassesExpanding
     OnKeyDown = tv_ClassesKeyDown
+    OnKeyPress = tv_ClassesKeyPress
     OnMouseDown = tv_ClassesMouseDown
   end
   object tv_Packages: TTreeView
