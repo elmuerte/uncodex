@@ -109,11 +109,11 @@ Item1=..
 
 [HistoryLists\hlUnitOutputDirectory]
 Count=3
-Item0=..\..\dcu\ucxcu
-Item1=..\DCU
+Item0=..\DCU
+Item1=..\..\dcu\ucxcu
 Item2=..\dcu\ucxcu
 
 [HistoryLists\hlOutputDirectorry]
 Count=2
-Item0=..\..\bin
-Item1=..\BIN
+Item0=..\BIN
+Item1=..\..\bin

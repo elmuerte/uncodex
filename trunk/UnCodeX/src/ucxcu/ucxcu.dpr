@@ -36,7 +36,6 @@ begin
       ProcessCommandline();
       Main();
     end;
-  end;  
-  sleep(5000);
+  end;
 end.
  

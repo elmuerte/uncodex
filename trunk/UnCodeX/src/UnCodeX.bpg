@@ -10,7 +10,7 @@ DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
 PROJECTS = out_sample.dll out_wikifier.dll out_graphviz.dll ucxc.exe ucxcpp.exe \
-  UnCodeX.exe ucxcu.exe
+  ucxcu.exe UnCodeX.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
