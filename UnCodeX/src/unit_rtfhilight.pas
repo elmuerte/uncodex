@@ -10,7 +10,7 @@ unit unit_rtfhilight;
 interface
 
 uses
-  Classes, Graphics, SysUtils, unit_uclasses;
+  Classes, Graphics, SysUtils, unit_uclasses, Hashes;
 
   procedure RTFHilightUScript(input, output: TStream; uclass: TUClass);
 
@@ -18,6 +18,7 @@ var
   cf1,cf2,cf3,cf4,cf5,cf6: TColor;
   textfont: TFont;
   tabs: integer;
+  ClassesHash: TStringHash;
 
 implementation
 
@@ -123,6 +124,9 @@ begin
         replacement := p.TokenString;
         if (Keywords.Exists(tmp)) then begin
           replacement := '{\b '+replacement+'}'; // bold
+        end
+        else if (ClassesHash.Exists(tmp)) then begin
+          replacement := '{\protected\cf5 '+replacement+'}'; // cf5
         end;
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
@@ -158,7 +162,8 @@ initialization
   textfont.Name := 'Courier New';
   textfont.Size := 9;
   tabs := 4;
+  ClassesHash := TStringHash.Create;
 finalization
-  Keywords.Clear;
+  ClassesHash.Clear;
   textfont.Free;
 end.

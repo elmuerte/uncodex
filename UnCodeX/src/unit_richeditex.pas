@@ -152,7 +152,7 @@ begin
     cbSize := SizeOf(Format);
     dwMask := CFM_LINK;
     dwEffects := CFE_LINK;
-    Perform(EM_SETCHARFORMAT, SCF_ALL, Longint(@Format));
+    Perform(EM_SETCHARFORMAT, SCF_WORD or SCF_SELECTION, Longint(@Format));
   end;
 end;
 
