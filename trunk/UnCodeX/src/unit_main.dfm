@@ -7,6 +7,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
   ClientHeight = 570
   ClientWidth = 658
   Color = clBtnFace
+  DockSite = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -26,72 +27,64 @@ object frm_UnCodeX: Tfrm_UnCodeX
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
-  object spl_Main1: TSplitter
-    Left = 185
-    Top = 30
+  object splLeft: TSplitter
+    Left = 0
+    Top = 34
     Width = 4
-    Height = 422
+    Height = 505
     Cursor = crHSplit
     AutoSnap = False
-    MinSize = 50
-    ResizeStyle = rsUpdate
+    Visible = False
   end
-  object spl_Main2: TSplitter
+  object splRight: TSplitter
+    Left = 654
+    Top = 34
+    Width = 4
+    Height = 505
+    Cursor = crHSplit
+    Align = alRight
+    AutoSnap = False
+    Visible = False
+  end
+  object splTop: TSplitter
     Left = 0
-    Top = 452
+    Top = 30
+    Width = 658
+    Height = 4
+    Cursor = crVSplit
+    Align = alTop
+    AutoSnap = False
+    Visible = False
+  end
+  object splBottom: TSplitter
+    Left = 0
+    Top = 539
     Width = 658
     Height = 4
     Cursor = crVSplit
     Align = alBottom
     AutoSnap = False
-    ResizeStyle = rsUpdate
-    OnCanResize = spl_Main2CanResize
-  end
-  object spl_Main3: TSplitter
-    Left = 404
-    Top = 30
-    Width = 4
-    Height = 422
-    Cursor = crHSplit
-    Align = alRight
-    AutoSnap = False
-    MinSize = 100
-    ResizeStyle = rsUpdate
     Visible = False
   end
-  object tv_Classes: TTreeView
-    Left = 189
-    Top = 30
-    Width = 215
-    Height = 422
-    HelpType = htKeyword
-    HelpKeyword = 'classtree'
+  object pnlCenter: TPanel
+    Left = 4
+    Top = 34
+    Width = 650
+    Height = 505
     Align = alClient
-    HideSelection = False
-    Images = il_Small
-    Indent = 19
-    PopupMenu = pm_ClassTree
-    ReadOnly = True
-    RowSelect = True
-    SortType = stText
-    TabOrder = 2
-    OnChange = tv_ClassesChange
-    OnCollapsing = tv_ClassesExpanding
-    OnDblClick = tv_ClassesDblClick
-    OnExit = tv_ClassesExit
-    OnExpanding = tv_ClassesExpanding
-    OnKeyDown = tv_ClassesKeyDown
-    OnKeyPress = tv_ClassesKeyPress
-    OnMouseDown = tv_ClassesMouseDown
+    AutoSize = True
+    BevelOuter = bvNone
+    DockSite = True
+    TabOrder = 12
   end
   object tv_Packages: TTreeView
-    Left = 0
-    Top = 30
-    Width = 185
-    Height = 422
+    Left = 32
+    Top = 54
+    Width = 169
+    Height = 235
     HelpType = htKeyword
     HelpKeyword = 'packagetree'
-    Align = alLeft
+    DragKind = dkDock
     HideSelection = False
     Images = il_Small
     Indent = 19
@@ -132,13 +125,14 @@ object frm_UnCodeX: Tfrm_UnCodeX
     TabOrder = 6
   end
   object lb_Log: TListBox
-    Left = 0
-    Top = 456
-    Width = 658
+    Left = 88
+    Top = 432
+    Width = 466
     Height = 87
     HelpType = htKeyword
     HelpKeyword = 'log'
-    Align = alBottom
+    DragKind = dkDock
+    DragMode = dmAutomatic
     ExtendedSelect = False
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
@@ -150,6 +144,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     TabOrder = 4
     OnClick = lb_LogClick
     OnDblClick = lb_LogDblClick
+    OnEndDock = lb_LogEndDock
   end
   object tb_Tools: TToolBar
     Left = 0
@@ -286,13 +281,14 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
   end
   object re_SourceSnoop: TRichEditEx
-    Left = 408
-    Top = 30
-    Width = 250
-    Height = 422
+    Left = 168
+    Top = 166
+    Width = 289
+    Height = 187
     HelpType = htKeyword
     HelpKeyword = 'sourcesnoop'
-    Align = alRight
+    DragKind = dkDock
+    DragMode = dmAutomatic
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
@@ -307,6 +303,97 @@ object frm_UnCodeX: Tfrm_UnCodeX
     WordWrap = False
     OnMouseMove = re_SourceSnoopMouseMove
     OnMouseUp = re_SourceSnoopMouseUp
+  end
+  inline fr_Props: Tfr_Properties
+    Left = 392
+    Top = 224
+    Width = 185
+    Height = 161
+    AutoScroll = False
+    DragKind = dkDock
+    DragMode = dmAutomatic
+    TabOrder = 7
+    inherited bcl_Spacer: TBevel
+      Width = 185
+    end
+    inherited lv_Properties: TListView
+      Width = 185
+      Height = 139
+    end
+  end
+  object tv_Classes: TTreeView
+    Left = 108
+    Top = 70
+    Width = 173
+    Height = 243
+    HelpType = htKeyword
+    HelpKeyword = 'classtree'
+    DragKind = dkDock
+    HideSelection = False
+    Images = il_Small
+    Indent = 19
+    PopupMenu = pm_ClassTree
+    ReadOnly = True
+    RowSelect = True
+    SortType = stText
+    TabOrder = 2
+    OnChange = tv_ClassesChange
+    OnCollapsing = tv_ClassesExpanding
+    OnDblClick = tv_ClassesDblClick
+    OnExit = tv_ClassesExit
+    OnExpanding = tv_ClassesExpanding
+    OnKeyDown = tv_ClassesKeyDown
+    OnKeyPress = tv_ClassesKeyPress
+    OnMouseDown = tv_ClassesMouseDown
+    OnStartDock = tv_ClassesStartDock
+  end
+  object dckTop: TPanel
+    Left = 0
+    Top = 34
+    Width = 658
+    Height = 0
+    Align = alTop
+    BevelOuter = bvNone
+    DockSite = True
+    TabOrder = 8
+    OnDockDrop = dckLeftDockDrop
+    OnUnDock = dckLeftUnDock
+  end
+  object dckBottom: TPanel
+    Left = 0
+    Top = 543
+    Width = 658
+    Height = 0
+    Align = alBottom
+    BevelOuter = bvNone
+    DockSite = True
+    TabOrder = 9
+    OnDockDrop = dckLeftDockDrop
+    OnUnDock = dckLeftUnDock
+  end
+  object dckLeft: TPanel
+    Left = 4
+    Top = 34
+    Width = 0
+    Height = 505
+    Align = alLeft
+    BevelOuter = bvNone
+    DockSite = True
+    TabOrder = 10
+    OnDockDrop = dckLeftDockDrop
+    OnUnDock = dckLeftUnDock
+  end
+  object dckRight: TPanel
+    Left = 658
+    Top = 34
+    Width = 0
+    Height = 505
+    Align = alRight
+    BevelOuter = bvNone
+    DockSite = True
+    TabOrder = 11
+    OnDockDrop = dckLeftDockDrop
+    OnUnDock = dckLeftUnDock
   end
   object mm_Main: TMainMenu
     Images = il_Small

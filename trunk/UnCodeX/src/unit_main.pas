@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.69 2003-12-24 11:16:19 elmuerte Exp $
+ $Id: unit_main.pas,v 1.70 2004-01-29 09:02:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -33,7 +33,7 @@ uses
   Forms, Dialogs, ComCtrls, Menus, StdCtrls, unit_packages, ExtCtrls,
   unit_uclasses, IniFiles, ShellApi, AppEvnts, ImgList, ActnList, StrUtils,
   Clipbrd, hh, hh_funcs, ToolWin, richedit, unit_richeditex, unit_searchform,
-  Buttons, DdeMan;
+  Buttons, DdeMan, unit_props;
 
 const
   // custom window messages
@@ -53,8 +53,6 @@ type
     mm_Main: TMainMenu;
     mi_Tree: TMenuItem;
     mi_ScanPackages: TMenuItem;
-    spl_Main1: TSplitter;
-    spl_Main2: TSplitter;
     lb_Log: TListBox;
     tmr_StatusText: TTimer;
     mi_N1: TMenuItem;
@@ -141,7 +139,6 @@ type
     mi_FindNext: TMenuItem;
     ac_FindNext: TAction;
     re_SourceSnoop: TRichEditEx;
-    spl_Main3: TSplitter;
     mi_SourceSnoop: TMenuItem;
     mi_FindNext2: TMenuItem;
     mi_Find: TMenuItem;
@@ -203,6 +200,16 @@ type
     mi_RebuildAnalyse: TMenuItem;
     ac_OpenHTMLHelp: TAction;
     mi_OpenHTMLHelpFile: TMenuItem;
+    fr_Props: Tfr_Properties;
+    dckTop: TPanel;
+    dckBottom: TPanel;
+    dckLeft: TPanel;
+    dckRight: TPanel;
+    splLeft: TSplitter;
+    splRight: TSplitter;
+    splTop: TSplitter;
+    splBottom: TSplitter;
+    pnlCenter: TPanel;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -286,6 +293,13 @@ type
     procedure ac_LicenseExecute(Sender: TObject);
     procedure ac_RebuildAnalyseExecute(Sender: TObject);
     procedure ac_OpenHTMLHelpExecute(Sender: TObject);
+    procedure dckLeftDockDrop(Sender: TObject; Source: TDragDockObject; X,
+      Y: Integer);
+    procedure dckLeftUnDock(Sender: TObject; Client: TControl;
+      NewTarget: TWinControl; var Allow: Boolean);
+    procedure tv_ClassesStartDock(Sender: TObject;
+      var DragObject: TDragDockObject);
+    procedure lb_LogEndDock(Sender, Target: TObject; X, Y: Integer);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -327,6 +341,7 @@ type
     procedure InlineSearchNext(skipcurrent: boolean = false);
     procedure InlineSearchPrevious(skipcurrent: boolean = false);
     procedure InlineSearchComplete;
+    procedure ShowDockPanel(APanel: TPanel; MakeVisible: Boolean; Client: TControl);
   public
     statustext : string; // current status text
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
@@ -1105,7 +1120,71 @@ begin
   end;
 end;
 
-{ Inline search -- END
+{ Inline search -- END }
+
+{ Docking methods }
+
+procedure Tfrm_UnCodeX.ShowDockPanel(APanel: TPanel; MakeVisible: Boolean; Client: TControl);
+var
+	makeHeight, makeWidth: integer;
+begin
+  //Client - the docked client to show if we are re-showing the panel.
+  //Client is ignored if hiding the panel.
+
+  //Since docking to a non-visible docksite isn't allowed, instead of setting
+  //Visible for the panels we set the width to zero. The default InfluenceRect
+  //for a control extends a few pixels beyond it's boundaries, so it is possible
+  //to dock to zero width controls.
+
+  //Don't try to hide a panel which has visible dock clients.
+  if not MakeVisible and (APanel.VisibleDockClientCount > 1) then
+    Exit;
+
+  if APanel.Align = alLeft then
+    splLeft.Visible := MakeVisible
+  else if APanel.Align = alRight then
+    splRight.Visible := MakeVisible
+  else if APanel.Align = alTop then
+    splTop.Visible := MakeVisible
+  else if APanel.Align = alBottom then
+    splBottom.Visible := MakeVisible;
+
+  makeHeight := 0;
+  makeWidth := 0;
+  if (client <> nil) then begin
+    makeHeight := Client.TBDockHeight;
+    makeWidth := Client.LRDockWidth;
+  end;
+  if (makeHeight = 0) then makeHeight := ClientHeight div 4;
+  if (makeWidth = 0) then makeWidth := ClientWidth div 4;
+
+  if MakeVisible then begin
+		if APanel.Align = alLeft then begin
+    	APanel.Width := makeWidth;
+			splLeft.Left := APanel.Width + splLeft.Width;
+		end
+		else if APanel.Align = alRight then begin
+			APanel.Width := makeWidth;
+			splRight.Left := APanel.Width - splRight.Width;
+		end
+		else if APanel.Align = alBottom then begin
+			APanel.Height := makeHeight;
+			APanel.Top := pb_Scan.Top-APanel.Height;
+			splBottom.Top := APanel.Top - splBottom.Height;
+		end
+		else if APanel.Align = alTop then begin
+			APanel.Height := makeHeight;
+			splTop.Top := pb_Scan.Top + splTop.Height;
+		end
+	end
+	else begin
+		if (APanel.Align = alLeft) or (APanel.Align = alRight) then
+			APanel.Width := 0
+		else if (APanel.Align = alTop) or (APanel.Align = alBottom) then
+			APanel.Height := 0;
+	end;
+  if MakeVisible and (Client <> nil) then Client.Show;
+end;
 
 { Custom methods -- END}
 { Auto generated methods }
@@ -1128,6 +1207,14 @@ var
   sl: TStringList;
   i: integer;
 begin
+  Mouse.DragImmediate := false;
+  Mouse.DragThreshold := 5;
+  tv_Classes.ManualDock(pnlCenter);
+  tv_Packages.ManualDock(dckLeft);
+  lb_Log.ManualDock(dckBottom);
+  re_SourceSnoop.ManualDock(dckRight);
+  fr_Props.ManualDock(pnlCenter);
+  lb_Log.FloatingDockSiteClass := nil;
   hh_Help := THookHelpSystem.Create(ExtractFilePath(ParamStr(0))+'UnCodeX-help.chm', '', htHHAPI);
   Caption := APPTITLE+' - version '+APPVERSION;
   Application.Title := Caption;
@@ -1163,19 +1250,19 @@ begin
     ac_VMenuBar.Checked := ini.ReadBool('Layout', 'MenuBar', true);
     ac_VToolbar.Checked := ini.ReadBool('Layout', 'Toolbar', true);
     mi_Toolbar.OnClick(Sender);
-    ac_VPackageTree.Checked := ini.ReadBool('Layout', 'PackageTree', true);
-    tv_Packages.Width := ini.ReadInteger('Layout', 'PackageTreeWidth', tv_Packages.Width);
-    if (spl_Main1.MinSize > tv_Packages.Width) then tv_Packages.Width := spl_Main1.MinSize;
-    mi_PackageTree.OnClick(Sender);
+    //ac_VPackageTree.Checked := ini.ReadBool('Layout', 'PackageTree', true);
+    //tv_Packages.Width := ini.ReadInteger('Layout', 'PackageTreeWidth', tv_Packages.Width);
+    //if (spl_Main1.MinSize > tv_Packages.Width) then tv_Packages.Width := spl_Main1.MinSize;
+    //mi_PackageTree.OnClick(Sender);
     //ac_ClassTree.Checked := ini.ReadBool('Layout', 'ClassTree', true);
     //mi_ClassTree.OnClick(Sender);
-    lb_Log.Height := ini.ReadInteger('Layout', 'LogHeight', lb_Log.Height);
-    ac_VLog.Checked := ini.ReadBool('Layout', 'Log', true);
-    mi_Log.OnClick(Sender);
-    ac_VSourceSnoop.Checked := ini.ReadBool('Layout', 'SourceSnoop', false);
-    re_SourceSnoop.Width := ini.ReadInteger('Layout', 'SourceSnoopWidth', re_SourceSnoop.Width);
-    if (spl_Main3.MinSize > re_SourceSnoop.Width) then re_SourceSnoop.Width := spl_Main3.MinSize;
-    mi_SourceSnoop.OnClick(Sender);
+    //lb_Log.Height := ini.ReadInteger('Layout', 'LogHeight', lb_Log.Height);
+    //ac_VLog.Checked := ini.ReadBool('Layout', 'Log', true);
+    //mi_Log.OnClick(Sender);
+    //ac_VSourceSnoop.Checked := ini.ReadBool('Layout', 'SourceSnoop', false);
+    //re_SourceSnoop.Width := ini.ReadInteger('Layout', 'SourceSnoopWidth', re_SourceSnoop.Width);
+    //if (spl_Main3.MinSize > re_SourceSnoop.Width) then re_SourceSnoop.Width := spl_Main3.MinSize;
+    //mi_SourceSnoop.OnClick(Sender);
     ABWidth := ini.ReadInteger('Layout', 'ABWidth', 150);
     ac_VAutoHide.Checked := ini.ReadBool('Layout', 'AutoHide', false);
     mi_AutoHide.OnClick(Sender);
@@ -2109,8 +2196,8 @@ begin
         selclass := TUclass(Selected.Data);
         with Tfrm_Tags.CreateWindow(nil, ClassPropertiesWindow) do begin
           RestoreHandle := Handle;
-          uclass := selclass;
-          ud_InheritanceLevel.Position := DefaultInheritanceDepth;
+          fr_Main.uclass := selclass;
+          fr_Main.ud_InheritanceLevel.Position := DefaultInheritanceDepth;
           if LoadClass then begin
             Show;
           end;
@@ -2163,22 +2250,26 @@ end;
 
 procedure Tfrm_UnCodeX.ac_VPackageTreeExecute(Sender: TObject);
 begin
-  spl_Main1.Visible := mi_PackageTree.Checked;
+  //spl_Main1.Visible := mi_PackageTree.Checked;
   tv_Packages.Visible := mi_PackageTree.Checked;
-  if (tv_Packages.Visible) then begin
-    if (spl_Main1.Left > spl_Main3.Left) then tv_Packages.Width := spl_Main3.Left-spl_Main1.MinSize;
-  end
-  else begin
-    if (ActiveControl = nil) then ActiveControl := tv_Classes;
-  end;
+  if (not tv_Packages.Visible) then
+	  if (ActiveControl = nil) then ActiveControl := tv_Classes;
+  ShowDockPanel((tv_Packages.Parent as TPanel), tv_Packages.Visible, nil);
+  //if (tv_Packages.Visible) then begin
+  //  if (spl_Main1.Left > spl_Main3.Left) then tv_Packages.Width := spl_Main3.Left-spl_Main1.MinSize;
+  //end
+  //else begin
+  //  if (ActiveControl = nil) then ActiveControl := tv_Classes;
+  //end;
 end;
 
 procedure Tfrm_UnCodeX.ac_VLogExecute(Sender: TObject);
 begin
-  lb_Log.Top := 0;
-  spl_Main2.Top := 1;
+  //lb_Log.Top := 0;
+  //spl_Main2.Top := 1;
   lb_Log.Visible := mi_Log.Checked;
-  spl_Main2.Visible := mi_Log.Checked;
+  ShowDockPanel((lb_Log.Parent as TPanel), lb_Log.Visible, nil);
+  //spl_Main2.Visible := mi_Log.Checked;
 end;
 
 procedure Tfrm_UnCodeX.ac_VStayOnTopExecute(Sender: TObject);
@@ -2342,18 +2433,31 @@ begin
   if (re_SourceSnoop.Visible) then begin
     ac_SourceSnoop.Execute;
   end;
+  if (fr_Props.Visible) then begin
+    if (ActiveControl.ClassType = TTreeView) then begin
+    	with (ActiveControl as TTreeView) do begin
+      	if (Selected <> nil) then begin
+        	if (TObject(Selected.Data).ClassType = TUClass) then begin
+            fr_Props.uclass := TUClass(Selected.Data);
+            fr_Props.LoadClass;
+          end;
+        end;
+      end
+    end;
+  end;
 end;
 
 procedure Tfrm_UnCodeX.ac_VSourceSnoopExecute(Sender: TObject);
 begin
-  re_SourceSnoop.Left := ClientWidth;
-  spl_Main3.Left := ClientWidth-1;
-  spl_Main3.Visible := mi_SourceSnoop.Checked;
+  //re_SourceSnoop.Left := ClientWidth;
+  //spl_Main3.Left := ClientWidth-1;
+  //spl_Main3.Visible := mi_SourceSnoop.Checked;
   re_SourceSnoop.Visible := mi_SourceSnoop.Checked;
+  ShowDockPanel((re_SourceSnoop.Parent as TPanel), re_SourceSnoop.Visible, nil);
   if (mi_SourceSnoop.Checked and not DoInit) then ac_SourceSnoop.Execute;
-  if (re_SourceSnoop.Visible) then begin
-    if (re_SourceSnoop.Left < tv_Classes.Left) then re_SourceSnoop.Width := spl_Main3.MinSize;
-  end;
+  //if (re_SourceSnoop.Visible) then begin
+  //  if (re_SourceSnoop.Left < tv_Classes.Left) then re_SourceSnoop.Width := spl_Main3.MinSize;
+  //end;
 end;
 
 procedure Tfrm_UnCodeX.ac_CopySelectionExecute(Sender: TObject);
@@ -2649,6 +2753,33 @@ procedure Tfrm_UnCodeX.ac_OpenHTMLHelpExecute(Sender: TObject);
 begin
   if (FileExists(HTMLHelpFile)) then begin
   	ShellExecute(0, nil, PChar(HTMLHelpFile), nil, nil, 0);
+  end;
+end;
+
+procedure Tfrm_UnCodeX.dckLeftDockDrop(Sender: TObject;
+  Source: TDragDockObject; X, Y: Integer);
+begin
+	if (Sender as TPanel).VisibleDockClientCount > 0 then ShowDockPanel(Sender as TPanel, True, Source.Control);
+  (Sender as TPanel).DockManager.ResetBounds(True);
+end;
+
+procedure Tfrm_UnCodeX.dckLeftUnDock(Sender: TObject; Client: TControl;
+  NewTarget: TWinControl; var Allow: Boolean);
+begin
+	if (Sender as TPanel).VisibleDockClientCount = 1 then ShowDockPanel(Sender as TPanel, False, Client);
+end;
+
+procedure Tfrm_UnCodeX.tv_ClassesStartDock(Sender: TObject;
+  var DragObject: TDragDockObject);
+begin
+  if (DragObject <> nil) then DragObject.Floating := false;
+end;
+
+procedure Tfrm_UnCodeX.lb_LogEndDock(Sender, Target: TObject; X,
+  Y: Integer);
+begin
+	if (Target = nil) then begin
+		(Sender as TControl).ManualDock(dckBottom); 
   end;
 end;
 
