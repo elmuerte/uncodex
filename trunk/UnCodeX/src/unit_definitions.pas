@@ -30,7 +30,7 @@ type
 
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '103';
+  APPVERSION = '104';
 
   PATHDELIM = '\';
   WILDCARD = '*.*';
@@ -76,6 +76,13 @@ var
 
 implementation
 
+uses
+  SysUtils, Classes;
+
+var
+  i: integer;
+  sl: TStringList;
+
 function StrRepeat(line: string; count: integer): string;
 begin
   result := '';
@@ -87,86 +94,111 @@ end;
 
 initialization
   Keywords := Hashes.TStringHash.Create;
-  Keywords.Items['abstract'] := '-';
-  Keywords.Items['array'] := '-';
-  Keywords.Items['bool'] := '-';
-  Keywords.Items['break'] := '-';
-  Keywords.Items['byte'] := '-';
-  Keywords.Items['case'] := '-';
-  Keywords.Items['class'] := '-';
-  Keywords.Items['coerce'] := '-';
-  Keywords.Items['collapsecategories'] := '-';
-  Keywords.Items['config'] := '-';
-  Keywords.Items['const'] := '-';
-  Keywords.Items['continue'] := '-';
-  Keywords.Items['cpptext'] := '-';
-  Keywords.Items['defaultproperties'] := '-';
-  Keywords.Items['dependsOn'] := '-';
-  Keywords.Items['do'] := '-';
-  Keywords.Items['editconst'] := '-';
-  Keywords.Items['editinline'] := '-';
-  Keywords.Items['editinlinenew'] := '-';
-  Keywords.Items['else'] := '-';
-  Keywords.Items['enum'] := '-';
-  Keywords.Items['event'] := '-';
-  Keywords.Items['exec'] := '-';
-  Keywords.Items['expands'] := '-';
-  Keywords.Items['export'] := '-';
-  Keywords.Items['exportstructs'] := '-';
-  Keywords.Items['extends'] := '-';
-  Keywords.Items['false'] := '-';
-  Keywords.Items['final'] := '-';
-  Keywords.Items['float'] := '-';
-  Keywords.Items['for'] := '-';
-  Keywords.Items['foreach'] := '-';
-  Keywords.Items['function'] := '-';
-  Keywords.Items['globalconfig'] := '-';
-  Keywords.Items['hidecategories'] := '-';
-  Keywords.Items['if'] := '-';
-  Keywords.Items['ignores'] := '-';
-  Keywords.Items['input'] := '-';
-  Keywords.Items['instanced'] := '-';
-  Keywords.Items['int'] := '-';
-  Keywords.Items['latent'] := '-';
-  Keywords.Items['local'] := '-';
-  Keywords.Items['localized'] := '-';
-  Keywords.Items['name'] := '-';
-  Keywords.Items['native'] := '-';
-  Keywords.Items['nativereplication'] := '-';
-  Keywords.Items['new'] := '-';
-  Keywords.Items['noexport'] := '-';
-  Keywords.Items['noteditinlinenew'] := '-';
-  Keywords.Items['notplaceable'] := '-';
-  Keywords.Items['operator'] := '-';
-  Keywords.Items['optional'] := '-';
-  Keywords.Items['out'] := '-';
-  Keywords.Items['perobjectconfig'] := '-';
-  Keywords.Items['placeable'] := '-';
-  Keywords.Items['postoperator'] := '-';
-  Keywords.Items['preoperator'] := '-';
-  Keywords.Items['private'] := '-';
-  Keywords.Items['protected'] := '-';
-  Keywords.Items['reliable'] := '-';
-  Keywords.Items['replication'] := '-';
-  Keywords.Items['return'] := '-';
-  Keywords.Items['showcategories'] := '-';
-  Keywords.Items['simulated'] := '-';
-  Keywords.Items['singular'] := '-';
-  Keywords.Items['skip'] := '-';
-  Keywords.Items['spawn'] := '-';
-  Keywords.Items['state'] := '-';
-  Keywords.Items['static'] := '-';
-  Keywords.Items['string'] := '-';
-  Keywords.Items['struct'] := '-';
-  Keywords.Items['switch'] := '-';
-  Keywords.Items['then'] := '-';
-  Keywords.Items['transient'] := '-';
-  Keywords.Items['true'] := '-';
-  Keywords.Items['unreliable'] := '-';
-  Keywords.Items['until'] := '-';
-  Keywords.Items['var'] := '-';
-  Keywords.Items['while'] := '-';
-  Keywords.Items['within'] := '-';
+  if (FileExists(ExtractFilePath(ParamStr(0))+'keywords.list')) then begin
+    Keywords.Clear;
+    sl := TStringList.Create;
+    try
+      sl.LoadFromFile(ExtractFilePath(ParamStr(0))+'keywords.list');
+      for i := 0 to sl.Count-1 do begin
+        if (sl[i] <> '') then Keywords.Items[LowerCase(sl[i])] := '-';
+      end;
+    finally
+      sl.Free;
+    end;
+  end
+  else begin
+    Keywords.Items['abstract'] := '-';
+    Keywords.Items['array'] := '-';
+    Keywords.Items['bool'] := '-';
+    Keywords.Items['break'] := '-';
+    Keywords.Items['byte'] := '-';
+    Keywords.Items['case'] := '-';
+    Keywords.Items['class'] := '-';
+    Keywords.Items['coerce'] := '-';
+    Keywords.Items['collapsecategories'] := '-';
+    Keywords.Items['config'] := '-';
+    Keywords.Items['const'] := '-';
+    Keywords.Items['continue'] := '-';
+    Keywords.Items['cpptext'] := '-';
+    Keywords.Items['defaultproperties'] := '-';
+    Keywords.Items['delegate'] := '-';
+    Keywords.Items['dependsOn'] := '-';
+    Keywords.Items['do'] := '-';
+    Keywords.Items['editconst'] := '-';
+    Keywords.Items['editinline'] := '-';
+    Keywords.Items['editinlinenew'] := '-';
+    Keywords.Items['else'] := '-';
+    Keywords.Items['enum'] := '-';
+    Keywords.Items['event'] := '-';
+    Keywords.Items['exec'] := '-';
+    Keywords.Items['expands'] := '-';
+    Keywords.Items['export'] := '-';
+    Keywords.Items['exportstructs'] := '-';
+    Keywords.Items['extends'] := '-';
+    Keywords.Items['false'] := '-';
+    Keywords.Items['final'] := '-';
+    Keywords.Items['float'] := '-';
+    Keywords.Items['for'] := '-';
+    Keywords.Items['foreach'] := '-';
+    Keywords.Items['function'] := '-';
+    Keywords.Items['globalconfig'] := '-';
+    Keywords.Items['hidecategories'] := '-';
+    Keywords.Items['if'] := '-';
+    Keywords.Items['ignores'] := '-';
+    Keywords.Items['input'] := '-';
+    Keywords.Items['instanced'] := '-';
+    Keywords.Items['int'] := '-';
+    Keywords.Items['latent'] := '-';
+    Keywords.Items['local'] := '-';
+    Keywords.Items['localized'] := '-';
+    Keywords.Items['name'] := '-';
+    Keywords.Items['native'] := '-';
+    Keywords.Items['nativereplication'] := '-';
+    Keywords.Items['new'] := '-';
+    Keywords.Items['noexport'] := '-';
+    Keywords.Items['noteditinlinenew'] := '-';
+    Keywords.Items['notplaceable'] := '-';
+    Keywords.Items['operator'] := '-';
+    Keywords.Items['optional'] := '-';
+    Keywords.Items['out'] := '-';
+    Keywords.Items['perobjectconfig'] := '-';
+    Keywords.Items['placeable'] := '-';
+    Keywords.Items['postoperator'] := '-';
+    Keywords.Items['preoperator'] := '-';
+    Keywords.Items['private'] := '-';
+    Keywords.Items['protected'] := '-';
+    Keywords.Items['reliable'] := '-';
+    Keywords.Items['replication'] := '-';
+    Keywords.Items['return'] := '-';
+    Keywords.Items['showcategories'] := '-';
+    Keywords.Items['simulated'] := '-';
+    Keywords.Items['singular'] := '-';
+    Keywords.Items['skip'] := '-';
+    Keywords.Items['spawn'] := '-';
+    Keywords.Items['state'] := '-';
+    Keywords.Items['static'] := '-';
+    Keywords.Items['string'] := '-';
+    Keywords.Items['struct'] := '-';
+    Keywords.Items['switch'] := '-';
+    Keywords.Items['then'] := '-';
+    Keywords.Items['transient'] := '-';
+    Keywords.Items['true'] := '-';
+    Keywords.Items['unreliable'] := '-';
+    Keywords.Items['until'] := '-';
+    Keywords.Items['var'] := '-';
+    Keywords.Items['while'] := '-';
+    Keywords.Items['within'] := '-';
+    sl := TStringList.Create;
+    Keywords.Restart;
+    try
+      while (Keywords.Next) do begin
+        if (Keywords.CurrentKey <> '') then sl.Add(Keywords.CurrentKey)
+      end;
+      sl.SaveToFile(ExtractFilePath(ParamStr(0))+'keywords.list');
+    finally
+      sl.Free;
+    end;
+  end;
   // fill keyword table -- end
 finalization
   Keywords.Clear;

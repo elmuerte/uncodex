@@ -42,7 +42,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_HTMLOutput
+    ActivePage = ts_HotKeys
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -1192,6 +1192,8 @@ object frm_Settings: Tfrm_Settings
       end
     end
     object ts_HotKeys: TTabSheet
+      HelpType = htKeyword
+      HelpKeyword = 'hotkeys'
       Caption = 'Hot keys'
       ImageIndex = 10
       TabVisible = False
@@ -1266,6 +1268,8 @@ object frm_Settings: Tfrm_Settings
       end
     end
     object ts_SourceSnoop: TTabSheet
+      HelpType = htKeyword
+      HelpKeyword = 'sourcesnoop'
       Caption = 'Source snoop'
       ImageIndex = 11
       TabVisible = False

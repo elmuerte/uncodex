@@ -137,6 +137,8 @@ begin
       i := Pos('.', tmp);
       if (i > 0) then Delete(tmp, i, MaxInt);
       SearchConfig.query := tmp;
+      SearchConfig.isBodySearch := false;
+      SearchConfig.Wrapped := true;
       RedirectData.Find := tmp;
       if (OpenFind or OpenTags) then SearchConfig.isStrict := true;
       RedirectData.OpenFind := OpenFind;
