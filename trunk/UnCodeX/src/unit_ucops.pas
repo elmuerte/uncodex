@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class operations (implements subclassing, moving, ...)
 
-  $Id: unit_ucops.pas,v 1.15 2004-12-20 22:22:31 elmuerte Exp $
+  $Id: unit_ucops.pas,v 1.16 2005-04-02 11:42:11 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -64,7 +64,7 @@ type
     procedure btn_OkClick(Sender: TObject);
     procedure FormKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-  private
+  protected
     upackage: TUPackage;
     uclass: TUClass;
     function replace(var replacement: string): boolean;

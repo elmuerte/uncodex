@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Class property inpector frame
 
-  $Id: unit_props.pas,v 1.29 2005-03-28 09:56:20 elmuerte Exp $
+  $Id: unit_props.pas,v 1.30 2005-04-02 11:42:11 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -80,7 +80,7 @@ type
     procedure mi_States1Click(Sender: TObject);
     procedure lv_PropertiesCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
-  private
+  protected
     liConst: TListItem;
     liVar: TListItem;
     liEnum: TListItem;

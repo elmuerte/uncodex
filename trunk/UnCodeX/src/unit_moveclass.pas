@@ -6,7 +6,7 @@
   Purpose:
     GUI dialog for moving an UnrealScript class to a new package
 
-  $Id: unit_moveclass.pas,v 1.8 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_moveclass.pas,v 1.9 2005-04-02 11:42:11 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -54,8 +54,6 @@ type
     procedure cb_NewPackageClick(Sender: TObject);
     procedure FormKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-  private
-    { Private declarations }
   public
     uclass: TUClass;
   end;
