@@ -17,6 +17,7 @@ uses
 var
   cf1,cf2,cf3,cf4,cf5,cf6: TColor;
   textfont: TFont;
+  tabs: integer;
 
 implementation
 
@@ -46,6 +47,7 @@ var
 begin
   // must be absolute first to prevent reading the first char
   replacement := RTFHeader+
+    '\deftab'+IntToStr(textfont.size*(15*tabs)-(30*tabs))+ 
     '{\fonttbl\f0\fmodren '+textfont.name+';}'+
     '{\colortbl;'+ColorToRTF(cf1)+ColorToRTF(cf2)+ColorToRTF(cf3)+ColorToRTF(cf4)+ColorToRTF(cf5)+ColorToRTF(cf6)+'}'+
     '{\f0\fs'+IntToStr(textfont.Size*2)+'\cf6 ';
@@ -211,6 +213,7 @@ initialization
   textfont := TFont.Create;
   textfont.Name := 'Courier New';
   textfont.Size := 9;
+  tabs := 4;
 finalization
   Keywords.Clear;
   textfont.Free;

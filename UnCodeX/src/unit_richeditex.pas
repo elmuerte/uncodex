@@ -94,7 +94,7 @@ begin
   R := RECT( FGutterWidth+5, 0, Self.Width, Self.Height);
   Perform(EM_SETRECT, 0, Integer(@R));
   Perform(EM_SETWORDBREAKPROC, 0, LPARAM(@EditWordBreak));
-  //Perform(EM_EXLIMITTEXT, 0, 512000); // set max text limit to 500kb
+  Perform(EM_EXLIMITTEXT, 0, 512000); // set max text limit to 500kb
 end;
 
 procedure TRichEditEx.CreateParams(var Params: TCreateParams);
@@ -160,14 +160,14 @@ procedure TRichEditEx.WMPaint( var Msg : TWMPaint );
 var
   offset, lh: integer;
   r: TRect;
-  pt: TPoint;
+  pt, pt2: TPoint;
   l: string;
 begin
   inherited;
   with xCanvas do begin
     Brush.Color := clBtnFace;
     Pen.Color := clBtnFace;
-    Rectangle(0, 0, FGutterWidth, Height);
+    Rectangle(FGutterWidth-10, 0, FGutterWidth, Height);
     Pen.Width := 1;
     Pen.Color := cl3DLight;
     MoveTo(FGutterWidth-3, 0);
@@ -178,18 +178,29 @@ begin
     Font.Name := 'Courier New';
     font.Size := 8;
     offset := Perform(EM_GETFIRSTVISIBLELINE, 0, 0);
-    l := 'ABCDEFGHIJKLMNOPQRSTUVQWYX1234567890';
+    l := '1234567890';
     DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_SINGLELINE	or DT_CALCRECT );
     lh := r.Bottom-r.Top+2;
     r.Top := 0;
+    Perform(EM_POSFROMCHAR, Integer(@pt), Perform(EM_LINEINDEX, offset, 0));
     r.Bottom := 0;
-    while (offset < lines.Count) and (r.Top < Height) do begin
-      if (r.Top > Height) then break;
-      Perform(EM_POSFROMCHAR, Integer(@pt), Perform(EM_LINEINDEX, offset, 0));
-      r := Rect(0, pt.y, FGutterWidth-10, pt.y+lh);
-      l := format('%d', [offset+1]);
-      DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_RIGHT or DT_SINGLELINE	or DT_VCENTER);
+    FillRect(Rect(0, 0, FGutterWidth-10, lh));
+    while (offset < lines.Count-1) and (r.Top < Height) do begin
+      Perform(EM_POSFROMCHAR, Integer(@pt2), Perform(EM_LINEINDEX, offset+1, 0));
+      r := Rect(0, pt.y, FGutterWidth-10, pt2.y);
+      l := format('%10d', [offset+1]);
+      DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_RIGHT or DT_SINGLELINE);
+      DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_RIGHT or DT_SINGLELINE or DT_CALCRECT);
+      FillRect(Rect(0, r.Bottom, FGutterWidth-10, pt2.Y+1));
       Inc(offset);
+      pt := pt2;
+    end;
+    if (offset = lines.Count-1) then begin   // bottom part
+      r := Rect(0, pt.y, FGutterWidth-10, pt.y+lh);
+      l := format('%10d', [offset+1]);
+      DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_RIGHT or DT_SINGLELINE);
+      DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_RIGHT or DT_SINGLELINE or DT_CALCRECT);
+      FillRect(Rect(0, r.Bottom, FGutterWidth-10, height));
     end;
   end;
 end;

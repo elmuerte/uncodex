@@ -71,6 +71,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Indent = 19
     PopupMenu = pm_ClassTree
     ReadOnly = True
+    RightClickSelect = True
     RowSelect = True
     SortType = stText
     TabOrder = 2
@@ -94,6 +95,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Indent = 19
     PopupMenu = pm_ClassTree
     ReadOnly = True
+    RightClickSelect = True
     RowSelect = True
     SortType = stText
     TabOrder = 1
@@ -788,7 +790,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
     object ac_SourceSnoop: TAction
       Category = 'Class Tree'
-      Caption = 'View source'
+      Caption = 'Reload'
       OnExecute = ac_SourceSnoopExecute
     end
     object ac_VSourceSnoop: TAction

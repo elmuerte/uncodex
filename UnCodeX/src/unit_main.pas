@@ -950,26 +950,26 @@ begin
     ac_VSourceSnoop.Checked := ini.ReadBool('Layout', 'SourceSnoop', false);
     re_SourceSnoop.Width := ini.ReadInteger('Layout', 'SourceSnoopWidth', re_SourceSnoop.Width);
     mi_SourceSnoop.OnClick(Sender);
-    mi_StayOnTop.Checked := ini.ReadBool('Layout', 'StayOnTop', false);
-    if (mi_StayOnTop.Checked) then FormStyle := fsStayOnTop;
-    mi_Saveposition.Checked := ini.ReadBool('Layout', 'SavePosition', false);
-    mi_Savesize.Checked := ini.ReadBool('Layout', 'SaveSize', false);
-    if (mi_Saveposition.Checked) then begin
+    ac_VStayOnTop.Checked := ini.ReadBool('Layout', 'StayOnTop', false);
+    if (ac_VStayOnTop.Checked) then FormStyle := fsStayOnTop;
+    ac_VSaveposition.Checked := ini.ReadBool('Layout', 'SavePosition', false);
+    ac_VSavesize.Checked := ini.ReadBool('Layout', 'SaveSize', false);
+    if (ac_VSaveposition.Checked) then begin
       Position := poDesigned;
       Top := ini.ReadInteger('Layout', 'Top', Top);
       Left := ini.ReadInteger('Layout', 'Left', Left);
     end;
-    if (mi_Savesize.Checked) then begin
+    if (ac_VSavesize.Checked) then begin
       Width := ini.ReadInteger('Layout', 'Width', Width);
       Height := ini.ReadInteger('Layout', 'Height', Height);
     end;
     ABWidth := ini.ReadInteger('Layout', 'ABWidth', 150);
-    mi_AutoHide.Checked := ini.ReadBool('Layout', 'AutoHide', false);
+    ac_VAutoHide.Checked := ini.ReadBool('Layout', 'AutoHide', false);
     mi_AutoHide.OnClick(Sender);
-    mi_Right.Checked := ini.ReadBool('Layout', 'ABRight', false);
-    if (mi_Right.Checked) then mi_Right.OnClick(Sender);
-    mi_Left.Checked := ini.ReadBool('Layout', 'ABLeft', false);
-    if (mi_Left.Checked) then mi_Left.OnClick(Sender);
+    ac_VTRight.Checked := ini.ReadBool('Layout', 'ABRight', false);
+    if (ac_VTRight.Checked) then mi_Right.OnClick(Sender);
+    ac_VTLeft.Checked := ini.ReadBool('Layout', 'ABLeft', false);
+    if (ac_VTLeft.Checked) then mi_Left.OnClick(Sender);
     { Color and fonts }
     lb_Log.Font.Name := ini.ReadString('Layout', 'Log.Font.Name', lb_Log.Font.Name);
     lb_Log.Font.Color := ini.ReadInteger('Layout', 'Log.Font.Color', lb_Log.Font.Color);
@@ -995,6 +995,7 @@ begin
     unit_rtfhilight.cf6 := ini.ReadInteger('Layout', 'Source.CF6', unit_rtfhilight.cf6);
     unit_rtfhilight.textfont.Name := ini.ReadString('Layout', 'Source.Font.Name', unit_rtfhilight.textfont.Name);
     unit_rtfhilight.textfont.Size := ini.ReadInteger('Layout', 'Source.Font.Size', unit_rtfhilight.textfont.Size);
+    unit_rtfhilight.tabs := ini.ReadInteger('Layout', 'Source.Tabs', unit_rtfhilight.tabs);
     { Color and fonts -- END }
     { Load layout -- END }
     { Program configuration }
@@ -1290,6 +1291,7 @@ begin
         data.Add('Source.CF6='+IntToStr(unit_rtfhilight.cf6));
         data.Add('Source.Font.Name='+unit_rtfhilight.textfont.Name);
         data.Add('Source.Font.Size='+IntToStr(unit_rtfhilight.textfont.Size));
+        data.Add('Source.Tabs='+IntToStr(unit_rtfhilight.tabs));
 
         data.Add('[HotKeys]');
         for i := 0 to lv_HotKeys.Items.Count-1 do begin

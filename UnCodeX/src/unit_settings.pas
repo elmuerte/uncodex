@@ -138,7 +138,7 @@ type
     btn_Ignore: TBitBtn;
     ts_SourceSnoop: TTabSheet;
     gb_Sourcesnoop: TGroupBox;
-    BitBtn1: TBitBtn;
+    btn_SourceFont: TBitBtn;
     re_Preview: TRichEditEx;
     cb_cf0: TColorBox;
     cb_cf1: TColorBox;
@@ -154,6 +154,9 @@ type
     Label8: TLabel;
     cb_Background: TColorBox;
     Label9: TLabel;
+    Label10: TLabel;
+    ud_TabSize: TUpDown;
+    ed_TabSize: TEdit;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -201,7 +204,7 @@ type
       Selected: Boolean);
     procedure btn_IgnoreClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure BitBtn1Click(Sender: TObject);
+    procedure btn_SourceFontClick(Sender: TObject);
     procedure cb_cf0Change(Sender: TObject);
     procedure cb_cf1Change(Sender: TObject);
     procedure cb_cf2Change(Sender: TObject);
@@ -210,6 +213,8 @@ type
     procedure cb_cf5Change(Sender: TObject);
     procedure cb_BackgroundChange(Sender: TObject);
     procedure btn_CancelClick(Sender: TObject);
+    procedure ud_TabSizeChanging(Sender: TObject;
+      var AllowChange: Boolean);
   private
   public
     procedure ReloadPreview;
@@ -227,6 +232,7 @@ uses unit_main, unit_rtfhilight;
 var
   bcf1,bcf2,bcf3,bcf4,bcf5,bcf6: TColor;
   btextfont: TFont;
+  btabs: integer;
 
 procedure Tfrm_Settings.ReloadPreview;
 var
@@ -381,14 +387,17 @@ begin
   bcf6 := unit_rtfhilight.cf6;
   btextfont.Name := unit_rtfhilight.textfont.Name;
   btextfont.Size := unit_rtfhilight.textfont.Size;
+  btabs := unit_rtfhilight.tabs;
   //
-  re_Preview.Font := unit_rtfhilight.textfont;
+  re_Preview.Font.Name := unit_rtfhilight.textfont.Name;
+  re_Preview.Font.Size := unit_rtfhilight.textfont.Size;
   cb_cf0.Selected := unit_rtfhilight.cf6;
   cb_cf1.Selected := unit_rtfhilight.cf1;
   cb_cf2.Selected := unit_rtfhilight.cf2;
   cb_cf3.Selected := unit_rtfhilight.cf3;
   cb_cf4.Selected := unit_rtfhilight.cf4;
   cb_cf5.Selected := unit_rtfhilight.cf5;
+  ud_TabSize.Position := unit_rtfhilight.tabs;
   ReloadPreview;
 end;
 
@@ -625,11 +634,13 @@ begin
   Action := caFree;
 end;
 
-procedure Tfrm_Settings.BitBtn1Click(Sender: TObject);
+procedure Tfrm_Settings.btn_SourceFontClick(Sender: TObject);
 begin
-  fd_Font.Font := unit_rtfhilight.textfont;
+  fd_Font.Font.Name := unit_rtfhilight.textfont.Name;
+  fd_Font.Font.Size := unit_rtfhilight.textfont.Size;
   if (fd_Font.Execute) then begin
-    unit_rtfhilight.textfont := fd_Font.Font;
+    unit_rtfhilight.textfont.Name := fd_Font.Font.Name;
+    unit_rtfhilight.textfont.Size := fd_Font.Font.Size;
     ReloadPreview;
   end;
 end;
@@ -685,6 +696,14 @@ begin
   unit_rtfhilight.cf6 := bcf6;
   unit_rtfhilight.textfont.Name := btextfont.Name;
   unit_rtfhilight.textfont.Size := btextfont.Size;
+  unit_rtfhilight.tabs := btabs;
+end;
+
+procedure Tfrm_Settings.ud_TabSizeChanging(Sender: TObject;
+  var AllowChange: Boolean);
+begin
+  unit_rtfhilight.tabs := ud_TabSize.Position;
+  ReloadPreview;
 end;
 
 initialization

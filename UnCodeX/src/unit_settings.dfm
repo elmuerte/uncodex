@@ -43,7 +43,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_SourceSnoop
+    ActivePage = ts_GameServer
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -1134,67 +1134,74 @@ object frm_Settings: Tfrm_Settings
           368)
         object Label2: TLabel
           Left = 8
-          Top = 53
+          Top = 77
           Width = 34
           Height = 13
           Caption = 'Default'
         end
         object Label4: TLabel
           Left = 8
-          Top = 77
+          Top = 101
           Width = 87
           Height = 13
           Caption = 'Strings/Ints/Floats'
         end
         object Label5: TLabel
           Left = 8
-          Top = 101
+          Top = 125
           Width = 49
           Height = 13
           Caption = 'Comments'
         end
         object Label6: TLabel
           Left = 224
-          Top = 53
+          Top = 77
           Width = 30
           Height = 13
           Caption = 'Macro'
         end
         object Label7: TLabel
           Left = 224
-          Top = 77
+          Top = 101
           Width = 28
           Height = 13
           Caption = 'Name'
         end
         object Label8: TLabel
           Left = 224
-          Top = 101
+          Top = 125
           Width = 74
           Height = 13
           Caption = 'Type (not used)'
         end
         object Label9: TLabel
           Left = 224
-          Top = 21
+          Top = 45
           Width = 58
           Height = 13
           Caption = 'Background'
         end
-        object BitBtn1: TBitBtn
+        object Label10: TLabel
+          Left = 224
+          Top = 20
+          Width = 40
+          Height = 13
+          Caption = 'Tab size'
+        end
+        object btn_SourceFont: TBitBtn
           Left = 8
           Top = 16
           Width = 113
           Height = 25
           Caption = 'Font'
           TabOrder = 0
-          OnClick = BitBtn1Click
+          OnClick = btn_SourceFontClick
         end
         object re_Preview: TRichEditEx
           Left = 8
-          Top = 128
+          Top = 152
           Width = 417
-          Height = 233
+          Height = 209
           Anchors = [akLeft, akTop, akRight, akBottom]
           ReadOnly = True
           ScrollBars = ssBoth
@@ -1203,7 +1210,7 @@ object frm_Settings: Tfrm_Settings
         end
         object cb_cf0: TColorBox
           Left = 120
-          Top = 48
+          Top = 72
           Width = 97
           Height = 22
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
@@ -1213,7 +1220,7 @@ object frm_Settings: Tfrm_Settings
         end
         object cb_cf1: TColorBox
           Left = 120
-          Top = 72
+          Top = 96
           Width = 97
           Height = 22
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
@@ -1223,7 +1230,7 @@ object frm_Settings: Tfrm_Settings
         end
         object cb_cf2: TColorBox
           Left = 120
-          Top = 96
+          Top = 120
           Width = 97
           Height = 22
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
@@ -1233,7 +1240,7 @@ object frm_Settings: Tfrm_Settings
         end
         object cb_cf3: TColorBox
           Left = 320
-          Top = 48
+          Top = 72
           Width = 97
           Height = 22
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
@@ -1243,7 +1250,7 @@ object frm_Settings: Tfrm_Settings
         end
         object cb_cf4: TColorBox
           Left = 320
-          Top = 72
+          Top = 96
           Width = 97
           Height = 22
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
@@ -1253,7 +1260,7 @@ object frm_Settings: Tfrm_Settings
         end
         object cb_cf5: TColorBox
           Left = 320
-          Top = 96
+          Top = 120
           Width = 97
           Height = 22
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
@@ -1263,13 +1270,39 @@ object frm_Settings: Tfrm_Settings
         end
         object cb_Background: TColorBox
           Left = 320
-          Top = 16
+          Top = 40
           Width = 97
           Height = 22
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
           ItemHeight = 16
           TabOrder = 8
           OnChange = cb_BackgroundChange
+        end
+        object ud_TabSize: TUpDown
+          Left = 401
+          Top = 16
+          Width = 16
+          Height = 21
+          Associate = ed_TabSize
+          Min = 0
+          Max = 256
+          Position = 4
+          TabOrder = 9
+          Thousands = False
+          Wrap = False
+          OnChanging = ud_TabSizeChanging
+        end
+        object ed_TabSize: TEdit
+          Left = 320
+          Top = 16
+          Width = 81
+          Height = 21
+          BevelKind = bkSoft
+          BiDiMode = bdLeftToRight
+          BorderStyle = bsNone
+          ParentBiDiMode = False
+          TabOrder = 10
+          Text = '4'
         end
       end
     end
