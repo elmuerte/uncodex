@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.100 2004-05-10 20:41:35 elmuerte Exp $
+ $Id: unit_main.pas,v 1.101 2004-05-13 07:08:28 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -1038,37 +1038,73 @@ procedure Tfrm_UnCodeX.LoadOutputModules;
 var
   rec: TSearchRec;
   omod: THandle;
-  info: TUCXOutputDetails;
-  dfunc: TUCX_Details;
-  mi: TMenuItem;
+  vfunc: TUCX_Version;
+  mversion: integer;
+
+  procedure CreateMenuItem(caption, hint: string; parent: TMenuItem; tag: integer);
+  var
+  	mi: TMenuItem;
+  begin
+    parent.Visible := true;
+    mi := TMenuItem.Create(parent);
+    mi.Tag := tag; // add to list
+    mi.Caption := caption;
+  	mi.Hint := hint;
+	  mi.OnClick := miCustomOutputClick;
+    parent.Add(mi);
+  end;
+
+	function LoadModule2: boolean;
+  var
+  	info2: TUCXOutputDetails2;
+  	dfunc: TUCX_Details2;
+    mtag: integer;
+  begin
+  	result := false;
+    @dfunc := GetProcAddress(omod, 'UCX_Details2');
+    if (@dfunc = nil) then exit;
+    if (not dfunc(info2)) then exit;
+    Log('Output module: '+rec.Name+' '+info2.AName);
+		mtag := OutputModules.Add(rec.Name+'=');
+    if (info2.AMultipleClass) then CreateMenuItem(info2.AName, info2.ADescription, mi_Output, mtag);
+    if (info2.ASingleClass) then CreateMenuItem(info2.AName, info2.ADescription, mi_SingleOutput, mtag);
+    // TODO: fix this
+    OutputModules.Values[rec.Name] := BoolToStr(info2.ASingleClass);
+    result := true;
+  end;
+
+  function LoadModule: boolean;
+  var
+  	info: TUCXOutputDetails;
+  	dfunc: TUCX_Details;
+    mtag: integer;
+  begin
+  	result := false;
+    @dfunc := GetProcAddress(omod, 'UCX_Details');
+    if (@dfunc = nil) then exit;
+    if (not dfunc(info)) then exit;
+    Log('Output module: '+rec.Name+' '+info.AName);
+		mtag := OutputModules.Add(rec.Name+'=');
+    if (info.ASingleClass) then CreateMenuItem(info.AName, info.ADescription, mi_SingleOutput, mtag)
+    else CreateMenuItem(info.AName, info.ADescription, mi_Output, mtag);
+    // TODO: fix this
+    OutputModules.Values[rec.Name] := BoolToStr(info.ASingleClass);
+    result := true;
+  end;
+
 begin
   if FindFirst(ExtractFilePath(ParamStr(0))+'out_*.dll', 0, rec) = 0 then begin
     repeat
       omod := LoadLibrary(PChar(rec.Name));
       if (omod <> 0) then begin
         try
-          @dfunc := nil;
-          @dfunc := GetProcAddress(omod, 'UCX_Details');
-          if (@dfunc <> nil) then begin
-            if dfunc(info) then begin
-              Log('Output module: '+rec.Name+' '+info.AName);
-              if (info.ASingleClass) then begin
-                mi_SingleOutput.Visible := true;
-                mi := TMenuItem.Create(mi_SingleOutput);
-              end
-              else begin
-                mi_Output.Visible := true;
-                mi := TMenuItem.Create(mi_Output);
-              end;
-              mi.Tag := OutputModules.Add(rec.Name+'='); // add to list
-              OutputModules.Values[rec.Name] := BoolToStr(info.ASingleClass);
-              mi.Caption := info.AName;
-              mi.Hint := info.ADescription;
-              mi.OnClick := miCustomOutputClick;
-              if (info.ASingleClass) then mi_SingleOutput.Add(mi)
-              else mi_Output.Add(mi);
-            end;
-          end;
+          @vfunc := nil;
+          @vfunc := GetProcAddress(omod, 'UCX_Version');
+          if (@vfunc = nil) then mversion := 1
+          else mversion := vfunc();
+
+					if (mversion = 1) then LoadModule
+          else if (mversion = 2) then LoadModule2;
         finally
           FreeLibrary(omod);
         end;
@@ -1080,31 +1116,27 @@ end;
 
 procedure Tfrm_UnCodeX.miCustomOutputClick(sender: TObject);
 var
-  selected: TTreeNode;
-  selectedclass: TUClass;
+	selclass: TUClass;
 begin
-  selectedclass := nil;
+	selclass := nil;
   if (OutputModules.Values[OutputModules.Names[(Sender as TMenuItem).Tag]] = BoolToStr(true)) then begin
-    if (ActiveControl.ClassType <> TTreeView) then exit;
-    selected := (ActiveControl as TTreeview).Selected;
-    if (Selected = nil) then exit;
-    if (TObject(Selected.Data).ClassType <> TUClass) then exit;
-    selectedclass := TUClass(Selected.Data);
+    if (SelectedUClass = nil) then exit;
+    selclass := SelectedUClass;
   end;
-  CallCustomOutputModule(OutputModules.Names[(Sender as TMenuItem).Tag], selectedclass);
+  CallCustomOutputModule(OutputModules.Names[(Sender as TMenuItem).Tag], selclass);
 end;
 
 procedure Tfrm_UnCodeX.CallCustomOutputModule(module: string; selectedclass: TUClass = nil);
 var
   omod: THandle;
-  dfunc: TUCX_Output;
-  info: TUCXOutputInfo;
+  dfunc: TUCX_Output2;
+  info: TUCXOutputInfo2;
 begin
   omod := LoadLibrary(PChar(module));
   if (omod <> 0) then begin
     try
       @dfunc := nil;
-      @dfunc := GetProcAddress(omod, 'UCX_Output');
+      @dfunc := GetProcAddress(omod, 'UCX_Output2');
       if (@dfunc <> nil) then begin
         info.AClassList := ClassList;
         info.APackageList := PackageList;
@@ -1112,6 +1144,7 @@ begin
         info.AThreadTerminated := ThreadTerminate;
         info.WaitForTerminate := false;
         info.ASelectedClass := selectedclass;
+        info.ABatching := IsBatching;
         info.AThread := nil;
         if dfunc(info) then begin
           if (info.WaitForTerminate) then begin

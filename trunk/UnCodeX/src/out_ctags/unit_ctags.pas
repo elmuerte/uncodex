@@ -4,7 +4,7 @@
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   setup dialog + actual file creation
  						http://ctags.sourceforge.net/FORMAT
- $Id: unit_ctags.pas,v 1.1 2004-05-12 20:53:41 elmuerte Exp $
+ $Id: unit_ctags.pas,v 1.2 2004-05-13 07:08:28 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -65,7 +65,7 @@ type
   private
     { Private declarations }
   public
-    Info: TUCXOutputInfo;
+    Info: TUCXOutputInfo2;
     procedure Init;
     procedure CreateCTAGSfile;
     procedure AddClassToCTAGS(uclass: TUClass; lst: TStrings);
@@ -83,15 +83,21 @@ var
 	i: integer;
   li: TListItem;
 begin
-	for i := 0 to info.APackageList.Count-1 do begin
-		li := lv_Packages.Items.Add;
-    li.Caption := info.APackageList[i].name;
-    li.Data := info.APackageList[i];
-    li.Checked := true;
-    if (info.APackageList[i].tagged) then li.ImageIndex := 0
-    else li.ImageIndex := 1;
+	if (info.ASelectedClass = nil) then begin
+		for i := 0 to info.APackageList.Count-1 do begin
+			li := lv_Packages.Items.Add;
+    	li.Caption := info.APackageList[i].name;
+	    li.Data := info.APackageList[i];
+  	  li.Checked := true;
+    	if (info.APackageList[i].tagged) then li.ImageIndex := 0
+	    else li.ImageIndex := 1;
+  	end;
+	  lv_Packages.AlphaSort;
+  end
+  else begin
+    lv_Packages.Visible := false;
+    lbl_Package.Visible := false;
   end;
-  lv_Packages.AlphaSort;
 end;
 
 procedure Tfrm_CTAGS.CreateCTAGSfile;

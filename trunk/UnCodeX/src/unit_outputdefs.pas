@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Definitions used from custom output modules
- $Id: unit_outputdefs.pas,v 1.7 2003-11-04 19:35:27 elmuerte Exp $
+ $Id: unit_outputdefs.pas,v 1.8 2004-05-13 07:08:28 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -34,6 +34,19 @@ uses
 type
   TStatusReport = procedure(msg: string; progress: byte = 255);
 
+  TUCXOutputInfo2 = record
+    // input
+    AClassList: TUClassList;
+    ASelectedClass: TUClass; // only used if ASingleClass = true
+    APackageList: TUPackageList;
+    AStatusReport: TStatusReport;
+    AThreadTerminated: TNotifyEvent;
+    ABatching: boolean; // true when the module is called from a batch
+    // output
+    AThread: TThread;
+    WaitForTerminate: boolean; // use AThreadTerminated to signal an end
+  end;
+
   TUCXOutputInfo = record
     // input
     AClassList: TUClassList;
@@ -46,6 +59,13 @@ type
     WaitForTerminate: boolean; // use AThreadTerminated to signal an end
   end;
 
+  TUCXOutputDetails2 = record
+    AName: string;
+    ADescription: string;
+    ASingleClass: boolean; // selected class only output
+    AMultipleClass: boolean; // for multiple
+  end;
+
   TUCXOutputDetails = record
     AName: string;
     ADescription: string;
@@ -54,6 +74,12 @@ type
 
   TUCX_Output = function(var Info: TUCXOutputInfo): boolean; stdcall;
   TUCX_Details = function(var Info: TUCXOutputDetails): boolean; stdcall;
+
+  TUCX_Output2 = function(var Info: TUCXOutputInfo2): boolean; stdcall;
+  TUCX_Details2 = function(var Info: TUCXOutputDetails2): boolean; stdcall;
+
+  // returns the version of the module system
+  TUCX_Version = function(): integer; stdcall;
 
 implementation
 
