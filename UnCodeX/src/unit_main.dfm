@@ -474,6 +474,9 @@ object frm_UnCodeX: Tfrm_UnCodeX
         ImageIndex = 23
         OnClick = mi_Help2Click
       end
+      object mi_License: TMenuItem
+        Action = ac_License
+      end
       object mi_About: TMenuItem
         Action = ac_About
       end
@@ -838,6 +841,11 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Category = 'Source Snoop'
       Caption = 'Select All'
       OnExecute = ac_SelectAllExecute
+    end
+    object ac_License: TAction
+      Category = 'Program'
+      Caption = 'License'
+      OnExecute = ac_LicenseExecute
     end
   end
   object il_Small: TImageList
