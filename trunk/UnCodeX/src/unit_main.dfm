@@ -76,7 +76,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     BevelOuter = bvNone
     BevelWidth = 0
     DockSite = True
-    TabOrder = 11
+    TabOrder = 10
     OnDockDrop = pnlCenterDockDrop
     OnUnDock = pnlCenterUnDock
   end
@@ -286,24 +286,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
     OnMouseMove = re_SourceSnoopMouseMove
     OnMouseUp = re_SourceSnoopMouseUp
   end
-  inline fr_Props: Tfr_Properties
-    Left = 392
-    Top = 224
-    Width = 185
-    Height = 161
-    AutoScroll = False
-    DragKind = dkDock
-    DragMode = dmAutomatic
-    TabOrder = 5
-    Visible = False
-    inherited bcl_Spacer: TBevel
-      Width = 185
-    end
-    inherited lv_Properties: TListView
-      Width = 185
-      Height = 140
-    end
-  end
   object tv_Classes: TTreeView
     Left = 108
     Top = 70
@@ -338,7 +320,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Align = alTop
     BevelOuter = bvNone
     DockSite = True
-    TabOrder = 6
+    TabOrder = 5
     OnDockDrop = dckLeftDockDrop
     OnUnDock = dckLeftUnDock
   end
@@ -350,7 +332,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Align = alBottom
     BevelOuter = bvNone
     DockSite = True
-    TabOrder = 7
+    TabOrder = 6
     OnDockDrop = dckLeftDockDrop
     OnUnDock = dckLeftUnDock
   end
@@ -362,7 +344,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Align = alLeft
     BevelOuter = bvNone
     DockSite = True
-    TabOrder = 8
+    TabOrder = 7
     OnDockDrop = dckLeftDockDrop
     OnUnDock = dckLeftUnDock
   end
@@ -374,7 +356,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Align = alRight
     BevelOuter = bvNone
     DockSite = True
-    TabOrder = 9
+    TabOrder = 8
     OnDockDrop = dckLeftDockDrop
     OnUnDock = dckLeftUnDock
   end
@@ -395,9 +377,16 @@ object frm_UnCodeX: Tfrm_UnCodeX
     ItemHeight = 14
     ParentFont = False
     PopupMenu = pm_Log
-    TabOrder = 12
+    TabOrder = 11
     OnClick = lb_LogClick
     OnDblClick = lb_LogDblClick
+  end
+  inline fr_Props: Tfr_Properties
+    Left = 408
+    Top = 88
+    Width = 193
+    Height = 272
+    TabOrder = 12
   end
   object mm_Main: TMainMenu
     Images = il_Small

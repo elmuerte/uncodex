@@ -4,26 +4,19 @@ object fr_Properties: Tfr_Properties
   Width = 193
   Height = 272
   TabOrder = 0
-  object bcl_Spacer: TBevel
-    Left = 0
-    Top = 0
-    Width = 193
-    Height = 21
-    Align = alTop
-    Shape = bsSpacer
-  end
-  object lbl_InheritanceLevel: TLabel
-    Left = 15
-    Top = 4
-    Width = 78
-    Height = 13
-    Caption = 'Inheritance level'
-  end
-  object lv_Properties: TListView
+  object bvl_Nothing: TBevel
     Left = 0
     Top = 21
     Width = 193
-    Height = 251
+    Height = 9
+    Align = alTop
+    Shape = bsSpacer
+  end
+  object lv_Properties: TListView
+    Left = 0
+    Top = 30
+    Width = 193
+    Height = 242
     Align = alClient
     Columns = <
       item
@@ -31,8 +24,10 @@ object fr_Properties: Tfr_Properties
         Width = 18
       end
       item
-        AutoSize = True
         Caption = 'Name'
+        Width = -1
+        WidthType = (
+          -1)
       end
       item
         Caption = 'Line'
@@ -68,39 +63,68 @@ object fr_Properties: Tfr_Properties
     OnResize = lv_PropertiesResize
     OnSelectItem = lv_PropertiesSelectItem
   end
-  object ed_InheritanceLevel: TEdit
-    Left = 96
+  object pnl_Ctrls: TPanel
+    Left = 0
     Top = 0
-    Width = 33
+    Width = 193
     Height = 21
+    Align = alTop
+    BevelOuter = bvNone
     TabOrder = 1
-    Text = '0'
+    Visible = False
+    object lbl_InheritanceLevel: TLabel
+      Left = 15
+      Top = 4
+      Width = 78
+      Height = 13
+      Caption = 'Inheritance level'
+    end
+    object ed_InheritanceLevel: TEdit
+      Left = 96
+      Top = 0
+      Width = 33
+      Height = 21
+      TabOrder = 0
+      Text = '0'
+      OnChange = btn_RefreshClick
+    end
+    object ud_InheritanceLevel: TUpDown
+      Left = 129
+      Top = 0
+      Width = 15
+      Height = 21
+      Associate = ed_InheritanceLevel
+      Min = 0
+      Position = 0
+      TabOrder = 1
+      Wrap = False
+    end
   end
-  object ud_InheritanceLevel: TUpDown
-    Left = 129
+  object btn_ShowBar: TBitBtn
+    Left = 0
     Top = 0
-    Width = 15
-    Height = 21
-    Associate = ed_InheritanceLevel
-    Min = 0
-    Position = 0
+    Width = 10
+    Height = 10
+    Hint = 'Show inheritance level controls'
+    Caption = 'b'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Marlett'
+    Font.Style = []
+    ParentFont = False
+    ParentShowHint = False
+    ShowHint = True
     TabOrder = 2
-    Wrap = False
-  end
-  object btn_Refresh: TBitBtn
-    Left = 144
-    Top = 0
-    Width = 49
-    Height = 21
-    Caption = 'Refresh'
-    TabOrder = 3
-    OnClick = btn_RefreshClick
+    OnClick = btn_ShotBarClick
+    Layout = blGlyphRight
+    Spacing = 0
   end
   object il_Types: TImageList
     Left = 8
-    Top = 32
+    Top = 72
     Bitmap = {
-      494C010108000900040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010108000900040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000003000000001002000000000000030
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -500,11 +524,12 @@ object fr_Properties: Tfr_Properties
       FF3FF780F83FED87F81FE380E00F8001E00F80008003E507C00780010001C007
       C003800180038001C00380838003C007C00381C70001C197C003860380038001
       C0039C038003CC07E003FC030001EC07F00FFC0380038001F83FFC03E00FEC17
-      FCFFFC07F83FEDB7FFFFFC07FEFFFFFF}
+      FCFFFC07F83FEDB7FFFFFC07FEFFFFFF00000000000000000000000000000000
+      000000000000}
   end
   object pm_Props: TPopupMenu
     Left = 8
-    Top = 64
+    Top = 96
     object mi_CopyToClipboard: TMenuItem
       Caption = 'Copy to clipboard'
     end

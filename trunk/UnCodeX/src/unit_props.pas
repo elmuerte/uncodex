@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   property inspector frame
- $Id: unit_props.pas,v 1.6 2004-03-29 10:39:26 elmuerte Exp $
+ $Id: unit_props.pas,v 1.7 2004-04-04 22:02:36 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -36,16 +36,17 @@ uses
 type
   Tfr_Properties = class(TFrame)
     lv_Properties: TListView;
-    lbl_InheritanceLevel: TLabel;
-    ed_InheritanceLevel: TEdit;
-    ud_InheritanceLevel: TUpDown;
-    btn_Refresh: TBitBtn;
     il_Types: TImageList;
     pm_Props: TPopupMenu;
     mi_CopyToClipboard: TMenuItem;
     mi_InsertText: TMenuItem;
     mi_OpenLocation: TMenuItem;
-    bcl_Spacer: TBevel;
+    pnl_Ctrls: TPanel;
+    lbl_InheritanceLevel: TLabel;
+    ed_InheritanceLevel: TEdit;
+    ud_InheritanceLevel: TUpDown;
+    bvl_Nothing: TBevel;
+    btn_ShowBar: TBitBtn;
     procedure lv_PropertiesInfoTip(Sender: TObject; Item: TListItem;
       var InfoTip: String);
     procedure lv_PropertiesSelectItem(Sender: TObject; Item: TListItem;
@@ -57,6 +58,7 @@ type
       var DefaultDraw: Boolean);
     procedure btn_RefreshClick(Sender: TObject);
     procedure lv_PropertiesResize(Sender: TObject);
+    procedure btn_ShotBarClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -294,11 +296,6 @@ begin
     Inc(j);
   end;
   lv_Properties.Items.EndUpdate;
-
-  lv_Properties.Columns.BeginUpdate;
-  //if (Visible) then lv_Properties.Columns[1].Width := lv_Properties.ClientWidth-lv_Properties.Columns[0].Width
-  //else if (lv_Properties.Items.Count > lv_Properties.VisibleRowCount) then lv_Properties.Columns[1].Width := lv_Properties.ClientWidth-lv_Properties.Columns[0].Width-GetSystemMetrics(SM_CXVSCROLL);
-  lv_Properties.Columns.EndUpdate;
   result := true;
 end;
 
@@ -389,12 +386,18 @@ end;
 
 procedure Tfr_Properties.btn_RefreshClick(Sender: TObject);
 begin
-	LoadClass;
+	if (uclass <> nil) then LoadClass;
 end;
 
 procedure Tfr_Properties.lv_PropertiesResize(Sender: TObject);
 begin
 	lv_Properties.Columns[1].Width := lv_Properties.ClientWidth-lv_Properties.Columns[0].Width
+end;
+
+procedure Tfr_Properties.btn_ShotBarClick(Sender: TObject);
+begin
+  pnl_Ctrls.Visible := not pnl_Ctrls.Visible;
+  bvl_Nothing.Visible := not pnl_Ctrls.Visible;
 end;
 
 end.

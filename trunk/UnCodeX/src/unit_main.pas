@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.91 2004-04-04 09:04:08 elmuerte Exp $
+ $Id: unit_main.pas,v 1.92 2004-04-04 22:02:36 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -199,7 +199,6 @@ type
     mi_RebuildAnalyse: TMenuItem;
     ac_OpenHTMLHelp: TAction;
     mi_OpenHTMLHelpFile: TMenuItem;
-    fr_Props: Tfr_Properties;
     dckTop: TPanel;
     dckBottom: TPanel;
     dckLeft: TPanel;
@@ -230,6 +229,7 @@ type
     mi_OpenClass1: TMenuItem;
     mi_SaveToFile1: TMenuItem;
     sd_SaveLog: TSaveDialog;
+    fr_Props: Tfr_Properties;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -2333,7 +2333,7 @@ begin
   SearchConfig.isStrict := DefaultSC.isStrict;
   SearchConfig.isRegex := DefaultSC.isRegex;
   SearchConfig.isFindFirst := DefaultSC.isFindFirst;
-  SearchConfig.Scope := DefaultSC.Scope; 
+  SearchConfig.Scope := DefaultSC.Scope;
   if (SearchForm(SearchConfig)) then begin
     ac_FindNext.Execute;
   end
