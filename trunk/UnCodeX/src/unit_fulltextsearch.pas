@@ -6,7 +6,7 @@
   Purpose:
     Full text search thread. Includes support for regular expressions.
 
-  $Id: unit_fulltextsearch.pas,v 1.19 2004-12-20 22:22:30 elmuerte Exp $
+  $Id: unit_fulltextsearch.pas,v 1.20 2004-12-21 08:53:43 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -193,7 +193,7 @@ function TSearchThread.SearchFile(uclass: TUClass): boolean;
 var
   fs: TFileStream;
   buffer, line: array[0..BUFFSIZE-1] of char;
-  linecnt, lineptr, bufcnt: integer;
+  linecnt, lineptr, bufcnt, i: integer;
   filename: string;
 
 
@@ -205,8 +205,7 @@ var
       if (re.Exec(line)) then begin
         Inc(Matches);
         result := true;
-        //TODO: useline stuff
-        Log(uclass.filename+FTS_LN_BEGIN+IntToStr(linecnt)+FTS_LN_SEP+IntToStr(re.MatchPos[0])+FTS_LN_END+line, ltSearch, CreateLogEntry(uclass));
+        Log(ExtractFileName(filename)+FTS_LN_BEGIN+IntToStr(linecnt)+FTS_LN_SEP+IntToStr(re.MatchPos[0])+FTS_LN_END+line, ltSearch, CreateLogEntry(filename, linecnt, re.MatchPos[0], uclass));
       end;
     end
     else begin
@@ -214,8 +213,7 @@ var
       if (i > 0) then begin
         Inc(Matches);
         result := true;
-        //TODO: use line stuff
-        Log(uclass.filename+FTS_LN_BEGIN+IntToStr(linecnt)+FTS_LN_SEP+IntToStr(i)+FTS_LN_END+line, ltSearch, CreateLogEntry(uclass));
+        Log(ExtractFileName(filename)+FTS_LN_BEGIN+IntToStr(linecnt)+FTS_LN_SEP+IntToStr(i)+FTS_LN_END+line, ltSearch, CreateLogEntry(filename, linecnt, re.MatchPos[0], uclass));
       end;
     end;
   end;
@@ -250,27 +248,37 @@ var
     end;
   end;
 
+  procedure SearchFile();
+  begin
+    fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
+    try
+      bufcnt := BUFFSIZE;
+      while (fs.Position+bufcnt < fs.Size) do begin
+        fs.ReadBuffer(buffer, bufcnt);
+        RegexBuffer(buffer);
+      end;
+      // read remainder
+      if (fs.Position < fs.Size) then begin
+        bufcnt := fs.Size-fs.Position;
+        fs.ReadBuffer(buffer, bufcnt);
+        RegexBuffer(buffer);
+      end;
+    finally
+      fs.Free;
+    end;
+  end;
+
 begin
   result := false;
   linecnt := 0;
   lineptr := 0;
-  filename := uclass.package.path+PATHDELIM+uclass.filename;
-  if (not FileExists(filename)) then exit;
-  fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
-  try
-    bufcnt := BUFFSIZE;
-    while (fs.Position+bufcnt < fs.Size) do begin
-      fs.ReadBuffer(buffer, bufcnt);
-      RegexBuffer(buffer);
-    end;
-    // read remainder
-    if (fs.Position < fs.Size) then begin
-      bufcnt := fs.Size-fs.Position;
-      fs.ReadBuffer(buffer, bufcnt);
-      RegexBuffer(buffer);
-    end;
-  finally
-    fs.Free;
+  filename := uclass.FullFileName;
+  if (FileExists(filename)) then SearchFile(); // class
+  for i := 0 to uclass.includes.Count-1 do begin
+    linecnt := 0;
+    lineptr := 0;
+    filename := iFindFile(ExpandFileName(uclass.package.PackageDir+uclass.includes.Values[uclass.includes.Names[i]]));
+    if (FileExists(filename)) then SearchFile(); // include file
   end;
 end;
 
