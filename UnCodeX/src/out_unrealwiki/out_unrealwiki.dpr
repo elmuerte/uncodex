@@ -1,13 +1,13 @@
 {-----------------------------------------------------------------------------
  Unit Name: out_unrealwiki
  Author:    elmuerte
- Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Finds and opens the UnrealWiki page for the selected class
- $Id: out_unrealwiki.dpr,v 1.1 2004-07-28 21:31:44 elmuerte Exp $
+ $Id: out_unrealwiki.dpr,v 1.2 2004-07-30 11:18:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
-    Copyright (C) 2003  Michiel Hendriks
+    Copyright (C) 2003, 2004  Michiel Hendriks
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -56,6 +56,7 @@ begin
   Info.AName := 'UnrealWiki';
   Info.ADescription := 'Open the UnrealWiki page for this class';
   Info.ASingleClass := true;
+  Info.AMultipleClass := false;
   result := true;
 end;
 

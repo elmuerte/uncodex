@@ -1,22 +1,29 @@
 {-----------------------------------------------------------------------------
  Unit Name: out_graphviz
  Author:    elmuerte
- Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   create a dot file
- $Id: out_graphviz.dpr,v 1.4 2003-06-10 12:00:22 elmuerte Exp $
+ $Id: out_graphviz.dpr,v 1.5 2004-07-30 11:18:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
+{
+    UnCodeX - UnrealScript source browser & documenter
+    Copyright (C) 2003, 2004  Michiel Hendriks
 
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+}
 library out_graphviz;
-
-{ Important note about DLL memory management: ShareMem must be the
-  first unit in your library's USES clause AND your project's (select
-  Project-View Source) USES clause if your DLL exports any procedures or
-  functions that pass strings as parameters or function results. This
-  applies to all strings passed to and from your DLL--even those that
-  are nested in records and classes. ShareMem is the interface unit to
-  the BORLNDMM.DLL shared memory manager, which must be deployed along
-  with your DLL. To avoid using BORLNDMM.DLL, pass string information
-  using PChar or ShortString parameters. }
 
 uses
   FastShareMem in '..\FastShareMem.pas',
@@ -36,6 +43,7 @@ begin
   Info.AName := 'GraphViz';
   Info.ADescription := 'Create a DOT file to be used with GraphViz (version '+DLLVERSION+')';
   Info.ASingleClass := false;
+  Info.AMultipleClass := true;
   result := true;
 end;
 

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Custom output sample
- $Id: out_sample.dpr,v 1.5 2003-06-10 12:00:18 elmuerte Exp $
+ $Id: out_sample.dpr,v 1.6 2004-07-30 11:18:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 library out_sample;
@@ -35,6 +35,7 @@ begin
   Info.AName := 'Sample output';
   Info.ADescription := 'A sample output module';
   Info.ASingleClass := false;
+  Info.AMultipleClass := true;
   result := true;
 end;
 

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   definitions for Unreal Classes
- $Id: unit_uclasses.pas,v 1.28 2004-07-28 21:31:44 elmuerte Exp $
+ $Id: unit_uclasses.pas,v 1.29 2004-07-30 11:18:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -30,6 +30,10 @@ interface
 
 uses
   Classes, Contnrs, SysUtils;
+
+const
+	// used for output module compatibility testing
+	UCLASSES_REV: LongInt = 1;  
 
 type
 	TUCommentType = (ctSource, ctExtern, ctInherited);
