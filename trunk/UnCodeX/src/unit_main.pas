@@ -919,18 +919,18 @@ begin
   { StringLists -- END }
   try
     { Load layout }
-    mi_MenuBar.Checked := ini.ReadBool('Layout', 'MenuBar', true);
-    mi_Toolbar.Checked := ini.ReadBool('Layout', 'Toolbar', true);
+    ac_VMenuBar.Checked := ini.ReadBool('Layout', 'MenuBar', true);
+    ac_VToolbar.Checked := ini.ReadBool('Layout', 'Toolbar', true);
     mi_Toolbar.OnClick(Sender);
-    mi_PackageTree.Checked := ini.ReadBool('Layout', 'PackageTree', true);
+    ac_VPackageTree.Checked := ini.ReadBool('Layout', 'PackageTree', true);
     mi_PackageTree.OnClick(Sender);
     tv_Packages.Width := ini.ReadInteger('Layout', 'PackageTreeWidth', tv_Packages.Width);
-    //mi_ClassTree.Checked := ini.ReadBool('Layout', 'ClassTree', true);
+    //ac_ClassTree.Checked := ini.ReadBool('Layout', 'ClassTree', true);
     //mi_ClassTree.OnClick(Sender);
     lb_Log.Height := ini.ReadInteger('Layout', 'LogHeight', lb_Log.Height);
-    mi_Log.Checked := ini.ReadBool('Layout', 'Log', true);
+    ac_VLog.Checked := ini.ReadBool('Layout', 'Log', true);
     mi_Log.OnClick(Sender);
-    mi_SourceSnoop.Checked := ini.ReadBool('Layout', 'SourceSnoop', false);
+    ac_VSourceSnoop.Checked := ini.ReadBool('Layout', 'SourceSnoop', false);
     re_SourceSnoop.Width := ini.ReadInteger('Layout', 'SourceSnoopWidth', re_SourceSnoop.Width);
     mi_SourceSnoop.OnClick(Sender);
     mi_StayOnTop.Checked := ini.ReadBool('Layout', 'StayOnTop', false);
@@ -1864,7 +1864,6 @@ var
   ms: TMemoryStream;
   fs: TFileStream;
   filename: string;
-  tmpdir: array[0..MAX_PATH] of char;
 begin
   if (ActiveControl.ClassType = TTreeView) then begin
     with (ActiveControl as TTreeView) do begin
@@ -1877,13 +1876,8 @@ begin
         try
           RTFHilightUScript(fs, ms);
           re_SourceSnoop.Lines.Clear;
-          //re_SourceSnoop.PlainText := false;
-          //re_SourceSnoop.Lines.LoadFromStream(ms);
-          // TODO: FIXME:
-          GetTempPath(MAX_PATH-1, tmpdir);
-          ms.SaveToFile(tmpdir+'\uncodex.rtf');
-          re_SourceSnoop.Lines.LoadFromFile(tmpdir+'\uncodex.rtf');
-          DeleteFile(tmpdir+'\uncodex.rtf');
+          ms.Position := 0;
+          re_SourceSnoop.Lines.LoadFromStream(ms);
         finally
           ms.Free;
           fs.Free;
