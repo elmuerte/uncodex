@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.45 2004-02-23 12:20:47 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.46 2004-02-23 22:02:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -2092,7 +2092,9 @@ var
   sl: TStringList;
   tmp: string;
   i: integer;
+  hadblank: boolean;
 begin
+	hadblank := false;
   sl := TStringList.Create;
   try
     sl.Text := input;
@@ -2100,9 +2102,23 @@ begin
       tmp := sl[i];
       // possible HRs: // -- ==
       Delete(tmp, 1, 2);
+      if (Length(tmp) > 0) then begin
+	      while (tmp[1] = '/') do begin
+  	    	Delete(tmp, 1, 1);
+    	    if (Length(tmp) = 0) then break;
+      	end;
+      end;
       tmp := trim(tmp);
-      if ((tmp <> '') and (ReverseString(tmp) = tmp)) then sl.Delete(i)
+      if ((tmp <> '') and (ReverseString(tmp) = tmp)) then sl.Delete(i) // HR ignore
+      else if (tmp = '') then begin
+				if (hadblank) then sl.Delete(i)
+        else begin
+	        hadblank := true;
+          sl[i] := '<br />';
+        end;
+      end
       else begin
+      	hadblank := false;
         sl[i] := tmp;
         if (i < (sl.Count-1)) then sl[i] := sl[i]+'<br />';
       end;
@@ -2248,7 +2264,9 @@ begin
       else if (p.Token = #9) then begin
         // tabs to spaces
         if (TabsToSpaces >= 0) then begin
-          replacement := StrRepeat(' ', TabsToSpaces);
+        	i := TabsToSpaces - (p.LinePos mod TabsToSpaces);
+          replacement := StrRepeat(' ', i);
+          p.LinePos := p.LinePos+i;
           p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
         end
         else p.CopyTokenToOutput;
@@ -2278,13 +2296,41 @@ begin
 end;
 
 function THTMLOutput.CommentPreprocessor(input: string): string;
+var
+	i: integer;
+  tmp: string;
 begin
   if (input = '') then exit;
-  if (not IsCPP) then begin
-    result := input;
+  if (IsCPP) then begin
+    result := CPPPipe.Pipe(input);
     exit;
   end;
-  result := CPPPipe.Pipe(input);
+  i := Pos('http://', LowerCase(input));
+  while (i > 0) do begin
+  	// copy up to link
+  	result := result+Copy(input, 1, i-1);
+    // check if already a link
+    if ((CompareText(Copy(input, i-6, 5), 'href=') = 0) or
+			(CompareText(Copy(input, i-1, 1), '>') = 0)) then begin
+      // is a link
+      result := result+Copy(input, i, i+7);
+      Delete(input, 1, i+7);
+    end
+    else begin
+    	// delete up to location
+      Delete(input, 1, i-1);
+      i := pos('<br', input); // <br /> word around
+      if (i = 0) then i := pos(' ', input);
+      if (i = 0) then i := pos(#13, input);
+      if (i = 0) then i := pos(#10, input);
+      if (i = 0) then i := pos(#9, input);
+      tmp := copy(input, 1, i-1);
+      Delete(input, 1, i-1);
+      result := result+'<a href="'+tmp+'" target="_blank">'+tmp+'</a>';
+    end;
+    i := Pos('http://', LowerCase(input));
+  end;
+	result := result+input;
 end;
 
 function THTMLOutput.GetPackage(curpack: TUPackage; offset: integer; wrap: boolean = true): TUPackage;

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.27 2003-12-22 16:26:59 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.28 2004-02-23 22:02:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -538,18 +538,14 @@ begin
     result.name := result.name+p.TokenString;
     p.NextToken; 
   end;
+  p.FullCopy := true;
+  p.GetCopyData;
   p.NextToken; // (
-  while (p.Token <> ')') do begin
-    // todo params
-    result.params := result.params+' '+p.TokenString;
-    p.NextToken;
-    if (p.Token = '.') then begin
-      p.NextToken;
-      result.params := result.params+'.'+p.TokenString;
-      p.NextToken;
-    end;
-    result.params := result.params+pAngleBrackets
-  end;
+  while (p.Token <> ')') do p.NextToken;
+  result.params := p.GetCopyData;
+  Delete(result.params, Length(result.params), 1);
+  result.params := trim(result.params);
+  p.FullCopy := false;
   p.NextToken; // )
   if (p.Token <> ';') then begin
     if (p.Token = '{') then bcount := 1;

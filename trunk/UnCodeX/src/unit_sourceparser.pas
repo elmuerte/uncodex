@@ -3,7 +3,7 @@
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
             Based on the TCopyParser class by Borland Software Corporation
- $Id: unit_sourceparser.pas,v 1.11 2003-12-07 21:33:11 elmuerte Exp $           
+ $Id: unit_sourceparser.pas,v 1.12 2004-02-23 22:02:47 elmuerte Exp $           
 -----------------------------------------------------------------------------}
 
 { *************************************************************************** }
@@ -39,6 +39,7 @@ type
     FSourceEnd: PChar;
     FTokenPtr: PChar;
     FSourceLine: Integer;
+    FLinePos: integer;
     FSaveChar: Char;
     FToken: Char;
     IsInMComment: boolean;
@@ -55,6 +56,7 @@ type
     function SkipToken(CopyBlanks: Boolean): Char;
     function TokenString: string;
     property SourceLine: Integer read FSourceLine;
+    property LinePos: Integer read FLinePos write FLinePos;
     property Token: Char read FToken;
     property OutputStream: TStream read FOutStream write FOutStream;
   end;
@@ -119,40 +121,58 @@ begin
     IsInMComment := false;
     repeat begin
       Inc(P);
+      Inc(FLinePos);
       if (P^ = #0) then begin
         Result := toMCommentBegin;
         IsInMComment := true;
         break;
       end;
-      if (P^ = #10) then Inc(FSourceLine); // next line
+      if (P^ = #10) then begin
+      	Inc(FSourceLine); // next line
+        FLinePos := 0;
+      end;
     end
     until ((P^ ='*') and ((P+1)^ ='/' ));
-    if (Result = toMCommentEnd) then Inc(P, 2);
+    if (Result = toMCommentEnd) then begin
+    	Inc(P, 2);
+      Inc(FLinePos, 2);
+    end;
   end
   else begin
     case P^ of
       'A'..'Z', 'a'..'z', '_':
         begin
           Inc(P);
-          while P^ in ['A'..'Z', 'a'..'z', '0'..'9', '_'] do Inc(P);
+          Inc(FLinePos);
+          while P^ in ['A'..'Z', 'a'..'z', '0'..'9', '_'] do begin
+          	Inc(P);
+            Inc(FLinePos);
+          end;
           Result := toSymbol;
         end;
       '"':
         begin
           Inc(P);
+          Inc(FLinePos);
           while true do begin
             case P^ of
               #0, #10, #13: begin
+              								FLinePos := 0;
                               Break;
                               //Error(SInvalidString);
                             end;
-              '\':  Inc(P);
+              '\':  begin
+              				Inc(P);
+                      Inc(FLinePos);
+              			end;
               '"':  begin
                       Inc(P);
+                      Inc(FLinePos);
                       Break;
                     end;
             end;
             Inc(P);
+            Inc(FLinePos);
           end;
           Result := toString;
         end;
@@ -162,16 +182,22 @@ begin
           while true do begin
             case P^ of
               #0, #10, #13: begin
+              								FLinePos := 0;
                               Break;
                               //Error(SInvalidString);
                             end;
-              '\':  Inc(P);
+              '\':  begin
+              				Inc(P);
+                      Inc(FLinePos);
+              			end;
               '''':  begin
                       Inc(P);
+                      Inc(FLinePos);
                       Break;
                     end;
             end;
             Inc(P);
+            Inc(FLinePos);
           end;
           Result := toName;
         end;
@@ -179,18 +205,26 @@ begin
         begin
           Result := toInteger;
           Inc(P);
+          Inc(FLinePos);
           if (((P-1)^ = '0') and (P^ in ['x', 'X'])) then begin
             Inc(P); // hex notation
-            while P^ in ['0'..'9', 'a' .. 'f', 'A' .. 'F'] do Inc(P);
+            Inc(FLinePos);
+            while P^ in ['0'..'9', 'a' .. 'f', 'A' .. 'F'] do begin
+            	Inc(P);
+              Inc(FLinePos);
+            end;
           end
           else begin
             while P^ in ['0'..'9'] do begin
               Inc(P);
+              Inc(FLinePos);
             end;
             if (P^ = '.') then begin
               Inc(P);
+              Inc(FLinePos);
               while P^ in ['0'..'9', 'f' ,'F'] do begin
                 Inc(P);
+                Inc(FLinePos);
                 Result := toFloat;
               end;
             end;
@@ -198,25 +232,35 @@ begin
         end;
       '#':
         begin
-          while not (P^ in [#10, toEOF]) do Inc(P);
+          while not (P^ in [#10, toEOF]) do begin
+          	Inc(P);
+            Inc(FLinePos);
+          end;
           if (P^ = toEOF) then begin
             Result := toEOF;
           end
           else begin
             Inc(P);
             Inc(FSourceLine); // next line
+            FLinePos := 0;
             Result := toMacro; 
           end;
         end;
       '/':
         begin
           Inc(P);
+          Inc(FLinePos);
           if (P^ = '/') then begin // comment
             Inc(P);
-            while not (P^ in [#10, toEOF]) do Inc(P);
+            Inc(FLinePos);
+            while not (P^ in [#10, toEOF]) do begin
+            	Inc(P);
+              Inc(FLinePos);
+            end;
             if (P^ <> toEOF) then begin
               Inc(P);
               Inc(FSourceLine); // next line
+              FLinePos := 0;
             end;
             Result := toComment;
           end
@@ -224,26 +268,38 @@ begin
             Result := toComment;
             repeat begin
               Inc(P);
+              Inc(FLinePos);
               if (P^ = #0) then begin
                 Dec(P);
+                Dec(FLinePos);
                 Result := toMCommentBegin;
                 IsInMComment := true;
                 break;
               end;
-              if (P^ = #10) then Inc(FSourceLine); // next line
+              if (P^ = #10) then begin
+              	Inc(FSourceLine); // next line
+                FLinePos := 0;
+              end;
             end
             until ((P^ ='*') and ((P+1)^ ='/' ));
-            if (Result <> toMCommentBegin) then Inc(P, 2);
+            if (Result <> toMCommentBegin) then begin
+            	Inc(P, 2);
+              Inc(FLinePos, 2);
+            end;
           end
           else begin
             Result := P^;
-            if Result <> toEOF then Inc(P);
+            if Result <> toEOF then begin
+            	Inc(P);
+              Inc(FLinePos);
+            end;
           end;
         end;
       #10:
         begin
           Inc(P);
           Inc(FSourceLine);
+          FLinePos := 0;
           Result := toEOL;
         end;
     else
@@ -303,11 +359,13 @@ begin
       #10:
         begin
           //Inc(FSourceLine);
+          FLinePos := 0;
           break;
         end;
       #33..#255:
         Break;
     end;
+    Inc(FLinePos);
     Inc(FSourcePtr);
   end;
   if DoCopy then UpdateOutStream(Start);
