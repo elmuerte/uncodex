@@ -152,7 +152,7 @@ object frm_About: Tfrm_About
     BevelKind = bkSoft
     BorderStyle = bsNone
     Lines.Strings = (
-      'UnCodeX '#169' Copyright 2003, 2004 '
+      'UnCodeX '#169' Copyright 2003-2005 '
       'Michiel '#39'El Muerte'#39' Hendriks'
       ''
       'All rights belong to their respectfull owners.'

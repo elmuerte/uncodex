@@ -6,7 +6,7 @@
   Purpose:
     General commandline routines
 
-  $Id: unit_ascii.pas,v 1.16 2004-12-25 14:13:00 elmuerte Exp $
+  $Id: unit_ascii.pas,v 1.17 2005-01-16 07:23:53 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -98,7 +98,7 @@ begin
   writeln('------------------------------------------------------------');
   writeln(' UnCodeX Commandline Utility (ucxcu) version '+VERSION);
   writeln(' Engine version: '+APPTITLE+' '+APPVERSION+' '+APPPLATFORM);
-  writeln(' (c) 2003, 2004 Michiel ''El Muerte'' Hendriks');
+  writeln(' (c) 2003-2005 Michiel ''El Muerte'' Hendriks');
   writeln(' http://wiki.beyondunreal.com/wiki/UnCodeX');
   writeln('------------------------------------------------------------');
   writeln('');
