@@ -3,7 +3,7 @@ unit unit_deplist;
 interface
 
 uses
-  Classes, Contnrs, SysUtils, unit_uclasses;
+  Classes, Contnrs, SysUtils, unit_uclasses, Graphics;
 
 type
   TDependency = class(TObject)
@@ -21,6 +21,13 @@ type
   public
     procedure SortOnPackage;
     property Items[Index: Integer]: TDependency read GetItem write SetItem; default;
+  end;
+
+  TGraphUPAckageList = class(TUPackageList)
+  public
+    colors: TStringList;
+    constructor Create(AOwnsObjects: Boolean);
+    destructor Destroy; override;
   end;
 
 implementation
@@ -55,6 +62,20 @@ end;
 procedure TDepList.SortOnPackage;
 begin
   inherited Sort(TDepListSortOnPackage);
+end;
+
+{ TGraphUPAckageList }
+
+constructor TGraphUPAckageList.Create(AOwnsObjects: Boolean);
+begin
+  inherited Create(AOwnsObjects);
+  colors := TStringList.Create;
+end;
+
+destructor TGraphUPAckageList.Destroy;
+begin
+  colors.free;
+  inherited;
 end;
 
 end.
