@@ -33,6 +33,16 @@
 			<param name="Name" value="Main window">
 			<param name="Local" value="window_main.html">
 			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Main menu">
+				<param name="Local" value="window_main_menu.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Toolbar">
+				<param name="Local" value="window_main_toolbar.html">
+				</OBJECT>
+		</UL>
 		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="Program settings">
 			<param name="Local" value="window_settings.html">
