@@ -235,6 +235,7 @@ var
   searchclass: string;
   CSprops: array[0..2] of boolean;
   OpenFind: boolean = false; // only on startup
+  OpenTags: boolean = false; // only on startup
 
   IsBatching: boolean = false;
   CmdStack: TStringList;
@@ -333,13 +334,12 @@ var
   fs: TFileStream;
 begin
   StatusReport('Saving state to '+StateFile);
+  Application.ProcessMessages;
   fs := TFileStream.Create(StateFile, fmCreate or fmShareExclusive);
   try
-    with TPackageState.Create(PackageList) do begin
-      SaveStateToStream(fs);
-    end;
-    with TClassTreeState.Create(tv_Classes) do begin
+    with (TUnCodeXState.Create(ClassList, tv_Classes, PackageList, tv_Packages)) do begin
       SaveTreeToStream(fs);
+      Free;
     end;
   finally
     fs.Free;
@@ -350,28 +350,36 @@ end;
 procedure Tfrm_UnCodeX.LoadState;
 var
   fs: TFileStream;
+  res: boolean;
 begin
   if (not FileExists(StateFile)) then exit;
   StatusReport('Loading state from '+StateFile);
+  Application.ProcessMessages;
   fs := TFileStream.Create(StateFile, fmOpenRead or fmShareExclusive);
   try
-    with TPackageState.Create(PackageList, tv_Packages) do begin
-      LoadStateFromStream(fs);
+    with (TUnCodeXState.Create(ClassList, tv_Classes, PackageList, tv_Packages)) do begin
+      res := LoadTreeFromStream(fs);
+      Free;
     end;
-    fs.Position := 0;
-    with TClassTreeState.Create(ClassList, tv_Classes, PackageList, tv_Packages) do begin
-      LoadTreeFromStream(fs);
+    if (res) then begin
+      PackageList.Sort;
+      tv_Packages.Items.AlphaSort(true);
+      ClassList.Sort;
+      tv_Classes.Items.AlphaSort(true);
+      if (ExpandObject and (tv_Classes.Items.Count > 0)) then
+        tv_Classes.Items.GetFirstNode.Expand(false);
+      StatusReport('State loaded');
+    end
+    else begin
+      PackageList.Clear;
+      ClassList.Clear;
+      tv_Packages.Items.Clear;
+      tv_Classes.Items.Clear;
+      StatusReport('State '''+StateFile+''' file is corrupt');
     end;
-    PackageList.Sort;
-    tv_Packages.Items.AlphaSort(true);
-    ClassList.Sort;
-    tv_Classes.Items.AlphaSort(true);
-    if (ExpandObject and (tv_Classes.Items.Count > 0)) then
-      tv_Classes.Items.GetFirstNode.Expand(false);
   finally
     fs.Free;
   end;
-  StatusReport('State loaded');
 end;
 
 procedure Tfrm_UnCodeX.UpdateSystemMenu;
@@ -609,6 +617,7 @@ begin
       searchclass := data.Find;
       CSprops[0] := false;
       OpenFind := data.OpenFind;
+      OpenTags := data.OpenTags;
       ActiveControl := tv_Classes;
       tv_Classes.Selected := nil;
       ac_FindNext.Execute;
@@ -1351,7 +1360,9 @@ begin
         if (res) then begin
           Select(items[i]);
           if (OpenFind) then ac_OpenClass.Execute;
+          if (OpenTags) then ac_Tags.Execute;
           OpenFind := false;
+          OpenTags := false;
           statustext := '';
           exit;
         end;
@@ -1476,7 +1487,7 @@ begin
       if (Selected <> nil) then begin
         if (TObject(Selected.Data).ClassType <> TUClass) then exit;
         selclass := TUclass(Selected.Data);
-        with Tfrm_Tags.Create(nil) do begin
+        with Tfrm_Tags.Create(nil) do begin          
           uclass := selclass;
           if LoadClass then begin
             Show;
