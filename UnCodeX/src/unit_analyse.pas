@@ -6,7 +6,7 @@
     Purpose:
         UnrealScript class analyser
 
-    $Id: unit_analyse.pas,v 1.50 2004-11-10 09:25:35 elmuerte Exp $
+    $Id: unit_analyse.pas,v 1.51 2004-11-27 10:47:38 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -35,7 +35,7 @@ interface
 
 uses
     SysUtils, Classes, DateUtils, unit_uclasses, unit_parser, unit_outputdefs,
-    unit_definitions, Hashes;
+    unit_definitions, Hashes, Contnrs;
 
 type
     TClassAnalyser = class(TThread)
@@ -52,6 +52,7 @@ type
         status: TStatusReport;
         ClassHash: TObjectHash;
         macroIfCnt: integer;
+        includeParsers: TObjectList;
         procedure AnalyseClass();
         function pConst: TUConst;
         function pVar: TUProperty;
@@ -68,6 +69,7 @@ type
         function ExecuteSingle: integer;
         function GetSecondaryComment(ref :string): string;
         procedure pMacro(Sender: TUCParser);
+        procedure pInclude(filename: string);
     public
         constructor Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false; myClassList: TObjectHash = nil); overload;
         constructor Create(uclass: TUClass; status: TStatusReport; onlynew: boolean = false; myClassList: TObjectHash = nil); overload;
@@ -317,6 +319,7 @@ begin
     TreeUpdated := true;
     UseOverWriteStruct := false;
     uclass.filetime := currenttime;
+    includeParsers := TObjectList.Create(false);
     fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
     p := TUCParser.Create(fs);
     try
@@ -331,7 +334,7 @@ begin
         AnalyseClass();
         if (not Self.Terminated) then begin
             uclass.consts.Sort;
-            uclass.properties.Sort;
+            uclass.properties.SortOnTag;
             uclass.enums.Sort;
             uclass.structs.Sort;
             uclass.functions.Sort;
@@ -341,6 +344,7 @@ begin
     finally
         p.Free;
         fs.Free;
+        includeParsers.Free;
     end;
 end;
 
@@ -563,6 +567,7 @@ begin
         nprop.ptype := result.ptype;
         nprop.modifiers := result.modifiers;
         nprop.name := Copy(result.name, 1, i-1);
+        nprop.tag := result.tag;
         if (UseOverWriteStruct) then begin
             if (nprop.comment = '') then begin
                 nprop.comment := GetSecondaryComment(uclass.FullName+'.'+OverWriteUstruct.name+'.'+nprop.name);
@@ -921,22 +926,53 @@ begin
     else if (macro = 'EXEC') then begin
     	// ignore, exec macro calls certain commandlets for importing sounds/textures/etc.
     end
+    else if (macro = 'INCLUDE') then begin
+        LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Include file '+trim(args), uclass);
+        uclass.includes.Values[IntToStr(p.SourceLine-1)] := trim(args);
+        args := iFindFile(ExpandFileName(ExtractFilePath(uclass.package.path)+args));
+        if (FileExists(args)) then begin
+            pInclude(args);
+        end
+        else begin
+            LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Invalid include file: '+args, uclass);
+        end;
+    end
     else begin
         LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Unsupported macro '+macro, uclass);
     end;
 end;
 
-procedure TClassAnalyser.AnalyseClass;
+procedure TClassAnalyser.pInclude(filename: string);
 var
-    bHadClass: boolean;
+    fs: TFileStream;
+begin
+    guard('pInclude '+filename);
+    includeParsers.Add(p);
+    fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
+    p := TUCParser.Create(fs);
+    try
+        p.ProcessMacro := pMacro;
+        AnalyseClass;
+    finally
+        p.Free;
+        fs.Free;
+        p := TUCParser(includeParsers.Last);
+        includeParsers.Remove(p);
+    end;
+    unguard;
+end;
+
+procedure TClassAnalyser.AnalyseClass;
+{var
+    bHadClass: boolean;}
 begin
     guard('AnalyseClass '+uclass.name);
-    bHadClass := false;
+    //bHadClass := false;
     while ((p.token <> toEOF) and (not Self.Terminated)) do begin
         // first check class
         // class <classname> extends [<package>].<classname> <modifiers>;
-        if (p.TokenSymbolIs(KEYWORD_Class) and not bHadClass) then begin
-            bHadClass := true;
+        if (p.TokenSymbolIs(KEYWORD_Class) {and not bHadClass}) then begin
+            //bHadClass := true;
             p.NextToken;
             uclass.name := p.TokenString;
             uclass.CommentType := ctSource;
@@ -964,10 +1000,11 @@ begin
         end;
 
         // tribes:v interface
-        if (p.TokenSymbolIs(KEYWORD_Interface) and not bHadClass) then begin
-            bHadClass := true;
+        if (p.TokenSymbolIs(KEYWORD_Interface) {and not bHadClass}) then begin
+            //bHadClass := true;
             p.NextToken;
             uclass.name := p.TokenString;
+            p.NextToken;
             uclass.CommentType := ctSource;
             uclass.comment := trim(p.GetCopyData);
             if (uclass.comment = '') then begin
@@ -982,10 +1019,10 @@ begin
             continue;
         end;
 
-        if (not bHadClass) then begin
+        {if (not bHadClass) then begin
             p.NextToken;
             continue;
-        end;
+        end;}
         
         if (p.TokenSymbolIs(KEYWORD_var)) then begin
             p.NextToken;

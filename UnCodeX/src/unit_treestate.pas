@@ -6,7 +6,7 @@
     Purpose:
         Loading\saving of the class and package tree views
 
-    $Id: unit_treestate.pas,v 1.29 2004-11-06 15:07:44 elmuerte Exp $
+    $Id: unit_treestate.pas,v 1.30 2004-11-27 10:47:39 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -117,6 +117,7 @@ const
     UCXheader209    = UCXheader+'209'+UCXHTail;
     UCXHeader212    = UCXheader+'212'+UCXHTail;
     UCXHeader213    = UCXheader+'213'+UCXHTail;
+    UCXHeader214    = UCXheader+'214'+UCXHTail;
 
 procedure TUnCodeXState.SavePackageToStream(upackage: TUPackage; stream: TStream);
 var
@@ -156,6 +157,11 @@ begin
         Writer.WriteInteger(uclass.defs.Definitions.Count);
         for i := 0 to uclass.defs.Definitions.Count-1 do begin
             Writer.WriteString(uclass.defs.Definitions[i]);
+        end;
+
+        Writer.WriteInteger(uclass.includes.Count);
+        for i := 0 to uclass.includes.Count-1 do begin
+            Writer.WriteString(uclass.includes[i]);
         end;
 
         Writer.WriteInteger(uclass.consts.Count);
@@ -286,6 +292,13 @@ begin
                 m := Reader.ReadInteger;
                 for i := 0 to m-1 do begin
                     uclass.defs.Definitions.Add(Reader.ReadString);
+                end;
+            end;
+
+            if (version >= 214) then begin
+                m := Reader.ReadInteger;
+                for i := 0 to m-1 do begin
+                    uclass.includes.Add(Reader.ReadString)
                 end;
             end;
 
@@ -565,6 +578,7 @@ begin
         else if (StrComp(tmp, UCXHeader209) = 0) then fversion := 209
         else if (StrComp(tmp, UCXHeader212) = 0) then fversion := 212
         else if (StrComp(tmp, UCXHeader213) = 0) then fversion := 213
+        else if (StrComp(tmp, UCXHeader214) = 0) then fversion := 214
         else begin
             Log('Unsupported file version, header: '+tmp);
             exit;
@@ -586,7 +600,7 @@ var
     c: cardinal;
 begin
     try
-        stream.WriteBuffer(UCXHeader213, 9);
+        stream.WriteBuffer(UCXHeader214, 9);
         // packages
         c := FPackageList.Count;
         stream.WriteBuffer(c, 4);

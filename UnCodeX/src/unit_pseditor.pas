@@ -6,7 +6,7 @@
     Purpose:
         PascalScript editor window
 
-    $Id: unit_pseditor.pas,v 1.10 2004-10-20 14:19:29 elmuerte Exp $
+    $Id: unit_pseditor.pas,v 1.11 2004-11-27 10:47:39 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -285,7 +285,7 @@ end;
 
 procedure Tfrm_PSEditor.ac_HelpExecute(Sender: TObject);
 begin
-    hh_Help.HelpTopic('pascalscript.html');
+    hh_Help.HelpTopic('PascalScript/pascalscript.html');
 end;
 
 end.

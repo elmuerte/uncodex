@@ -47,11 +47,12 @@ A:Hover {
 }
 
 A[name] {
-	display: none;
+	padding: 0px;
 }
 
 A[href] {
-	display: inline;
+	padding-left: 2px;
+	padding-right: 2px;
 }
 
 A.small {
@@ -77,6 +78,14 @@ HR {
 BLOCKQUOTE {
 	margin-top: 0px;
 	margin-bottom: 0px;
+}
+
+DL {
+	margin: 0px;
+}
+
+DT {
+	font-weight: bold;
 }
 
 /* HEADER styles -- */
