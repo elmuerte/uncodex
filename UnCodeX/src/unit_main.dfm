@@ -77,6 +77,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     BevelWidth = 0
     DockSite = True
     TabOrder = 11
+    OnUnDock = pnlCenterUnDock
   end
   object tv_Packages: TTreeView
     Left = 32
