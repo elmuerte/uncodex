@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.58 2004-12-24 11:05:02 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.59 2004-12-24 18:36:19 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -489,6 +489,7 @@ var
   i: integer;
 begin
   guard('pVar '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
+  prev := '';
   result := TUProperty.Create;
   try
     if (p.Token = '(') then last := #1#2#3#4#5 else last := '';
@@ -661,6 +662,8 @@ var
 begin
   guard('pStruct '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   Result := TUStruct.Create;
+  last := '';
+  prev := '';
   try
     result.comment := trim(p.GetCopyData);
     result.name := p.TokenString;
@@ -730,6 +733,7 @@ var
   last: string;
 begin
   guard('pFunc '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
+  last := '';
   result := TUFunction.Create;
   try
     result.srcline := p.SourceLine;
@@ -984,7 +988,7 @@ var
   fs: TFileStream;
   filename: string;
 begin
-  guard('pInclude '+filename);
+  guard('pInclude '+relfilename);
 
   filename := iFindFile(ExpandFileName(ExtractFilePath(uclass.package.path)+relfilename));
   if (not FileExists(filename)) then begin

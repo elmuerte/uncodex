@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.45 2004-12-18 23:52:00 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.46 2004-12-24 18:36:19 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -280,6 +280,7 @@ implementation
 
 function TUObject.declaration: string;
 begin
+  result := '';
 end;
 
 function TUObjectList.Find(name: string): TUObject;
@@ -675,6 +676,7 @@ end;
 
 function TUPackage.declaration: string;
 begin
+  result := '';
 end;
 
 { TUPackageList }
