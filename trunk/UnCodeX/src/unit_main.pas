@@ -197,8 +197,7 @@ type
     procedure ABResize;
     procedure NextBatchCommand;
     procedure UMAppIDCheck(var Message : TMessage); message UM_APP_ID_CHECK;
-    procedure UMRestoreApplication(var Message : TMessage); message UM_RESTORE_APPLICATION;
-    procedure UMPreviousInstParams(var Message : TMessage); message UM_PREVIOUS_INST_PARAMS;
+    procedure WMCopyData(var msg: TWMCopyData); message WM_COPYDATA;
   public
     statustext : string;
     procedure StatusReport(msg: string; progress: byte = 255);
@@ -270,7 +269,7 @@ begin
   CopyData.cbData := SizeOf(Data);
   CopyData.dwData := StatusHandle;
   CopyData.lpData := @Data;
-  SendMessage(StatusHandle, WM_COPYDATA, 3, Integer(@CopyData));
+  SendMessage(StatusHandle, WM_COPYDATA, frm_UnCodeX.Handle, Integer(@CopyData));
 end;
 
 procedure Log(msg: string);
@@ -585,22 +584,21 @@ begin
   Message.Result := AppInstanceId;
 end;
 
-procedure Tfrm_UnCodeX.UMRestoreApplication(var Message: TMessage);
-begin
-  if IsIconic(Application.Handle) then Application.Restore;
-  Application.BringToFront;
-end;
-
-procedure Tfrm_UnCodeX.UMPreviousInstParams(var Message: TMessage);
+procedure Tfrm_UnCodeX.WMCopyData(var msg: TWMCopyData);
 var
- Len : integer;
- S   : string;
+  data: TRedirectStruct;
 begin
-  SetLength(S, MAX_PATH);
-  Len := GlobalGetAtomName(Message.wParam, PChar(S), MAX_PATH);
-  if Len > 0 then begin
-    SetLength(S, Len);
-    Log(S);
+  if (msg.CopyDataStruct.cbData = SizeOf(data)) then begin
+    CopyMemory(@data, msg.CopyDataStruct.lpData, msg.CopyDataStruct.cbData);
+    StatusHandle := data.NewHandle;
+    searchclass := data.Find;
+    CSprops[0] := false;
+    ActiveControl := tv_Classes;
+    tv_Classes.Selected := nil;
+    ac_FindNext.Execute;
+    // data.Batch;
+
+    Msg.Result := ord(true);
   end;
 end;
 
@@ -1385,9 +1383,9 @@ end;
 
 procedure Tfrm_UnCodeX.tv_ClassesExpanding(Sender: TObject;
   Node: TTreeNode; var AllowExpansion: Boolean);
-var
+{var
   pt: TPoint;
-  ht: THitTests;
+  ht: THitTests;}
 begin
   // FIXME:
   {with Node.TreeView do begin
