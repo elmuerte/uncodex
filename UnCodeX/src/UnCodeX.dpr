@@ -28,6 +28,7 @@ uses
 var
   HasPrevInst: boolean = false;
   PrevInst: HWND;
+  RedirectData: TRedirectStruct;
 
 function StringHash(input: string): integer;
 var
@@ -51,18 +52,16 @@ end;
 
 procedure FindOtherWindow;
 var
-  aAtom: TAtom;
+  CopyData: TCopyDataStruct;
 begin
   EnumWindows(@EnumWindowCallBack, 0);
   if (PrevInst <> 0) then begin
-    PostMessage(PrevInst, UM_RESTORE_APPLICATION, 0, 0); // bring to front
-    if (ParamCount > 0) then begin
-      aAtom := GlobalAddAtom(PChar('test test test test test'));
-      if (aAtom <> 0) then begin
-        SendMessage(PrevInst, UM_PREVIOUS_INST_PARAMS, aAtom, 0);
-        GlobalDeleteAtom(aAtom);
-      end;
-    end;
+    SetForegroundWindow(PrevInst);
+    BringWindowToTop(PrevInst);
+    CopyData.cbData := SizeOf(RedirectData);
+    CopyData.dwData := PrevInst;
+    CopyData.lpData := @RedirectData;
+    SendMessage(PrevInst, WM_COPYDATA, PrevInst, Integer(@CopyData));
     HasPrevInst := true;
   end;
 end;
@@ -99,6 +98,7 @@ begin
         Inc(j);
         if (ParamStr(i) = '--') then break;
         CmdStack.Add(LowerCase(ParamStr(i)));
+        RedirectData.Batch := RedirectData.Batch+LowerCase(ParamStr(i))+' ';
       end;
     end
     else if (LowerCase(ParamStr(j)) = '-hide') then begin
@@ -115,6 +115,7 @@ begin
     else if (LowerCase(ParamStr(j)) = '-handle') then begin
       Inc(j);
       StatusHandle := StrToIntDef(ParamStr(j), -1);
+      RedirectData.NewHandle := StatusHandle;
     end
     else if (LowerCase(ParamStr(j)) = '-reuse') then begin
       reuse := true;
@@ -125,6 +126,7 @@ begin
       i := Pos('.', tmp);
       if (i > 0) then Delete(tmp, i, MaxInt);
       searchclass := tmp;
+      RedirectData.Find := tmp;
     end;
     Inc(j);
   end;

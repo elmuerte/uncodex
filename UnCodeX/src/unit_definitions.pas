@@ -9,6 +9,12 @@ uses
 type
   TStatusReport = procedure(msg: string; progress: byte = 255) of Object;
 
+  TRedirectStruct = packed record
+    Find: string[64];
+    Batch: string[255];
+    NewHandle: integer;
+  end;
+
   function StrRepeat(line: string; count: integer): string;
 
   function SearchQuery(const ACaption, APrompt: string; var value: string; var checkvalue: array of boolean;
@@ -17,7 +23,7 @@ type
   
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '041 Beta';
+  APPVERSION = '042 Beta';
 
   PATHDELIM = '\';
   WILDCARD = '*.*';
