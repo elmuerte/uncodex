@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.95 2004-04-18 18:46:15 elmuerte Exp $
+ $Id: unit_main.pas,v 1.96 2004-04-29 15:35:40 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -232,6 +232,7 @@ type
     fr_Props: Tfr_Properties;
     ac_DefProps: TAction;
     mi_DefProps: TMenuItem;
+    mi_SortList: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -339,6 +340,7 @@ type
     procedure ac_MoveClassExecute(Sender: TObject);
     procedure ac_DefPropsExecute(Sender: TObject);
     procedure ac_RenameClassExecute(Sender: TObject);
+    procedure mi_SortListClick(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -3139,6 +3141,12 @@ end;
 procedure Tfrm_UnCodeX.ac_RenameClassExecute(Sender: TObject);
 begin
   if (SelectedUClass <> nil) then RenameUClass(SelectedUClass);
+end;
+
+procedure Tfrm_UnCodeX.mi_SortListClick(Sender: TObject);
+begin
+	lb_Log.Sorted := true;
+  lb_Log.Sorted := false;
 end;
 
 initialization

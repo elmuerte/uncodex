@@ -2162,6 +2162,10 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Caption = 'Save to file'
       OnClick = mi_SaveToFile1Click
     end
+    object mi_SortList: TMenuItem
+      Caption = 'Sort'
+      OnClick = mi_SortListClick
+    end
   end
   object sd_SaveLog: TSaveDialog
     DefaultExt = '*.log'
