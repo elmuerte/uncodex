@@ -21,6 +21,7 @@ type
   public
     procedure SortOnPackage;
     procedure FilterDuplicates;
+    procedure FilterDuplicatePackages;
     function Add(AObject: TDependency): Integer;
     property Items[Index: Integer]: TDependency read GetItem write SetItem; default;
   end;
@@ -100,11 +101,30 @@ end;
 
 procedure TDepList.FilterDuplicates;
 var
-  i: integer;
+  i,j: integer;
 begin
-  for i := Count-1 downto 1 do begin
-    if ((Items[i].source = Items[i-1].source) and (Items[i].depends = Items[i-1].depends))
-      then Delete(i);
+  for i := Count-1 downto 0 do begin
+    for j := i-1 downto 0 do begin
+      if ((Items[j].source = Items[i].source) and (Items[j].depends = Items[i].depends)) then begin
+        Delete(i);
+        break;
+      end;
+    end;
+  end;
+end;
+
+procedure TDepList.FilterDuplicatePackages;
+var
+  i,j: integer;
+begin
+  for i := Count-1 downto 0 do begin
+    for j := i-1 downto 0 do begin
+      if ((Items[j].source.package = Items[i].source.package)
+        and (Items[j].depends.package = Items[i].depends.package)) then begin
+        Delete(i);
+        break;
+      end;
+    end;
   end;
 end;
 

@@ -59,7 +59,7 @@ object frm_GraphViz: Tfrm_GraphViz
   end
   object cb_PackageBorder: TCheckBox
     Left = 304
-    Top = 96
+    Top = 112
     Width = 97
     Height = 17
     Caption = 'Package border'
@@ -69,7 +69,7 @@ object frm_GraphViz: Tfrm_GraphViz
   end
   object cb_Legenda: TCheckBox
     Left = 304
-    Top = 112
+    Top = 128
     Width = 97
     Height = 17
     Caption = 'Legenda'
@@ -538,12 +538,22 @@ object frm_GraphViz: Tfrm_GraphViz
         Top = 48
         Width = 97
         Height = 22
-        Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
+        NoneColorColor = clNone
+        Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone, cbCustomColor, cbPrettyNames]
         ItemHeight = 16
         TabOrder = 4
         Visible = False
         OnChange = cl_ColorChange
         OnExit = cb_ColorExit
+      end
+      object btn_SelectAll: TBitBtn
+        Left = 80
+        Top = 220
+        Width = 75
+        Height = 25
+        Caption = 'Select all'
+        TabOrder = 5
+        OnClick = btn_SelectAllClick
       end
     end
     object TabSheet1: TTabSheet
@@ -561,6 +571,14 @@ object frm_GraphViz: Tfrm_GraphViz
         TabOrder = 0
       end
     end
+  end
+  object cb_OnlyPackages: TCheckBox
+    Left = 304
+    Top = 96
+    Width = 97
+    Height = 17
+    Caption = 'Only packages'
+    TabOrder = 6
   end
   object sd_Save: TSaveDialog
     DefaultExt = '.dot'
