@@ -3,7 +3,7 @@
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
             Based on the TParser class by Borland Software Corporation
- $Id: unit_parser.pas,v 1.15 2004-04-01 18:40:26 elmuerte Exp $
+ $Id: unit_parser.pas,v 1.16 2004-05-07 13:19:50 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 { *************************************************************************** }
@@ -111,6 +111,9 @@ var
   comminit: integer; // so strip of the first /**
   commentdepth: integer;
 begin
+	//if (FToken = toEOF) then begin
+  //  raise Exception.Create('NextToken beyond EOF');
+  //end;
   SkipBlanks;
   P := FSourcePtr;
   FTokenPtr := P;
