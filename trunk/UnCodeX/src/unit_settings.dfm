@@ -41,7 +41,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_PackagePriority
+    ActivePage = ts_Layout
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -830,6 +830,13 @@ object frm_Settings: Tfrm_Settings
           Width = 49
           Height = 13
           Caption = 'Log layout'
+        end
+        object lbl_SourceSnoop: TLabel
+          Left = 8
+          Top = 232
+          Width = 66
+          Height = 13
+          Caption = 'Source snoop'
         end
         object tv_TreeLayout: TTreeView
           Left = 8

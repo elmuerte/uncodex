@@ -13,7 +13,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls,
   Forms, Dialogs, ComCtrls, Menus, StdCtrls, unit_packages, ExtCtrls,
   unit_uclasses, IniFiles, ShellApi, AppEvnts, ImgList, ActnList, StrUtils,
-  Clipbrd, hh, hh_funcs, ToolWin;
+  Clipbrd, hh, hh_funcs, ToolWin, richedit, unit_richeditex;
 
 const
   // custom window messages
@@ -120,7 +120,7 @@ type
     mi_FindClass: TMenuItem;
     mi_FindNext: TMenuItem;
     ac_FindNext: TAction;
-    re_SourceSnoop: TRichEdit;
+    re_SourceSnoop: TRichEditEx;
     spl_Main3: TSplitter;
     mi_SourceSnoop: TMenuItem;
     mi_FindNext2: TMenuItem;
@@ -159,6 +159,17 @@ type
     mi_SingleOutput: TMenuItem;
     ac_SourceSnoop: TAction;
     ac_VSourceSnoop: TAction;
+    pm_SourceSnoop: TPopupMenu;
+    mi_CopyToCliptboard: TMenuItem;
+    mi_saveToFile: TMenuItem;
+    ac_CopySelection: TAction;
+    ac_SaveToRTF: TAction;
+    ac_SelectAll: TAction;
+    sd_SaveToRTF: TSaveDialog;
+    mi_N16: TMenuItem;
+    mi_SelectAll: TMenuItem;
+    mi_N17: TMenuItem;
+    mi_ClearHilight: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -219,10 +230,13 @@ type
     procedure ac_SourceSnoopExecute(Sender: TObject);
     procedure tv_ClassesChange(Sender: TObject; Node: TTreeNode);
     procedure ac_VSourceSnoopExecute(Sender: TObject);
-    procedure re_SourceSnoopKeyDown(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
-    procedure re_SourceSnoopKeyUp(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
+    procedure ac_CopySelectionExecute(Sender: TObject);
+    procedure ac_SaveToRTFExecute(Sender: TObject);
+    procedure ac_SelectAllExecute(Sender: TObject);
+    procedure re_SourceSnoopMouseMove(Sender: TObject; Shift: TShiftState;
+      X, Y: Integer);
+    procedure mi_ClearHilightClick(Sender: TObject);
+    procedure sb_StatusClick(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -968,6 +982,15 @@ begin
     tv_Packages.Color := ini.ReadInteger('Layout', 'Tree.Color', tv_Packages.Color);
     ExpandObject := ini.ReadBool('Layout', 'ExpandObject', true);
     MinimizeOnClose := ini.ReadBool('Layout', 'MinimizeOnClose', MinimizeOnClose);
+    re_SourceSnoop.Color := ini.ReadInteger('Layout', 'Source.Color', re_SourceSnoop.Color);
+    re_SourceSnoop.Font.Color := ini.ReadInteger('Layout', 'Source.Font.Color', re_SourceSnoop.Color);
+    unit_rtfhilight.cf1 := ini.ReadInteger('Layout', 'Source.CF1', unit_rtfhilight.cf1);
+    unit_rtfhilight.cf2 := ini.ReadInteger('Layout', 'Source.CF2', unit_rtfhilight.cf2);
+    unit_rtfhilight.cf3 := ini.ReadInteger('Layout', 'Source.CF3', unit_rtfhilight.cf3);
+    unit_rtfhilight.cf4 := ini.ReadInteger('Layout', 'Source.CF4', unit_rtfhilight.cf4);
+    unit_rtfhilight.cf5 := ini.ReadInteger('Layout', 'Source.CF5', unit_rtfhilight.cf5);
+    unit_rtfhilight.textfont.Name := ini.ReadString('Layout', 'Source.Font.Name', unit_rtfhilight.textfont.Name);
+    unit_rtfhilight.textfont.Size := ini.ReadInteger('Layout', 'Source.Font.Size', unit_rtfhilight.textfont.Size);
     { Color and fonts -- END }
     { Load layout -- END }
     { Program configuration }
@@ -1167,6 +1190,7 @@ begin
     tv_TreeLayout.Color := tv_Classes.Color;
     tv_TreeLayout.Font := tv_Classes.Font;
     cb_ExpandObject.Checked := ExpandObject;
+
     { Program options }
     ed_StateFilename.Text := ExtractFilename(StateFile);
     cb_MinimzeOnClose.Checked := MinimizeOnClose;
@@ -1631,14 +1655,33 @@ end;
 
 procedure Tfrm_UnCodeX.lb_LogClick(Sender: TObject);
 var
-  i: integer;
+  i,j,k: integer;
+  linenr, curpos: string;
 begin
   if (lb_Log.ItemIndex = -1) then exit;
   if (lb_Log.Items.Objects[lb_Log.ItemIndex] = nil) then exit;
   if (TObject(lb_Log.Items.Objects[lb_Log.ItemIndex]).ClassType <> TUClass) then exit;
   for i := 0 to tv_Classes.Items.Count-1 do begin
+    ActiveControl := tv_Classes;
     if (tv_Classes.Items[i].Data = lb_Log.Items.Objects[lb_Log.ItemIndex]) then begin
       tv_Classes.Select(tv_Classes.Items[i]);
+      if (mi_SourceSnoop.Checked) then begin
+        linenr := lb_Log.Items[lb_Log.ItemIndex];
+        j := Pos(FTS_LN_BEGIN, linenr);
+        k := Pos(FTS_LN_END, linenr);
+        linenr := Copy(linenr, j+Length(FTS_LN_BEGIN), k-j-Length(FTS_LN_BEGIN));
+        j := Pos(FTS_LN_SEP, linenr);
+        curpos := Copy(linenr, j+Length(FTS_LN_SEP), MaxInt);
+        Delete(linenr, j, MaxInt);
+        j := StrToIntDef(linenr, 1)-1;
+        re_SourceSnoop.Perform(EM_LINESCROLL, 0, -1*re_SourceSnoop.Lines.Count);
+        re_SourceSnoop.Perform(EM_LINESCROLL, 0, j);
+        k := re_SourceSnoop.Perform(EM_LINEINDEX, j, 0); // get line index
+        re_SourceSnoop.ClearBgColor();
+        re_SourceSnoop.SelStart := k;
+        re_SourceSnoop.SelLength := re_SourceSnoop.Perform(EM_LINELENGTH, k, 0);
+        re_SourceSnoop.SetSelBgColor(clSilver);
+      end;
       exit;
     end;
   end;
@@ -1874,7 +1917,7 @@ begin
         fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
         ms := TMemoryStream.Create;
         try
-          RTFHilightUScript(fs, ms);
+          RTFHilightUScript(fs, ms, TUClass(Selected.Data));
           re_SourceSnoop.Lines.Clear;
           ms.Position := 0;
           re_SourceSnoop.Lines.LoadFromStream(ms);
@@ -1889,6 +1932,7 @@ end;
 
 procedure Tfrm_UnCodeX.tv_ClassesChange(Sender: TObject; Node: TTreeNode);
 begin
+  ActiveControl := (Sender as TWinControl);
   if (re_SourceSnoop.Visible) then ac_SourceSnoop.Execute;
 end;
 
@@ -1901,16 +1945,37 @@ begin
   if (mi_SourceSnoop.Checked and not DoInit) then ac_SourceSnoop.Execute;
 end;
 
-procedure Tfrm_UnCodeX.re_SourceSnoopKeyDown(Sender: TObject;
-  var Key: Word; Shift: TShiftState);
+procedure Tfrm_UnCodeX.ac_CopySelectionExecute(Sender: TObject);
 begin
-  //if (ssCtrl in Shift) then re_SourceSnoop.Cursor := crHandPoint;
+  Clipboard.AsText := re_SourceSnoop.SelText;
 end;
 
-procedure Tfrm_UnCodeX.re_SourceSnoopKeyUp(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure Tfrm_UnCodeX.ac_SaveToRTFExecute(Sender: TObject);
 begin
-  //re_SourceSnoop.Cursor := crDefault;
+  if (sd_SaveToRTF.execute) then re_SourceSnoop.Lines.SaveToFile(sd_SaveToRTF.FileName);
+end;
+
+procedure Tfrm_UnCodeX.ac_SelectAllExecute(Sender: TObject);
+begin
+  re_SourceSnoop.SelectAll;
+end;
+
+procedure Tfrm_UnCodeX.re_SourceSnoopMouseMove(Sender: TObject;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if (ssCtrl in Shift) then begin
+    
+  end;
+end;
+
+procedure Tfrm_UnCodeX.mi_ClearHilightClick(Sender: TObject);
+begin
+  re_SourceSnoop.ClearBgColor;
+end;
+
+procedure Tfrm_UnCodeX.sb_StatusClick(Sender: TObject);
+begin
+  re_SourceSnoop.makeurl();
 end;
 
 end.
