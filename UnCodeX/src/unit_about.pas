@@ -1,8 +1,8 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_about
  Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   about UnCodeX dialog
- History:
 -----------------------------------------------------------------------------}
 
 unit unit_about;

@@ -1,3 +1,11 @@
+{-----------------------------------------------------------------------------
+ Unit Name: ucxc
+ Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Purpose:   UnCodeX Commandline edition
+ History:
+-----------------------------------------------------------------------------}
+
 program ucxc;
 
 {$APPTYPE CONSOLE}

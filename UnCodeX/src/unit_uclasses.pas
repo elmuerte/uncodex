@@ -1,8 +1,8 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_uclasses
  Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   definitions for Unreal Classes
- History:
 -----------------------------------------------------------------------------}
 
 unit unit_uclasses;

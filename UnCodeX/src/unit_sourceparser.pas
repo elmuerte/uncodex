@@ -3,8 +3,20 @@
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
             Based on the TParser class by Borland Software Corporation
- History:
 -----------------------------------------------------------------------------}
+
+{ *************************************************************************** }
+{                                                                             }
+{ Kylix and Delphi Cross-Platform Visual Component Library                    }
+{ Internet Application Runtime                                                }
+{                                                                             }
+{ Copyright (C) 1997, 2001 Borland Software Corporation                       }
+{                                                                             }
+{ Licensees holding a valid Borland No-Nonsense License for this Software may }
+{ use this file in accordance with such license, which appears in the file    }
+{ license.txt that came with this Software.                                   }
+{                                                                             }
+{ *************************************************************************** }
 
 unit unit_sourceparser;
 

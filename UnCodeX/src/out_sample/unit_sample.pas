@@ -1,3 +1,10 @@
+{-----------------------------------------------------------------------------
+ Unit Name: unit_sample
+ Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Purpose:   Sample output module for UnCodeX
+-----------------------------------------------------------------------------}
+
 unit unit_sample;
 
 interface

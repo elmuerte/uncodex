@@ -1,8 +1,8 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_utils
  Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   General function/utils that require Forms
- History:
 -----------------------------------------------------------------------------}
 
 unit unit_utils;

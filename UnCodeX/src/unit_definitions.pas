@@ -1,8 +1,8 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_definitions
  Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   General definitions
- History:
 -----------------------------------------------------------------------------}
 
 unit unit_definitions;
@@ -101,9 +101,11 @@ initialization
   Keywords.Items['continue'] := '-';
   Keywords.Items['cpptext'] := '-';
   Keywords.Items['defaultproperties'] := '-';
+  Keywords.Items['dependsOn'] := '-';
   Keywords.Items['do'] := '-';
   Keywords.Items['editconst'] := '-';
   Keywords.Items['editinline'] := '-';
+  Keywords.Items['editinlinenew'] := '-';
   Keywords.Items['else'] := '-';
   Keywords.Items['enum'] := '-';
   Keywords.Items['event'] := '-';
@@ -123,6 +125,7 @@ initialization
   Keywords.Items['if'] := '-';
   Keywords.Items['ignores'] := '-';
   Keywords.Items['input'] := '-';
+  Keywords.Items['instanced'] := '-';
   Keywords.Items['int'] := '-';
   Keywords.Items['latent'] := '-';
   Keywords.Items['local'] := '-';
@@ -132,9 +135,12 @@ initialization
   Keywords.Items['nativereplication'] := '-';
   Keywords.Items['new'] := '-';
   Keywords.Items['noexport'] := '-';
+  Keywords.Items['noteditinlinenew'] := '-';
+  Keywords.Items['notplaceable'] := '-';
   Keywords.Items['operator'] := '-';
   Keywords.Items['optional'] := '-';
   Keywords.Items['out'] := '-';
+  Keywords.Items['perobjectconfig'] := '-';
   Keywords.Items['placeable'] := '-';
   Keywords.Items['postoperator'] := '-';
   Keywords.Items['preoperator'] := '-';
@@ -143,6 +149,7 @@ initialization
   Keywords.Items['reliable'] := '-';
   Keywords.Items['replication'] := '-';
   Keywords.Items['return'] := '-';
+  Keywords.Items['showcategories'] := '-';
   Keywords.Items['simulated'] := '-';
   Keywords.Items['skip'] := '-';
   Keywords.Items['spawn'] := '-';

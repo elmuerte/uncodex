@@ -1,8 +1,8 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_main
  Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- History:
 -----------------------------------------------------------------------------}
 
 unit unit_main;
@@ -1211,9 +1211,13 @@ begin
     cb_FTSRegExp.Checked := FTSRegexp;
     { Layout settings }
     lb_LogLayout.Color := lb_Log.Color;
+    cb_LogColor.Selected := lb_Log.Color;
     lb_LogLayout.Font := lb_Log.Font;
+    cb_LogFontColor.Selected := lb_Log.Font.Color;
     tv_TreeLayout.Color := tv_Classes.Color;
+    cb_BGColor.Selected := tv_Classes.Color;
     tv_TreeLayout.Font := tv_Classes.Font;
+    cb_FontColor.Selected := tv_Classes.Font.Color;
     cb_ExpandObject.Checked := ExpandObject;
     re_Preview.Color := re_SourceSnoop.Color;
     cb_Background.Selected := re_Preview.Color;
