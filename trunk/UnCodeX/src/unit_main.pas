@@ -649,7 +649,7 @@ begin
   if (msg.CopyDataStruct.cbData = SizeOf(data)) then begin
     RestoreHandle := Handle;
     CopyMemory(@data, msg.CopyDataStruct.lpData, msg.CopyDataStruct.cbData);
-    StatusHandle := data.NewHandle;
+    if (data.NewHandle <> 0) then StatusHandle := data.NewHandle;
     if (data.Find <> '') then begin
       searchclass := data.Find;
       CSprops[0] := false;
