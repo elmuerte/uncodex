@@ -1,11 +1,11 @@
 object frm_UnCodeX: Tfrm_UnCodeX
-  Left = 228
-  Top = 123
+  Left = 217
+  Top = 117
   HelpType = htKeyword
   ActiveControl = tv_Classes
   AutoScroll = False
-  ClientHeight = 545
-  ClientWidth = 742
+  ClientHeight = 597
+  ClientWidth = 669
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -30,7 +30,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Left = 0
     Top = 34
     Width = 4
-    Height = 480
+    Height = 532
     Cursor = crHSplit
     AutoSnap = False
     Visible = False
@@ -38,7 +38,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
   object splTop: TSplitter
     Left = 0
     Top = 30
-    Width = 742
+    Width = 669
     Height = 4
     Cursor = crVSplit
     Align = alTop
@@ -47,8 +47,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
   end
   object splBottom: TSplitter
     Left = 0
-    Top = 514
-    Width = 742
+    Top = 566
+    Width = 669
     Height = 4
     Cursor = crVSplit
     Align = alBottom
@@ -56,10 +56,10 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Visible = False
   end
   object splRight: TSplitter
-    Left = 738
+    Left = 665
     Top = 34
     Width = 4
-    Height = 480
+    Height = 532
     Cursor = crHSplit
     Align = alRight
     AutoSnap = False
@@ -70,8 +70,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
   object pnlCenter: TPanel
     Left = 4
     Top = 34
-    Width = 734
-    Height = 480
+    Width = 661
+    Height = 532
     Align = alClient
     BevelOuter = bvNone
     BevelWidth = 0
@@ -108,8 +108,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
   end
   object sb_Status: TStatusBar
     Left = 0
-    Top = 526
-    Width = 742
+    Top = 578
+    Width = 669
     Height = 19
     Panels = <
       item
@@ -120,8 +120,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
   end
   object pb_Scan: TProgressBar
     Left = 0
-    Top = 518
-    Width = 742
+    Top = 570
+    Width = 669
     Height = 8
     Align = alBottom
     Min = 0
@@ -131,7 +131,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
   object tb_Tools: TToolBar
     Left = 0
     Top = 0
-    Width = 742
+    Width = 669
     Height = 30
     HelpType = htKeyword
     HelpKeyword = 'window_main.html#toolbar'
@@ -335,7 +335,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
   object dckTop: TPanel
     Left = 0
     Top = 34
-    Width = 742
+    Width = 669
     Height = 0
     Align = alTop
     BevelOuter = bvNone
@@ -346,8 +346,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
   end
   object dckBottom: TPanel
     Left = 0
-    Top = 518
-    Width = 742
+    Top = 570
+    Width = 669
     Height = 0
     Align = alBottom
     BevelOuter = bvNone
@@ -360,7 +360,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Left = 4
     Top = 34
     Width = 0
-    Height = 480
+    Height = 532
     Align = alLeft
     BevelOuter = bvNone
     DockSite = True
@@ -369,10 +369,10 @@ object frm_UnCodeX: Tfrm_UnCodeX
     OnUnDock = dckLeftUnDock
   end
   object dckRight: TPanel
-    Left = 742
+    Left = 669
     Top = 34
     Width = 0
-    Height = 480
+    Height = 532
     Align = alRight
     BevelOuter = bvNone
     DockSite = True
@@ -412,11 +412,16 @@ object frm_UnCodeX: Tfrm_UnCodeX
     HelpKeyword = 'window_tags.html'
     DragKind = dkDock
     TabOrder = 12
+    inherited bvl_Nothing: TBevel
+      Width = 193
+    end
     inherited lv_Properties: TListView
+      Width = 193
       HelpType = htKeyword
       HelpKeyword = 'window_tags.html'
     end
     inherited pnl_Ctrls: TPanel
+      Width = 193
       inherited ed_InheritanceLevel: TEdit
         HelpType = htKeyword
         HelpKeyword = 'window_tags.html'
@@ -999,14 +1004,14 @@ object frm_UnCodeX: Tfrm_UnCodeX
     object ac_VTRight: TAction
       Category = 'Layout'
       AutoCheck = True
-      Caption = 'Right'
+      Caption = 'Dock on the right'
       ShortCut = 49191
       OnExecute = ac_VTRightExecute
     end
     object ac_VTLeft: TAction
       Category = 'Layout'
       AutoCheck = True
-      Caption = 'Left'
+      Caption = 'Dock on the left'
       ShortCut = 49189
       OnExecute = ac_VTLeftExecute
     end

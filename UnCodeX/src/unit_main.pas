@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.150 2005-03-28 09:56:20 elmuerte Exp $
+  $Id: unit_main.pas,v 1.151 2005-03-28 12:22:51 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -397,6 +397,7 @@ type
     OldStyleEx: Cardinal;
     OldStyle: Cardinal;
     OldSize: TRect;
+    OldWindowState: TWindowState;
     IsAppBar: boolean;
     ABAutoHide: boolean;
     abd: APPBARDATA;
@@ -874,6 +875,8 @@ begin
   OldSize.Top := Top;
   OldSize.Right := Width;
   OldSize.Bottom := Height;
+  OldWindowState := WindowState;
+  if (WindowState <> wsNormal) then WindowState := wsNormal;
   SystemParametersInfo(SPI_GETWORKAREA, 0, @WorkArea, 0);
 
   // Register bar
@@ -917,6 +920,7 @@ begin
     Width := OldSize.Right;
     Height := OldSize.Bottom;
     Show;
+    WindowState := OldWindowState;
   end;
 end;
 
