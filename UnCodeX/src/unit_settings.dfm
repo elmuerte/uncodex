@@ -12,6 +12,7 @@ object frm_Settings: Tfrm_Settings
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  OnClose = FormClose
   OnCreate = FormCreate
   DesignSize = (
     671
@@ -34,6 +35,7 @@ object frm_Settings: Tfrm_Settings
     Height = 25
     Anchors = [akTop, akRight]
     TabOrder = 3
+    OnClick = btn_CancelClick
     Kind = bkCancel
   end
   object pc_Settings: TPageControl
@@ -41,7 +43,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_Layout
+    ActivePage = ts_SourceSnoop
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -831,13 +833,6 @@ object frm_Settings: Tfrm_Settings
           Height = 13
           Caption = 'Log layout'
         end
-        object lbl_SourceSnoop: TLabel
-          Left = 8
-          Top = 232
-          Width = 66
-          Height = 13
-          Caption = 'Source snoop'
-        end
         object tv_TreeLayout: TTreeView
           Left = 8
           Top = 32
@@ -1119,6 +1114,162 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 3
           ViewStyle = vsReport
           OnSelectItem = lv_HotKeysSelectItem
+        end
+      end
+    end
+    object ts_SourceSnoop: TTabSheet
+      Caption = 'Source snoop'
+      ImageIndex = 11
+      TabVisible = False
+      object gb_Sourcesnoop: TGroupBox
+        Left = 0
+        Top = 0
+        Width = 433
+        Height = 368
+        Align = alClient
+        Caption = 'Source snoop'
+        TabOrder = 0
+        DesignSize = (
+          433
+          368)
+        object Label2: TLabel
+          Left = 8
+          Top = 53
+          Width = 34
+          Height = 13
+          Caption = 'Default'
+        end
+        object Label4: TLabel
+          Left = 8
+          Top = 77
+          Width = 87
+          Height = 13
+          Caption = 'Strings/Ints/Floats'
+        end
+        object Label5: TLabel
+          Left = 8
+          Top = 101
+          Width = 49
+          Height = 13
+          Caption = 'Comments'
+        end
+        object Label6: TLabel
+          Left = 224
+          Top = 53
+          Width = 30
+          Height = 13
+          Caption = 'Macro'
+        end
+        object Label7: TLabel
+          Left = 224
+          Top = 77
+          Width = 28
+          Height = 13
+          Caption = 'Name'
+        end
+        object Label8: TLabel
+          Left = 224
+          Top = 101
+          Width = 74
+          Height = 13
+          Caption = 'Type (not used)'
+        end
+        object Label9: TLabel
+          Left = 224
+          Top = 21
+          Width = 58
+          Height = 13
+          Caption = 'Background'
+        end
+        object BitBtn1: TBitBtn
+          Left = 8
+          Top = 16
+          Width = 113
+          Height = 25
+          Caption = 'Font'
+          TabOrder = 0
+          OnClick = BitBtn1Click
+        end
+        object re_Preview: TRichEditEx
+          Left = 8
+          Top = 128
+          Width = 417
+          Height = 233
+          Anchors = [akLeft, akTop, akRight, akBottom]
+          ReadOnly = True
+          ScrollBars = ssBoth
+          TabOrder = 1
+          WordWrap = False
+        end
+        object cb_cf0: TColorBox
+          Left = 120
+          Top = 48
+          Width = 97
+          Height = 22
+          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
+          ItemHeight = 16
+          TabOrder = 2
+          OnChange = cb_cf0Change
+        end
+        object cb_cf1: TColorBox
+          Left = 120
+          Top = 72
+          Width = 97
+          Height = 22
+          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
+          ItemHeight = 16
+          TabOrder = 3
+          OnChange = cb_cf1Change
+        end
+        object cb_cf2: TColorBox
+          Left = 120
+          Top = 96
+          Width = 97
+          Height = 22
+          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
+          ItemHeight = 16
+          TabOrder = 4
+          OnChange = cb_cf2Change
+        end
+        object cb_cf3: TColorBox
+          Left = 320
+          Top = 48
+          Width = 97
+          Height = 22
+          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
+          ItemHeight = 16
+          TabOrder = 5
+          OnChange = cb_cf3Change
+        end
+        object cb_cf4: TColorBox
+          Left = 320
+          Top = 72
+          Width = 97
+          Height = 22
+          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
+          ItemHeight = 16
+          TabOrder = 6
+          OnChange = cb_cf4Change
+        end
+        object cb_cf5: TColorBox
+          Left = 320
+          Top = 96
+          Width = 97
+          Height = 22
+          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
+          ItemHeight = 16
+          TabOrder = 7
+          OnChange = cb_cf5Change
+        end
+        object cb_Background: TColorBox
+          Left = 320
+          Top = 16
+          Width = 97
+          Height = 22
+          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
+          ItemHeight = 16
+          TabOrder = 8
+          OnChange = cb_BackgroundChange
         end
       end
     end
