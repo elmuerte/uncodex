@@ -82,7 +82,7 @@ begin
   hhp.Add('Title='+APPTITLE+' - '+APPVERSION);
   hhp.Add('');
   hhp.Add('[WINDOWS]');
-  // TODO:
+  // TODO: make title configurable
   hhp.Add('Main="'+APPTITLE+' - '+APPVERSION+'","_htmlhelp.hhc",,"index.html","index.html",,,,,0x62520,,0x104e,[0,0,800,600],,,,1,,,0');
   hhp.Add('');
   hhp.Add('[FILES]');
