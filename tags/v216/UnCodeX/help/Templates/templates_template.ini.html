@@ -1,0 +1,219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<title>UnCodeX - Template template.ini</title>
+	<link href="../images/default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="../images/UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">template.ini</div>
+</div>
+
+<div class="content">
+<h1>HTML Templates template.ini</h1>
+This file configures the template used.
+
+<h2>[Titles]</h2>
+<table>
+<tr>
+	<td><pre>Overview=</pre></td>
+	<td>the title for the overview link</td>
+</tr>
+<tr>
+	<td><pre>Glossary=</pre></td>
+	<td>the title for the glossary link</td>
+</tr>
+<tr>
+	<td><pre>ClassTree=</pre></td>
+	<td>the title for the class tree link</td>
+</tr>
+<tr>
+	<td><pre>DirectSubclasses=</pre></td>
+	<td>direct subclasses of the class</td>
+</tr>
+<tr>
+	<td><pre>Constants=</pre></td>
+	<td>used as title for the class constants</td>
+</tr>
+<tr>
+	<td><pre>Variables=</pre></td>
+	<td>used as title for the class variables</td>
+</tr>
+<tr>
+	<td><pre>Enumerations=</pre></td>
+	<td>used as the title for the class enumerations</td>
+</tr>
+<tr>
+	<td><pre>Structures=</pre></td>
+	<td>used as the title for the class structures</td>
+</tr>
+<tr>
+	<td><pre>Functions=</pre></td>
+	<td>used as the title for the class function</td>
+</tr>
+<tr>
+	<td><pre>HasCommentValue=</pre></td>
+	<td>will be used replace the %has_comment_?% replacement with</td>
+</tr>FunctionInit
+<tr>
+	<td><pre>FunctionInit=</pre></td>
+	<td>will be used replace the %function_init% replacement with</td>
+</tr>
+<tr>
+	<td><pre>DefaultTitle=</pre></td>
+	<td>default title replacement</td>
+</tr>
+<tr>
+	<td><pre>DateFormat=</pre></td>
+	<td>the format used to display the date:<br />
+	<table>
+<tr><th>replacement</th><th>replaced with</th></tr>
+<tr><td>c</td><td>	Displays the date using the format given by the ShortDateFormat global variable, followed by the time using the format given by the LongTimeFormat global variable. The time is not displayed if the date-time value indicates midnight precisely.</td></tr>
+<tr><td>d</td><td>	Displays the day as a number without a leading zero (1-31).</td></tr>
+<tr><td>dd</td><td>	Displays the day as a number with a leading zero (01-31).</td></tr>
+<tr><td>ddd</td><td>	Displays the day as an abbreviation (Sun-Sat) using the strings given by the ShortDayNames global variable.</td></tr>
+<tr><td>dddd</td><td>	Displays the day as a full name (Sunday-Saturday) using the strings given by the LongDayNames global variable.</td></tr>
+<tr><td>ddddd</td><td>	Displays the date using the format given by the ShortDateFormat global variable.</td></tr>
+<tr><td>dddddd</td><td>	Displays the date using the format given by the LongDateFormat global variable.</td></tr>
+<tr><td>e</td><td>	Displays the year in the current period/era as a number without a leading zero (Japanese, Korean and Taiwanese locales only).</td></tr>
+<tr><td>ee</td><td>	Displays the year in the current period/era as a number with a leading zero (Japanese, Korean and Taiwanese locales only).</td></tr>
+<tr><td>g</td><td>	Displays the period/era as an abbreviation (Japanese and Taiwanese locales only).</td></tr>
+<tr><td>gg</td><td>	Displays the period/era as a full name. (Japanese and Taiwanese locales only).</td></tr>
+<tr><td>m</td><td>	Displays the month as a number without a leading zero (1-12). If the m specifier immediately follows an h or hh specifier, the minute rather than the month is displayed.</td></tr>
+<tr><td>mm</td><td>	Displays the month as a number with a leading zero (01-12). If the mm specifier immediately follows an h or hh specifier, the minute rather than the month is displayed.</td></tr>
+<tr><td>mmm</td><td>	Displays the month as an abbreviation (Jan-Dec) using the strings given by the ShortMonthNames global variable.</td></tr>
+<tr><td>mmmm</td><td>	Displays the month as a full name (January-December) using the strings given by the LongMonthNames global variable.</td></tr>
+<tr><td>yy</td><td>	Displays the year as a two-digit number (00-99).</td></tr>
+<tr><td>yyyy</td><td>	Displays the year as a four-digit number (0000-9999).</td></tr>
+<tr><td>h</td><td>	Displays the hour without a leading zero (0-23).</td></tr>
+<tr><td>hh</td><td>	Displays the hour with a leading zero (00-23).</td></tr>
+<tr><td>n</td><td>	Displays the minute without a leading zero (0-59).</td></tr>
+<tr><td>nn</td><td>	Displays the minute with a leading zero (00-59).</td></tr>
+<tr><td>s</td><td>	Displays the second without a leading zero (0-59).</td></tr>
+<tr><td>ss</td><td>	Displays the second with a leading zero (00-59).</td></tr>
+<tr><td>z</td><td>	Displays the millisecond without a leading zero (0-999).</td></tr>
+<tr><td>zzz</td><td>	Displays the millisecond with a leading zero (000-999).</td></tr>
+<tr><td>t</td><td>	Displays the time using the format given by the ShortTimeFormat global variable.</td></tr>
+<tr><td>tt</td><td>	Displays the time using the format given by the LongTimeFormat global variable.</td></tr>
+<tr><td>am/pm</td><td>	Uses the 12-hour clock for the preceding h or hh specifier, and displays 'am' for any hour before noon, and 'pm' for any hour after noon. The am/pm specifier can use lower, upper, or mixed case, and the result is displayed accordingly.</td></tr>
+<tr><td>a/p</td><td>	Uses the 12-hour clock for the preceding h or hh specifier, and displays 'a' for any hour before noon, and 'p' for any hour after noon. The a/p specifier can use lower, upper, or mixed case, and the result is displayed accordingly.</td></tr>
+<tr><td>ampm</td><td>	Uses the 12-hour clock for the preceding h or hh specifier, and displays the contents of the TimeAMString global variable for any hour before noon, and the contents of the TimePMString global variable for any hour after noon.</td></tr>
+<tr><td>/</td><td>	Displays the date separator character given by the DateSeparator global variable.</td></tr>
+<tr><td>:</td><td>	Displays the time separator character given by the TimeSeparator global variable.</td></tr>
+<tr><td>'xx'/"xx"</td><td>	Characters enclosed in single or double quotes are displayed as-is, and do not affect formatting.</td></tr>
+</table>	
+	</td>
+</tr>
+</table>
+
+<h2>[CopyFiles]</h2>
+<table>
+<tr>
+	<td><pre>File=</pre></td>
+	<td>file to copy to the destination directory, use this to copy images and stylesheets to the target directory</td>
+</tr>
+</table>
+
+<h2>[Settings]</h2>
+<table>
+<tr>
+	<td><pre>MaxInherit=</pre></td>
+	<td>maximum parent classes to include in the inherited const/vars/etc. listing</td>
+</tr>
+<tr>
+	<td><pre>CreateGlossary=</pre></td>
+	<td>create the glossary if set to 1</td>
+</tr>
+<tr>
+	<td><pre>CreateClassTree=</pre></td>
+	<td>create the class tree if set to 1</td>
+</tr>
+<tr>
+	<td><pre>SourceCode=</pre></td>
+	<td>create syntax highlighted source code if set to 1</td>
+</tr>
+<tr>
+	<td><pre>TargetExt=</pre></td>
+	<td>The target extention, this can be overwritten from within UnCodeX</td>
+</tr>
+<tr>
+	<td><pre>TabsToSpaces=</pre></td>
+	<td>Convert tabs to # spaces, when lower or equal to 0 don't convert</td>
+</tr>
+<tr>
+	<td><pre>CPP=</pre></td>
+	<td>Comment PreProcessor to use (relative to the Template directory)</td>
+</tr>
+<tr>
+	<td><pre>GlossaryElipse=</pre></td>
+	<td>The HTML code to use as elipse in the glossary, default: "... "</td>
+</tr>
+<tr>
+	<td><pre>TreeNone=</pre></td>
+	<td>HTML code to use for an empty spot in a class tree, default: "    "</td>
+</tr>
+<tr>
+	<td><pre>TreeT=</pre></td>
+	<td>HTML code to use for an T bar in a class tree, default: "+   "</td>
+</tr>
+<tr>
+	<td><pre>TreeL=</pre></td>
+	<td>HTML code to use for an L bar in a class tree, default: "'   "</td>
+</tr>
+<tr>
+	<td><pre>TreeI=</pre></td>
+	<td>HTML code to use for an I bar in a class tree, default: "|   "</td>
+</tr>
+</table>
+
+<h2>[InheritCheck]</h2>
+<table>
+<tr>
+	<td><pre>&lt;template name&gt;=</pre></td>
+	<td>inheritence depth to check of the block templates</td>
+</tr>
+</table>
+
+<h2>[FunctionTypeImages]</h2>
+<table>
+<tr>
+	<td><pre>function</pre></td>
+	<td>location to the image file for functions</td>
+</tr>
+<tr>
+	<td><pre>event</pre></td>
+	<td>location to the image file for events</td>
+</tr>
+<tr>
+	<td><pre>operator</pre></td>
+	<td>location to the image file for operators</td>
+</tr>
+<tr>
+	<td><pre>preoperator</pre></td>
+	<td>location to the image file for preoperators</td>
+</tr>
+<tr>
+	<td><pre>postoperator</pre></td>
+	<td>location to the image file for postoperators</td>
+</tr>
+<tr>
+	<td><pre>delegate</pre></td>
+	<td>location to the image file for delegates</td>
+</tr>
+</table>
+
+<a name="VariablesSortOnTag"></a><h2>[VariablesSortOnTag]</h2>
+<table>
+<tr>
+	<td><pre>&lt;template name&gt;=</pre></td>
+	<td>if set to 1 sort the variables on their tag for this variable. Tag labels will be inserted when changed, for the tag labels the template files <a href="template_class_entry_variable_tag.html">&lt;template name&gt;_tag.html</a> will be used</td>
+</tr>
+</table>
+
+</div>
+</div>
+</body>
+</html>
