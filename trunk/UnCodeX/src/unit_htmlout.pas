@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.40 2003-12-03 10:31:23 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.41 2003-12-07 21:33:11 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -172,7 +172,7 @@ function ClassLink(uclass: TUClass; DOSPath: boolean = false): string;
 var
   path: string;
 begin
-  if (DOSPath) then path := '\' else path := '/';
+  if (DOSPath) then path := PathDelim else path := '/';
   result := LowerCase(uclass.package.name+path+uclass.name+'.'+TargetExtention);
 end;
 
@@ -180,7 +180,7 @@ function PackageLink(upackage: TUPackage; DOSPath: boolean = false): string;
 var
   path: string;
 begin
-  if (DOSPath) then path := '\' else path := '/';
+  if (DOSPath) then path := PathDelim else path := '/';
   result := LowerCase(upackage.name+path+upackage.name+'-overview.'+TargetExtention);
 end;
 
@@ -1553,6 +1553,28 @@ begin
       for i := 0 to TUStruct(data).properties.Count-1 do begin
         // ignore var when comment = @ignore
         if (CompareText(TUStruct(data).properties[i].comment, IGNORE_KEYWORD) <> 0) then begin
+          template.Position := 0;
+          parseTemplate(template, target, replaceClassVar, TUStruct(data).properties[i]);
+        end;
+        if (Self.Terminated) then break;
+      end;
+      replacement := target.DataString;
+      result := true;
+    finally
+      template.Free;
+      target.Free;
+    end;
+  end
+  // same as above except only vars _with_ comments
+  else if (IsReplacement(replacement, 'struct_properties_comment')) then begin
+    template := TFileStream.Create(templatedir+replacement+'.html', fmOpenRead);
+    target := TStringStream.Create('');
+    TUStruct(data).properties.Sort;
+    try
+      for i := 0 to TUStruct(data).properties.Count-1 do begin
+        // ignore var when comment = @ignore
+        if ((CompareText(TUStruct(data).properties[i].comment, IGNORE_KEYWORD) <> 0) and
+        	(TUStruct(data).properties[i].comment <> ''))then begin
           template.Position := 0;
           parseTemplate(template, target, replaceClassVar, TUStruct(data).properties[i]);
         end;
