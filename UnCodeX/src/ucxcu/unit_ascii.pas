@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   general console routines
- $Id: unit_ascii.pas,v 1.8 2004-02-23 12:20:47 elmuerte Exp $
+ $Id: unit_ascii.pas,v 1.9 2004-03-14 23:20:48 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -93,7 +93,7 @@ begin
   writeln('------------------------------------------------------------');
   writeln(' UnCodeX Commandline Utility (ucxcu) version '+VERSION);
   writeln(' Engine version: '+APPTITLE+' '+APPVERSION+' '+APPPLATFORM);
-  writeln(' (c) 2003 Michiel ''El Muerte'' Hendriks');
+  writeln(' (c) 2003, 2004 Michiel ''El Muerte'' Hendriks');
   writeln(' http://wiki.beyondunreal.com/wiki/UnCodeX');
   writeln('------------------------------------------------------------');
   writeln('');
