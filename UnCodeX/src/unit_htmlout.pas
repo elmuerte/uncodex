@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.72 2005-03-27 20:10:34 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.73 2005-03-30 07:21:48 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -68,6 +68,7 @@ type
     TargetExtention: string;
     CPP: string;
     DefaultTitle: string;
+    GZCompress: boolean;
   end;
 
   // General replace function
@@ -91,6 +92,7 @@ type
     DelegateCache: Hashes.TStringHash;
     CPPPipe: TCLPipe;
     ConfDefaultTitle: string;
+    GZCompress: boolean;
     
     PackageList: TUPackageList;
     ClassList: TUClassList;
@@ -102,6 +104,9 @@ type
     procedure SetupPascalScript;
     procedure CleanupPascalScript;
     {$ENDIF}
+
+    function CreateOutputStream(filename: string): TStream;
+    function CloseOutputStream(var stream: TStream): boolean;
 
     procedure parseTemplate(input, output: TStream; replace: TReplacement; data: TObject = nil);
     procedure SkipIf(p: TCopyParser);
@@ -252,6 +257,12 @@ begin
   Self.CPP := config.CPP;
   Self.ConfDefaultTitle := config.DefaultTitle;
   TargetExtention := config.TargetExtention;
+  GZCompress := config.GZCompress;
+  if (GZCompress) then begin
+    if (not SameText(Copy(TargetExtention, Length(TargetExtention)-3, 3), '.gz')) then begin
+      TargetExtention := TargetExtention+'.gz';
+    end;
+  end;
   TypeCache := Hashes.TStringHash.Create;
   ConstCache := Hashes.TStringHash.Create;
   VarCache := Hashes.TStringHash.Create;
@@ -395,6 +406,21 @@ begin
     end;
   end;
   resetguard;
+end;
+
+function THTMLOutput.CreateOutputStream(filename: string): TStream;
+begin
+  if (GZCompress) then begin
+    //TODO:
+    raise Exception.Create('GZCompression not implemented');
+  end;
+  result := TFileStream.Create(filename, fmCreate)
+end;
+
+function THTMLOutput.CloseOutputStream(var stream: TStream): boolean;
+begin
+  FreeAndNil(stream);
+  result := stream = nil;
 end;
 
 procedure THTMLOutput.parseTemplate(input, output: TStream; replace: TReplacement; data: TObject = nil);
@@ -558,18 +584,19 @@ end;
 
 procedure THTMLOutput.htmlIndex;
 var
-  template, target: TFileStream;
+  template: TFileStream;
+  target: TStream;
 begin
   guard('htmlIndex');
   Status('Creating index.'+TargetExtention);
   template := TFileStream.Create(templatedir+'index.html', fmOpenRead or fmShareDenyWrite);
-  target := TFileStream.Create(htmloutputdir+PATHDELIM+'index.'+TargetExtention, fmCreate);
+  target := CreateOutputStream(htmloutputdir+PATHDELIM+'index.'+TargetExtention);
   currentFile := 'index.'+TargetExtention;
   try
     parseTemplate(template, target, replaceIndex);
   finally
     template.Free;
-    target.Free;
+    CloseOutputStream(target);
   end;
   unguard;
 end;
@@ -581,18 +608,19 @@ end;
 
 procedure THTMLOutput.htmlOverview;
 var
-  template, target: TFileStream;
+  template: TFileStream;
+  target: TStream;
 begin
   guard('htmlOverview');
   Status('Creating '+overview_filename+TargetExtention);
   template := TFileStream.Create(templatedir+'overview.html', fmOpenRead or fmShareDenyWrite);
-  target := TFileStream.Create(htmloutputdir+PATHDELIM+overview_filename+TargetExtention, fmCreate);
+  target := CreateOutputStream(htmloutputdir+PATHDELIM+overview_filename+TargetExtention);
   currentFile := overview_filename+TargetExtention;
   try
     parseTemplate(template, target, replaceOverview);
   finally
     template.Free;
-    target.Free;
+    CloseOutputStream(target);
   end;
   unguard;
 end;
@@ -627,18 +655,19 @@ end;
 
 procedure THTMLOutput.htmlPackagesList;
 var
-  template, target: TFileStream;
+  template: TFileStream;
+  target: TStream;
 begin
   guard('htmlPackagesList');
   Status('Creating '+packages_list_filename+TargetExtention);
   template := TFileStream.Create(templatedir+'packages_list.html', fmOpenRead or fmShareDenyWrite);
-  target := TFileStream.Create(htmloutputdir+PATHDELIM+packages_list_filename+TargetExtention, fmCreate);
+  target := CreateOutputStream(htmloutputdir+PATHDELIM+packages_list_filename+TargetExtention);
   currentFile := packages_list_filename+TargetExtention;
   try
     parseTemplate(template, target, replacePackagesList);
   finally
     template.Free;
-    target.Free;
+    CloseOutputStream(target);
   end;
   unguard;
 end;
@@ -713,18 +742,19 @@ end;
 
 procedure THTMLOutput.htmlClassesList;
 var
-  template, target: TFileStream;
+  template: TFileStream;
+  target: TStream;
 begin
   guard('htmlClassesList');
   Status('Creating '+classes_list_filename+TargetExtention);
   template := TFileStream.Create(templatedir+'classes_list.html', fmOpenRead or fmShareDenyWrite);
-  target := TFileStream.Create(htmloutputdir+PATHDELIM+classes_list_filename+TargetExtention, fmCreate);
+  target := CreateOutputStream(htmloutputdir+PATHDELIM+classes_list_filename+TargetExtention);
   currentFile := classes_list_filename+TargetExtention;
   try
     parseTemplate(template, target, replaceClassesList);
   finally
     template.Free;
-    target.Free;
+    CloseOutputStream(target);
   end;
   unguard;
 end;
@@ -732,8 +762,9 @@ end;
 procedure THTMLOutput.htmlPackageClasses;
 var
   pfname: string;
-  template, target: TFileStream;
+  template: TFileStream;
   i: integer;
+  target: TStream;
 begin
   guard('htmlPackageClasses');
   template := TFileStream.Create(templatedir+'packageclasses_list.html', fmOpenRead or fmShareDenyWrite);
@@ -745,13 +776,13 @@ begin
       Status('Creating '+pfname, round(curPos/maxPos*100));
       curPos := curPos+1;
       PackageList[i].classes.Sort;
-      target := TFileStream.Create(htmloutputdir+PATHDELIM+pfname, fmCreate);
+      target := CreateOutputStream(htmloutputdir+PATHDELIM+pfname);
       currentFile := pfname;
       try
         template.Position := 0;
         parseTemplate(template, target, replacePackageClassesList, PackageList[i]);
       finally
-        target.Free;
+        CloseOutputStream(target);
       end;
       if (Self.Terminated) then break;
     end;
@@ -880,7 +911,8 @@ end;
 procedure THTMLOutput.htmlPackageOverview;
 var
   pfname: string;
-  template, target: TFileStream;
+  template: TFileStream;
+  target: TStream;
   i: integer;
 begin
   guard('htmlPackageOverview');
@@ -892,13 +924,13 @@ begin
       Status('Creating '+pfname, round(curPos/maxPos*100));
       curPos := curPos+1;
       PackageList[i].classes.Sort;
-      target := TFileStream.Create(htmloutputdir+PATHDELIM+pfname, fmCreate);
+      target := CreateOutputStream(htmloutputdir+PATHDELIM+pfname);
       currentFile := pfname;
       try
         template.Position := 0;
         parseTemplate(template, target, replacePackageOverview, PackageList[i]);
       finally
-        target.Free;
+        CloseOutputStream(target);
       end;
       if (Self.Terminated) then break;
     end;
@@ -974,7 +1006,8 @@ end;
 
 procedure THTMLOutput.htmlClassOverview;
 var
-  template, target: TFileStream;
+  template: TFileStream;
+  target: TStream;
   i,j: integer;
 begin
   guard('htmlClassOverview');
@@ -992,14 +1025,14 @@ begin
         for j := 0 to currentClass.structs.Count-1 do begin
           TypeCache.Items[LowerCase(currentClass.structs[j].name)] := ClassLink(currentClass)+'#'+currentClass.structs[j].name;
         end;
-        target := TFileStream.Create(htmloutputdir+PATHDELIM+ClassLink(ClassList[i]), fmCreate);
+        target := CreateOutputStream(htmloutputdir+PATHDELIM+ClassLink(ClassList[i]));
         currentFile := ClassLink(ClassList[i]);
         try
           template.Position := 0;
           parseTemplate(template, target, replaceClass, ClassList[i]);
           if (Self.Terminated) then break;
         finally
-          target.Free;
+          CloseOutputStream(target);
         end;
       end;
     end;
@@ -2395,18 +2428,19 @@ end;
 
 procedure THTMLOutput.htmlTree;
 var
-  template, target: TFileStream;
+  template: TFileStream;
+  target: TStream;
 begin
   guard('htmlTree');
   Status('Creating '+classtree_filename+TargetExtention);
   template := TFileStream.Create(templatedir+'classtree.html', fmOpenRead or fmShareDenyWrite);
-  target := TFileStream.Create(htmloutputdir+PATHDELIM+classtree_filename+TargetExtention, fmCreate);
+  target := CreateOutputStream(htmloutputdir+PATHDELIM+classtree_filename+TargetExtention);
   currentFile := classtree_filename+TargetExtention;
   try
     parseTemplate(template, target, replaceClasstree);
   finally
     template.Free;
-    target.Free;
+    CloseOutputStream(target);
   end;
   unguard;
 end;
@@ -2460,7 +2494,8 @@ end;
 
 procedure THTMLOutput.htmlGlossary;
 var
-  template, target: TFileStream;
+  template: TFileStream;
+  target: TStream;
   i,j: integer;
   gl: TStringList;
   gi, cgi: TGlossaryItem;
@@ -2538,12 +2573,12 @@ begin
       Status('Creating glossary_'+glossaryitems[i]+'.'+TargetExtention, round(curPos/maxPos*100));
       curPos := curPos+1;
       template.Position := 0;
-      target := TFileStream.Create(htmloutputdir+PATHDELIM+'glossary_'+glossaryitems[i]+'.'+TargetExtention, fmCreate);
+      target := CreateOutputStream(htmloutputdir+PATHDELIM+'glossary_'+glossaryitems[i]+'.'+TargetExtention);
       currentFile := 'glossary_'+glossaryitems[i]+'.'+TargetExtention;
       try
         parseTemplate(template, target, replaceGlossary, gli);
       finally
-        target.Free;
+        CloseOutputStream(target);
       end;
     end;
   finally
@@ -2654,7 +2689,8 @@ end;
 procedure THTMLOutput.SourceCode;
 var
   fname: string;
-  template1, template2, target, source: TFileStream;
+  template1, template2, source: TFileStream;
+  target: TStream;
   i: integer;
 begin
   guard('SourceCode');
@@ -2669,7 +2705,7 @@ begin
       Status('Creating source '+fname, round(curPos/maxPos*100));
       curPos := curPos+1;
       currentClass := ClassList[i];
-      target := TFileStream.Create(htmloutputdir+PATHDELIM+fname, fmCreate);
+      target := CreateOutputStream(htmloutputdir+PATHDELIM+fname);
       currentFile := fname;
       try
         template1.Position := 0;
@@ -2686,7 +2722,7 @@ begin
         template2.Position := 0;
         parseTemplate(template2, target, replaceClass, ClassList[i]);
       finally
-        target.Free;
+        CloseOutputStream(target);
       end;
     end;
   finally
