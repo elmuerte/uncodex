@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Search form, much better than the previous version
- $Id: unit_searchform.pas,v 1.2 2003-06-10 12:00:27 elmuerte Exp $
+ $Id: unit_searchform.pas,v 1.3 2003-06-15 19:51:08 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_searchform;
@@ -37,6 +37,7 @@ type
     btn_Cancel: TBitBtn;
     cb_FromTop: TCheckBox;
     procedure cb_SearchBodyClick(Sender: TObject);
+    procedure cb_HistoryChange(Sender: TObject);
   private
     config: TClassSearch;
   public
@@ -79,12 +80,14 @@ begin
   config := searchconfig;
   Caption := config.caption;
   lbl_Text.Caption := config.text;
+  cb_History.Text := searchconfig.query;
+  cb_History.SelectAll;
   cb_History.Items.Assign(config.history);
   cb_SearchBody.Checked := config.isBodySearch;
   cb_Regex.Checked := config.isRegex;
   cb_Strict.Checked := config.isStrict;
   cb_FromTop.Checked := config.isFromTop;
-
+  btn_Ok.Enabled := cb_History.Text <> '';
   cb_SearchBodyClick(nil); // make sure the init is correct
 end;
 
@@ -92,6 +95,11 @@ procedure Tfrm_SearchForm.cb_SearchBodyClick(Sender: TObject);
 begin
   cb_Regex.Enabled := cb_SearchBody.Checked;
   cb_Strict.Enabled := not cb_SearchBody.Checked;
+end;
+
+procedure Tfrm_SearchForm.cb_HistoryChange(Sender: TObject);
+begin
+  btn_Ok.Enabled := cb_History.Text <> '';
 end;
 
 end.

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.53 2003-06-11 18:56:22 elmuerte Exp $
+ $Id: unit_main.pas,v 1.54 2003-06-15 19:51:08 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_main;
@@ -735,16 +735,17 @@ begin
     exe := lst[0];
     lst.Delete(0);
     for i := 0 to lst.Count-1 do begin
-      if (CompareText(lst[i], '%classname%') = 0) then
-        lst[i] := uclass.name
-      else if (CompareText(lst[i], '%classfile%') = 0) then
-        lst[i] := uclass.filename
-      else if (CompareText(lst[i], '%classpath%') = 0) then
-        lst[i] := uclass.package.path+PATHDELIM+CLASSDIR+PATHDELIM+uclass.filename
-      else if (CompareText(lst[i], '%packagename%') = 0) then
-        lst[i] := uclass.package.name
-      else if (CompareText(lst[i], '%packagepath%') = 0) then
-        lst[i] := uclass.package.path;
+      if (AnsiContainsText(lst[i], '%searchquery%')) then begin
+        if (InlineSearch <> '') then lst[i] := AnsiReplaceStr(lst[i], '%searchquery%', InlineSearch)
+          else lst[i] := AnsiReplaceStr(lst[i], '%searchquery%', SearchConfig.query);
+      end;
+      lst[i] := AnsiReplaceStr(lst[i], '%classname%', uclass.name);
+      lst[i] := AnsiReplaceStr(lst[i], '%classfile%', uclass.filename);
+      lst[i] := AnsiReplaceStr(lst[i], '%classpath%', uclass.package.path+PATHDELIM+CLASSDIR+PATHDELIM+uclass.filename);
+      lst[i] := AnsiReplaceStr(lst[i], '%packagename%', uclass.package.name);
+      lst[i] := AnsiReplaceStr(lst[i], '%packagepath%', uclass.package.path);
+      lst[i] := AnsiReplaceStr(lst[i], '%classsearch%', SearchConfig.query);
+      lst[i] := AnsiReplaceStr(lst[i], '%inlinesearch%', InlineSearch);
       lst[i] := AnsiReplaceStr(lst[i], '%resultline%', IntToStr(line));
       lst[i] := AnsiReplaceStr(lst[i], '%resultpos%', IntToStr(caret));
     end;
@@ -952,6 +953,7 @@ begin
       exit;
     end
   end;
+  Delete(InlineSearch, Length(InlineSearch), 1);
 end;
 
 procedure Tfrm_UnCodeX.InlineSearchPrevious(skipcurrent: boolean = false);
@@ -2271,9 +2273,9 @@ begin
         tmr_InlineSearch.OnTimer(Sender);
         exit;
       end;
+      InlineSearchPrevious;
       StatusReport('Inline search for: '+inlinesearch);
       tmr_StatusText.OnTimer(Sender);
-      InlineSearchPrevious;
     end;
   end
   else if ((Key >= #32) and (Key < #127)) then begin
@@ -2285,9 +2287,9 @@ begin
     end;
     inlinesearch := inlinesearch+Key;
     Key := #0; // reset key
+    InlineSearchNext;
     StatusReport('Inline search for: '+inlinesearch);
     tmr_StatusText.OnTimer(Sender);
-    InlineSearchNext;
   end;
 end;
 
