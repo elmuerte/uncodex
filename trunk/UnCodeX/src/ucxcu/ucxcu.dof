@@ -85,23 +85,6 @@ OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
 Comments=
-[HistoryLists\hlConditionals]
-Count=2
-Item0={$DEFINE __USE_TREEVIEW}
-Item1=$DEFINE __USE_TREEVIEW;$DEFINE __USE_TREEVIEW
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
-[HistoryLists\hlSearchPath]
-Count=2
-Item0=VCL
-Item1=..
-[HistoryLists\hlUnitOutputDirectory]
-Count=3
-Item0=..\DCU
-Item1=..\..\dcu\ucxcu
-Item2=..\dcu\ucxcu
-[HistoryLists\hlOutputDirectorry]
-Count=2
-Item0=..\BIN
-Item1=..\..\bin

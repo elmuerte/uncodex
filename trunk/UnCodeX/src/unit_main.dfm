@@ -314,6 +314,12 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Top = 72
     object mi_Tree: TMenuItem
       Caption = 'Tree'
+      object mi_RebuildAnalyse: TMenuItem
+        Action = ac_RebuildAnalyse
+      end
+      object mi_N7: TMenuItem
+        Caption = '-'
+      end
       object mi_ScanPackages: TMenuItem
         Action = ac_RecreateTree
       end
@@ -452,6 +458,9 @@ object frm_UnCodeX: Tfrm_UnCodeX
       end
       object mi_CreateHTMLHelp: TMenuItem
         Action = ac_HTMLHelp
+      end
+      object mi_OpenHTMLHelpFile: TMenuItem
+        Action = ac_OpenHTMLHelp
       end
     end
     object mi_GameServer: TMenuItem
@@ -846,6 +855,19 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Category = 'Program'
       Caption = 'License'
       OnExecute = ac_LicenseExecute
+    end
+    object ac_RebuildAnalyse: TAction
+      Category = 'Class Tree'
+      Caption = 'Rebuild and Analyse'
+      Hint = 'Rebuild the class tree and analyse all classes'
+      ShortCut = 16450
+      OnExecute = ac_RebuildAnalyseExecute
+    end
+    object ac_OpenHTMLHelp: TAction
+      Category = 'HTML'
+      Caption = 'Open HTML Help file'
+      Hint = 'Open the MS HTML Help file'
+      OnExecute = ac_OpenHTMLHelpExecute
     end
   end
   object il_Small: TImageList

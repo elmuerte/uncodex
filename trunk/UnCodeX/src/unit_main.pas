@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.66 2003-12-15 20:25:58 elmuerte Exp $
+ $Id: unit_main.pas,v 1.67 2003-12-16 11:37:58 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -198,6 +198,11 @@ type
     ac_License: TAction;
     EXEC: TDdeServerConv;
     cmd: TDdeServerItem;
+    ac_RebuildAnalyse: TAction;
+    mi_N7: TMenuItem;
+    mi_RebuildAnalyse: TMenuItem;
+    ac_OpenHTMLHelp: TAction;
+    mi_OpenHTMLHelpFile: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -279,6 +284,8 @@ type
     procedure mi_PackageNameDrawItem(Sender: TObject; ACanvas: TCanvas;
       ARect: TRect; Selected: Boolean);
     procedure ac_LicenseExecute(Sender: TObject);
+    procedure ac_RebuildAnalyseExecute(Sender: TObject);
+    procedure ac_OpenHTMLHelpExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -494,6 +501,7 @@ end;
 // Running thread terminated, clean up
 procedure Tfrm_UnCodeX.ThreadTerminate(Sender: TObject);
 begin
+	if (runningthread.ClassType = TMSHTMLHelp) then ac_OpenHTMLHelp.Enabled := FileExists(HTMLHelpFile);
   runningthread := nil;
   ac_Abort.Enabled := false;
   if (IsBatching) then NextBatchCommand;
@@ -844,11 +852,11 @@ begin
   if (not IsBatching) then exit;
   if (CmdStack.Count = 0) then begin
     IsBatching := false;
-    Caption := APPTITLE+' - '+APPVERSION;
+    Caption := APPTITLE+' - version '+APPVERSION;
     exit;
   end;
   cmd := CmdStack[0];
-  Caption := APPTITLE+' - '+APPVERSION+' - Batch process: '+cmd;
+  Caption := APPTITLE+' - version '+APPVERSION+' - Batch process: '+cmd;
   CmdStack.Delete(0);
   if (cmd = 'rebuild') then ac_RecreateTree.Execute
   else if (cmd = 'analyse') then ac_AnalyseAll.Execute
@@ -1213,6 +1221,7 @@ begin
     HHCPath := ini.ReadString('Config', 'HHCPath', '');
     ac_HTMLHelp.Enabled := HHCPath <> '';
     HTMLHelpFile := ini.ReadString('Config', 'HTMLHelpFile', ExtractFilePath(ParamStr(0))+'UnCodeX.chm');
+    ac_OpenHTMLHelp.Enabled := FileExists(HTMLHelpFile);
     HHTitle := ini.ReadString('Config', 'HHTitle', '');
     ServerCmd := ini.ReadString('Config', 'ServerCmd', '');
     ac_RunServer.Enabled := ServerCmd <> '';
@@ -1450,6 +1459,7 @@ begin
       ac_HTMLHelp.Enabled := HHCPath <> '';
       HTMLHelpFile := ed_HTMLHelpOutput.Text;
       HHTitle := ed_HHTitle.Text;
+      ac_OpenHTMLHelp.Enabled := FileExists(HTMLHelpFile);
       { Run server }
       ServerCmd := ed_ServerCommandline.Text;
       ac_RunServer.Enabled := ServerCmd <> '';
@@ -2612,6 +2622,22 @@ end;
 procedure Tfrm_UnCodeX.ac_LicenseExecute(Sender: TObject);
 begin
   frm_License.ShowModal();
+end;
+
+procedure Tfrm_UnCodeX.ac_RebuildAnalyseExecute(Sender: TObject);
+begin
+  if (runningthread <> nil) then exit;
+  IsBatching := true;
+	CmdStack.Add('rebuild');
+  CmdStack.Add('analyse');
+  NextBatchCommand;  
+end;
+
+procedure Tfrm_UnCodeX.ac_OpenHTMLHelpExecute(Sender: TObject);
+begin
+  if (FileExists(HTMLHelpFile)) then begin
+  	ShellExecute(0, nil, PChar(HTMLHelpFile), nil, nil, 0);
+  end;
 end;
 
 initialization
