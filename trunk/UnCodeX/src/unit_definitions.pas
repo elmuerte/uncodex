@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.142 2005-03-31 11:01:11 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.143 2005-04-03 07:23:26 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -44,6 +44,7 @@ uses
 
 type
   TLogType = (ltInfo, ltWarn, ltError, ltSearch);
+  TTriBool = (tbMaybe=-1, tbFalse=0, tbTrue=1);
   
   TLogEntry = class(TObject)
     mt: TLogType;
