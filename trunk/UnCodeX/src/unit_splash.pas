@@ -29,6 +29,7 @@ implementation
 
 procedure Tfrm_Splash.FormCreate(Sender: TObject);
 begin
+  img_Logo.Picture.Bitmap.LoadFromResourceName(HInstance, 'LOGOIMG');
   ClientWidth := img_Logo.Width;
   ClientHeight := img_Logo.Height;
   Left := 0;

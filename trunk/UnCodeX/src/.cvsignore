@@ -5,3 +5,5 @@
 UnCodeX.~bpg
 unit_richeditex.dcu
 *.~rc
+unit_dde.pas
+DdeManEx.pas
