@@ -91,6 +91,7 @@ object frm_CTAGS: Tfrm_CTAGS
     Height = 25
     Anchors = [akRight, akBottom]
     Caption = 'Ok'
+    Enabled = False
     Flat = True
     Glyph.Data = {
       DE010000424DDE01000000000000760000002800000024000000120000000100
@@ -261,6 +262,7 @@ object frm_CTAGS: Tfrm_CTAGS
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 0
+    OnChange = ed_OutputFileChange
   end
   object btn_Browse: TBitBtn
     Left = 583
@@ -270,6 +272,7 @@ object frm_CTAGS: Tfrm_CTAGS
     Anchors = [akTop, akRight]
     Caption = '...'
     TabOrder = 1
+    OnClick = btn_BrowseClick
   end
   object lv_Packages: TListView
     Left = 8
@@ -292,10 +295,10 @@ object frm_CTAGS: Tfrm_CTAGS
     TabOrder = 2
     ViewStyle = vsReport
   end
-  object GroupBox1: TGroupBox
-    Left = 224
-    Top = 80
-    Width = 145
+  object gb_Offset: TGroupBox
+    Left = 216
+    Top = 208
+    Width = 153
     Height = 73
     Caption = 'Tag offset'
     TabOrder = 3
@@ -313,6 +316,7 @@ object frm_CTAGS: Tfrm_CTAGS
       Height = 17
       Caption = 'Tagged packages'
       Checked = True
+      Enabled = False
       State = cbChecked
       TabOrder = 0
     end
@@ -323,17 +327,116 @@ object frm_CTAGS: Tfrm_CTAGS
       Height = 17
       Caption = 'Untagged packages'
       Checked = True
+      Enabled = False
       State = cbChecked
       TabOrder = 1
     end
   end
-  object lbtest: TListBox
+  object gb_Export: TGroupBox
     Left = 216
-    Top = 248
-    Width = 393
-    Height = 129
-    ItemHeight = 13
+    Top = 64
+    Width = 153
+    Height = 137
+    Caption = 'Include'
+    TabOrder = 5
+    object cb_IVar: TCheckBox
+      Left = 8
+      Top = 48
+      Width = 97
+      Height = 17
+      Caption = 'Variables'
+      Checked = True
+      State = cbChecked
+      TabOrder = 0
+    end
+    object cb_IConst: TCheckBox
+      Left = 8
+      Top = 32
+      Width = 97
+      Height = 17
+      Caption = 'Constants'
+      Checked = True
+      State = cbChecked
+      TabOrder = 1
+    end
+    object cb_IFunc: TCheckBox
+      Left = 8
+      Top = 96
+      Width = 97
+      Height = 17
+      Caption = 'Functions'
+      Checked = True
+      State = cbChecked
+      TabOrder = 2
+    end
+    object cb_IClass: TCheckBox
+      Left = 8
+      Top = 16
+      Width = 97
+      Height = 17
+      Caption = 'Classes'
+      Checked = True
+      State = cbChecked
+      TabOrder = 3
+    end
+    object cb_IStruct: TCheckBox
+      Left = 8
+      Top = 80
+      Width = 97
+      Height = 17
+      Caption = 'Structs'
+      Checked = True
+      State = cbChecked
+      TabOrder = 4
+    end
+    object cb_IDelegates: TCheckBox
+      Left = 8
+      Top = 112
+      Width = 97
+      Height = 17
+      Caption = 'Delegates'
+      Checked = True
+      State = cbChecked
+      TabOrder = 5
+    end
+    object cb_IEnum: TCheckBox
+      Left = 8
+      Top = 64
+      Width = 97
+      Height = 17
+      Caption = 'Enumerations'
+      Checked = True
+      State = cbChecked
+      TabOrder = 6
+    end
+  end
+  object pnl_SingleClass: TPanel
+    Left = 8
+    Top = 64
+    Width = 201
+    Height = 313
+    Anchors = [akLeft, akTop, akBottom]
+    BevelOuter = bvNone
     TabOrder = 4
+    Visible = False
+    object lbl_Single: TLabel
+      Left = 0
+      Top = 0
+      Width = 56
+      Height = 13
+      Caption = 'Single class'
+    end
+    object ed_Single: TEdit
+      Left = 0
+      Top = 16
+      Width = 201
+      Height = 21
+      BevelKind = bkSoft
+      BorderStyle = bsNone
+      ParentColor = True
+      ReadOnly = True
+      TabOrder = 0
+    end
   end
   object il_Packages: TImageList
     Left = 16
@@ -477,5 +580,12 @@ object frm_CTAGS: Tfrm_CTAGS
       800080000000000080008000000000008000800000000000E003E00300000000
       F80FF80F00000000FE3FFE3F0000000000000000000000000000000000000000
       000000000000}
+  end
+  object sd_Save: TSaveDialog
+    Filter = 'All Files|*.*'
+    Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
+    Title = 'CTAGS output file'
+    Left = 72
+    Top = 16
   end
 end

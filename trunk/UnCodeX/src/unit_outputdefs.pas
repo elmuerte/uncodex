@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Definitions used from custom output modules
- $Id: unit_outputdefs.pas,v 1.8 2004-05-13 07:08:28 elmuerte Exp $
+ $Id: unit_outputdefs.pas,v 1.9 2004-05-13 20:03:45 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -42,6 +42,7 @@ type
     AStatusReport: TStatusReport;
     AThreadTerminated: TNotifyEvent;
     ABatching: boolean; // true when the module is called from a batch
+    ASingleClass: boolean; // true when it's called from a single class
     // output
     AThread: TThread;
     WaitForTerminate: boolean; // use AThreadTerminated to signal an end

@@ -66,7 +66,7 @@ AutoIncBuild=1
 MajorVer=2
 MinorVer=0
 Release=0
-Build=200
+Build=201
 Debug=0
 PreRelease=0
 Special=0
@@ -77,7 +77,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Michiel 'El Muerte' Hendriks
 FileDescription=
-FileVersion=2.0.0.200
+FileVersion=2.0.0.201
 InternalName=UnCodeX
 LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
 LegalTrademarks=
@@ -94,8 +94,8 @@ Item0=$(DELPHI)\Lib\Debug;VCL
 Item1=VCL
 [HistoryLists\hlUnitOutputDirectory]
 Count=7
-Item0=..\DCU
-Item1=..\..\dcu\out_ctags
+Item0=..\..\dcu\out_ctags
+Item1=..\DCU
 Item2=..\..\Dcu\out_sample
 Item3=..\..\dcu\ucxcu
 Item4=..\..\Dcu\out_graphviz
@@ -103,6 +103,6 @@ Item5=..\..\DCU\out_wikifier
 Item6=..\Dcu\out_graphviz
 [HistoryLists\hlOutputDirectorry]
 Count=3
-Item0=..\BIN
-Item1=..\..\Bin
+Item0=..\..\Bin
+Item1=..\BIN
 Item2=..\..\Bin\out_sample
