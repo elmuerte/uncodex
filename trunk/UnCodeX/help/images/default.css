@@ -3,6 +3,7 @@ BODY {
 }
 
 FONT, DIV, TD { 
+	vertical-align: top;
 	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;  
 	font-size: 10pt;  
 	color: #000000;   
@@ -96,4 +97,8 @@ PRE {
 	margin: 0px;
 	padding-left: 10px;
 	border: 1px inset #00CCFF;
+}
+
+PRE.indent {
+	margin-left: 20px;
 }

@@ -1,7 +1,7 @@
 [OPTIONS]
 Auto Index=Yes
 Compatibility=1.1 or later
-Compiled file=UnCodeX-help.chm
+Compiled file=../Bin/UnCodeX-help.chm
 Contents file=UnCodeX-help.hhc
 Default Window=main
 Default topic=index.html
@@ -12,7 +12,7 @@ Language=0x409 English (United States)
 Title=UnCodeX
 
 [WINDOWS]
-main="UnCodeX Help","UnCodeX-help.hhc",,"index.html","index.html",,,,,0x62520,,0x1046,[100,100,600,600],,,,1,,,0
+main="UnCodeX Help","UnCodeX-help.hhc",,"index.html","index.html",,,,,0x22520,200,0x1046,[100,100,800,600],,,,,,,0
 
 
 [FILES]
@@ -23,8 +23,9 @@ window_main.html
 window_settings.html
 window_tags.html
 versionhistory.html
-index.html
 credits.html
+commandline.html
+developer.html
 
 [INFOTYPES]
 

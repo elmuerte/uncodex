@@ -22,6 +22,10 @@
 		<param name="New" value="1">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Commandline options">
+		<param name="Local" value="commandline.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="Windows">
 		</OBJECT>
 	<UL>
@@ -38,5 +42,9 @@
 			<param name="Local" value="window_tags.html">
 			</OBJECT>
 	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Developer">
+		<param name="Local" value="developer.html">
+		</OBJECT>
 </UL>
 </BODY></HTML>
