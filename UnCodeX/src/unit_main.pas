@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.88 2004-03-30 09:46:17 elmuerte Exp $
+ $Id: unit_main.pas,v 1.89 2004-04-02 10:33:26 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -226,6 +226,10 @@ type
     ac_RenameClass: TAction;
     ac_PackageProps: TAction;
     mi_Properties: TMenuItem;
+    pm_Log: TPopupMenu;
+    mi_OpenClass1: TMenuItem;
+    mi_SaveToFile1: TMenuItem;
+    sd_SaveLog: TSaveDialog;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -328,6 +332,8 @@ type
     procedure ac_CreateSubClassExecute(Sender: TObject);
     procedure ac_DeleteClassExecute(Sender: TObject);
     procedure ac_PackagePropsExecute(Sender: TObject);
+    procedure mi_SaveToFile1Click(Sender: TObject);
+    procedure pm_LogPopup(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -374,6 +380,10 @@ type
     procedure OnDockVisChange(client: TControl; visible: boolean; var CanChange: boolean);
     // other
     procedure DeleteClass(uclass: TUClass; recurse: boolean = false);
+    // settings
+    procedure SaveSettings;
+    procedure SaveLayoutSettings;
+    procedure LoadSettings;
   public
     statustext : string; // current status text
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
@@ -1308,21 +1318,189 @@ begin
   TreeUpdated := true;
 end;
 
-{ Custom methods -- END}
-{ Auto generated methods }
+{ Settings -- begin}
 
-// Update the status message on timer
-procedure Tfrm_UnCodeX.tmr_StatusTextTimer(Sender: TObject);
+procedure Tfrm_UnCodeX.SaveSettings;
 var
-  tmp: string;
+  ini: TMemIniFile;
+  data: TStringList;
+  i: integer;
 begin
-  tmp := statustext;
-  if (runningthread <> nil) then tmp := tmp+' ('+ShortCutToText(ac_Abort.ShortCut)+' to abort)';
-  sb_Status.Panels[0].Text := tmp;
+  ini := TMemIniFile.Create(ConfigFile);
+  data := TStringList.Create;
+  try
+    ini.WriteString('Config', 'HTMLOutputDir', HTMLOutputDir);
+    ini.WriteString('Config', 'TemplateDir', TemplateDir);
+    ini.WriteString('Config', 'HTMLTargetExt', HTMLTargetExt);
+    ini.WriteInteger('Config', 'TabsToSpaces', TabsToSpaces);
+    ini.WriteString('Config', 'CPP', CPPApp);
+    ini.WriteString('Config', 'HTMLDefaultTitle', HTMLdefaultTitle);
+    ini.WriteString('Config', 'HHCPath', HHCPath);
+    ini.WriteString('Config', 'HTMLHelpFile', HTMLHelpFile);
+    ini.WriteString('Config', 'HHTitle', HHTitle);
+    ini.WriteString('Config', 'ServerCmd', ServerCmd);
+    ini.WriteInteger('Config', 'ServerPrio', ServerPrio);
+    ini.WriteString('Config', 'ClientCmd', ClientCmd);
+    ini.WriteString('Config', 'CompilerCmd', CompilerCmd);
+    ini.WriteString('Config', 'OpenResultCmd', OpenResultCmd);
+    ini.WriteString('Config', 'NewClassTemplate', NewClassTemplate);
+    ini.WriteString('Config', 'StateFile', StateFile);
+    ini.WriteBool('Config', 'AnalyseModified', AnalyseModified);
+    ini.WriteInteger('Config', 'DefaultInheritanceDepth', DefaultInheritanceDepth);
+    ini.WriteBool('Config', 'LoadOutputModules', LoadCustomOutputModules);
+    ini.WriteBool('Config', 'ClassPropertiesWindow', ClassPropertiesWindow);
+    ini.WriteInteger('Config', 'InlineSearchTimeout', tmr_InlineSearch.Interval div 1000);
+    ini.WriteString('Config', 'PackageDescriptionFile', GPDF);
+
+    ini.WriteString('Layout', 'Log.Font.Name', lb_Log.Font.Name);
+    ini.WriteInteger('Layout', 'Log.Font.Color', lb_Log.Font.Color);
+    ini.WriteInteger('Layout', 'Log.Font.Size', lb_Log.Font.Size);
+    ini.WriteInteger('Layout', 'Log.Color', lb_Log.Color);
+    ini.WriteString('Layout', 'Tree.Font.Name', tv_Classes.Font.Name);
+    ini.WriteInteger('Layout', 'Tree.Font.Color', tv_Classes.Font.Color);
+    ini.WriteInteger('Layout', 'Tree.Font.Size', tv_Classes.Font.Size);
+    ini.WriteInteger('Layout', 'Tree.Color', tv_Classes.Color);
+    ini.WriteBool('Layout', 'ExpandObject', ExpandObject);
+    ini.WriteBool('Layout', 'MinimizeOnClose', MinimizeOnClose);
+
+    ini.WriteInteger('Layout', 'Source.Color', re_SourceSnoop.Color);
+    ini.WriteInteger('Layout', 'Source.Keyword1.Color', unit_rtfhilight.fntKeyword1.Color);
+    ini.WriteInteger('Layout', 'Source.Keyword1.Style', FontStylesToInt(unit_rtfhilight.fntKeyword1.Style));
+    ini.WriteInteger('Layout', 'Source.Keyword2.Color', unit_rtfhilight.fntKeyword2.Color);
+    ini.WriteInteger('Layout', 'Source.Keyword2.Style', FontStylesToInt(unit_rtfhilight.fntKeyword2.Style));
+    ini.WriteInteger('Layout', 'Source.String.Color', unit_rtfhilight.fntString.Color);
+    ini.WriteInteger('Layout', 'Source.String.Style', FontStylesToInt(unit_rtfhilight.fntString.Style));
+    ini.WriteInteger('Layout', 'Source.Number.Color', unit_rtfhilight.fntNumber.Color);
+    ini.WriteInteger('Layout', 'Source.Number.Style', FontStylesToInt(unit_rtfhilight.fntNumber.Style));
+    ini.WriteInteger('Layout', 'Source.Macro.Color', unit_rtfhilight.fntMacro.Color);
+    ini.WriteInteger('Layout', 'Source.Macro.Style', FontStylesToInt(unit_rtfhilight.fntMacro.Style));
+    ini.WriteInteger('Layout', 'Source.Comment.Color', unit_rtfhilight.fntComment.Color);
+    ini.WriteInteger('Layout', 'Source.Comment.Style', FontStylesToInt(unit_rtfhilight.fntComment.Style));
+    ini.WriteInteger('Layout', 'Source.Name.Color', unit_rtfhilight.fntName.Color);
+    ini.WriteInteger('Layout', 'Source.Name.Style', FontStylesToInt(unit_rtfhilight.fntName.Style));
+    ini.WriteInteger('Layout', 'Source.ClassLink.Color', unit_rtfhilight.fntClassLink.Color);
+    ini.WriteInteger('Layout', 'Source.ClassLink.Style', FontStylesToInt(unit_rtfhilight.fntClassLink.Style));
+    ini.WriteString('Layout', 'Source.Font.Name', unit_rtfhilight.textfont.Name);
+    ini.WriteInteger('Layout', 'Source.Font.Size', unit_rtfhilight.textfont.Size);
+    ini.WriteInteger('Layout', 'Source.Tabs', unit_rtfhilight.tabs);
+
+    for i := 0 to al_Main.ActionCount-1 do begin
+      ini.WriteString('HotKeys', TAction(al_Main.Actions[i]).Caption, ShortCutToText(TAction(al_Main.Actions[i]).ShortCut));
+    end;
+
+    ini.EraseSection('SourcePaths');
+    ini.EraseSection('PackagePriority');
+    ini.EraseSection('IgnorePackages');
+    ini.GetStrings(data);
+
+    data.Add('[SourcePaths]');
+    for i := 0 to SourcePaths.Count-1 do data.Add('Path='+SourcePaths[i]);
+
+    data.Add('[PackagePriority]');
+    for i := 0 to PackagePriority.Count-1 do data.Add('Packages='+PackagePriority[i]);
+    for i := 0 to PackagePriority.Count-1 do begin
+      if (PackagePriority.Objects[i] <> nil) then
+        data.Add('Tag='+PackagePriority[i]);
+    end;
+    data.Add('[IgnorePackages]');
+    for i := 0 to IgnorePackages.Count-1 do data.Add('Package='+IgnorePackages[i]);
+
+    ini.SetStrings(data);
+    ini.UpdateFile;
+  finally
+    Data.Free;
+    ini.Free;
+  end;
 end;
 
-// Create form and init
-procedure Tfrm_UnCodeX.FormCreate(Sender: TObject);
+procedure Tfrm_UnCodeX.SaveLayoutSettings;
+var
+  ini: TMemIniFile;
+  dockData: TMemoryStream;
+begin
+	ini := TMemIniFile.Create(ConfigFile);
+  dockData := TMemoryStream.Create;
+  try
+  	{ save dock hosts }
+
+    ini.WriteString('DockHosts', 'tv_Classes', tv_Classes.Parent.Name);
+    ini.WriteString('DockHosts', 'tv_Packages', tv_Packages.Parent.Name);
+  	ini.WriteString('DockHosts', 'lb_Log', lb_Log.Parent.Name);
+	  ini.WriteString('DockHosts', 're_SourceSnoop', re_SourceSnoop.Parent.Name);
+    ini.WriteString('DockHosts', 'fr_Props', fr_Props.Parent.Name);
+
+    { save dock maneger settings }
+    dckTop.DockManager.SaveToStream(dockData);
+    dockData.Position := 0;
+    ini.WriteBinaryStream('dckTop.DockManager', 'data', dockData);
+    ini.WriteInteger('dckTop.DockManager', 'height', dckTop.Height);
+	  dockData.Clear;
+    dckBottom.DockManager.SaveToStream(dockData);
+    dockData.Position := 0;
+    ini.WriteBinaryStream('dckBottom.DockManager', 'data', dockData);
+    ini.WriteInteger('dckBottom.DockManager', 'height', dckBottom.Height);
+	  dockData.Clear;
+    dckLeft.DockManager.SaveToStream(dockData);
+    dockData.Position := 0;
+    ini.WriteBinaryStream('dckLeft.DockManager', 'data', dockData);
+    ini.WriteInteger('dckLeft.DockManager', 'width', dckLeft.Width);
+	  dockData.Clear;
+    dckRight.DockManager.SaveToStream(dockData);
+    dockData.Position := 0;
+    ini.WriteBinaryStream('dckRight.DockManager', 'data', dockData);
+    ini.WriteInteger('dckRight.DockManager', 'width', dckRight.Width);
+	  dockData.Clear;
+    pnlCenter.DockManager.SaveToStream(dockData);
+    dockData.Position := 0;
+    ini.WriteBinaryStream('pnlCenter.DockManager', 'data', dockData);
+
+    { general layout settings }
+    ini.WriteBool('Layout', 'MenuBar', mi_MenuBar.Checked);
+    ini.WriteBool('Layout', 'Toolbar', mi_Toolbar.Checked);
+    ini.WriteBool('Layout', 'PackageTree', mi_PackageTree.Checked);
+    ini.WriteBool('Layout', 'Log', mi_Log.Checked);
+    ini.WriteBool('Layout', 'SourceSnoop', mi_SourceSnoop.Checked);
+    ini.WriteBool('Layout', 'PropertyInspector', mi_PropInspector.Checked);
+    ini.WriteBool('Layout', 'StayOnTop', mi_StayOnTop.Checked);
+    ini.WriteBool('Layout', 'SavePosition', mi_Saveposition.Checked);
+    ini.WriteBool('Layout', 'SaveSize', mi_Savesize.Checked);
+    if (mi_Saveposition.Checked) then begin
+      if (IsAppBar) then begin
+        ini.WriteInteger('Layout', 'Top', OldSize.Top);
+        ini.WriteInteger('Layout', 'Left', OldSize.Left);
+      end
+      else if (WindowState = wsNormal) then begin
+        ini.WriteInteger('Layout', 'Top', Top);
+        ini.WriteInteger('Layout', 'Left', Left);
+      end;
+    end;
+    if (mi_Savesize.Checked) then begin
+      if (IsAppBar) then begin
+        ini.WriteInteger('Layout', 'Width', OldSize.Right);
+        ini.WriteInteger('Layout', 'Height', OldSize.Bottom);
+      end
+      else if (WindowState = wsMaximized) then begin
+        ini.WriteBool('Layout', 'IsMaximized', true);
+      end
+      else if (WindowState = wsNormal) then begin
+        ini.WriteBool('Layout', 'IsMaximized', false);
+        ini.WriteInteger('Layout', 'Width', Width);
+        ini.WriteInteger('Layout', 'Height', Height);
+      end;
+    end;
+    ini.WriteInteger('Layout', 'ABWidth', ABWidth);
+    ini.WriteBool('Layout', 'AutoHide', mi_AutoHide.Checked);
+    ini.WriteBool('Layout', 'ABRight', mi_Right.Checked);
+    ini.WriteBool('Layout', 'ABLeft', mi_Left.Checked);
+    SaveSearchConfig(ini, 'search', DefaultSC);
+    ini.UpdateFile;
+  finally
+    ini.Free;
+    dockData.Free;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.LoadSettings;
 var
   ini: TMemIniFile;
   tmp, tmp2: string;
@@ -1331,29 +1509,9 @@ var
   dockData: TMemoryStream;
   dckHost: TPanel;
 begin
-  OnChangeVisibility := OnDockVisChange;
-  
-  Mouse.DragImmediate := false;
-  Mouse.DragThreshold := 5;
-  hh_Help := THookHelpSystem.Create(ExtractFilePath(ParamStr(0))+'UnCodeX-help.chm', '', htHHAPI);
-  Caption := APPTITLE;
-  if (ConfigFile = '') then ConfigFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ini'
-  else Caption := Caption+' ['+ExtractFileName(ConfigFile)+']';
-  Caption := Caption+' - version '+APPVERSION;
-  Application.Title := Caption;
-  if (StateFile = '') then StateFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ucx';
-  InitialStartup := not FileExists(ConfigFile);
   ini := TMemIniFile.Create(ConfigFile);
   sl := TStringList.Create;
   dockData := TMemoryStream.Create;
-  { StringLists }
-  PackagePriority := TStringList.Create;
-  SourcePaths := TStringList.Create;
-  IgnorePackages := TStringList.Create;
-  DefaultSC.ftshistory := TStringList.Create;
-  DefaultSC.history := TStringList.Create;
-  OutputModules := TStringList.Create;
-  { StringLists -- END }
   try
     { Load layout }
     ac_VStayOnTop.Checked := ini.ReadBool('Layout', 'StayOnTop', false);
@@ -1372,7 +1530,7 @@ begin
     if (ini.ReadBool('Layout', 'IsMaximized', false)) then WindowState := wsMaximized;
     ac_VMenuBar.Checked := ini.ReadBool('Layout', 'MenuBar', true);
     ac_VToolbar.Checked := ini.ReadBool('Layout', 'Toolbar', true);
-    mi_Toolbar.OnClick(Sender);
+    mi_Toolbar.OnClick(nil);
 
     ac_VPackageTree.Checked := ini.ReadBool('Layout', 'PackageTree', true);
     ac_VLog.Checked := ini.ReadBool('Layout', 'Log', true);
@@ -1428,14 +1586,13 @@ begin
   		fr_Props.ManualDock(dckHost);
     end;
 
-
     ABWidth := ini.ReadInteger('Layout', 'ABWidth', 150);
     ac_VAutoHide.Checked := ini.ReadBool('Layout', 'AutoHide', false);
-    mi_AutoHide.OnClick(Sender);
+    mi_AutoHide.OnClick(nil);
     ac_VTRight.Checked := ini.ReadBool('Layout', 'ABRight', false);
-    if (ac_VTRight.Checked) then mi_Right.OnClick(Sender);
+    if (ac_VTRight.Checked) then mi_Right.OnClick(nil);
     ac_VTLeft.Checked := ini.ReadBool('Layout', 'ABLeft', false);
-    if (ac_VTLeft.Checked) then mi_Left.OnClick(Sender);
+    if (ac_VTLeft.Checked) then mi_Left.OnClick(nil);
     { Color and fonts }
     lb_Log.Font.Name := ini.ReadString('Layout', 'Log.Font.Name', lb_Log.Font.Name);
     lb_Log.Font.Color := ini.ReadInteger('Layout', 'Log.Font.Color', lb_Log.Font.Color);
@@ -1553,6 +1710,48 @@ begin
     sl.Free;
     dockData.Free;
   end;
+end;
+
+{ Settings -- END}
+{ Custom methods -- END}
+{ Auto generated methods }
+
+// Update the status message on timer
+procedure Tfrm_UnCodeX.tmr_StatusTextTimer(Sender: TObject);
+var
+  tmp: string;
+begin
+  tmp := statustext;
+  if (runningthread <> nil) then tmp := tmp+' ('+ShortCutToText(ac_Abort.ShortCut)+' to abort)';
+  sb_Status.Panels[0].Text := tmp;
+end;
+
+// Create form and init
+procedure Tfrm_UnCodeX.FormCreate(Sender: TObject);
+begin
+  OnChangeVisibility := OnDockVisChange;
+  
+  Mouse.DragImmediate := false;
+  Mouse.DragThreshold := 5;
+  hh_Help := THookHelpSystem.Create(ExtractFilePath(ParamStr(0))+'UnCodeX-help.chm', '', htHHAPI);
+  Caption := APPTITLE;
+  if (ConfigFile = '') then ConfigFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ini'
+  else Caption := Caption+' ['+ExtractFileName(ConfigFile)+']';
+  Caption := Caption+' - version '+APPVERSION;
+  Application.Title := Caption;
+  if (StateFile = '') then StateFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ucx';
+  InitialStartup := not FileExists(ConfigFile);
+  { StringLists }
+  PackagePriority := TStringList.Create;
+  SourcePaths := TStringList.Create;
+  IgnorePackages := TStringList.Create;
+  DefaultSC.ftshistory := TStringList.Create;
+  DefaultSC.history := TStringList.Create;
+  OutputModules := TStringList.Create;
+  { StringLists -- END }
+
+  LoadSettings;
+
   if (LoadCustomOutputModules) then LoadOutputModules;
   PackageList := TUPackageList.Create(true);
   ClassList := TUClassList.Create(false);
@@ -1638,8 +1837,6 @@ end;
 
 procedure Tfrm_UnCodeX.ac_SettingsExecute(Sender: TObject);
 var
-  ini: TMemIniFile;
-  data: TStringList;
   i, j: integer;
   newtag: boolean;
 begin
@@ -1752,93 +1949,16 @@ begin
       tv_Packages.Font := tv_TreeLayout.Font;
       re_SourceSnoop.Color := re_Preview.Color;
 
-      ini := TMemIniFile.Create(ConfigFile);
-
       lb_PrimKey.Items.SaveToFile(ExtractFilePath(ParamStr(0))+'keywords1.list');
       lb_SecKey.Items.SaveToFile(ExtractFilePath(ParamStr(0))+'keywords2.list');
       ReloadKeywords;
 
-      data := TStringList.Create;
-      try
-        data.Add('[Config]');
-        data.Add('HTMLOutputDir='+HTMLOutputDir);
-        data.Add('TemplateDir='+TemplateDir);
-        data.Add('HTMLTargetExt='+HTMLTargetExt);
-        data.Add('TabsToSpaces='+IntToStr(TabsToSpaces));
-        data.Add('CPP='+CPPApp);
-        data.Add('HTMLDefaultTitle='+HTMLdefaultTitle);
-        data.Add('HHCPath='+HHCPath);
-        data.Add('HTMLHelpFile='+HTMLHelpFile);
-        data.Add('HHTitle='+HHTitle);
-        data.Add('ServerCmd='+ServerCmd);
-        data.Add('ServerPrio='+IntToStr(ServerPrio));
-        data.Add('ClientCmd='+ClientCmd);
-        data.Add('CompilerCmd='+CompilerCmd);
-        data.Add('OpenResultCmd='+OpenResultCmd);
-        data.Add('NewClassTemplate='+NewClassTemplate);
-        data.Add('StateFile='+ed_StateFilename.Text);
-        data.Add('AnalyseModified='+IntToStr(Ord(AnalyseModified)));
-        data.Add('DefaultInheritanceDepth='+IntToStr(DefaultInheritanceDepth));
-        data.Add('LoadOutputModules='+IntToStr(Ord(LoadCustomOutputModules)));
-        data.Add('ClassPropertiesWindow='+IntToStr(Ord(ClassPropertiesWindow)));
-        data.Add('InlineSearchTimeout='+IntToStr(tmr_InlineSearch.Interval div 1000));
-        data.Add('PackageDescriptionFile='+GPDF);
+      for i := 0 to lv_HotKeys.Items.Count-1 do begin
+      	TAction(lv_HotKeys.Items[i].Data).ShortCut := TextToShortCut(lv_HotKeys.Items[i].SubItems[0]);
+    	end;
 
-        data.Add('[Layout]');
-        data.Add('Log.Font.Name='+lb_Log.Font.Name);
-        data.Add('Log.Font.Color='+IntToStr(lb_Log.Font.Color));
-        data.Add('Log.Font.Size='+IntToStr(lb_Log.Font.Size));
-        data.Add('Log.Color='+IntToStr(lb_Log.Color));
-        data.Add('Tree.Font.Name='+tv_Classes.Font.Name);
-        data.Add('Tree.Font.Color='+IntToStr(tv_Classes.Font.Color));
-        data.Add('Tree.Font.Size='+IntToStr(tv_Classes.Font.Size));
-        data.Add('Tree.Color='+IntToStr(tv_Classes.Color));
-        Data.Add('ExpandObject='+IntToStr(Ord(ExpandObject)));
-        data.Add('MinimizeOnClose='+BoolToStr(MinimizeOnClose));
+      SaveSettings;
 
-        data.Add('Source.Color='+IntToStr(re_SourceSnoop.Color));
-        data.Add('Source.Keyword1.Color='+IntToStr(unit_rtfhilight.fntKeyword1.Color));
-        data.Add('Source.Keyword1.Style='+IntToStr(FontStylesToInt(unit_rtfhilight.fntKeyword1.Style)));
-        data.Add('Source.Keyword2.Color='+IntToStr(unit_rtfhilight.fntKeyword2.Color));
-        data.Add('Source.Keyword2.Style='+IntToStr(FontStylesToInt(unit_rtfhilight.fntKeyword2.Style)));
-        data.Add('Source.String.Color='+IntToStr(unit_rtfhilight.fntString.Color));
-        data.Add('Source.String.Style='+IntToStr(FontStylesToInt(unit_rtfhilight.fntString.Style)));
-        data.Add('Source.Number.Color='+IntToStr(unit_rtfhilight.fntNumber.Color));
-        data.Add('Source.Number.Style='+IntToStr(FontStylesToInt(unit_rtfhilight.fntNumber.Style)));
-        data.Add('Source.Macro.Color='+IntToStr(unit_rtfhilight.fntMacro.Color));
-        data.Add('Source.Macro.Style='+IntToStr(FontStylesToInt(unit_rtfhilight.fntMacro.Style)));
-        data.Add('Source.Comment.Color='+IntToStr(unit_rtfhilight.fntComment.Color));
-        data.Add('Source.Comment.Style='+IntToStr(FontStylesToInt(unit_rtfhilight.fntComment.Style)));
-        data.Add('Source.Name.Color='+IntToStr(unit_rtfhilight.fntName.Color));
-        data.Add('Source.Name.Style='+IntToStr(FontStylesToInt(unit_rtfhilight.fntName.Style)));
-        data.Add('Source.ClassLink.Color='+IntToStr(unit_rtfhilight.fntClassLink.Color));
-        data.Add('Source.ClassLink.Style='+IntToStr(FontStylesToInt(unit_rtfhilight.fntClassLink.Style)));
-        data.Add('Source.Font.Name='+unit_rtfhilight.textfont.Name);
-        data.Add('Source.Font.Size='+IntToStr(unit_rtfhilight.textfont.Size));
-        data.Add('Source.Tabs='+IntToStr(unit_rtfhilight.tabs));
-
-        data.Add('[HotKeys]');
-        for i := 0 to lv_HotKeys.Items.Count-1 do begin
-          data.Add(lv_HotKeys.Items[i].Caption+'='+lv_HotKeys.Items[i].SubItems[0]);
-          TAction(lv_HotKeys.Items[i].Data).ShortCut := TextToShortCut(lv_HotKeys.Items[i].SubItems[0]);
-        end;
-
-        data.Add('[SourcePaths]');
-        for i := 0 to SourcePaths.Count-1 do data.Add('Path='+SourcePaths[i]);
-        data.Add('[PackagePriority]');
-        for i := 0 to PackagePriority.Count-1 do data.Add('Packages='+PackagePriority[i]);
-        for i := 0 to PackagePriority.Count-1 do begin
-          if (PackagePriority.Objects[i] <> nil) then
-            data.Add('Tag='+PackagePriority[i]);
-        end;
-        data.Add('[IgnorePackages]');
-        for i := 0 to IgnorePackages.Count-1 do data.Add('Package='+IgnorePackages[i]);
-        ini.SetStrings(data);
-        ini.UpdateFile;
-      finally
-        Data.Free;
-        ini.Free;
-      end;
       if (TagChanged) then begin
         StatusReport('Retagging packages/classes ...');
         tv_Packages.Items.BeginUpdate;
@@ -1995,9 +2115,6 @@ end;
 
 procedure Tfrm_UnCodeX.FormClose(Sender: TObject;
   var Action: TCloseAction);
-var
-  ini: TMemIniFile;
-  dockData: TMemoryStream;
 begin
   if (MinimizeOnClose) then begin
     Action := caMinimize;
@@ -2005,86 +2122,7 @@ begin
   else begin
     tmr_StatusText.Enabled := false;
     if (TreeUpdated) then SaveState;
-    ini := TMemIniFile.Create(ConfigFile);
-    dockData := TMemoryStream.Create;
-    try
-    	{ save dock hosts }
-
-      ini.WriteString('DockHosts', 'tv_Classes', tv_Classes.Parent.Name);
-  	  ini.WriteString('DockHosts', 'tv_Packages', tv_Packages.Parent.Name);
-    	ini.WriteString('DockHosts', 'lb_Log', lb_Log.Parent.Name);
-	    ini.WriteString('DockHosts', 're_SourceSnoop', re_SourceSnoop.Parent.Name);
-  	  ini.WriteString('DockHosts', 'fr_Props', fr_Props.Parent.Name);
-
-      { save dock maneger settings }
-  	  dckTop.DockManager.SaveToStream(dockData);
-      dockData.Position := 0;
-      ini.WriteBinaryStream('dckTop.DockManager', 'data', dockData);
-      ini.WriteInteger('dckTop.DockManager', 'height', dckTop.Height);
-	    dockData.Clear;
-      dckBottom.DockManager.SaveToStream(dockData);
-      dockData.Position := 0;
-      ini.WriteBinaryStream('dckBottom.DockManager', 'data', dockData);
-      ini.WriteInteger('dckBottom.DockManager', 'height', dckBottom.Height);
-	    dockData.Clear;
-      dckLeft.DockManager.SaveToStream(dockData);
-      dockData.Position := 0;
-      ini.WriteBinaryStream('dckLeft.DockManager', 'data', dockData);
-      ini.WriteInteger('dckLeft.DockManager', 'width', dckLeft.Width);
-	    dockData.Clear;
-      dckRight.DockManager.SaveToStream(dockData);
-      dockData.Position := 0;
-      ini.WriteBinaryStream('dckRight.DockManager', 'data', dockData);
-      ini.WriteInteger('dckRight.DockManager', 'width', dckRight.Width);
-	    dockData.Clear;
-      pnlCenter.DockManager.SaveToStream(dockData);
-      dockData.Position := 0;
-      ini.WriteBinaryStream('pnlCenter.DockManager', 'data', dockData);
-
-      { general layout settings }
-      ini.WriteBool('Layout', 'MenuBar', mi_MenuBar.Checked);
-      ini.WriteBool('Layout', 'Toolbar', mi_Toolbar.Checked);
-      ini.WriteBool('Layout', 'PackageTree', mi_PackageTree.Checked);
-      ini.WriteBool('Layout', 'Log', mi_Log.Checked);
-      ini.WriteBool('Layout', 'SourceSnoop', mi_SourceSnoop.Checked);
-      ini.WriteBool('Layout', 'PropertyInspector', mi_PropInspector.Checked);
-      ini.WriteBool('Layout', 'StayOnTop', mi_StayOnTop.Checked);
-      ini.WriteBool('Layout', 'SavePosition', mi_Saveposition.Checked);
-      ini.WriteBool('Layout', 'SaveSize', mi_Savesize.Checked);
-      if (mi_Saveposition.Checked) then begin
-        if (IsAppBar) then begin
-          ini.WriteInteger('Layout', 'Top', OldSize.Top);
-          ini.WriteInteger('Layout', 'Left', OldSize.Left);
-        end
-        else if (WindowState = wsNormal) then begin
-          ini.WriteInteger('Layout', 'Top', Top);
-          ini.WriteInteger('Layout', 'Left', Left);
-        end;
-      end;
-      if (mi_Savesize.Checked) then begin
-        if (IsAppBar) then begin
-          ini.WriteInteger('Layout', 'Width', OldSize.Right);
-          ini.WriteInteger('Layout', 'Height', OldSize.Bottom);
-        end
-        else if (WindowState = wsMaximized) then begin
-          ini.WriteBool('Layout', 'IsMaximized', true);
-        end
-        else if (WindowState = wsNormal) then begin
-          ini.WriteBool('Layout', 'IsMaximized', false);
-          ini.WriteInteger('Layout', 'Width', Width);
-          ini.WriteInteger('Layout', 'Height', Height);
-        end;
-      end;
-      ini.WriteInteger('Layout', 'ABWidth', ABWidth);
-      ini.WriteBool('Layout', 'AutoHide', mi_AutoHide.Checked);
-      ini.WriteBool('Layout', 'ABRight', mi_Right.Checked);
-      ini.WriteBool('Layout', 'ABLeft', mi_Left.Checked);
-      SaveSearchConfig(ini, 'search', DefaultSC);
-      ini.UpdateFile;
-    finally
-      ini.Free;
-      dockData.Free;
-    end;
+    SaveLayoutSettings;
   end;
 end;
 
@@ -3063,6 +3101,16 @@ end;
 procedure Tfrm_UnCodeX.ac_PackagePropsExecute(Sender: TObject);
 begin
   ShowPackageProps(SelectedUPackage);
+end;
+
+procedure Tfrm_UnCodeX.mi_SaveToFile1Click(Sender: TObject);
+begin
+	if (sd_SaveLog.Execute) then lb_Log.Items.SaveToFile(sd_SaveLog.FileName);
+end;
+
+procedure Tfrm_UnCodeX.pm_LogPopup(Sender: TObject);
+begin
+  mi_OpenClass1.Enabled := (lb_Log.ItemIndex > -1);
 end;
 
 initialization

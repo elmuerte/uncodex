@@ -394,6 +394,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Font.Style = []
     ItemHeight = 14
     ParentFont = False
+    PopupMenu = pm_Log
     TabOrder = 12
     OnClick = lb_LogClick
     OnDblClick = lb_LogDblClick
@@ -2147,5 +2148,27 @@ object frm_UnCodeX: Tfrm_UnCodeX
     OnPokeData = cmdPokeData
     Left = 40
     Top = 240
+  end
+  object pm_Log: TPopupMenu
+    OnPopup = pm_LogPopup
+    Left = 104
+    Top = 72
+    object mi_OpenClass1: TMenuItem
+      Caption = 'Open class'
+      Default = True
+      OnClick = lb_LogDblClick
+    end
+    object mi_SaveToFile1: TMenuItem
+      Caption = 'Save to file'
+      OnClick = mi_SaveToFile1Click
+    end
+  end
+  object sd_SaveLog: TSaveDialog
+    DefaultExt = '*.log'
+    Filter = 'Log Files|*.log|All Files|*.*'
+    Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
+    Title = 'Save log file'
+    Left = 40
+    Top = 200
   end
 end

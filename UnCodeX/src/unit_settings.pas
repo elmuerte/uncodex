@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   program settings window
- $Id: unit_settings.pas,v 1.33 2004-03-23 16:25:46 elmuerte Exp $
+ $Id: unit_settings.pas,v 1.34 2004-04-02 10:33:26 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -285,6 +285,7 @@ type
   public
     TagChanged: boolean;
     procedure ReloadPreview;
+    procedure ImportPackageList(filename: string);
   end;
 
 var
@@ -323,6 +324,31 @@ begin
   finally
     ms.Free;
     rs.Free;
+  end;
+end;
+
+procedure Tfrm_Settings.ImportPackageList(filename: string);
+var
+  ini: TMemIniFile;
+  sl: TStringList;
+  i, j: integer;
+  tmp: string;
+begin
+	ini := TMemIniFile.Create(FileName);
+  sl := TStringList.Create;
+  try
+    ini.ReadSectionValues('Editor.EditorEngine', sl);
+    for i := 0 to sl.Count-1 do begin
+      tmp := sl[i];
+      j := Pos('=', tmp);
+      if (LowerCase(Copy(tmp, 1, j-1)) = 'editpackages') then begin
+        Delete(tmp, 1, j);
+        clb_PackagePriority.Items.Add(tmp);
+      end;
+    end;
+  finally
+    sl.Free;
+    ini.Free;
   end;
 end;
 
@@ -378,6 +404,13 @@ var
 begin
   if SelectDirectory('Select the root directory', '', dir) then begin
     if (lb_Paths.Items.IndexOf(dir) = -1) then lb_Paths.Items.Add(dir);
+    if (clb_PackagePriority.Items.Count = 0) then begin
+			if (FileExists(dir+PathDelim+'System'+PathDelim+'Default.ini')) then begin
+				if MessageDlg('The "System\Default.ini" file has been found in this path.'+#13+#10+'Do you want to import the package priority from this file?', mtConfirmation, [mbYes,mbNo], 0) = mrYes then begin
+          ImportPackageList(dir+PathDelim+'System'+PathDelim+'Default.ini');
+				end;
+      end;
+    end;
   end;
 end;
 
@@ -618,34 +651,14 @@ begin
 end;
 
 procedure Tfrm_Settings.btn_ImportClick(Sender: TObject);
-var
-  ini: TMemIniFile;
-  sl: TStringList;
-  i, j: integer;
-  tmp: string;
 begin
   if (clb_PackagePriority.Items.Count > 0) then begin
     if MessageDlg('This will clear the current priority list.'+#13+#10+
       'Are you sure you want to continue ?', mtWarning, [mbYes,mbNo], 0) = mrNo then exit;
-    clb_PackagePriority.Items.Clear;
   end;
   if (od_BrowseIni.Execute) then begin
-    ini := TMemIniFile.Create(od_BrowseIni.FileName);
-    sl := TStringList.Create;
-    try
-      ini.ReadSectionValues('Editor.EditorEngine', sl);
-      for i := 0 to sl.Count-1 do begin
-        tmp := sl[i];
-        j := Pos('=', tmp);
-        if (LowerCase(Copy(tmp, 1, j-1)) = 'editpackages') then begin
-          Delete(tmp, 1, j);
-          clb_PackagePriority.Items.Add(tmp);
-        end;
-      end;
-    finally
-      sl.Free;
-      ini.Free;
-    end;
+  	clb_PackagePriority.Items.Clear;
+    ImportPackageList(od_BrowseIni.FileName);
   end;
 end;
 
