@@ -6,7 +6,7 @@
     Purpose:
         HTML documentation generator.
 
-    $Id: unit_htmlout.pas,v 1.62 2004-11-27 10:47:38 elmuerte Exp $
+    $Id: unit_htmlout.pas,v 1.63 2004-11-29 14:46:09 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -2674,12 +2674,12 @@ begin
         incomment := false;
         while (p.Token <> toEOF) do begin
             if (p.Token = toMCommentBegin) then begin
-                replacement := '<font class="source_comment">'+p.TokenString; // cf2 = comment
+                replacement := '<span class="source_comment">'+p.TokenString; // cf2 = comment
                 p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
                 incomment := true;
             end
             else if (p.Token = toMCommentEnd) then begin
-                replacement := p.TokenString+'</font>'; // close it
+                replacement := p.TokenString+'</span>'; // close it
                 p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
                 incomment := false;
             end
@@ -2720,34 +2720,34 @@ begin
                 replacement := p.TokenString;
                 replacement := StringReplace(replacement, '<', '&lt;', [rfReplaceAll]);
                 replacement := StringReplace(replacement, '>', '&gt;', [rfReplaceAll]);
-                replacement := '<font class="source_string">'+replacement+'</font>';
+                replacement := '<span class="source_string">'+replacement+'</span>';
                 p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
             end
             else if (p.Token = toComment) then begin
                 replacement := p.TokenString;
                 replacement := StringReplace(replacement, '<', '&lt;', [rfReplaceAll]);
                 replacement := StringReplace(replacement, '>', '&gt;', [rfReplaceAll]);
-                replacement := '<font class="source_comment">'+replacement+'</font>';
+                replacement := '<span class="source_comment">'+replacement+'</span>';
                 replacement := replacement+'<a name="'+IntToStr(p.SourceLine)+'"></a>';
                 p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
             end
             else if (p.Token = toInteger) then begin
-                replacement := '<font class="source_int">'+p.TokenString+'</font>';
+                replacement := '<span class="source_int">'+p.TokenString+'</span>';
                 p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
             end
             else if (p.Token = toFloat) then begin
-                replacement := '<font class="source_int">'+p.TokenString+'</font>';
+                replacement := '<span class="source_int">'+p.TokenString+'</span>';
                 p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
             end
             else if (p.Token = toName) then begin
-                replacement := '<font class="source_name">'+p.TokenString+'</font>';
+                replacement := '<span class="source_name">'+p.TokenString+'</span>';
                 p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
             end
             else if (p.Token = toMacro) then begin
                 replacement := p.TokenString;
                 replacement := StringReplace(replacement, '<', '&lt;', [rfReplaceAll]);
                 replacement := StringReplace(replacement, '>', '&gt;', [rfReplaceAll]);
-                replacement := '<font class="source_macro">'+replacement+'</font>';
+                replacement := '<span class="source_macro">'+replacement+'</span>';
                 replacement := replacement+'<a name="'+IntToStr(p.SourceLine)+'"></a>';
                 p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
             end
@@ -2755,14 +2755,14 @@ begin
                 tmp := LowerCase(p.TokenString);
                 replacement := p.TokenString;
                 if (Keywords1.Exists(tmp)) then begin
-                    replacement := '<font class="source_keyword">'+replacement+'</font>';
+                    replacement := '<span class="source_keyword">'+replacement+'</span>';
                 end
                 else if (Keywords2.Exists(tmp)) then begin
-                    replacement := '<font class="source_keyword2">'+replacement+'</font>';
+                    replacement := '<span class="source_keyword2">'+replacement+'</span>';
                 end
                 else if (TypeCache.Exists(tmp)) then begin
-                    if (TypeCache.Items[tmp] <> '-') then replacement := '<font class="source_type"><a href="'+StrRepeat('../', subDirDepth)+TypeCache.Items[tmp]+'" class="source">'+replacement+'</a></font>'
-                    else replacement := '<font class="source_type">'+replacement+'</font>';
+                    if (TypeCache.Items[tmp] <> '-') then replacement := '<span class="source_type"><a href="'+StrRepeat('../', subDirDepth)+TypeCache.Items[tmp]+'" class="source">'+replacement+'</a></span>'
+                    else replacement := '<span class="source_type">'+replacement+'</span>';
                 end;
                 p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
             end
@@ -2795,13 +2795,13 @@ begin
             output.WriteBuffer(PChar(replacement)^, Length(replacement));
         end;
         if (not nolineno) then begin
-            replacement := '<td class="source_lineno"><font class="source_lineno">';
+            replacement := '<td class="source_lineno"><span class="source_lineno">';
             output.WriteBuffer(PChar(replacement)^, Length(replacement));
             for i := 1 to p.SourceLine do begin
                 replacement := format('%.5d<br>'+#10, [i]);
                 output.WriteBuffer(PChar(replacement)^, Length(replacement));
             end;
-            replacement := '</font></td>';
+            replacement := '</span></td>';
             output.WriteBuffer(PChar(replacement)^, Length(replacement));
         end;
         if (not notable) then begin

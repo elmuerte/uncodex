@@ -6,7 +6,7 @@
     Purpose:
         Loading\saving of the class and package tree views
 
-    $Id: unit_treestate.pas,v 1.30 2004-11-27 10:47:39 elmuerte Exp $
+    $Id: unit_treestate.pas,v 1.31 2004-11-29 14:46:10 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -171,6 +171,7 @@ begin
             Writer.WriteInteger(uclass.consts[i].srcline);
             Writer.WriteString(uclass.consts[i].comment);
             Writer.WriteInteger(Ord(uclass.consts[i].CommentType));
+            Writer.WriteString(uclass.consts[i].definedIn);
         end;
         Writer.WriteInteger(uclass.properties.Count);
         for i := 0 to uclass.properties.Count-1 do begin
@@ -181,6 +182,7 @@ begin
             Writer.WriteInteger(uclass.properties[i].srcline);
             Writer.WriteString(uclass.properties[i].comment);
             Writer.WriteInteger(Ord(uclass.properties[i].CommentType));
+            Writer.WriteString(uclass.properties[i].definedIn);
         end;
         Writer.WriteInteger(uclass.enums.Count);
         for i := 0 to uclass.enums.Count-1 do begin
@@ -189,6 +191,7 @@ begin
             Writer.WriteInteger(uclass.enums[i].srcline);
             Writer.WriteString(uclass.enums[i].comment);
             Writer.WriteInteger(Ord(uclass.enums[i].CommentType));
+            Writer.WriteString(uclass.enums[i].definedIn);
         end;
         Writer.WriteInteger(uclass.structs.Count);
         for i := 0 to uclass.structs.Count-1 do begin
@@ -198,6 +201,7 @@ begin
             Writer.WriteInteger(uclass.structs[i].srcline);
             Writer.WriteString(uclass.structs[i].comment);
             Writer.WriteInteger(Ord(uclass.structs[i].CommentType));
+            Writer.WriteString(uclass.structs[i].definedIn);
             // struct vars
             Writer.WriteInteger(uclass.structs[i].properties.Count);
             for j := 0 to uclass.structs[i].properties.Count-1 do begin
@@ -208,6 +212,7 @@ begin
                 Writer.WriteInteger(uclass.structs[i].properties[j].srcline);
                 Writer.WriteString(uclass.structs[i].properties[j].comment);
                 Writer.WriteInteger(Ord(uclass.structs[i].properties[j].CommentType));
+                Writer.WriteString(uclass.structs[i].properties[j].definedIn);
             end;
         end;
         Writer.WriteInteger(uclass.states.Count);
@@ -218,6 +223,7 @@ begin
             Writer.WriteInteger(uclass.states[i].srcline);
             Writer.WriteString(uclass.states[i].comment);
             Writer.WriteInteger(Ord(uclass.states[i].CommentType));
+            Writer.WriteString(uclass.states[i].definedIn);
         end;
         Writer.WriteInteger(uclass.delegates.Count);
         for i := 0 to uclass.delegates.Count-1 do begin
@@ -229,6 +235,7 @@ begin
             Writer.WriteInteger(uclass.delegates[i].srcline);
             Writer.WriteString(uclass.delegates[i].comment);
             Writer.WriteInteger(Ord(uclass.delegates[i].CommentType));
+            Writer.WriteString(uclass.delegates[i].definedIn);
         end;
         Writer.WriteInteger(uclass.functions.Count);
         for i := 0 to uclass.functions.Count-1 do begin
@@ -242,6 +249,7 @@ begin
             Writer.WriteInteger(uclass.functions[i].srcline);
             Writer.WriteString(uclass.functions[i].comment);
             Writer.WriteInteger(Ord(uclass.functions[i].CommentType));
+            Writer.WriteString(uclass.functions[i].definedIn);
         end;
     finally
         Writer.Free;
@@ -310,6 +318,7 @@ begin
                 uconst.srcline := Reader.ReadInteger;
                 if (version >= 150) then uconst.comment := Reader.ReadString;
                 if (version >= 209) then uconst.CommentType := TUCommentType(Reader.ReadInteger);
+                if (version >= 214) then uconst.definedIn := Reader.ReadString;
                 uclass.consts.Add(uconst)
             end;
             m := Reader.ReadInteger;
@@ -322,6 +331,7 @@ begin
                 uprop.srcline := Reader.ReadInteger;
                 if (version >= 150) then uprop.comment := Reader.ReadString;
                 if (version >= 209) then uprop.CommentType := TUCommentType(Reader.ReadInteger);
+                if (version >= 214) then uprop.definedIn := Reader.ReadString;
                 uclass.properties.Add(uprop);
             end;
             m := Reader.ReadInteger;
@@ -332,6 +342,7 @@ begin
                 uenum.srcline := Reader.ReadInteger;
                 if (version >= 150) then uenum.comment := Reader.ReadString;
                 if (version >= 209) then uenum.CommentType := TUCommentType(Reader.ReadInteger);
+                if (version >= 214) then uenum.definedIn := Reader.ReadString;
                 uclass.enums.Add(uenum);
             end;
             m := Reader.ReadInteger;
@@ -344,6 +355,7 @@ begin
                 ustruct.srcline := Reader.ReadInteger;
                 if (version >= 150) then ustruct.comment := Reader.ReadString;
                 if (version >= 209) then ustruct.CommentType := TUCommentType(Reader.ReadInteger);
+                if (version >= 214) then ustruct.definedIn := Reader.ReadString;
                 uclass.structs.Add(ustruct);
                 if (version >= 150) then begin
                     // struct properties
@@ -357,6 +369,7 @@ begin
                         uprop.srcline := Reader.ReadInteger;
                         uprop.comment := Reader.ReadString;
                         if (version >= 209) then uprop.CommentType := TUCommentType(Reader.ReadInteger);
+                        if (version >= 214) then uprop.definedIn := Reader.ReadString;
                         ustruct.properties.Add(uprop);
                     end;
                     // struct enums
@@ -382,6 +395,7 @@ begin
                 ustate.srcline := Reader.ReadInteger;
                 if (version >= 150) then ustate.comment := Reader.ReadString;
                 if (version >= 209) then ustate.CommentType := TUCommentType(Reader.ReadInteger);
+                if (version >= 214) then ustate.definedIn := Reader.ReadString;
                 uclass.states.Add(ustate);
             end;
             if (version >= 171) then begin
@@ -396,6 +410,7 @@ begin
                     ufunc.srcline := Reader.ReadInteger;
                     if (version >= 150) then ufunc.comment := Reader.ReadString;
                     if (version >= 209) then ufunc.CommentType := TUCommentType(Reader.ReadInteger);
+                    if (version >= 214) then ufunc.definedIn := Reader.ReadString;
                     uclass.delegates.Add(ufunc);
                 end;
             end;
@@ -414,6 +429,7 @@ begin
                 ufunc.srcline := Reader.ReadInteger;
                 if (version >= 150) then ufunc.comment := Reader.ReadString;
                 if (version >= 209) then ufunc.CommentType := TUCommentType(Reader.ReadInteger);
+                if (version >= 214) then ufunc.definedIn := Reader.ReadString;
                 uclass.functions.Add(ufunc);
             end;
             if (uclass.InterfaceType = itTribesV) then begin

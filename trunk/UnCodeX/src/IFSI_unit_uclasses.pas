@@ -29,8 +29,7 @@ type
     procedure ExecImport1(CompExec: TPSScript; const ri: TPSRuntimeClassImporter); override;
     procedure ExecImport2(CompExec: TPSScript; const ri: TPSRuntimeClassImporter); override;
   end;
-
-  procedure Register; 
+ 
  
 (*
 { compile-time registration functions }
@@ -51,7 +50,9 @@ procedure SIRegister_TUProperty(CL: TPSPascalCompiler);
 procedure SIRegister_TUConstList(CL: TPSPascalCompiler);
 procedure SIRegister_TUConst(CL: TPSPascalCompiler);
 procedure SIRegister_TUObjectList(CL: TPSPascalCompiler);
+procedure SIRegister_TUDeclaration(CL: TPSPascalCompiler);
 procedure SIRegister_TUObject(CL: TPSPascalCompiler);
+procedure SIRegister_TDefinitionList(CL: TPSPascalCompiler);
 procedure SIRegister_unit_uclasses(CL: TPSPascalCompiler);
  
 { run-time registration functions }
@@ -72,7 +73,9 @@ procedure RIRegister_TUProperty(CL: TPSRuntimeClassImporter);
 procedure RIRegister_TUConstList(CL: TPSRuntimeClassImporter);
 procedure RIRegister_TUConst(CL: TPSRuntimeClassImporter);
 procedure RIRegister_TUObjectList(CL: TPSRuntimeClassImporter);
+procedure RIRegister_TUDeclaration(CL: TPSRuntimeClassImporter);
 procedure RIRegister_TUObject(CL: TPSRuntimeClassImporter);
+procedure RIRegister_TDefinitionList(CL: TPSRuntimeClassImporter);
 procedure RIRegister_unit_uclasses(CL: TPSRuntimeClassImporter);
 *)
 
@@ -84,11 +87,7 @@ uses
    Contnrs
   ,unit_uclasses
   ;
-
-procedure Register;
-begin
-  RegisterComponents('Pascal Script', [TPSImport_unit_uclasses]);
-end;
+ 
  
 { compile-time importer function }
 (*----------------------------------------------------------------------------
@@ -133,6 +132,7 @@ begin
     RegisterProperty('treenode', 'TObject', iptrw);
     RegisterProperty('tagged', 'boolean', iptrw);
     RegisterMethod('Constructor Create');
+    RegisterMethod('Function PackageDir : string');
   end;
 end;
 
@@ -155,11 +155,12 @@ begin
   //with RegClassS(CL,'TUObject', 'TUClass') do
   with CL.AddClassN(CL.FindClass('TUObject'),'TUClass') do
   begin
+    RegisterProperty('parent', 'TUClass', iptrw);
     RegisterProperty('filename', 'string', iptrw);
     RegisterProperty('package', 'TUPackage', iptrw);
-    RegisterProperty('parent', 'TUClass', iptrw);
     RegisterProperty('parentname', 'string', iptrw);
     RegisterProperty('modifiers', 'string', iptrw);
+    RegisterProperty('InterfaceType', 'TUCInterfaceType', iptrw);
     RegisterProperty('priority', 'integer', iptrw);
     RegisterProperty('consts', 'TUConstList', iptrw);
     RegisterProperty('properties', 'TUPropertyList', iptrw);
@@ -175,6 +176,8 @@ begin
     RegisterProperty('tagged', 'boolean', iptrw);
     RegisterProperty('children', 'TUClassList', iptrw);
     RegisterProperty('deps', 'TUClassList', iptrw);
+    RegisterProperty('defs', 'TDefinitionList', iptrw);
+    RegisterProperty('includes', 'TStringList', iptrw);
     RegisterMethod('Constructor Create');
     RegisterMethod('Function FullName : string');
     RegisterMethod('Function FullFileName : string');
@@ -197,8 +200,8 @@ end;
 (*----------------------------------------------------------------------------*)
 procedure SIRegister_TUFunction(CL: TPSPascalCompiler);
 begin
-  //with RegClassS(CL,'TUObject', 'TUFunction') do
-  with CL.AddClassN(CL.FindClass('TUObject'),'TUFunction') do
+  //with RegClassS(CL,'TUDeclaration', 'TUFunction') do
+  with CL.AddClassN(CL.FindClass('TUDeclaration'),'TUFunction') do
   begin
     RegisterProperty('ftype', 'TUFunctionType', iptrw);
     RegisterProperty('return', 'string', iptrw);
@@ -227,8 +230,8 @@ end;
 (*----------------------------------------------------------------------------*)
 procedure SIRegister_TUState(CL: TPSPascalCompiler);
 begin
-  //with RegClassS(CL,'TUObject', 'TUState') do
-  with CL.AddClassN(CL.FindClass('TUObject'),'TUState') do
+  //with RegClassS(CL,'TUDeclaration', 'TUState') do
+  with CL.AddClassN(CL.FindClass('TUDeclaration'),'TUState') do
   begin
     RegisterProperty('extends', 'string', iptrw);
     RegisterProperty('modifiers', 'string', iptrw);
@@ -253,12 +256,11 @@ end;
 (*----------------------------------------------------------------------------*)
 procedure SIRegister_TUStruct(CL: TPSPascalCompiler);
 begin
-  //with RegClassS(CL,'TUObject', 'TUStruct') do
-  with CL.AddClassN(CL.FindClass('TUObject'),'TUStruct') do
+  //with RegClassS(CL,'TUDeclaration', 'TUStruct') do
+  with CL.AddClassN(CL.FindClass('TUDeclaration'),'TUStruct') do
   begin
     RegisterProperty('parent', 'string', iptrw);
     RegisterProperty('modifiers', 'string', iptrw);
-    RegisterProperty('data', 'string', iptrw);
     RegisterProperty('properties', 'TUPropertyList', iptrw);
     RegisterMethod('Constructor Create');
   end;
@@ -280,8 +282,8 @@ end;
 (*----------------------------------------------------------------------------*)
 procedure SIRegister_TUEnum(CL: TPSPascalCompiler);
 begin
-  //with RegClassS(CL,'TUObject', 'TUEnum') do
-  with CL.AddClassN(CL.FindClass('TUObject'),'TUEnum') do
+  //with RegClassS(CL,'TUDeclaration', 'TUEnum') do
+  with CL.AddClassN(CL.FindClass('TUDeclaration'),'TUEnum') do
   begin
     RegisterProperty('options', 'string', iptrw);
   end;
@@ -304,8 +306,8 @@ end;
 (*----------------------------------------------------------------------------*)
 procedure SIRegister_TUProperty(CL: TPSPascalCompiler);
 begin
-  //with RegClassS(CL,'TUObject', 'TUProperty') do
-  with CL.AddClassN(CL.FindClass('TUObject'),'TUProperty') do
+  //with RegClassS(CL,'TUDeclaration', 'TUProperty') do
+  with CL.AddClassN(CL.FindClass('TUDeclaration'),'TUProperty') do
   begin
     RegisterProperty('ptype', 'string', iptrw);
     RegisterProperty('modifiers', 'string', iptrw);
@@ -329,8 +331,8 @@ end;
 (*----------------------------------------------------------------------------*)
 procedure SIRegister_TUConst(CL: TPSPascalCompiler);
 begin
-  //with RegClassS(CL,'TUObject', 'TUConst') do
-  with CL.AddClassN(CL.FindClass('TUObject'),'TUConst') do
+  //with RegClassS(CL,'TUDeclaration', 'TUConst') do
+  with CL.AddClassN(CL.FindClass('TUDeclaration'),'TUConst') do
   begin
     RegisterProperty('value', 'string', iptrw);
   end;
@@ -347,26 +349,65 @@ begin
 end;
 
 (*----------------------------------------------------------------------------*)
+procedure SIRegister_TUDeclaration(CL: TPSPascalCompiler);
+begin
+  //with RegClassS(CL,'TUObject', 'TUDeclaration') do
+  with CL.AddClassN(CL.FindClass('TUObject'),'TUDeclaration') do
+  begin
+    RegisterProperty('srcline', 'integer', iptrw);
+    RegisterProperty('definedIn', 'string', iptrw);
+  end;
+end;
+
+(*----------------------------------------------------------------------------*)
 procedure SIRegister_TUObject(CL: TPSPascalCompiler);
 begin
   //with RegClassS(CL,'TObject', 'TUObject') do
   with CL.AddClassN(CL.FindClass('TObject'),'TUObject') do
   begin
     RegisterProperty('name', 'string', iptrw);
-    RegisterProperty('srcline', 'integer', iptrw);
     RegisterProperty('comment', 'string', iptrw);
     RegisterProperty('CommentType', 'TUCommentType', iptrw);
   end;
 end;
 
 (*----------------------------------------------------------------------------*)
+procedure SIRegister_TDefinitionList(CL: TPSPascalCompiler);
+begin
+  //with RegClassS(CL,'TObject', 'TDefinitionList') do
+  with CL.AddClassN(CL.FindClass('TObject'),'TDefinitionList') do
+  begin
+    RegisterProperty('fowner', 'TUClass', iptrw);
+    RegisterProperty('defines', 'TStringList', iptrw);
+    RegisterProperty('curToken', 'string', iptrw);
+    RegisterMethod('Procedure _nextToken( var line : string)');
+    RegisterMethod('Function _expr( var line : string) : boolean');
+    RegisterMethod('Function _orx( var line : string) : boolean');
+    RegisterMethod('Function _andx( var line : string) : boolean');
+    RegisterMethod('Function _unaryx( var line : string) : boolean');
+    RegisterMethod('Function _operand( var line : string) : boolean');
+    RegisterMethod('Function _lvalue( var line : string) : boolean');
+    RegisterMethod('Function IsDefined( name : string) : boolean');
+    RegisterMethod('Function GetDefine( name : string) : string');
+    RegisterMethod('Function Eval( line : string) : boolean');
+    RegisterMethod('Function define( name, value : string) : boolean');
+    RegisterMethod('Function undefine( name : string) : boolean');
+    RegisterMethod('Constructor Create( owner : TUClass)');
+    RegisterProperty('Definitions', 'TStringList', iptr);
+  end;
+end;
+
+(*----------------------------------------------------------------------------*)
 procedure SIRegister_unit_uclasses(CL: TPSPascalCompiler);
 begin
- CL.AddConstantN('UCLASSES_REV','LongInt').SetInt( 1);
+ CL.AddConstantN('UCLASSES_REV','LongInt').SetInt( 3);
   CL.AddTypeS('TUCommentType', '( ctSource, ctExtern, ctInherited )');
+  CL.AddClassN(CL.FindClass('TOBJECT'),'TUClass');
   CL.AddClassN(CL.FindClass('TOBJECT'),'TUPackage');
   CL.AddClassN(CL.FindClass('TOBJECT'),'TUFunctionList');
+  SIRegister_TDefinitionList(CL);
   SIRegister_TUObject(CL);
+  SIRegister_TUDeclaration(CL);
   SIRegister_TUObjectList(CL);
   SIRegister_TUConst(CL);
   SIRegister_TUConstList(CL);
@@ -383,6 +424,7 @@ begin
   SIRegister_TUFunction(CL);
   SIRegister_TUFunctionList(CL);
   CL.AddClassN(CL.FindClass('TOBJECT'),'TUClassList');
+  CL.AddTypeS('TUCInterfaceType', '( itNone, itTribesV )');
   SIRegister_TUClass(CL);
   SIRegister_TUClassList(CL);
   SIRegister_TUPackage(CL);
@@ -445,6 +487,22 @@ begin Self.Items[t1] := T; end;
 (*----------------------------------------------------------------------------*)
 procedure TUClassListItems_R(Self: TUClassList; var T: TUClass; const t1: Integer);
 begin T := Self.Items[t1]; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassincludes_W(Self: TUClass; const T: TStringList);
+Begin Self.includes := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassincludes_R(Self: TUClass; var T: TStringList);
+Begin T := Self.includes; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassdefs_W(Self: TUClass; const T: TDefinitionList);
+Begin Self.defs := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassdefs_R(Self: TUClass; var T: TDefinitionList);
+Begin T := Self.defs; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TUClassdeps_W(Self: TUClass; const T: TUClassList);
@@ -567,6 +625,14 @@ procedure TUClasspriority_R(Self: TUClass; var T: integer);
 Begin T := Self.priority; end;
 
 (*----------------------------------------------------------------------------*)
+procedure TUClassInterfaceType_W(Self: TUClass; const T: TUCInterfaceType);
+Begin Self.InterfaceType := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassInterfaceType_R(Self: TUClass; var T: TUCInterfaceType);
+Begin T := Self.InterfaceType; end;
+
+(*----------------------------------------------------------------------------*)
 procedure TUClassmodifiers_W(Self: TUClass; const T: string);
 Begin Self.modifiers := T; end;
 
@@ -583,14 +649,6 @@ procedure TUClassparentname_R(Self: TUClass; var T: string);
 Begin T := Self.parentname; end;
 
 (*----------------------------------------------------------------------------*)
-procedure TUClassparent_W(Self: TUClass; const T: TUClass);
-Begin Self.parent := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassparent_R(Self: TUClass; var T: TUClass);
-Begin T := Self.parent; end;
-
-(*----------------------------------------------------------------------------*)
 procedure TUClasspackage_W(Self: TUClass; const T: TUPackage);
 Begin Self.package := T; end;
 
@@ -605,6 +663,14 @@ Begin Self.filename := T; end;
 (*----------------------------------------------------------------------------*)
 procedure TUClassfilename_R(Self: TUClass; var T: string);
 Begin T := Self.filename; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassparent_W(Self: TUClass; const T: TUClass);
+Begin Self.parent := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassparent_R(Self: TUClass; var T: TUClass);
+Begin T := Self.parent; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TUFunctionListItems_W(Self: TUFunctionList; const T: TUFunction; const t1: Integer);
@@ -799,6 +865,22 @@ procedure TUConstvalue_R(Self: TUConst; var T: string);
 Begin T := Self.value; end;
 
 (*----------------------------------------------------------------------------*)
+procedure TUDeclarationdefinedIn_W(Self: TUDeclaration; const T: string);
+Begin Self.definedIn := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUDeclarationdefinedIn_R(Self: TUDeclaration; var T: string);
+Begin T := Self.definedIn; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUDeclarationsrcline_W(Self: TUDeclaration; const T: integer);
+Begin Self.srcline := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUDeclarationsrcline_R(Self: TUDeclaration; var T: integer);
+Begin T := Self.srcline; end;
+
+(*----------------------------------------------------------------------------*)
 procedure TUObjectCommentType_W(Self: TUObject; const T: TUCommentType);
 Begin Self.CommentType := T; end;
 
@@ -815,20 +897,40 @@ procedure TUObjectcomment_R(Self: TUObject; var T: string);
 Begin T := Self.comment; end;
 
 (*----------------------------------------------------------------------------*)
-procedure TUObjectsrcline_W(Self: TUObject; const T: integer);
-Begin Self.srcline := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUObjectsrcline_R(Self: TUObject; var T: integer);
-Begin T := Self.srcline; end;
-
-(*----------------------------------------------------------------------------*)
 procedure TUObjectname_W(Self: TUObject; const T: string);
 Begin Self.name := T; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TUObjectname_R(Self: TUObject; var T: string);
 Begin T := Self.name; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TDefinitionListDefinitions_R(Self: TDefinitionList; var T: TStringList);
+begin T := Self.Definitions; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TDefinitionListcurToken_W(Self: TDefinitionList; const T: string);
+Begin Self.curToken := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TDefinitionListcurToken_R(Self: TDefinitionList; var T: string);
+Begin T := Self.curToken; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TDefinitionListdefines_W(Self: TDefinitionList; const T: TStringList);
+Begin Self.defines := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TDefinitionListdefines_R(Self: TDefinitionList; var T: TStringList);
+Begin T := Self.defines; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TDefinitionListfowner_W(Self: TDefinitionList; const T: TUClass);
+Begin Self.fowner := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TDefinitionListfowner_R(Self: TDefinitionList; var T: TUClass);
+Begin T := Self.fowner; end;
 
 (*----------------------------------------------------------------------------*)
 procedure RIRegister_TUPackageList(CL: TPSRuntimeClassImporter);
@@ -853,6 +955,7 @@ begin
     RegisterPropertyHelper(@TUPackagetreenode_R,@TUPackagetreenode_W,'treenode');
     RegisterPropertyHelper(@TUPackagetagged_R,@TUPackagetagged_W,'tagged');
     RegisterConstructor(@TUPackage.Create, 'Create');
+    RegisterMethod(@TUPackage.PackageDir, 'PackageDir');
   end;
 end;
 
@@ -872,11 +975,12 @@ procedure RIRegister_TUClass(CL: TPSRuntimeClassImporter);
 begin
   with CL.Add(TUClass) do
   begin
+    RegisterPropertyHelper(@TUClassparent_R,@TUClassparent_W,'parent');
     RegisterPropertyHelper(@TUClassfilename_R,@TUClassfilename_W,'filename');
     RegisterPropertyHelper(@TUClasspackage_R,@TUClasspackage_W,'package');
-    RegisterPropertyHelper(@TUClassparent_R,@TUClassparent_W,'parent');
     RegisterPropertyHelper(@TUClassparentname_R,@TUClassparentname_W,'parentname');
     RegisterPropertyHelper(@TUClassmodifiers_R,@TUClassmodifiers_W,'modifiers');
+    RegisterPropertyHelper(@TUClassInterfaceType_R,@TUClassInterfaceType_W,'InterfaceType');
     RegisterPropertyHelper(@TUClasspriority_R,@TUClasspriority_W,'priority');
     RegisterPropertyHelper(@TUClassconsts_R,@TUClassconsts_W,'consts');
     RegisterPropertyHelper(@TUClassproperties_R,@TUClassproperties_W,'properties');
@@ -892,6 +996,8 @@ begin
     RegisterPropertyHelper(@TUClasstagged_R,@TUClasstagged_W,'tagged');
     RegisterPropertyHelper(@TUClasschildren_R,@TUClasschildren_W,'children');
     RegisterPropertyHelper(@TUClassdeps_R,@TUClassdeps_W,'deps');
+    RegisterPropertyHelper(@TUClassdefs_R,@TUClassdefs_W,'defs');
+    RegisterPropertyHelper(@TUClassincludes_R,@TUClassincludes_W,'includes');
     RegisterConstructor(@TUClass.Create, 'Create');
     RegisterMethod(@TUClass.FullName, 'FullName');
     RegisterMethod(@TUClass.FullFileName, 'FullFileName');
@@ -1044,23 +1150,60 @@ begin
 end;
 
 (*----------------------------------------------------------------------------*)
+procedure RIRegister_TUDeclaration(CL: TPSRuntimeClassImporter);
+begin
+  with CL.Add(TUDeclaration) do
+  begin
+    RegisterPropertyHelper(@TUDeclarationsrcline_R,@TUDeclarationsrcline_W,'srcline');
+    RegisterPropertyHelper(@TUDeclarationdefinedIn_R,@TUDeclarationdefinedIn_W,'definedIn');
+  end;
+end;
+
+(*----------------------------------------------------------------------------*)
 procedure RIRegister_TUObject(CL: TPSRuntimeClassImporter);
 begin
   with CL.Add(TUObject) do
   begin
     RegisterPropertyHelper(@TUObjectname_R,@TUObjectname_W,'name');
-    RegisterPropertyHelper(@TUObjectsrcline_R,@TUObjectsrcline_W,'srcline');
     RegisterPropertyHelper(@TUObjectcomment_R,@TUObjectcomment_W,'comment');
     RegisterPropertyHelper(@TUObjectCommentType_R,@TUObjectCommentType_W,'CommentType');
   end;
 end;
 
 (*----------------------------------------------------------------------------*)
+procedure RIRegister_TDefinitionList(CL: TPSRuntimeClassImporter);
+begin
+  with CL.Add(TDefinitionList) do
+  begin
+    RegisterPropertyHelper(@TDefinitionListfowner_R,@TDefinitionListfowner_W,'fowner');
+    RegisterPropertyHelper(@TDefinitionListdefines_R,@TDefinitionListdefines_W,'defines');
+    RegisterPropertyHelper(@TDefinitionListcurToken_R,@TDefinitionListcurToken_W,'curToken');
+    RegisterMethod(@TDefinitionList._nextToken, '_nextToken');
+    RegisterMethod(@TDefinitionList._expr, '_expr');
+    RegisterMethod(@TDefinitionList._orx, '_orx');
+    RegisterMethod(@TDefinitionList._andx, '_andx');
+    RegisterMethod(@TDefinitionList._unaryx, '_unaryx');
+    RegisterMethod(@TDefinitionList._operand, '_operand');
+    RegisterMethod(@TDefinitionList._lvalue, '_lvalue');
+    RegisterMethod(@TDefinitionList.IsDefined, 'IsDefined');
+    RegisterMethod(@TDefinitionList.GetDefine, 'GetDefine');
+    RegisterMethod(@TDefinitionList.Eval, 'Eval');
+    RegisterMethod(@TDefinitionList.define, 'define');
+    RegisterMethod(@TDefinitionList.undefine, 'undefine');
+    RegisterConstructor(@TDefinitionList.Create, 'Create');
+    RegisterPropertyHelper(@TDefinitionListDefinitions_R,nil,'Definitions');
+  end;
+end;
+
+(*----------------------------------------------------------------------------*)
 procedure RIRegister_unit_uclasses(CL: TPSRuntimeClassImporter);
 begin
+  with CL.Add(TUClass) do
   with CL.Add(TUPackage) do
   with CL.Add(TUFunctionList) do
+  RIRegister_TDefinitionList(CL);
   RIRegister_TUObject(CL);
+  RIRegister_TUDeclaration(CL);
   RIRegister_TUObjectList(CL);
   RIRegister_TUConst(CL);
   RIRegister_TUConstList(CL);

@@ -6,7 +6,7 @@
     Purpose:
         Additional GUI only PascalScript routines
 
-    $Id: unit_pascalscript_gui.pas,v 1.9 2004-10-20 14:19:29 elmuerte Exp $
+    $Id: unit_pascalscript_gui.pas,v 1.10 2004-11-29 14:46:10 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -279,6 +279,11 @@ begin
     while (i > GetTickCount-time) do Application.ProcessMessages;
 end;
 
+procedure ClearLog;
+begin
+    frm_UnCodeX.lb_Log.Clear;
+end;
+
 procedure RegisterPSGui(ps: TPSScript);
 begin
     if (frm_UnCodeX = nil) then exit;
@@ -332,6 +337,8 @@ begin
     ps.AddFunction(@OpenSourceLine, 'procedure OpenSourceLine(uclass: TUClass; line, caret: integer);');
     ps.AddFunction(@OpenSourceInline, 'procedure OpenSourceInline(uclass: TUClass; line, caret: integer);');
     ps.AddFunction(@Sleep, 'procedure Sleep(time: cardinal);');
+
+    ps.AddFunction(@ClearLog, 'procedure ClearLog();');
 
     { Variables }
     ps.AddRegisteredPTRVariable('SelectedUClass', 'TUClass');
