@@ -102,6 +102,8 @@ type
     ac_CompileClass: TAction;
     ac_RunServer: TAction;
     ac_JoinServer: TAction;
+    mi_Autohide: TMenuItem;
+    mi_N13: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_OpenClassClick(Sender: TObject);
@@ -134,17 +136,22 @@ type
     procedure spl_Main2CanResize(Sender: TObject; var NewSize: Integer;
       var Accept: Boolean);
     procedure FormResize(Sender: TObject);
-    procedure FormCanResize(Sender: TObject; var NewWidth,
-      NewHeight: Integer; var Resize: Boolean);
     procedure mi_RightClick(Sender: TObject);
     procedure ac_RunServerExecute(Sender: TObject);
     procedure ac_JoinServerExecute(Sender: TObject);
     procedure ac_CompileClassExecute(Sender: TObject);
+    procedure mi_AutohideClick(Sender: TObject);
+    procedure mi_MenubarClick(Sender: TObject);
   private
+    // AppBar vars
     OldStyleEx: Cardinal;
     OldStyle: Cardinal;
+    OldSize: TRect;
     IsAppBar: boolean;
+    ABAutoHide: boolean;
     abd: APPBARDATA;
+    WorkArea: TRect;
+    // AppBar vars -- end;
     function ThreadCreate: boolean;
     procedure ThreadTerminate(Sender: TObject);
     procedure SaveState;
@@ -152,12 +159,17 @@ type
     procedure UpdateSystemMenu;
     procedure WMSysCommand (var Msg : TMessage); message WM_SysCommand;
     procedure WMAppBar(var Msg : TMessage); message WM_AppBar;
+    procedure WMNCHitTest(var Msg: TWMNCHitTest); message WM_NCHITTEST;
+    procedure CMMouseLeave(var msg: TMessage); message CM_MOUSELEAVE;
     procedure RegisterAppBar;
     procedure UnregisterAppBar;
+    procedure RegisterABAutoHide;
+    procedure UnregisterABAutoHide;
     procedure ABResize;
   public
     statustext : string;
     procedure StatusReport(msg: string; progress: byte = 255);
+    procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
   end;
 
   procedure Log(msg: string);
@@ -185,6 +197,7 @@ uses unit_settings, unit_definitions, unit_analyse, unit_htmlout,
 const
   PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
                                        HIGH_PRIORITY_CLASS, REALTIME_PRIORITY_CLASS);
+  AUTOHIDEEXPOSURE = 4; // number of pixel to show of the app bar
 
 {$R *.dfm}
 
@@ -195,7 +208,8 @@ begin
   frm_UnCodeX.lb_Log.ItemIndex := frm_UnCodeX.lb_Log.Items.Count-1;
 end;
 
-//
+////////////////////////////////////////////////////////////////////////////////
+// Custom methods
 
 procedure Tfrm_UnCodeX.StatusReport(msg: string; progress: byte = 255);
 begin
@@ -264,21 +278,22 @@ end;
 
 procedure Tfrm_UnCodeX.UpdateSystemMenu;
 var
- SysMenu : HMenu;
- Minfo: TMENUITEMINFO;
+  SysMenu : HMenu;
+  Minfo: TMENUITEMINFO;
 begin
- SysMenu := GetSystemMenu(frm_UnCodeX.Handle, false);
- Minfo.cbSize := SizeOf(TMENUITEMINFO);
- Minfo.fMask := MIIM_TYPE;
- Minfo.fType := MFT_SEPARATOR;
- InsertMenuItem(Sysmenu, 0, true, Minfo);
- 
- Minfo.cbSize := SizeOf(TMENUITEMINFO);
- Minfo.fMask := MIIM_ID or MIIM_TYPE or MIIM_SUBMENU;
- Minfo.fType := MFT_STRING;
- Minfo.hSubMenu := mi_View.Handle;
- Minfo.dwTypeData := PChar(mi_View.Caption);
- InsertMenuItem(Sysmenu, 0, false, Minfo);
+  SysMenu := GetSystemMenu(frm_UnCodeX.Handle, false);
+  Minfo.cbSize := SizeOf(TMENUITEMINFO);
+  Minfo.fMask := MIIM_TYPE;
+  Minfo.fType := MFT_SEPARATOR;
+  InsertMenuItem(Sysmenu, 0, true, Minfo);
+
+  // Add view menu
+  Minfo.cbSize := SizeOf(TMENUITEMINFO);
+  Minfo.fMask := MIIM_ID or MIIM_TYPE or MIIM_SUBMENU;
+  Minfo.fType := MFT_STRING;
+  Minfo.hSubMenu := mi_View.Handle;
+  Minfo.dwTypeData := PChar(mi_View.Caption);
+  InsertMenuItem(Sysmenu, 0, false, Minfo);
 end;
 
 procedure Tfrm_UnCodeX.WMSysCommand (var Msg : TMessage);
@@ -292,6 +307,37 @@ begin
   log(IntToStr(Msg.WParam));
 end;
 
+procedure Tfrm_UnCodeX.WMNCHitTest(var Msg: TWMNCHitTest);
+begin
+  inherited;
+  if (IsAppBar) then begin
+    // prevent mocing
+    if (Msg.Result = HTCAPTION) then begin
+      frm_UnCodeX.BringToFront;
+      Msg.Result := Windows.HTNOWHERE;
+    end
+    // show bar
+    else if ((Msg.Result = HTLEFT) and ABAutoHide) then begin
+      Left := abd.rc.Right-Width;
+    end
+    // prevent resizing
+    else if (Msg.Result in [HTRIGHT, HTBOTTOM, HTTOP, HTGROWBOX, HTBOTTOMLEFT,
+      HTBOTTOMRIGHT, HTTOPLEFT, HTTOPRIGHT, HTSIZE]) then begin
+      Msg.Result := Windows.HTNOWHERE;
+    end
+  end;
+end;
+
+procedure Tfrm_UnCodeX.CMMouseLeave(var msg: TMessage);
+var
+  pt: TPoint;
+begin
+  inherited;
+  if (IsAppBar and ABAutoHide and GetCursorPos(pt)) then begin
+    if ((pt.X < Left) or (pt.Y > abd.rc.Bottom)) then Left := abd.rc.Left;
+  end;
+end;
+
 procedure Tfrm_UnCodeX.RegisterAppBar;
 begin
   if (IsAppBar) then exit;
@@ -299,21 +345,32 @@ begin
   OldStyle := GetWindowLong(Handle, GWL_STYLE);
   SetWindowLong(Handle, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
   //SetWindowLong(Handle, GWL_Style, WS_VISIBLE or WS_DLGFRAME or ws_thickframe);
+  OldSize.Left := Left;
+  OldSize.Top := Top;
+  OldSize.Right := Width;
+  OldSize.Bottom := Height;
+  SystemParametersInfo(SPI_GETWORKAREA, 0, @WorkArea, 0);
 
   abd.cbSize := SizeOf(APPBARDATA);
   abd.hWnd := Handle;
   abd.uCallbackMessage := WM_APPBAR;
   SHAppBarMessage(ABM_NEW, abd);
-  
+
   abd.uEdge := ABE_RIGHT;
-  abd.rc := Rect(GetSystemMetrics(SM_CXSCREEN)-150, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+  abd.rc.Left := WorkArea.Right-150;
+  abd.rc.Top := WorkArea.Top;
+  abd.rc.Bottom := WorkArea.Bottom;
+  abd.rc.Right := WorkArea.Right;
   Left := abd.rc.Left;
   Top := abd.rc.Top;
   Width := abd.rc.Right-abd.rc.Left;
   Height := abd.rc.Bottom-abd.rc.Top;
-  shAppBarMessage(ABM_setPos, abd);
+  if (not ABAutoHide) then shAppBarMessage(ABM_setPos, abd);
+  if (ABAutoHide) then RegisterABAutoHide;
+  abd.lParam := 1;
   shAppBarMessage(ABM_ACTIVATE, abd);
   IsAppBar := true;
+  sb_Status.SizeGrip := not IsAppBar;
 end;
 
 procedure Tfrm_UnCodeX.UnregisterAppBar;
@@ -323,18 +380,67 @@ begin
     IsAppBar := false;
     SetWindowLong(Handle, GWL_EXSTYLE, OldStyleEx);
     SetWindowLong(Handle, GWL_Style, OldStyle);
+    Left := OldSize.Left;
+    Top := OldSize.Top;
+    Width := OldSize.Right;
+    Height := OldSize.Bottom;
+  end;
+  sb_Status.SizeGrip := not IsAppBar;
+end;
+
+procedure Tfrm_UnCodeX.RegisterABAutoHide;
+begin
+  abd.lParam := 1;
+  if (shAppBarMessage(ABM_SETAUTOHIDEBAR, abd) <> 0) then begin
+    abd.rc.Left := abd.rc.Right-AUTOHIDEEXPOSURE;
+    shAppBarMessage(ABM_setPos, abd);
+    Left := abd.rc.Left;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.UnregisterABAutoHide;
+begin
+  abd.lParam := 0;
+  if (shAppBarMessage(ABM_SETAUTOHIDEBAR, abd) <> 0) then begin
+    abd.rc.Left := WorkArea.Right-Width;
+    shAppBarMessage(ABM_setPos, abd);
+    Left := abd.rc.Left;
   end;
 end;
 
 procedure Tfrm_UnCodeX.ABResize;
 begin
-  if (IsAppBar) then begin
-    abd.rc.Left := GetSystemMetrics(SM_CXSCREEN)-Width;
+  if (IsAppBar and not ABAutoHide) then begin
+    abd.rc.Left := abd.rc.Right-Width;
     SHAppBarMessage(ABM_setPos, abd);
   end;
 end;
 
-//
+procedure Tfrm_UnCodeX.ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
+var
+  se: SHELLEXECUTEINFO;
+begin
+  se.cbSize := SizeOf(SHELLEXECUTEINFO);
+  se.Wnd := Handle;
+  se.lpVerb := nil;
+  se.lpFile := PChar(exe);
+  if (params <> nil) then se.lpParameters := PChar(params.DelimitedText);
+  se.nShow := show;
+  se.fMask := SEE_MASK_NOCLOSEPROCESS;
+  if (not ShellExecuteEx(@se)) then begin
+    case (GetLastError) of
+      ERROR_FILE_NOT_FOUND: statustext := 'File not found: '+exe;
+      ERROR_PATH_NOT_FOUND: statustext := 'Path not found: '+exe;
+      SE_ERR_ACCESSDENIED : statustext := 'Access denied: '+exe;
+    end;
+  end;
+  if (prio > -1) then begin
+    SetPriorityClass(se.hProcess, PROCPRIO[prio]);
+  end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+// Auto generated methods
 
 procedure Tfrm_UnCodeX.tmr_StatusTextTimer(Sender: TObject);
 begin
@@ -355,6 +461,7 @@ begin
   PackagePriority := TStringList.Create;
   SourcePaths := TStringList.Create;
   try
+    mi_MenuBar.Checked := ini.ReadBool('Layout', 'MenuBar', true);
     mi_Toolbar.Checked := ini.ReadBool('Layout', 'Toolbar', true);
     mi_Toolbar.OnClick(Sender);
     mi_PackageTree.Checked := ini.ReadBool('Layout', 'PackageTree', true);
@@ -378,6 +485,8 @@ begin
       frm_UnCodeX.Width := ini.ReadInteger('Layout', 'Width', frm_UnCodeX.Width);
       frm_UnCodeX.Height := ini.ReadInteger('Layout', 'Height', frm_UnCodeX.Height);
     end;
+    mi_AutoHide.Checked := ini.ReadBool('Layout', 'AutoHide', false);
+    mi_AutoHide.OnClick(Sender);
 
     HTMLOutputDir := ini.ReadString('Config', 'HTMLOutputDir', ExtractFilePath(ParamStr(0))+'Output');
     TemplateDir := ini.ReadString('Config', 'TemplateDir', ExtractFilePath(ParamStr(0))+'Templates\UnrealWiki');
@@ -409,6 +518,7 @@ begin
   PackageList := TUPackageList.Create(true);
   ClassList := TUClassList.Create(false);
   UpdateSystemMenu;
+  mi_MenuBar.OnClick(Sender); // has to be here or else it won't work
 end;
 
 procedure Tfrm_UnCodeX.mi_OpenClassClick(Sender: TObject);
@@ -613,11 +723,7 @@ begin
       if (Selected <> nil) then begin
         if (TObject(Selected.Data).ClassType <> TUClass) then exit;
         filename := TUClass(Selected.Data).package.path+PATHDELIM+CLASSDIR+PATHDELIM+TUClass(Selected.Data).filename;
-        case (ShellExecute(0, nil, PChar(filename), nil, nil, 0)) of
-          ERROR_FILE_NOT_FOUND: statustext := 'File not found: '+filename;
-          ERROR_PATH_NOT_FOUND: statustext := 'Path not found: '+filename;
-          SE_ERR_ACCESSDENIED : statustext := 'Access denied: '+filename;
-        end;
+        ExecuteProgram(filename);
       end;
     end;
   end;
@@ -646,6 +752,7 @@ begin
   SaveState;
   ini := TMemIniFile.Create(ExtractFilePath(ParamStr(0))+'\UnCodeX.ini');
   try
+    ini.WriteBool('Layout', 'MenuBar', mi_MenuBar.Checked);
     ini.WriteBool('Layout', 'Toolbar', mi_Toolbar.Checked);
     ini.WriteBool('Layout', 'PackageTree', mi_PackageTree.Checked);
     ini.WriteInteger('Layout', 'PackageTreeWidth', tv_Packages.Width);
@@ -656,13 +763,26 @@ begin
     ini.WriteBool('Layout', 'SavePosition', mi_Saveposition.Checked);
     ini.WriteBool('Layout', 'SaveSize', mi_Savesize.Checked);
     if (mi_Saveposition.Checked) then begin
-      ini.WriteInteger('Layout', 'Top', Top);
-      ini.WriteInteger('Layout', 'Left', Left);
+      if (IsAppBar) then begin
+        ini.WriteInteger('Layout', 'Top', OldSize.Top);
+        ini.WriteInteger('Layout', 'Left', OldSize.Left);
+      end
+      else begin
+        ini.WriteInteger('Layout', 'Top', Top);
+        ini.WriteInteger('Layout', 'Left', Left);
+      end;
     end;
     if (mi_Savesize.Checked) then begin
-      ini.WriteInteger('Layout', 'Width', Width);
-      ini.WriteInteger('Layout', 'Height', Height);
+      if (IsAppBar) then begin
+        ini.WriteInteger('Layout', 'Width', OldSize.Right);
+        ini.WriteInteger('Layout', 'Height', OldSize.Bottom);
+      end
+      else begin
+        ini.WriteInteger('Layout', 'Width', Width);
+        ini.WriteInteger('Layout', 'Height', Height);
+      end;
     end;
+    ini.WriteBool('Layout', 'AutoHide', mi_AutoHide.Checked);
     ini.UpdateFile;
   finally
     ini.Free;
@@ -758,15 +878,6 @@ begin
   if (IsAppBar) then ABResize;
 end;
 
-procedure Tfrm_UnCodeX.FormCanResize(Sender: TObject; var NewWidth,
-  NewHeight: Integer; var Resize: Boolean);
-begin
-  if (IsAppBar) then begin
-    // FIXME: prevent resizing
-    NewHeight := Height;
-  end;
-end;
-
 procedure Tfrm_UnCodeX.mi_RightClick(Sender: TObject);
 begin
   if (mi_Right.Checked) then RegisterAppBar
@@ -775,34 +886,15 @@ end;
 
 procedure Tfrm_UnCodeX.ac_RunServerExecute(Sender: TObject);
 var
-  se: SHELLEXECUTEINFO;
   lst: TStringList;
+  exe: string;
 begin
   lst := TStringList.Create;
   try
     lst.Delimiter := ' ';
     lst.QuoteChar := '"';
     lst.DelimitedText := ServerCmd;
-    if (lst.Count > 0) then begin
-      se.cbSize := SizeOf(SHELLEXECUTEINFO);
-      se.Wnd := Handle;
-      se.lpVerb := nil;
-      se.lpFile := PChar(lst[0]);
-      lst.Delete(0);
-      se.lpParameters := PChar(lst.DelimitedText);
-      se.nShow := SW_SHOW;
-      se.fMask := SEE_MASK_NOCLOSEPROCESS;
-      if (not ShellExecuteEx(@se)) then begin
-        case (GetLastError) of
-          ERROR_FILE_NOT_FOUND: statustext := 'File not found: '+se.lpFile;
-          ERROR_PATH_NOT_FOUND: statustext := 'Path not found: '+se.lpFile;
-          SE_ERR_ACCESSDENIED : statustext := 'Access denied: '+se.lpFile;
-        end;
-      end
-      else begin
-        SetPriorityClass(se.hProcess, PROCPRIO[ServerPrio]);
-      end;
-    end;
+    ExecuteProgram(exe, lst, ServerPrio);
   finally
     lst.Free;
   end;
@@ -810,8 +902,8 @@ end;
 
 procedure Tfrm_UnCodeX.ac_JoinServerExecute(Sender: TObject);
 var
-  se: SHELLEXECUTEINFO;
   lst: TStringList;
+  exe: string;
 begin
   lst := TStringList.Create;
   try
@@ -819,21 +911,9 @@ begin
     lst.QuoteChar := '"';
     lst.DelimitedText := ClientCmd;
     if (lst.Count > 0) then begin
-      se.cbSize := SizeOf(SHELLEXECUTEINFO);
-      se.Wnd := Handle;
-      se.lpVerb := nil;
-      se.lpFile := PChar(lst[0]);
+      exe := lst[0];
       lst.Delete(0);
-      se.lpParameters := PChar(lst.DelimitedText);
-      se.nShow := SW_SHOW;
-      se.fMask := SEE_MASK_NOCLOSEPROCESS;
-      if (not ShellExecuteEx(@se)) then begin
-        case (GetLastError) of
-          ERROR_FILE_NOT_FOUND: statustext := 'File not found: '+se.lpFile;
-          ERROR_PATH_NOT_FOUND: statustext := 'Path not found: '+se.lpFile;
-          SE_ERR_ACCESSDENIED : statustext := 'Access denied: '+se.lpFile;
-        end;
-      end;
+      ExecuteProgram(exe, lst);
     end;
   finally
     lst.Free;
@@ -842,8 +922,8 @@ end;
 
 procedure Tfrm_UnCodeX.ac_CompileClassExecute(Sender: TObject);
 var
-  se: SHELLEXECUTEINFO;
   lst: TStringList;
+  exe: string;
   i: integer;
 begin
   if (CompilerCmd = '') then exit;
@@ -855,10 +935,7 @@ begin
           lst.Delimiter := ' ';
           lst.QuoteChar := '"';
           lst.DelimitedText := CompilerCmd;
-          se.cbSize := SizeOf(SHELLEXECUTEINFO);
-          se.Wnd := Handle;
-          se.lpVerb := nil;
-          se.lpFile := PChar(lst[0]);
+          exe := lst[0];
           lst.Delete(0);
           for i := 0 to lst.Count-1 do begin
             if (CompareText(lst[i], '%classname%') = 0) then
@@ -872,21 +949,33 @@ begin
             else if (CompareText(lst[i], '%packagepath%') = 0) then
               lst[i] := TUClass(Selected.Data).package.path;
           end;
-          se.lpParameters := PChar(lst.DelimitedText);
-          se.nShow := SW_SHOW;
-          se.fMask := SEE_MASK_NOCLOSEPROCESS;
-          if (not ShellExecuteEx(@se)) then begin
-            case (GetLastError) of
-              ERROR_FILE_NOT_FOUND: statustext := 'File not found: '+se.lpFile;
-              ERROR_PATH_NOT_FOUND: statustext := 'Path not found: '+se.lpFile;
-              SE_ERR_ACCESSDENIED : statustext := 'Access denied: '+se.lpFile;
-            end;
-          end;
+          ExecuteProgram(exe, lst);
         finally
           lst.Free;
         end;
       end;
     end;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.mi_AutohideClick(Sender: TObject);
+begin
+  ABAutoHide := mi_AutoHide.Checked;
+  if (IsAppBar) then begin
+    if (ABAutoHide) then RegisterABAutoHide
+      else UnregisterABAutoHide;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.mi_MenubarClick(Sender: TObject);
+begin
+  if (mi_MenuBar.Checked) then begin
+    Windows.SetMenu(Handle, mm_Main.Handle);
+    mm_Main.WindowHandle := Handle;
+  end
+  else begin
+    Windows.SetMenu(Handle, 0);
+    mm_Main.WindowHandle := 0;
   end;
 end;
 

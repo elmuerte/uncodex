@@ -1,6 +1,6 @@
 object frm_UnCodeX: Tfrm_UnCodeX
-  Left = 215
-  Top = 118
+  Left = 222
+  Top = 114
   Width = 666
   Height = 616
   Color = clBtnFace
@@ -14,7 +14,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
   Position = poDefaultPosOnly
   Scaled = False
   OnActivate = FormActivate
-  OnCanResize = FormCanResize
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -254,6 +253,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
         AutoCheck = True
         Caption = 'Menu bar'
         Checked = True
+        OnClick = mi_MenubarClick
       end
       object mi_Toolbar: TMenuItem
         AutoCheck = True
@@ -303,6 +303,16 @@ object frm_UnCodeX: Tfrm_UnCodeX
       end
       object mi_Toolwindow: TMenuItem
         Caption = 'Tool window'
+        object mi_Autohide: TMenuItem
+          AutoCheck = True
+          Caption = 'Auto hide'
+          GroupIndex = 1
+          OnClick = mi_AutohideClick
+        end
+        object mi_N13: TMenuItem
+          Caption = '-'
+          GroupIndex = 1
+        end
         object mi_Right: TMenuItem
           AutoCheck = True
           Caption = 'Right'
