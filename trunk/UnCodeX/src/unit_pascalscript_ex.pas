@@ -7,7 +7,7 @@
         Defines additional PascalScript objects and functions. (Generation is
         automated)
 
-    $Id: unit_pascalscript_ex.pas,v 1.6 2004-10-20 14:19:29 elmuerte Exp $
+    $Id: unit_pascalscript_ex.pas,v 1.7 2004-12-07 11:39:02 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -67,11 +67,13 @@ implementation
 uses
    Contnrs
   ,IniFiles
+  ,IFSI_unit_uclasses
   ;
 
 procedure Register;
 begin
   RegisterComponents('Pascal Script', [TPSImport_miscclasses]);
+  RegisterComponents('Pascal Script', [TPSImport_unit_uclasses]);
 end;
  
 { compile-time importer function }
