@@ -4,7 +4,7 @@ object frm_Tags: Tfrm_Tags
   BorderIcons = [biSystemMenu]
   BorderStyle = bsNone
   Caption = 'Tags'
-  ClientHeight = 294
+  ClientHeight = 300
   ClientWidth = 201
   Color = clBtnFace
   Constraints.MinWidth = 209
@@ -21,29 +21,36 @@ object frm_Tags: Tfrm_Tags
   OnDblClick = FormDblClick
   OnKeyUp = FormKeyUp
   OnShow = FormShow
+  DesignSize = (
+    201
+    300)
   PixelsPerInch = 96
   TextHeight = 13
   inline fr_Main: Tfr_Properties
     Left = 0
     Top = 0
     Width = 201
-    Height = 294
+    Height = 300
     Align = alClient
-    AutoScroll = False
+    Constraints.MinHeight = 45
     TabOrder = 1
-    inherited bcl_Spacer: TBevel
+    inherited bvl_Nothing: TBevel
       Width = 201
     end
     inherited lv_Properties: TListView
       Width = 201
-      Height = 277
+      Height = 270
+    end
+    inherited pnl_Ctrls: TPanel
+      Width = 201
     end
   end
   object btn_MakeWindow: TBitBtn
-    Left = 0
+    Left = 190
     Top = 0
     Width = 10
     Height = 10
+    Anchors = [akTop, akRight]
     Caption = '7'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
