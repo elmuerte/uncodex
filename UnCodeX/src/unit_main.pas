@@ -6,7 +6,7 @@
     Purpose:
         Main window for the GUI
 
-    $Id: unit_main.pas,v 1.129 2004-10-20 14:19:28 elmuerte Exp $
+    $Id: unit_main.pas,v 1.130 2004-11-18 09:06:01 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -1045,6 +1045,7 @@ begin
     else if (cmd = 'close') then Close
     else if (cmd = 'orphanstop') then begin
         if ClassOrphanCount > 0 then begin
+            CmdStack.Clear;
             Log('Stopped batching because of orhpan classes');
             Log(IntToStr(ClassOrphanCount)+' orphans found');
             MessageDlg(IntToStr(ClassOrphanCount)+' orphan classes found.'+#13+#10+'Check the log for more information.', mtWarning, [mbOK], 0);
@@ -2722,6 +2723,7 @@ begin
             else if (AnalyseModified) then begin
                 if (runningthread = nil) then begin
                     IsBatching := true;
+                    CmdStack.Clear;
                     CmdStack.Add('findnew');
                     CmdStack.Add('analysemodified');
                     NextBatchCommand;
@@ -3331,6 +3333,7 @@ procedure Tfrm_UnCodeX.ac_RebuildAnalyseExecute(Sender: TObject);
 begin
     if (runningthread <> nil) then exit;
     IsBatching := true;
+    CmdStack.Clear;
     CmdStack.Add('rebuild');
     CmdStack.Add('orphanstop');
     CmdStack.Add('analyse');

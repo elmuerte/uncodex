@@ -6,7 +6,7 @@
     Purpose:
         UnrealScript package scanner, search for UnrealScript classes
 
-    $Id: unit_packages.pas,v 1.35 2004-11-17 08:13:52 elmuerte Exp $
+    $Id: unit_packages.pas,v 1.36 2004-11-18 09:06:01 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -447,8 +447,9 @@ begin
     Status('Creating class tree for '+tmp);
     for i := 0 to classlist.Count-1 do begin
         if (classlist[i].parent = nil) then begin
-            if (DuplicateHash.Exists(LowerCase(classlist[i].name))) then
+            if (DuplicateHash.Exists(LowerCase(classlist[i].name))) then begin
                 if (classlist[i].priority < pprio) then continue;
+            end;
             pname := classlist[i].parentname;
             j := Pos('.', pname);
             if (j > 0) then begin
@@ -457,6 +458,14 @@ begin
             end
             else packn := '';
             if ((CompareText(pname, tmp) = 0) and ((packn = '') or (CompareText(packn, ppackn) = 0))) then begin
+                // in case of a partially qualified name, duplicate parent classname
+                // check for a local (in this package) parent and use that
+                if ((packn = '') and (parent <> nil) and DuplicateHash.Exists(LowerCase(parent.name))) then begin
+                    if (classlist[i].package.classes.Find(parent.name) <> parent) then begin
+                        logclass('Scanner: (Info) Found local parent class for '+classlist[i].FullName, classlist[i]);
+                        continue;
+                    end;
+                end;
                 classlist[i].parent := parent;
                 if (parent <> nil) then parent.children.Add(classlist[i]);
                 {$IFDEF USE_TREEVIEW}
