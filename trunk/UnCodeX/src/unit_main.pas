@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.135 2004-12-08 09:25:38 elmuerte Exp $
+  $Id: unit_main.pas,v 1.136 2004-12-19 12:34:56 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -2108,6 +2108,7 @@ begin
   else Caption := Caption+' ['+ExtractFileName(ConfigFile)+']';
   Caption := Caption+' - version '+APPVERSION;
   Application.Title := Caption;
+  if (DEBUGBUILD) then Application.Title := Application.Title+' (debug)';
   InitialStartup := not FileExists(ConfigFile);
   { StringLists }
   PackagePriority := TStringList.Create;
@@ -2156,27 +2157,36 @@ begin
 end;
 
 procedure Tfrm_UnCodeX.ac_RecreateTreeExecute(Sender: TObject);
+var
+  rec: TPackageScannerConfig;
 begin
   if (ThreadCreate) then begin
-    TreeUpdated := true;
     lb_Log.Items.Clear;
+    TreeUpdated := true;
+
+    SelectedUClass := nil;
+    SelectedUPackage := nil;
+    LastBuildTime := now;
+    fr_Props.uclass := nil;
+    if (fr_Props.Visible) then fr_Props.LoadClass;
+
     tv_Packages.Items.Clear;
     tv_Classes.Items.Clear;
     PackageList.Clear;
     ClassList.Clear;
-    SelectedUClass := nil;
-    SelectedUPackage := nil;
-    LastBuildTime := now;
 
-    SelectedUClass := nil;
-    SelectedUPackage := nil;
-    fr_Props.uclass := nil;
-    fr_Props.LoadClass;
+    rec.paths := SourcePaths;
+    rec.packagetree := tv_Packages.Items;
+    rec.classtree := tv_Classes.items;
+    rec.status := statusReport;
+    rec.packagelist := PackageList;
+    rec.classlist := ClassList;
+    rec.PackagePriority := PackagePriority;
+    rec.IgnorePackages := IgnorePackages;
+    rec.CHash := unit_rtfhilight.ClassesHash;
+    rec.PDFile := GPDF;
 
-    runningthread := TPackageScanner.Create(SourcePaths, tv_Packages.Items,
-                      tv_Classes.items, statusReport, PackageList, ClassList,
-                      PackagePriority, IgnorePackages, unit_rtfhilight.ClassesHash,
-                      GPDF);
+    runningthread := TPackageScanner.Create(rec);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
   end;
@@ -2202,7 +2212,7 @@ begin
     LastAnalyseTime := Now;
 
     fr_Props.uclass := nil;
-    fr_Props.LoadClass;
+    if (fr_Props.Visible) then fr_Props.LoadClass;
 
     runningthread := TClassAnalyser.Create(ClassList, statusReport, false,
                       unit_rtfhilight.ClassesHash);
@@ -3167,8 +3177,12 @@ begin
 end;
 
 procedure Tfrm_UnCodeX.ae_AppEventException(Sender: TObject; E: Exception);
+var
+  name: string;
 begin
-  Log('Unhandled exception: ('+e.ClassName+') '+e.Message);
+  if (Assigned(Sender)) then name := Sender.ClassName
+  else name := 'unknown';
+  Log('['+name+'] Unhandled exception: ('+e.ClassName+') '+e.Message);
 end;
 
 procedure Tfrm_UnCodeX.tv_ClassesKeyPress(Sender: TObject; var Key: Char);

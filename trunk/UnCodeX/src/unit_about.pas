@@ -6,7 +6,7 @@
   Purpose:
     About UnCodeX dialog
 
-  $Id: unit_about.pas,v 1.20 2004-12-08 09:25:37 elmuerte Exp $
+  $Id: unit_about.pas,v 1.21 2004-12-19 12:34:56 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -101,6 +101,7 @@ begin
   {$ENDIF}
   lbl_TimeStamp.Visible := lbl_TimeStamp.Caption <> '';
   lbl_Version.Caption := 'version '+APPVERSION;
+  if (DEBUGBUILD) then lbl_Version.Caption := lbl_Version.Caption+' (debug)';
   lbl_Platform.Caption := APPPLATFORM;
 end;
 

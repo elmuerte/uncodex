@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.127 2004-12-18 23:52:00 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.128 2004-12-19 12:34:56 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -73,7 +73,12 @@ type
 
 const
   APPTITLE        = 'UnCodeX';
-  APPVERSION      = '216';
+  APPVERSION      = '217';
+  {$IFDEF DEBUG_BUILD}
+  DEBUGBUILD      = true;
+  {$ELSE}
+  DEBUGBUILD      = false;
+  {$ENDIF}
   {$IFDEF MSWINDOWS}
   APPPLATFORM     = 'MS Windows';
   {$ENDIF}
@@ -327,19 +332,25 @@ begin
   if ((path = '') and (not append)) then files.Clear;
   // pass #1 - sub dirs
   if (FindFirst(base+PathDelim+path+WILDCARD, faDirectory, sr) = 0) then begin
-    repeat
-      if ((sr.Name = '.') or (sr.Name = '..')) then continue;
-      FindFiles(base, path+sr.Name+PathDelim, mask, Attr, files);
-    until FindNext(sr) <> 0;
-    FindClose(sr);
+    try
+      repeat
+        if ((sr.Name = '.') or (sr.Name = '..')) then continue;
+        FindFiles(base, path+sr.Name+PathDelim, mask, Attr, files);
+      until FindNext(sr) <> 0;
+    finally
+      FindClose(sr);
+    end;
   end;
   // pass #2 - files
   if (FindFirst(base+PathDelim+path+mask, Attr, sr) = 0) then begin
-    repeat
-      if ((sr.Name = '.') or (sr.Name = '..')) then continue;
-      Files.Add(path+sr.Name);
-    until FindNext(sr) <> 0;
-    FindClose(sr);
+    try
+      repeat
+        if ((sr.Name = '.') or (sr.Name = '..')) then continue;
+        Files.Add(path+sr.Name);
+      until FindNext(sr) <> 0;
+    finally
+      FindClose(sr);
+    end;
   end;
   result := files.count > 0;
 end;

@@ -6,7 +6,7 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.54 2004-12-18 23:51:59 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.55 2004-12-19 12:34:55 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -226,11 +226,11 @@ end;
 
 begin
   if (FindCmdLineSwitch('findmemleak')) then begin
-    {$IFDEF DETECT_MEM_LEAK}
+    {$IF Declared(MemChk)}
     MemChk;
     {$ELSE}
-    ShowMessage('Not compiled with IFDEF DETECT_MEM_LEAK');
-    {$ENDIF}
+    ShowMessage('Not compiled with DETECT_MEM_LEAK');
+    {$IFEND}
   end;
 
   if (not (FindCmdLineSwitch('nosplash') or FindCmdLineSwitch('hide'))) then frm_Splash := Tfrm_Splash.Create(nil);
