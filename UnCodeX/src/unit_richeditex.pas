@@ -10,7 +10,7 @@ unit unit_richeditex;
 interface
 
 uses
-  Windows, Controls, Classes, RichEdit, ComCtrls, Graphics, Messages, sysUtils;
+  Windows, Controls, Classes, RichEdit, ComCtrls, Graphics, Messages, SysUtils;
 
 type
   TRichEditEx = class(TRichEdit)

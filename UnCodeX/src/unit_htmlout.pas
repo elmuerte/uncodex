@@ -10,8 +10,8 @@ unit unit_htmlout;
 interface
 
 uses
-  Windows, Classes, SysUtils, ComCtrls, unit_uclasses, unit_definitions, StrUtils,
-  Hashes, IniFiles, unit_outputdefs;
+  Windows, Classes, SysUtils, ComCtrls, unit_uclasses, StrUtils, Hashes,
+  IniFiles, unit_outputdefs;
 
 type
   TGlossaryItem = class(TObject)
@@ -48,8 +48,6 @@ type
     EnumCache: Hashes.TStringHash;
     StructCache: Hashes.TStringHash;
     FunctionCache: Hashes.TStringHash;
-
-    Keywords: Hashes.TStringHash;
     
     PackageList: TUPackageList;
     ClassList: TUClassList;
@@ -108,7 +106,8 @@ const
 
 implementation
 
-uses unit_copyparser, unit_main, unit_sourceparser;
+uses
+  unit_definitions, unit_copyparser, unit_sourceparser;
 
 var
   currentClass: TUClass;
@@ -146,7 +145,6 @@ begin
   EnumCache := Hashes.TStringHash.Create;
   StructCache := Hashes.TStringHash.Create;
   FunctionCache := Hashes.TStringHash.Create;
-  Keywords := Hashes.TStringHash.Create;
   ini := TMemIniFile.Create(TemplateDir+'template.ini');
   MaxInherit := ini.ReadInteger('Settings', 'MaxInherit', MaxInt);
   if (TargetExtention = '') then TargetExtention := ini.ReadString('Settings', 'TargetExt', 'html');
@@ -163,7 +161,6 @@ begin
   EnumCache.Clear;
   StructCache.Clear;
   FunctionCache.Clear;
-  Keywords.Clear;
   ini.Free;
 end;
 
@@ -1559,81 +1556,6 @@ var
   template1, template2, target, source: TFileStream;
   i: integer;
 begin
-  // fill keyword table
-  Keywords.Items['abstract'] := '';
-  Keywords.Items['array'] := '';
-  Keywords.Items['bool'] := '';
-  Keywords.Items['break'] := '';
-  Keywords.Items['byte'] := '';
-  Keywords.Items['case'] := '';
-  Keywords.Items['class'] := '';
-  Keywords.Items['coerce'] := '';
-  Keywords.Items['collapsecategories'] := '';
-  Keywords.Items['config'] := '';
-  Keywords.Items['const'] := '';
-  Keywords.Items['continue'] := '';
-  Keywords.Items['cpptext'] := '';
-  Keywords.Items['defaultproperties'] := '';
-  Keywords.Items['do'] := '';
-  Keywords.Items['editconst'] := '';
-  Keywords.Items['editinline'] := '';
-  Keywords.Items['else'] := '';
-  Keywords.Items['enum'] := '';
-  Keywords.Items['event'] := '';
-  Keywords.Items['exec'] := '';
-  Keywords.Items['expands'] := '';
-  Keywords.Items['export'] := '';
-  Keywords.Items['exportstructs'] := '';
-  Keywords.Items['extends'] := '';
-  Keywords.Items['false'] := '';
-  Keywords.Items['final'] := '';
-  Keywords.Items['float'] := '';
-  Keywords.Items['for'] := '';
-  Keywords.Items['foreach'] := '';
-  Keywords.Items['function'] := '';
-  Keywords.Items['globalconfig'] := '';
-  Keywords.Items['hidecategories'] := '';
-  Keywords.Items['if'] := '';
-  Keywords.Items['ignores'] := '';
-  Keywords.Items['input'] := '';
-  Keywords.Items['int'] := '';
-  Keywords.Items['latent'] := '';
-  Keywords.Items['local'] := '';
-  Keywords.Items['localized'] := '';
-  Keywords.Items['name'] := '';
-  Keywords.Items['native'] := '';
-  Keywords.Items['nativereplication'] := '';
-  Keywords.Items['new'] := '';
-  Keywords.Items['noexport'] := '';
-  Keywords.Items['operator'] := '';
-  Keywords.Items['optional'] := '';
-  Keywords.Items['out'] := '';
-  Keywords.Items['placeable'] := '';
-  Keywords.Items['postoperator'] := '';
-  Keywords.Items['preoperator'] := '';
-  Keywords.Items['private'] := '';
-  Keywords.Items['protected'] := '';
-  Keywords.Items['reliable'] := '';
-  Keywords.Items['replication'] := '';
-  Keywords.Items['return'] := '';
-  Keywords.Items['simulated'] := '';
-  Keywords.Items['skip'] := '';
-  Keywords.Items['spawn'] := '';
-  Keywords.Items['state'] := '';
-  Keywords.Items['static'] := '';
-  Keywords.Items['string'] := '';
-  Keywords.Items['struct'] := '';
-  Keywords.Items['switch'] := '';
-  Keywords.Items['then'] := '';
-  Keywords.Items['transient'] := '';
-  Keywords.Items['true'] := '';
-  Keywords.Items['unreliable'] := '';
-  Keywords.Items['until'] := '';
-  Keywords.Items['var'] := '';
-  Keywords.Items['while'] := '';
-  Keywords.Items['within'] := '';
-  // fill keyword table -- end
-
   template1 := TFileStream.Create(templatedir+'sourcecode-1.html', fmOpenRead or fmShareDenyWrite);
   template2 := TFileStream.Create(templatedir+'sourcecode-2.html', fmOpenRead or fmShareDenyWrite);
   try

@@ -37,8 +37,6 @@ type
 
 implementation
 
-uses unit_main;
-
 const
   TabChar = #9;
   EndOfLine = #13#10;

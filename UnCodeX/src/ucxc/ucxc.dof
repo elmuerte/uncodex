@@ -18,15 +18,15 @@ M=0
 N=1
 O=1
 P=1
-Q=1
-R=1
+Q=0
+R=0
 S=0
 T=0
 U=0
 V=1
 W=0
 X=1
-Y=2
+Y=1
 Z=1
 ShowHints=1
 ShowWarnings=1
@@ -41,11 +41,11 @@ RemoteSymbols=0
 MinStackSize=16384
 MaxStackSize=1048576
 ImageBase=4194304
-ExeDescription=
+ExeDescription=UnCodeX Commandline edition
 
 [Directories]
-OutputDir=E:\Program Files\Borland\Projects\UnCodeX\Bin\out_sample
-UnitOutputDir=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_sample
+OutputDir=E:\Program Files\Borland\Projects\UnCodeX\Bin
+UnitOutputDir=E:\Program Files\Borland\Projects\UnCodeX\Dcu\ucxc
 PackageDLLOutputDir=
 PackageDCPOutputDir=
 SearchPath=
@@ -56,7 +56,7 @@ UsePackages=0
 
 [Parameters]
 RunParams=
-HostApplication=E:\Program Files\Borland\Projects\UnCodeX\Bin\UnCodeX.exe
+HostApplication=
 Launcher=
 UseLauncher=0
 DebugCWD=
@@ -67,12 +67,12 @@ ProjectLang=
 RootDir=
 
 [Version Info]
-IncludeVerInfo=1
-AutoIncBuild=1
+IncludeVerInfo=0
+AutoIncBuild=0
 MajorVer=1
 MinorVer=0
 Release=0
-Build=6
+Build=0
 Debug=0
 PreRelease=0
 Special=0
@@ -82,16 +82,16 @@ Locale=1033
 CodePage=1252
 
 [Version Info Keys]
-CompanyName=Michiel 'El Muerte' Hendriks
-FileDescription=sample output module
-FileVersion=1.0.0.6
-InternalName=out_sample
-LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
+CompanyName=
+FileDescription=
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
 LegalTrademarks=
-OriginalFilename=out_sample.dll
-ProductName=UnCodeX
+OriginalFilename=
+ProductName=
 ProductVersion=1.0.0.0
-Comments=http://wiki.beyondunreal.com/wiki/UnCodeX
+Comments=
 
 [HistoryLists\hlUnitAliases]
 Count=1
