@@ -6,7 +6,7 @@
   Purpose:
     General commandline routines
 
-  $Id: unit_ascii.pas,v 1.18 2005-03-17 14:14:46 elmuerte Exp $
+  $Id: unit_ascii.pas,v 1.19 2005-03-18 14:42:42 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -56,21 +56,24 @@ const
   {$IFDEF MSWINDOWS}
   PB_RESET  = #13;
   PB_DONE   = #219; // full bock
-  PB_HALF   = #178; // 50% block
-  PB_TODO   = #176; // 25% block
+  PB_HALF   = #178; // 66% block
+  PB_TODO   = #176; // 33% block
   {$ENDIF}
   {$IFDEF LINUX}
   PB_RESET  = #13;
   PB_DONE   = '='; // full bock
-  PB_HALF   = '-'; // 50% block
-  PB_TODO   = '.'; // 25% block
+  PB_HALF   = '-'; // 66% block
+  PB_TODO   = '.'; // 33% block
   {$ENDIF}
   PB_NONE   = ' ';
+  PB_BUSY0	= ' ';
+  PB_BUSY1  = '*';
   VERSION   = '014 Beta';
 
 var
   lastsp: integer = -1;
   lasthalf: byte = 0;
+  pbtoggle: boolean = true;
 
 procedure DrawProgressBar(progress: integer; size: integer = 20; showvalue: boolean = true; text: string = '');
 var
@@ -78,6 +81,14 @@ var
   half: integer;
 begin
   if (showvalue) then size := size - 5;
+  {$IF 0}
+  if (progress = 255) then begin
+	pbtoggle := not pbtoggle;
+    if (pbtoggle) then write(PB_BUSY0+#8)
+	else write(PB_BUSY1+#8);
+	exit;
+  end;
+  {$ENDIF}
   if ((progress < 0) or (progress > 100)) then exit;
   sp := trunc(progress / (100 / size));
   half := round(progress / (100 / size))-sp;

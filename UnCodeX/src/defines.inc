@@ -6,7 +6,7 @@
     Purpose:
         Global macro file, to be included by means of ($I defines.inc)
 
-    $Id: defines.inc,v 1.6 2005-03-16 21:28:08 elmuerte Exp $
+    $Id: defines.inc,v 1.7 2005-03-18 14:42:42 elmuerte Exp $
 *******************************************************************************}
 
 {$IFDEF VER140} // delphi 6
@@ -19,6 +19,7 @@
 
 {$IFDEF FPC}
     {$DEFINE CONSOLE}
+    {$THREADING ON}
 {$ENDIF}
 
 {$IFDEF CONSOLE}

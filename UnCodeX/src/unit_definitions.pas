@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.138 2005-03-18 08:42:20 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.139 2005-03-18 14:42:42 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -228,27 +228,12 @@ end;
 {$ENDIF}
 {$IFDEF UNIX}
 var
-  basename: string;
+  fcm: TFilenameCaseMatch;
 begin
-  if (Length(dirname) = 0) then begin
-    result := false;
-    exit;
-  end;
-  if (DirectoryExists(dirname)) then begin
-    output := dirname;
-    result := true;
-  end
-  else begin
-    dirname := ExcludeTrailingPathDelimiter(dirname);
-    basename := ExtractFileName(dirname);
-    dirname := ExtractFilePath(dirname);
-    result := iFindDir(dirname, output); // find the parent dir
-    if (result) then begin
-      output := iFindFile(basename); // find the file
-      if (output <> '') then output := output+PATHDELIM;
-      result := (output <> '');
-    end;
-  end;
+  fcm := mkNone;
+  output := ExpandFileNameCase(ExpandFileName(dirname), fcm);
+  result := fcm <> mkNone;
+  exit;
 end;
 {$ENDIF}
 

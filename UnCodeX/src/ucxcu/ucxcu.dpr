@@ -6,7 +6,7 @@
   Purpose:
     UnCodeX Commandline Utility Client
 
-  $Id: ucxcu.dpr,v 1.18 2005-03-18 07:43:23 elmuerte Exp $
+  $Id: ucxcu.dpr,v 1.19 2005-03-18 14:42:42 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -38,10 +38,13 @@ uses
   {$IF Defined(FPC) and Defined(DEBUG_BUILD)}
   heaptrc, // memory leak detection
   {$IFEND}
+  {$IFDEF FPC_THREADING}
+  cthreads, 
+  {$ENDIF}
   SysUtils,
-  { $IFDEF FPC}
+  {$IFDEF FPC}
   unit_fpc_compat in '..\unit_fpc_compat.pas',
-  { $ENDIF}
+  {$ENDIF}
   unit_clpipe in '..\unit_clpipe.pas',
   unit_copyparser in '..\unit_copyparser.pas',
   unit_definitions in '..\unit_definitions.pas',
@@ -76,8 +79,8 @@ begin
       signal(SIGINT, SigProc);
       signal(SIGABRT, SigProc);
       {$ENDIF}
-    	HTMLOutputDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+'ucxcu-output';
-    	TemplateDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+TEMPLATEPATH+PATHDELIM+DEFTEMPLATE;
+      HTMLOutputDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+'ucxcu-output';
+      TemplateDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+TEMPLATEPATH+PATHDELIM+DEFTEMPLATE;
   	  HTMLHelpFile := ExtractFilePath(ExpandFileName(ParamStr(0)))+'UnCodeX.chm';
       PackageDescFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTPDF);
       ExtCommentFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTECF);
