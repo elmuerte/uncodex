@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
- $Id: UnCodeX.dpr,v 1.35 2004-04-18 18:46:15 elmuerte Exp $
+ $Id: UnCodeX.dpr,v 1.36 2004-05-03 07:54:45 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 program UnCodeX;
@@ -175,7 +175,6 @@ begin
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
   Application.CreateForm(Tfrm_About, frm_About);
   Application.CreateForm(Tfrm_License, frm_License);
-  Application.CreateForm(Tfrm_RenameClass, frm_RenameClass);
   if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end

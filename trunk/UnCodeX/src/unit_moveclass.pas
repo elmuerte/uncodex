@@ -21,6 +21,8 @@ type
     procedure cb_NewPkgChange(Sender: TObject);
     procedure cb_NewPkgKeyPress(Sender: TObject; var Key: Char);
     procedure cb_NewPackageClick(Sender: TObject);
+    procedure FormKeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     { Private declarations }
   public
@@ -31,6 +33,8 @@ var
   frm_MoveClass: Tfrm_MoveClass;
 
 implementation
+
+uses unit_main;
 
 {$R *.dfm}
 
@@ -72,6 +76,12 @@ end;
 procedure Tfrm_MoveClass.cb_NewPackageClick(Sender: TObject);
 begin
 	cb_NewPackage.Checked := cb_NewPkg.Items.IndexOf(cb_NewPkg.Text) = -1;
+end;
+
+procedure Tfrm_MoveClass.FormKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+	if (Key = VK_F1) then hh_Help.HelpTopic('window_moveclass.html');
 end;
 
 end.

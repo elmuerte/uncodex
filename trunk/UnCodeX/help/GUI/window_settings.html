@@ -34,6 +34,8 @@ Here you can add names of packages that should be ignored when you rebuild the t
 This is the directory where all HTML files will be saved to
 <h3>Templates directory</h3>
 This is the directory containing the HTML templates to be used when creating the HTML output.
+<h3>Default title</h3>
+This will allow you to change the default title used in the HTML files. It's adviced to set this to something like: "Game Name UnrealScript"
 <h3>Target extention</h3>
 The extention of the output filenames, leave blank to use the template default.
 <h3>Tabs To Spaces</h3>
@@ -50,7 +52,8 @@ The file the HTML Help Workshop should create.
 The window title for the HTML Help file, leave blank to use the default title.
 
 
-<a name="compile"></a><h2>Compile</h2>
+<a name="compile"></a><h2>Commands</h2>
+<h3>Compiler commandline</h3>
 Here you can define the command to execute when you select "Compile class". If the path name contains spaces you <b>must</b> use quotes around it.
 <br>
 <h4>Wrong</h4>
@@ -75,28 +78,8 @@ You can use the following placeholders in the commandline:
 <tr>
 	<td><pre>%packagepath%</pre></td><td>The path of the package</td>
 </tr>
-<tr>
-	<td><pre>%searchquery%</pre></td><td>Will be replaced with the inline search query, or when that is empty the last class search query</td>
-</tr>
-<tr>
-	<td><pre>%inlinesearch%</pre></td><td>Will always be replaced with the inline search query</td>
-</tr>
-<tr>
-	<td><pre>%classsearch%</pre></td><td>Will always be replaced with the last class search query</td>
-</tr>
 </table>
 
-
-<a name="gameserver"></a><h2>Game server</h2>
-<h3>Server commandline</h3>
-The commandline to execute when you want to start a server. Just as with the Compiler commandline you have to place quotes around parts that contain spaces.
-<h3>Server priority</h3>
-Here you can set the base priority of the server process executed by the commandline. It's adviced that you set it to at least "High" when you want to join the server running on your local system. Other wise the game will appear to lag.
-<br>Note: that if you specified a batch file as commandline this will increase the priority of that batch file, not the actual server.
-<h3>Client commandline</h3>
-The command to execute when you want to join the server.
-
-<a name="fulltextsearch"></a><h2>Full Text Search</h2>
 <h3>Open result command</h3>
 The command to execute when you double click the result of a full text search, or when you double click a property in the details window.
 <br>
@@ -108,9 +91,45 @@ You can use the same placeholders as with the compile command with these additio
 <tr>
 	<td><pre>%resultpos%</pre></td><td>The position in the result line</td>
 </tr>
+<tr>
+	<td><pre>%searchquery%</pre></td><td>Will be replaced with the inline search query, or when that is empty the last class search query</td>
+</tr>
+<tr>
+	<td><pre>%inlinesearch%</pre></td><td>Will always be replaced with the inline search query</td>
+</tr>
+<tr>
+	<td><pre>%classsearch%</pre></td><td>Will always be replaced with the last class search query</td>
+</tr>
 </table>
-<h3>Default to regualr expression</h3>
-With this checked regular expressions will be used by default in full text and class body searches.
+
+<h3>Create new class template</h3>
+The template file used when creating a new subclass. The following placeholders can be used in the source file:
+<table>
+<tr>
+	<td><pre>%class%</pre></td><td>the new class name</td>
+</tr>
+<tr>
+	<td><pre>%date &lt;format&gt;%</pre></td><td>the current date, the format used is the same as with <a href="templates_template.ini.html">the template.ini</a></td>
+</tr>
+<tr>
+	<td><pre>%username%</pre></td><td>The current logged in user in MS Windows</td>
+</tr>
+<tr>
+	<td><pre>%parent%</pre></td><td>the parent of the new class</td>
+</tr>
+<tr>
+	<td><pre>%package%</pre></td><td>the package name of the new class</td>
+</tr>
+</table>
+
+<a name="gameserver"></a><h2>Game server</h2>
+<h3>Server commandline</h3>
+The commandline to execute when you want to start a server. Just as with the Compiler commandline you have to place quotes around parts that contain spaces.
+<h3>Server priority</h3>
+Here you can set the base priority of the server process executed by the commandline. It's adviced that you set it to at least "High" when you want to join the server running on your local system. Other wise the game will appear to lag.
+<br>Note: that if you specified a batch file as commandline this will increase the priority of that batch file, not the actual server.
+<h3>Client commandline</h3>
+The command to execute when you want to join the server.
 
 <a name="layout"></a><h2>Layout</h2>
 Here you can change the color and font to be used in the tree list and the log window.
@@ -122,6 +141,8 @@ Expand the first item of the class tree (usualy "Object") when UnCodeX starts.
 The filename the current tree state will be saved to. This name is relative to the configuration file used. So it should not contain a path, just a filename.
 <h3>Analyse modified classes on startup</h3>
 This will automatically analyse classes on program startup, unless the program is started with a find or batch command
+<h3>Package descript file</h3>
+This file contains package descriptions for packages that don't have a package description set in the upkg file or uncodex.ini. Each package has it's own section.
 <h3>Minimize on close</h3>
 Minimize UnCodeX when the users pressed the "x" in the window. To really close the application select "Quit" from the menu.
 <h3>Load custom output modules</h3>
@@ -133,11 +154,14 @@ n/t
 <h3>Open class properties as window</h3>
 When checked the class properties window will be opened as a window that keeps alive when it loses focus
 
-<a name="programoptions"></a><h2>Hot keys</h2>
+<a name="hotkeys"></a><h2>Hot keys</h2>
 Here you can change the default hot key settings. Select a command from the list, enter a new hot key and press "Set" to update.
 
-<a name="programoptions"></a><h2>Source snoop</h2>
+<a name="sourcesnoop"></a><h2>Source snoop</h2>
 This is where you can change the colors of the syntax highlighting in the source snoop window. You can also change the font to be used. Only the font name and size can be changed.
+
+<a name="keywordlists"></a><h2>Keyword Lists</h2>
+UnCodeX has two keyword lists. The primary list is to be used for the real important keyword like language elements: for, while, etc. The secondary keyword list can be used for variable or class modifiers: native, noexport, etc.
 
 </div>
 </div>

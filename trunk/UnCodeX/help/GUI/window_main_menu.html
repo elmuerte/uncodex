@@ -22,6 +22,8 @@ Scan the source paths for packages and classes and rebuild the package and class
 Scan the classes to find orphan classes, classes that have a parent class but are not listed in the class tree. This is usualy the result of an incorrect configuration of the <a href="window_settings.html#packagepriority">package priority</a>
 <h3>Analyse all classes</h3>
 Analyse the content of all classes. This will search each class for variables, functions, structures, etc. You need to analyse all classes before you can use the more advanced features of UnCodeX like the HTML generation or class properties window. You only have to do this once after you rebuild the tree.
+<h3>Analyse modified classes</h3>
+This will only analyse the classes that have been modified since the last time the class has been analysed. This can be <a href="window_settings.html#programoptions">done on start-up</a>
 <h3>Save state</h3>
 Save the state of the current tree. This is done automatically when the program closes
 <h3>Load state</h3>
@@ -32,27 +34,11 @@ Open the <a href="window_settings.html">settings window</a>
 Close UnCodeX
 
 <h2>Find</h2>
-<h3>Find class</h3>
-Find a class in the currently active tree. <br>
-This command will display a new window with the following options:
-<table>
-<tr>
-	<td><i>Search class body</i></td>
-	<td>This will search the body of all classes for a match instead of the active tree</td>
-</tr>
-<tr>
-	<td><i>Regular expression</i></td>
-	<td>The search query is a regular expression, this only work with a body search</td>
-</tr>
-<tr>
-	<td><i>Compare strict</i></td>
-	<td>The search string is the complete class name, not a part of it. This does not work with a body search</td>
-</tr>
-</table>
+<h3>Find class & Full Text Search</h3>
+This will open the <a href="window_search.html">search dialog</a>, it will allow you to search the tree, or the source files, for a text you enter.
+
 <h3>Find next</h3>
-Find the next match
-<h3>Full Text Search</h3>
-This will search all class files for one or more matches. Unlike a body search this will not stop with searching on the first match.
+This will search for the next match, this can also be used after an "inline search" done in a tree.
 
 <h2>View</h2>
 This menu is also available when you right click the application title bar.
@@ -77,6 +63,9 @@ This will open the generated HTML Help file.
 Run a test server
 <h3>Join server</h3>
 Join the server
+
+<h2>Output modules</h2>
+This menu will only be available when global output modules have been loaded (like the GraphViz output modules).
 
 <h2>Help</h2>
 <h3>Help</h3>

@@ -12,11 +12,13 @@ object frm_Settings: Tfrm_Settings
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
+  KeyPreview = True
   OldCreateOrder = False
   Position = poScreenCenter
   ShowHint = True
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnKeyUp = FormKeyUp
   DesignSize = (
     663
     378)
@@ -65,7 +67,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 433
     Height = 378
-    ActivePage = ts_Command
+    ActivePage = ts_HotKeys
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -1324,16 +1326,21 @@ object frm_Settings: Tfrm_Settings
           BorderStyle = bsNone
           Columns = <
             item
-              AutoSize = True
               Caption = 'Action'
+              Width = -1
+              WidthType = (
+                -1)
             end
             item
-              AutoSize = True
               Caption = 'Hotkey'
+              Width = -1
+              WidthType = (
+                -1)
             end>
           ColumnClick = False
           ReadOnly = True
           RowSelect = True
+          SmallImages = frm_UnCodeX.il_Small
           SortType = stText
           TabOrder = 3
           ViewStyle = vsReport
@@ -1508,6 +1515,8 @@ object frm_Settings: Tfrm_Settings
       end
     end
     object ts_Keywords: TTabSheet
+      HelpType = htKeyword
+      HelpKeyword = 'keywordlists'
       Caption = 'Keyword lists'
       ImageIndex = 12
       TabVisible = False

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Search form, much better than the previous version
- $Id: unit_searchform.pas,v 1.7 2004-03-29 19:51:04 elmuerte Exp $
+ $Id: unit_searchform.pas,v 1.8 2004-05-03 07:54:45 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -68,6 +68,8 @@ type
     cb_Default: TCheckBox;
     procedure cb_HistoryChange(Sender: TObject);
     procedure rb_ClassSearchClick(Sender: TObject);
+    procedure FormKeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     config: TClassSearch;
     ahistory: TStrings;
@@ -191,6 +193,12 @@ begin
   if (rb_ClassSearch.Checked) then ahistory := config.history
   else ahistory := config.ftshistory;
   cb_History.Items.Assign(ahistory);
+end;
+
+procedure Tfrm_SearchForm.FormKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+	if (Key = VK_F1) then hh_Help.HelpTopic('window_search.html');
 end;
 
 end.
