@@ -31,6 +31,10 @@ TD {
 
 A {
 	color: #6919B3;
+	border: 1px hidden black;
+	text-decoration: none;
+	padding-left: 2px;
+	padding-right: 2px;
 }
 
 A:Visited {
@@ -38,7 +42,8 @@ A:Visited {
 }
 
 A:Hover {
-	color: #8A2BE2;
+	background-color: #C6BEEF;
+	border: 1px solid #6919B3;
 }
 
 A.small {
@@ -49,6 +54,10 @@ H1, H2, H3, H4, H5 {
 	margin-bottom: 0px;
 	background-color: #DDD8F5;
 	padding-left: 5px;
+}
+
+H1 {
+	font-size: 25px;
 }
 
 HR {
@@ -93,6 +102,15 @@ TD.header {
 	font-size: larger;
 	font-weight: bold;
 	text-align: center;
+	color: #85779f;
+}
+
+TD.header A {
+	border: none;
+}
+
+TD.header A:Hover {
+	border: none;
 }
 
 TD.header_hilight {
@@ -118,6 +136,7 @@ TD.subheader {
 	border: none;
 	text-transform: uppercase;
 	font-size: x-small;
+	color: #85779f;
 }
 
 DIV.stats {
@@ -275,3 +294,4 @@ TD.source {
 	vertical-align: top;
 	border: none;	
 }
+

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.73 2004-02-01 10:14:50 elmuerte Exp $
+ $Id: unit_main.pas,v 1.74 2004-02-23 10:39:04 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -205,13 +205,13 @@ type
     dckLeft: TPanel;
     dckRight: TPanel;
     splLeft: TSplitter;
-    splRight: TSplitter;
     splTop: TSplitter;
     splBottom: TSplitter;
     lb_Log: TListBox;
     ac_PropInspector: TAction;
     mi_PropInspector: TMenuItem;
     pnlCenter: TPanel;
+    splRight: TSplitter;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -300,6 +300,14 @@ type
     procedure dckLeftUnDock(Sender: TObject; Client: TControl;
       NewTarget: TWinControl; var Allow: Boolean);
     procedure ac_PropInspectorExecute(Sender: TObject);
+    procedure tv_ClassesEnter(Sender: TObject);
+    procedure splLeftCanResize(Sender: TObject; var NewSize: Integer;
+      var Accept: Boolean);
+    procedure splRightCanResize(Sender: TObject; var NewSize: Integer;
+      var Accept: Boolean);
+    procedure splRightMoved(Sender: TObject);
+    procedure re_SourceSnoopEndDock(Sender, Target: TObject; X,
+      Y: Integer);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -437,6 +445,7 @@ const
 var
 	SelectedUClass: TUClass = nil;
   SelectedUPackage: TUPackage = nil;
+  splRightHack: integer;
 
 {$R *.dfm}
 
@@ -1181,8 +1190,8 @@ begin
 		end
 		else if APanel.Align = alBottom then begin
 			APanel.Height := makeHeight;
-			APanel.Top := pb_Scan.Top-APanel.Height;
-			splBottom.Top := APanel.Top - splBottom.Height;
+			APanel.Top := pb_Scan.Top-APanel.Height-1;
+			splBottom.Top := APanel.Top - splBottom.Height-1;
 		end
 		else if APanel.Align = alTop then begin
 			APanel.Height := makeHeight;
@@ -2499,7 +2508,6 @@ var
   ms: TMemoryStream;
   fs: TFileStream;
   filename: string;
-  ss: TStringStream;
 begin
 	if (SelectedUClass <> nil) then begin
     filename := SelectedUClass.package.path+PATHDELIM+SelectedUClass.filename;
@@ -2510,6 +2518,8 @@ begin
     try
       RTFHilightUScript(fs, ms, SelectedUClass);
       re_SourceSnoop.Lines.Clear;
+      re_SourceSnoop.WordWrap := false;
+      re_SourceSnoop.ScrollBars := ssBoth;
       ms.Position := 0;
       re_SourceSnoop.Lines.LoadFromStream(ms);
     finally
@@ -2518,14 +2528,17 @@ begin
     end;
   end
   else if (SelectedUPackage <> nil) then begin
-    if (SelectedUPackage.comment <> '') then begin
-      ss := TStringStream.Create(SelectedUPackage.comment);
-      try
-        re_SourceSnoop.Lines.Clear;
-        re_SourceSnoop.Lines.LoadFromStream(ss);
-      finally
-        ss.Free;
-      end;
+    ms := TMemoryStream.Create;
+    re_SourceSnoop.Hint := SelectedUPackage.path;
+    try
+    	RTFHilightUPackage(ms, SelectedUPackage);
+      re_SourceSnoop.Lines.Clear;
+      re_SourceSnoop.WordWrap := true;
+      re_SourceSnoop.ScrollBars := ssVertical;
+      ms.Position := 0;
+      re_SourceSnoop.Lines.LoadFromStream(ms);
+    finally
+      ms.Free;
     end;
   end;
 end;
@@ -2872,6 +2885,41 @@ procedure Tfrm_UnCodeX.ac_PropInspectorExecute(Sender: TObject);
 begin
 	fr_Props.Visible := mi_PropInspector.Checked;
   ShowDockPanel(fr_Props.HostDockSite, fr_Props.Visible, nil);
+end;
+
+procedure Tfrm_UnCodeX.tv_ClassesEnter(Sender: TObject);
+begin
+	if (TTreeView(Sender) = nil) then exit;
+  if (TTreeView(Sender).Selected = nil) then exit;
+  if ((SelectedUClass <> TTreeView(Sender).Selected.Data)
+  	and (SelectedUPackage <> TTreeView(Sender).Selected.Data)) then
+    tv_ClassesChange(Sender, TTreeView(Sender).Selected);
+end;
+
+procedure Tfrm_UnCodeX.splLeftCanResize(Sender: TObject;
+  var NewSize: Integer; var Accept: Boolean);
+begin
+  Log(IntToStr(NewSize));
+end;
+
+procedure Tfrm_UnCodeX.splRightCanResize(Sender: TObject;
+  var NewSize: Integer; var Accept: Boolean);
+begin
+	NewSize := NewSize-splRight.Left-splRight.Width;
+  Accept := NewSize > splRight.MinSize;
+  splRightHack := NewSize;
+  if (splRightHack < splRight.MinSize) then splRightHack := splRight.MinSize;
+end;
+
+procedure Tfrm_UnCodeX.splRightMoved(Sender: TObject);
+begin
+  dckRight.Width := splRightHack;
+end;
+
+procedure Tfrm_UnCodeX.re_SourceSnoopEndDock(Sender, Target: TObject; X,
+  Y: Integer);
+begin
+	re_SourceSnoop.UpdateWindowRect;
 end;
 
 initialization

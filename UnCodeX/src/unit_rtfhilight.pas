@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   UScript to RTF
- $Id: unit_rtfhilight.pas,v 1.17 2003-11-27 17:01:55 elmuerte Exp $
+ $Id: unit_rtfhilight.pas,v 1.18 2004-02-23 10:39:04 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -32,6 +32,7 @@ uses
   Classes, Graphics, SysUtils, unit_uclasses, Hashes;
 
   procedure RTFHilightUScript(input, output: TStream; uclass: TUClass);
+  procedure RTFHilightUPackage(output: TStream; package: TUPackage);
 
 var
   textfont: TFont; // default font
@@ -219,6 +220,57 @@ begin
   finally
     p.Free;
   end;
+end;
+
+procedure RTFHilightUPackage(output: TStream; package: TUPackage);
+var
+  replacement: string;
+  i: integer;
+begin
+  // create font strings
+  colorTable  := '{\colortbl;'+ColorToRTF(textfont.Color);
+  ctEntries   := 1;
+  rfKeyword1  := CreateRTFFontString(fntKeyword1);
+  rfKeyword2  := CreateRTFFontString(fntKeyword2);
+  rfString    := CreateRTFFontString(fntString);
+  rfNumber    := CreateRTFFontString(fntNumber);
+  rfMacro     := CreateRTFFontString(fntMacro);
+  rfComment   := CreateRTFFontString(fntComment);
+  rfName      := CreateRTFFontString(fntName);
+  rfClassLink := CreateRTFFontString(fntClassLink);
+  colorTable  := colorTable+'}';
+  // must be absolute first to prevent reading the first char
+  replacement := RTFHeader+
+    '\deftab'+IntToStr(textfont.size*(15*tabs)-(30*tabs))+ // set tab size
+    '{\fonttbl\f0\fswiss Arial;}'+ // set default font
+    colorTable+ // add color table
+    '{\f0\fs18\cf1 '; // set default fontsize/color
+  Output.WriteBuffer(PChar(replacement)^, Length(replacement));
+
+	replacement := '{\ul\fs24\b '+package.name+'}';
+  Output.WriteBuffer(PChar(replacement)^, Length(replacement));
+
+  replacement := '\par '+package.comment;
+  Output.WriteBuffer(PChar(replacement)^, Length(replacement));
+  replacement := '\par\par {\ul\b Classes:}\par';
+	Output.WriteBuffer(PChar(replacement)^, Length(replacement));
+	replacement := '';
+  package.classes.Sort;
+  for i := 0 to package.classes.Count-1 do begin
+    if (replacement <> '') then replacement := replacement + ', ';
+    replacement := replacement+'{\protected'+rfClassLink+package.classes[i].name+'}}';
+  end;
+  Output.WriteBuffer(PChar(replacement)^, Length(replacement));
+
+  replacement := '}{\info'+
+      '{\author '+APPTITLE+' '+APPVERSION+'}';
+  if (package <> nil) then replacement := replacement+'{\title '+package.name+'}';
+  replacement := replacement+'}';
+  if (package <> nil) then replacement := replacement+'{\header '+package.name+'}';
+  replacement := replacement+
+    '{\footer '+APPTITLE+' '+APPVERSION+'}'+
+    '}';
+  Output.WriteBuffer(PChar(replacement)^, Length(replacement));
 end;
 
 initialization

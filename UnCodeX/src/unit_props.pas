@@ -5,7 +5,7 @@ interface
 uses 
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   Menus, ImgList, StdCtrls, Buttons, ComCtrls, unit_uclasses, Clipbrd,
-  ExtCtrls;
+  ExtCtrls, Tabs;
 
 type
   Tfr_Properties = class(TFrame)
@@ -62,6 +62,7 @@ var
   pclass : TUClass;
   li: TListItem;
   return: string;
+  lasttag: string;
 begin
   lv_Properties.Items.BeginUpdate;
   lv_Properties.Items.Clear;
@@ -76,6 +77,7 @@ begin
 	  	li := lv_Properties.Items.Add;
   		li.Caption := '=';
 	  	li.SubItems.Add(pclass.name);
+      li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
     end;
     for i := 0 to pclass.consts.Count-1 do begin
       li := lv_Properties.Items.Add;
@@ -85,6 +87,7 @@ begin
       li.SubItems.Add(IntToStr(pclass.consts[i].srcline));
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(pclass.consts[i].name+' = '+pclass.consts[i].value);
+      li.SubItems.Add(pclass.consts[i].comment);
       li.Data := pclass;
       li.ImageIndex := 0;
     end;
@@ -97,13 +100,24 @@ begin
   li.SubItems.Add('Variables');
   j := 0;
   pclass := uclass;
+  pclass.properties.SortOnTag;
+  lasttag := '';
   while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
   	if ((j > 0) and (pclass.properties.Count > 0)) then begin
 	  	li := lv_Properties.Items.Add;
   		li.Caption := '=';
 	  	li.SubItems.Add(pclass.name);
+      li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
+      pclass.properties.SortOnTag;
+      lasttag := '';
     end;
     for i := 0 to pclass.properties.Count-1 do begin
+    	if (CompareText(lasttag, pclass.properties[i].tag) <> 0) then begin
+        li := lv_Properties.Items.Add;
+  			li.Caption := '+';
+	  		li.SubItems.Add(pclass.properties[i].tag);
+        lasttag := pclass.properties[i].tag;
+      end;
       li := lv_Properties.Items.Add;
       li.Caption := 'var';
       {if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.properties[i].name)
@@ -111,6 +125,7 @@ begin
       li.SubItems.Add(IntToStr(pclass.properties[i].srcline));
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(pclass.properties[i].ptype+' '+pclass.properties[i].name);
+      li.SubItems.Add(pclass.properties[i].comment);
       li.Data := pclass;
       li.ImageIndex := 1;
     end;
@@ -128,6 +143,7 @@ begin
 	  	li := lv_Properties.Items.Add;
   		li.Caption := '=';
 	  	li.SubItems.Add(pclass.name);
+      li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
     end;
     for i := 0 to pclass.enums.Count-1 do begin
       li := lv_Properties.Items.Add;
@@ -137,6 +153,7 @@ begin
       li.SubItems.Add(IntToStr(pclass.enums[i].srcline));
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(pclass.enums[i].name+' = '+StringReplace(pclass.enums[i].options, ',', ', ', [rfReplaceAll]));
+      li.SubItems.Add(pclass.enums[i].comment);
       li.Data := pclass;
       li.ImageIndex := 2;
     end;
@@ -154,6 +171,7 @@ begin
 	  	li := lv_Properties.Items.Add;
   		li.Caption := '=';
 	  	li.SubItems.Add(pclass.name);
+      li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
     end;
     for i := 0 to pclass.structs.Count-1 do begin
       li := lv_Properties.Items.Add;
@@ -163,6 +181,7 @@ begin
       li.SubItems.Add(IntToStr(pclass.structs[i].srcline));
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(pclass.structs[i].name);
+      li.SubItems.Add(pclass.structs[i].comment);
       li.Data := pclass;
       li.ImageIndex := 3;
     end;
@@ -180,6 +199,7 @@ begin
 	  	li := lv_Properties.Items.Add;
   		li.Caption := '=';
 	  	li.SubItems.Add(pclass.name);
+      li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
     end;
     for i := 0 to pclass.functions.Count-1 do begin
       li := lv_Properties.Items.Add;
@@ -192,7 +212,7 @@ begin
         if (pclass.functions[i].return = '') then return := ''
           else return := pclass.functions[i].return+' = ';
         li.SubItems.Add(return+pclass.functions[i].name+'( '+pclass.functions[i].params+' )');
-        li.SubItems.Add(pclass.functions[i].name+'('+pclass.functions[i].params+')');
+        //li.SubItems.Add(pclass.functions[i].name+'('+pclass.functions[i].params+')');
       end
       else if (pclass.functions[i].ftype = uftPreOperator) then begin
         li.SubItems.Add(pclass.functions[i].return+' = '+pclass.functions[i].name+' '+ShiftString(pclass.functions[i].params, 2));
@@ -203,6 +223,7 @@ begin
       else if (pclass.functions[i].ftype = uftOperator) then begin
         li.SubItems.Add(pclass.functions[i].return+' = '+ShiftString(ShiftString(pclass.functions[i].params, 2, ','), 3)+' '+pclass.functions[i].name+' '+ShiftString(pclass.functions[i].params, 2));
       end;
+      li.SubItems.Add(pclass.functions[i].comment);
       li.Data := pclass;
       if (pclass.functions[i].ftype = uftFunction) then li.ImageIndex := 4
       else if (pclass.functions[i].ftype = uftEvent) then li.ImageIndex := 5
@@ -224,9 +245,11 @@ end;
 procedure Tfr_Properties.lv_PropertiesInfoTip(Sender: TObject;
   Item: TListItem; var InfoTip: String);
 begin
-	if ((Item.Caption = '-') or (Item.Caption = '=')) then InfoTip := '';
-  if (Item.SubItems.Count < 4) then exit;
+	if ((Item.Caption = '-') or (Item.Caption = '+')) then InfoTip := '';
+  if (Item.Caption = '=') then InfoTip := Item.SubItems[1];
+  if (Item.SubItems.Count < 5) then exit;
   InfoTip := Item.SubItems[3];
+  if (Item.SubItems[4] <> '') then InfoTip := InfoTip+#13#10#13#10+StringReplace(Item.SubItems[4], #9, '', [rfReplaceAll]);
 end;
 
 procedure Tfr_Properties.lv_PropertiesSelectItem(Sender: TObject;
@@ -265,7 +288,7 @@ begin
     DefaultDraw := false;
     Rect := Item.DisplayRect(drBounds);
     Rect.Left := Rect.Left+1;
-    DrawButtonFace(Sender.Canvas, Rect, 2, bsNew, false, false, false);
+    DrawButtonFace(Sender.Canvas, Rect, 1, bsNew, false, false, false);
     Sender.Canvas.Font := Self.Font;
     oldMode := GetBkMode(Sender.Canvas.Handle);
     SetBkMode(Sender.Canvas.Handle, TRANSPARENT);
@@ -273,6 +296,21 @@ begin
     SetBkMode(Sender.Canvas.Handle, oldMode);
   end
   else if (Item.Caption = '=') then begin
+    DefaultDraw := false;
+    Rect := Item.DisplayRect(drBounds);
+    Rect.Left := Rect.Left+1;
+    //DrawButtonFace(Sender.Canvas, Rect, 1, bsNew, false, false, false);
+    Sender.Canvas.Brush.Color := clWindow;
+    Sender.Canvas.FillRect(Rect);
+    Sender.Canvas.Font := Self.Font;
+    Sender.Canvas.Font.Color := clInfoText;
+    DrawButtonFace(Sender.Canvas, Rect, 1, bsWin31, false, false, false);
+    oldMode := GetBkMode(Sender.Canvas.Handle);
+    SetBkMode(Sender.Canvas.Handle, TRANSPARENT);
+    DrawText(Sender.Canvas.Handle, PChar(Item.SubItems[0]), Length(Item.SubItems[0]), Rect, DT_CENTER or DT_VCENTER or DT_NOCLIP or DT_SINGLELINE	);
+    SetBkMode(Sender.Canvas.Handle, oldMode);
+  end
+  else if (Item.Caption = '+') then begin
     DefaultDraw := false;
     Rect := Item.DisplayRect(drBounds);
     Rect.Left := Rect.Left+1;
