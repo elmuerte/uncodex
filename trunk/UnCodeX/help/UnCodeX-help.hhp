@@ -1,0 +1,30 @@
+[OPTIONS]
+Auto Index=Yes
+Compatibility=1.1 or later
+Compiled file=UnCodeX-help.chm
+Contents file=UnCodeX-help.hhc
+Default Window=main
+Default topic=index.html
+Display compile progress=Yes
+Full-text search=Yes
+Index file=UnCodeX-help.hhk
+Language=0x409 English (United States)
+Title=UnCodeX
+
+[WINDOWS]
+main="UnCodeX Help","UnCodeX-help.hhc",,"index.html","index.html",,,,,0x62520,,0x1046,[100,100,600,600],,,,1,,,0
+
+
+[FILES]
+UnCodeX-icon.gif
+index.html
+default.css
+window_main.html
+window_settings.html
+window_tags.html
+versionhistory.html
+index.html
+credits.html
+
+[INFOTYPES]
+
