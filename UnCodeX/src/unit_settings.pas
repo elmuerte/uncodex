@@ -120,6 +120,7 @@ type
     btn_SetHotKey: TBitBtn;
     hk_HotKey: THotKey;
     btn_Help: TBitBtn;
+    cb_ModifiedOnStartup: TCheckBox;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);

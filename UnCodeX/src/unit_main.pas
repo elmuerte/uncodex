@@ -141,6 +141,8 @@ type
     ac_VAutoHide: TAction;
     ac_VTRight: TAction;
     ac_VTLeft: TAction;
+    mi_AnalyseModifiedClasses: TMenuItem;
+    ac_AnalyseModified: TAction;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_OpenClassClick(Sender: TObject);
@@ -192,6 +194,7 @@ type
     procedure ac_VSaveSizeExecute(Sender: TObject);
     procedure mi_Help2Click(Sender: TObject);
     procedure ac_HelpExecute(Sender: TObject);
+    procedure ac_AnalyseModifiedExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -278,6 +281,7 @@ var
   CSHistory: TStringList;
   ExpandObject: boolean;
   MinimizeOnClose: boolean = false;
+  AnalyseModified: boolean;
 
 implementation
 
@@ -789,6 +793,7 @@ begin
     OpenResultCmd := ini.ReadString('Config', 'OpenResultCmd', '');
     FTSRegexp := ini.ReadBool('Config', 'FullTextSearchRegExp', false);
     StateFile := ini.ReadString('Config', 'StateFile', StateFile);
+    AnalyseModified := ini.ReadBool('Config', 'AnalyseModified', true);
     if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ConfigFile)+StateFile;
 
     for i := 0 to al_Main.ActionCount-1 do begin
@@ -974,6 +979,7 @@ begin
     cb_ExpandObject.Checked := ExpandObject;
     ed_StateFilename.Text := ExtractFilename(StateFile);
     cb_MinimzeOnClose.Checked := MinimizeOnClose;
+    cb_ModifiedOnStartup.Checked := AnalyseModified;
     if (ShowModal = mrOk) then begin
       HTMLOutputDir := ed_HTMLOutputDir.Text;
       TemplateDir := ed_TemplateDir.Text;
@@ -986,6 +992,7 @@ begin
       OpenResultCmd := ed_OpenResultCmd.Text;
       FTSRegexp := cb_FTSRegExp.Checked;
       StateFile := ed_StateFilename.Text;
+      AnalyseModified := cb_ModifiedOnStartup.Checked;
       if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ConfigFile)+StateFile;
       SourcePaths.Clear;
       SourcePaths.AddStrings(lb_Paths.Items);
@@ -1021,6 +1028,7 @@ begin
         data.Add('OpenResultCmd='+OpenResultCmd);
         data.Add('FullTextSearchRegExp='+IntToStr(Ord(FTSRegexp)));
         data.Add('StateFile='+ed_StateFilename.Text);
+        data.Add('AnalyseModified='+IntToStr(Ord(AnalyseModified)));
 
         data.Add('[Layout]');
         data.Add('Log.Font.Name='+lb_Log.Font.Name);
@@ -1254,7 +1262,11 @@ begin
     lst.Delimiter := ' ';
     lst.QuoteChar := '"';
     lst.DelimitedText := ServerCmd;
-    ExecuteProgram(exe, lst, ServerPrio);
+    if (lst.Count > 0) then begin
+      exe := lst[0];
+      lst.Delete(0);
+      ExecuteProgram(exe, lst, ServerPrio);
+    end;
   finally
     lst.Free;
   end;
@@ -1426,8 +1438,9 @@ begin
       CSprops[0] := false;
       ActiveControl := tv_Classes;
       ac_FindNext.Execute;
-    end;
-    if (IsBatching) then NextBatchCommand;
+    end
+    else if (IsBatching) then NextBatchCommand
+    else if (AnalyseModified) then ac_AnalyseModified.Execute;
   end;
   if (InitialStartup) then begin
     if MessageDlg('This is the first time you start UnCodeX (with this config file),'+#13+#10+
@@ -1588,6 +1601,17 @@ procedure Tfrm_UnCodeX.ac_HelpExecute(Sender: TObject);
 begin
   if (ActiveControl <> nil) then hh_Help.HelpTopic('window_main.html#'+ActiveControl.HelpKeyword)
   else hh_Help.HelpTopic('');
+end;
+
+procedure Tfrm_UnCodeX.ac_AnalyseModifiedExecute(Sender: TObject);
+begin
+  if (ThreadCreate) then begin
+    TreeUpdated := true;
+    lb_Log.Items.Clear;
+    runningthread := TClassAnalyser.Create(ClassList, statusReport, true);
+    runningthread.OnTerminate := ThreadTerminate;
+    runningthread.Resume;
+  end;
 end;
 
 end.

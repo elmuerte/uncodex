@@ -63,6 +63,8 @@ type
 
 implementation
 
+uses unit_main;
+
 const
   TabChar = #9;
   EndOfLine = #13#10;
@@ -365,7 +367,7 @@ end;
 { TUnCodeXState }
 
 const
-  UCXheader = 'UCX047'+#13#10#0;
+  UCXheader = 'UCX051'+#13#10#0;
 
 procedure TUnCodeXState.SavePackageToStream(upackage: TUPackage; stream: TStream);
 var
@@ -395,6 +397,7 @@ begin
     Writer.WriteString(uclass.parentname);
     Writer.WriteString(uclass.filename);
     Writer.WriteString(uclass.modifiers);
+    Writer.WriteInteger(uclass.filetime);
     Writer.WriteInteger(uclass.consts.Count);
     for i := 0 to uclass.consts.Count-1 do begin
       Writer.WriteString(uclass.consts[i].name);
@@ -473,6 +476,7 @@ begin
       uclass.parentname := Reader.ReadString;
       uclass.filename := Reader.ReadString;
       uclass.modifiers := Reader.ReadString;
+      uclass.filetime := Reader.ReadInteger;
       m := Reader.ReadInteger;
       for i := 0 to m-1 do begin
         uconst := TUconst.Create;
@@ -674,7 +678,8 @@ begin
     LoadPackagesFromStream(stream);
     LoadClassesFromStream(stream);
     result := true;
-  end;
+  end
+  else Log('State file corrupt or unsupported version');
 end;
 
 procedure TUnCodeXState.SaveTreeToStream(Stream: TStream);
