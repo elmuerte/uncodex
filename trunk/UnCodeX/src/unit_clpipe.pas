@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Create a pipe with a commandline application
- $Id: unit_clpipe.pas,v 1.4 2003-12-03 10:31:23 elmuerte Exp $
+ $Id: unit_clpipe.pas,v 1.5 2004-02-23 22:05:30 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -125,7 +125,7 @@ end;
 {$IFDEF LINUX}
 function TCLPipe.Open: boolean;
 begin
-
+{$MESSAGE Warn 'TODO: implement TCLPipe'}
 end;
 {$ENDIF}
 
@@ -157,6 +157,7 @@ begin
 end;
 {$ENDIF}
 
+{$IFDEF MSWINDOWS}
 function TCLPipe.Pipe(input: string): string;
 var
   i: Cardinal;
@@ -182,6 +183,14 @@ begin
   except
   end;
 end;
+{$ENDIF}
+
+{$IFDEF LINUX}
+function TCLPipe.Pipe(input: string): string;
+begin
+end;
+{$ENDIF}
 
 
 end.
+
