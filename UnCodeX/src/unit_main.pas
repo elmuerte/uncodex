@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.156 2005-04-03 07:23:27 elmuerte Exp $
+  $Id: unit_main.pas,v 1.157 2005-04-04 15:12:19 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -40,7 +40,7 @@ uses
   unit_uclasses, IniFiles, ShellApi, AppEvnts, ImgList, ActnList, StrUtils,
   Clipbrd, hh, hh_funcs, ToolWin, richedit, unit_richeditex, unit_searchform,
   Buttons, DdeMan, unit_props, uPSComponent, uPSComponent_Default,
-  IFSI_unit_uclasses, unit_pascalscript_ex, unit_definitions;
+  IFSI_unit_uclasses, unit_pascalscript_ex, unit_definitions, unit_config;
 
 const
   // custom window messages

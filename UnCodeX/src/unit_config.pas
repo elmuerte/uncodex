@@ -6,7 +6,7 @@
   Purpose:
     Contains the configuration of UnCodeX
 
-  $Id: unit_config.pas,v 1.3 2005-04-03 07:23:26 elmuerte Exp $
+  $Id: unit_config.pas,v 1.4 2005-04-04 15:12:19 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -35,18 +35,21 @@ interface
 
 uses
   {$IFNDEF CONSOLE}
-  Graphics, Controls,
+  Graphics, Controls, unit_searchform,
   {$ENDIF}
-  unit_htmlout, Classes, IniFiles, SysUtils;
+  unit_htmlout, Classes, SysUtils, unit_ucxinifiles;
 
 type
   TUCXConfig = class(TObject)
   protected
+    ConfigFile: string;
     ConfigVersion: integer;
-    ini: TMemIniFile;
+    ini: TUCXIniFile;
+    iniStack: TList;
     procedure UpgradeConfig; virtual;
     procedure InternalLoadFromIni; virtual;
     procedure InternalSaveToIni; virtual;
+    procedure StackLoad(filename: string);
   public
     IncludeConfig: record
       Pre:                TStringList;
@@ -64,13 +67,13 @@ type
     end;
     Comments: record
       Packages:           string;
-      ExternalComments:   string;
+      Declarations:       string;
     end;
   public
-    constructor Create;
+    constructor Create(filename: string);
     destructor Destroy; override;
-    procedure LoadFromIni(filename: string);
-    procedure SaveToIni(filename: string);
+    procedure LoadFromIni;
+    procedure SaveToIni(filename: string = '');
   end;
 
   {$IFNDEF CONSOLE}
@@ -187,9 +190,9 @@ type
       Compiler:           string;
       OpenClass:          string;
     end;
-    //TODO: search config
+    SearchConfig:         TClassSearch;
   public
-    constructor Create;
+    constructor Create(filename: string);
     destructor Destroy; override;
   end;
   {$ENDIF}
@@ -204,10 +207,18 @@ const
   CURRENT_CONFIG_VERSION = 1;
 
 { TUCXConfig }
-constructor TUCXConfig.Create;
+constructor TUCXConfig.Create(filename: string);
 begin
+  ConfigFile := filename;
+  ConfigVersion := 0;
+  iniStack := Tlist.Create;
+
   IncludeConfig.Pre := TStringList.Create;
   IncludeConfig.Post := TStringList.Create;
+  {$IFDEF UNIX}
+  IncludeConfig.Pre.Add('/etc/uncodexrc');
+  IncludeConfig.Pre.Add('~.uncodexrc');
+  {$ENDIF}
   PackagesPriority := TStringList.Create;
   IgnorePackages := TStringList.Create;
   SourcePaths := TStringList.Create;
@@ -221,10 +232,10 @@ begin
   HTMLOutput.DefaultTitle := '';
   HTMLOutput.GZCompress := tbMaybe;
   HTMLHelp.Compiler := '';
-  HTMLHelp.OutputFile := ExtractFilePath(ParamStr(0))+'UnCodeX.chm';
+  HTMLHelp.OutputFile := ExtractFilePath(ParamStr(0))+'UnCodeX-UnrealScript.chm';
   HTMLHelp.Title := '';
   Comments.Packages := ExtractFilePath(ParamStr(0))+DefaultPDF;
-  Comments.ExternalComments := ExtractFilePath(ParamStr(0))+DefaultECF;
+  Comments.Declarations := ExtractFilePath(ParamStr(0))+DefaultECF;
 end;
 
 destructor TUCXConfig.Destroy;
@@ -234,27 +245,44 @@ begin
   FreeAndNil(PackagesPriority);
   FreeAndNil(IgnorePackages);
   FreeAndNil(SourcePaths);
+  FreeAndNil(iniStack);
 end;
 
-procedure TUCXConfig.LoadFromIni(filename: string);
+procedure TUCXConfig.LoadFromIni;
+var
+  sl: TStringList;
+  i: integer;
 begin
-  if (not FileExists(filename)) then exit;
-  ini := TMemIniFile.Create(filename);
+  if (not FileExists(ConfigFile)) then exit;
+  ini := TUCXIniFile.Create(ConfigFile);
   try
     ConfigVersion := ini.ReadInteger('Configuration', 'Version', -1);
     if (ConfigVersion < 0) then begin
       UpgradeConfig;
+      ini.Clear; // erase old config
       InternalSaveToIni;
+      ini.UpdateFile;
     end
-    else InternalLoadFromIni;
+    else begin
+      InternalLoadFromIni;
+      sl := TStringList.Create;
+      try
+        for i := 0 to IncludeConfig.Post.Count-1 do begin
+          StackLoad(IncludeConfig.Post[i]);
+        end;
+      finally
+        sl.Free;
+      end;
+    end;
   finally
     FreeAndNil(ini);
   end;
 end;
 
-procedure TUCXConfig.SaveToIni(filename: string);
+procedure TUCXConfig.SaveToIni(filename: string = '');
 begin
-  ini := TMemIniFile.Create(filename);
+  if (filename = '') then filename := ConfigFile;
+  ini := TUCXIniFile.Create(filename);
   try
     ConfigVersion := CURRENT_CONFIG_VERSION;
     InternalSaveToIni;
@@ -265,13 +293,87 @@ begin
 end;
 
 procedure TUCXConfig.InternalLoadFromIni;
+var
+  i, n: integer;
+  sl: TStringList;
 begin
+  sl := TStringList.Create;
+  ini.ReadStringArray('Include', 'Pre', sl);
+  try
+    for i := 0 to sl.Count-1 do begin
+      IncludeConfig.Pre.Add(sl[i]);
+      StackLoad(sl[i]);
+    end;
+  finally
+    sl.Free;
+  end;
+  ini.ReadStringArray('Include', 'Post', IncludeConfig.Post, true);
 
+  ini.ReadStringArray('Packages', 'EditPackage', PackagesPriority);
+  sl := TStringList.Create;
+  try
+    ini.ReadStringArray('Packages', 'Tag', sl);
+    for i := 0 to sl.Count-1 do begin
+      n := PackagesPriority.IndexOf(sl[i]);
+      if (n > 0) then PackagesPriority.Objects[n] := PackagesPriority;
+    end;
+  finally
+    sl.Free;
+  end;
+  ini.ReadStringArray('Packages', 'IgnorePackage', IgnorePackages);
+  ini.ReadStringArray('Sources', 'Path', SourcePaths);
+
+  with HTMLOutput do begin
+    OutputDir := ini.ReadString('HTMLOutput', 'OutputDir', OutputDir);
+    TemplateDir := ini.ReadString('HTMLOutput', 'OutputDir', OutputDir);
+    CreateSource := TTriBool(ini.ReadInteger('HTMLOutput', 'CreateSource', ord(CreateSource)));
+    TabsToSpaces := ini.ReadInteger('HTMLOutput', 'TabsToSpaces', TabsToSpaces);
+    TargetExtention := ini.ReadString('HTMLOutput', 'TargetExtention', TargetExtention);
+    CPP := ini.ReadString('HTMLOutput', 'CommentPreProcessor', CPP);
+    DefaultTitle := ini.ReadString('HTMLOutput', 'DefaultTitle', DefaultTitle);
+    GZCompress := TTriBool(ini.ReadInteger('HTMLOutput', 'GZCompress', ord(GZCompress)));
+  end;
+  with HTMLHelp do begin
+    Compiler := ini.ReadString('HTMLHelp', 'Compiler', Compiler);
+    OutputFile := ini.ReadString('HTMLHelp', 'OutputFile', OutputFile);
+    Title := ini.ReadString('HTMLHelp', 'Title', Title);
+  end;
+  with Comments do begin
+    Packages := ini.ReadString('ExternalComments', 'Packages', Packages);
+    Declarations := ini.ReadString('ExternalComments', 'Declarations', Declarations)
+  end;
 end;
 
 procedure TUCXConfig.InternalSaveToIni;
+var
+  i: integer;
 begin
-
+  ini.WriteStringArray('Packages', 'EditPackage', PackagesPriority);
+  ini.DeleteKey('Packages', 'Tag');
+  for i := 0 to PackagesPriority.Count-1 do begin
+    if (PackagesPriority.Objects[i] <> nil) then ini.AddToStringArray('Packages', 'Tag', PackagesPriority[i]);
+  end;
+  ini.WriteStringArray('Packages', 'IgnorePackage', IgnorePackages);
+  ini.WriteStringArray('Sources', 'Path', SourcePaths);
+  with HTMLOutput do begin
+    ini.WriteString('HTMLOutput', 'OutputDir', OutputDir);
+    ini.WriteString('HTMLOutput', 'OutputDir', OutputDir);
+    ini.WriteInteger('HTMLOutput', 'CreateSource', ord(CreateSource));
+    ini.WriteInteger('HTMLOutput', 'TabsToSpaces', TabsToSpaces);
+    ini.WriteString('HTMLOutput', 'TargetExtention', TargetExtention);
+    ini.WriteString('HTMLOutput', 'CommentPreProcessor', CPP);
+    ini.WriteString('HTMLOutput', 'DefaultTitle', DefaultTitle);
+    ini.WriteInteger('HTMLOutput', 'GZCompress', ord(GZCompress));
+  end;
+  with HTMLHelp do begin
+    ini.WriteString('HTMLHelp', 'Compiler', Compiler);
+    ini.WriteString('HTMLHelp', 'OutputFile', OutputFile);
+    ini.WriteString('HTMLHelp', 'Title', Title);
+  end;
+  with Comments do begin
+    ini.WriteString('ExternalComments', 'Packages', Packages);
+    ini.WriteString('ExternalComments', 'Declarations', Declarations)
+  end;
 end;
 
 procedure TUCXConfig.UpgradeConfig;
@@ -280,6 +382,8 @@ var
   sl: TStringList;
   tmp, tmp2: string;
 begin
+  Log('Converting old configuration file');
+
   HTMLOutput.OutputDir := ini.ReadString('Config', 'HTMLOutputDir', HTMLOutput.OutputDir);
   HTMLOutput.TemplateDir := ini.ReadString('Config', 'TemplateDir', HTMLOutput.TemplateDir);
   HTMLOutput.TabsToSpaces := ini.ReadInteger('Config', 'TabsToSpaces', HTMLOutput.TabsToSpaces);
@@ -287,11 +391,11 @@ begin
   HTMLOutput.CPP := ini.ReadString('Config', 'CPP', HTMLOutput.CPP);
   HTMLOutput.DefaultTitle := ini.ReadString('Config', 'HTMLDefaultTitle', HTMLOutput.DefaultTitle);
   HTMLOutput.GZCompress := TTriBool(ini.ReadInteger('Config', 'GZCompress', Ord(HTMLOutput.GZCompress)));
-  HTMLHelp.Compiler := ini.ReadString('Config', 'HHCPath', HTMLHelp.Compiler);
+  HTMLHelp.Compiler := ini.ReadString('Config', 'HHCPath', HTMLHelp.Compiler)+PATHDELIM+'HHC.EXE';
   HTMLHelp.OutputFile := ini.ReadString('Config', 'HTMLHelpFile', HTMLHelp.OutputFile);
   HTMLHelp.Title := ini.ReadString('Config', 'HHTitle', HTMLHelp.Title);
   Comments.Packages := ini.ReadString('Config', 'PackageDescriptionFile', Comments.Packages);
-  Comments.ExternalComments := ini.ReadString('Config', 'ExternalCommentFile', Comments.ExternalComments);
+  Comments.Declarations := ini.ReadString('Config', 'ExternalCommentFile', Comments.Declarations);
 
   sl := TStringList.Create;
   try
@@ -330,11 +434,32 @@ begin
   end;
 end;
 
+procedure TUCXConfig.StackLoad(filename: string);
+begin
+  filename := iFindFile(filename);
+  if (not FileExists(filename)) then exit;
+  iniStack.Add(ini);
+  try
+    ini := TUCXIniFile.Create(filename);
+    try
+      InternalLoadFromIni;
+    finally
+      ini.Free;
+    end;
+  except
+    Log('Failed loading include config: '+filename, ltError);
+    ini := TUCXIniFile(iniStack.Last);
+    iniStack.Remove(ini);
+  end;
+end;
+
 {$IFNDEF CONSOLE}
 { TUCXGUIConfig }
 
-constructor TUCXGUIConfig.Create;
+constructor TUCXGUIConfig.Create(filename: string);
 begin
+  inherited Create(filename);
+  
   Layout.TreeView := TComponentSettgins.Create;
   Layout.LogWindow := TComponentSettgins.Create;
   DockState.data.Center := TMemoryStream.Create;
@@ -411,13 +536,13 @@ begin
   Commands.Client := '';
   Commands.Compiler := '';
   Commands.OpenClass := '';
-  //TODO: fix this
-  //StateFile := ChangeFileExt(ExtractFilename(ConfigFile), '.ucx');
+  StateFile := ChangeFileExt(ExtractFilename(ConfigFile), '.ucx');
   NewClassTemplate := ExtractFilePath(ParamStr(0))+TEMPLATEPATH+PathDelim+'NewClass.uc';
 end;
 
 destructor TUCXGUIConfig.Destroy;
 begin
+  inherited Destroy;
   FreeAndNil(Layout.TreeView);
   FreeAndNil(Layout.LogWindow);
   FreeAndNil(DockState.data.Center);
@@ -458,6 +583,8 @@ procedure TUCXGUIConfig.UpgradeConfig;
     if (8 and style <> 0) then result := result + [fsStrikeout];
   end;
 
+var
+  i: integer;
 begin
   inherited UpgradeConfig;
   Layout.StayOnTop := ini.ReadBool('Layout', 'StayOnTop', Layout.StayOnTop);
@@ -532,6 +659,20 @@ begin
   Commands.OpenClass := ini.ReadString('Config', 'OpenResultCmd', Commands.OpenClass);
   StateFile := ini.ReadString('Config', 'StateFile', StateFile);
   NewClassTemplate := ini.ReadString('Config', 'NewClassTemplate', NewClassTemplate);
+
+  SearchConfig.isFromTop := ini.ReadBool('Search', 'isFromTop', false);
+  SearchConfig.isStrict := ini.ReadBool('Search', 'isStrict', false);
+  SearchConfig.isRegex := ini.ReadBool('Search', 'isRegex', false);
+  SearchConfig.isFindFirst := ini.ReadBool('Search', 'isFindFirst', false);
+  SearchConfig.Scope := ini.ReadInteger('Search', 'Scope', 0);
+  SearchConfig.history.Clear;
+  for i := 0 to ini.ReadInteger('Search', 'history', 0)-1 do begin
+    SearchConfig.history.Add(ini.ReadString('Search', 'history:'+IntToStr(i), ''));
+  end;
+  SearchConfig.ftshistory.Clear;
+  for i := 0 to ini.ReadInteger('Search', 'ftshistory', 0)-1 do begin
+    SearchConfig.ftshistory.Add(ini.ReadString('Search', 'ftshistory:'+IntToStr(i), ''));
+  end;
 end;
 
 { TComponentSettgins }
