@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   about UnCodeX dialog
- $Id: unit_about.pas,v 1.15 2004-10-08 09:18:30 elmuerte Exp $
+ $Id: unit_about.pas,v 1.16 2004-10-18 11:31:46 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,6 +25,8 @@
 }
 
 unit unit_about;
+
+{$I defines.inc}
 
 interface
 

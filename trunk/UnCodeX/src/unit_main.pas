@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.125 2004-10-17 13:17:19 elmuerte Exp $
+ $Id: unit_main.pas,v 1.126 2004-10-18 11:31:46 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,6 +25,8 @@
 }
 
 unit unit_main;
+
+{$I defines.inc}
 
 interface
 

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Full Text Search (+ regular expressions) thread
- $Id: unit_fulltextsearch.pas,v 1.13 2004-10-17 13:17:19 elmuerte Exp $
+ $Id: unit_fulltextsearch.pas,v 1.14 2004-10-18 11:31:46 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,6 +25,8 @@
 }
 
 unit unit_fulltextsearch;
+
+{$I defines.inc}
 
 interface
 

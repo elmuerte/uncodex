@@ -8,3 +8,5 @@ unit_richeditex.dcu
 unit_dde.pas
 DdeManEx.pas
 *.dcu
+backup
+*.~inc

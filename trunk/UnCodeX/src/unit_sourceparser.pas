@@ -3,7 +3,7 @@
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
             Based on the TCopyParser class by Borland Software Corporation
- $Id: unit_sourceparser.pas,v 1.16 2004-06-15 07:34:57 elmuerte Exp $           
+ $Id: unit_sourceparser.pas,v 1.17 2004-10-18 11:31:47 elmuerte Exp $           
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,10 +25,12 @@
 }
 unit unit_sourceparser;
 
+{$I defines.inc}
+
 interface
 
 uses
-  Classes, SysUtils, RTLConsts;
+  Classes, SysUtils;
 
 type
   TSourceParser = class(TObject)

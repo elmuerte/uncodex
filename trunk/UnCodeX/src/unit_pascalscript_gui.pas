@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   PascalScript routines for the GUI
- $Id: unit_pascalscript_gui.pas,v 1.5 2004-08-05 13:31:15 elmuerte Exp $
+ $Id: unit_pascalscript_gui.pas,v 1.6 2004-10-18 11:31:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -24,6 +24,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
 unit unit_pascalscript_gui;
+
+{$I defines.inc}
 
 interface
 

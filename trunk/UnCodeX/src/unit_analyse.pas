@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.43 2004-10-17 13:17:18 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.44 2004-10-18 11:31:46 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -26,10 +26,7 @@
 
 unit unit_analyse;
 
-{$IFNDEF CONSOLE}
-  {$MESSAGE 'Compiling with __USE_TREEVIEW'}
-  {$DEFINE __USE_TREEVIEW}
-{$ENDIF}
+{$I defines.inc}
 
 interface
 
@@ -83,7 +80,7 @@ var
 
 implementation
 
-{$IFDEF __USE_TREEVIEW}
+{$IFDEF USE_TREEVIEW}
 uses
   ComCtrls;
 {$ENDIF}
@@ -231,7 +228,7 @@ begin
   filename := uclass.package.path+PATHDELIM+uclass.filename;
   if (not FileExists(filename)) then begin
     Log('Class has been removed: '+uclass.name+' '+filename);
-    {$IFDEF __USE_TREEVIEW}
+    {$IFDEF USE_TREEVIEW}
     if (classes <> nil) then begin
     	TTreeNode(uclass.TreeNode2).Delete;
 	    TTreeNode(uclass.TreeNode).Delete;
@@ -897,19 +894,21 @@ end;
 
 initialization
 	FunctionModifiers := TStringList.Create;
-  FunctionModifiers.CaseSensitive := false;
-  FunctionModifiers.Add('native');
-  FunctionModifiers.Add('intrinsic');
-  FunctionModifiers.Add('final');
-  FunctionModifiers.Add('private');
-  FunctionModifiers.Add('protected');
-  FunctionModifiers.Add('public');
-  FunctionModifiers.Add('latent');
-  FunctionModifiers.Add('iterator');
-  FunctionModifiers.Add('singular');
-  FunctionModifiers.Add('static');
-  FunctionModifiers.Add('exec');
-  FunctionModifiers.Add('simulated');
+  {$IFNDEF FPC}
+	FunctionModifiers.CaseSensitive := false;
+  {$ENDIF}
+	FunctionModifiers.Add('native');
+	FunctionModifiers.Add('intrinsic');
+	FunctionModifiers.Add('final');
+	FunctionModifiers.Add('private');
+	FunctionModifiers.Add('protected');
+	FunctionModifiers.Add('public');
+	FunctionModifiers.Add('latent');
+	FunctionModifiers.Add('iterator');
+	FunctionModifiers.Add('singular');
+	FunctionModifiers.Add('static');
+	FunctionModifiers.Add('exec');
+	FunctionModifiers.Add('simulated');
 finalization
 	FunctionModifiers.Free;
 end.

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
             Based on the TParser class by Borland Software Corporation
- $Id: unit_parser.pas,v 1.19 2004-10-17 13:17:19 elmuerte Exp $
+ $Id: unit_parser.pas,v 1.20 2004-10-18 11:31:46 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,10 +25,12 @@
 }
 unit unit_parser;
 
+{$I defines.inc}
+
 interface
 
 uses
-  Classes, SysUtils, RTLConsts;
+  Classes, SysUtils;
 
 type
 	TUCParser = class;

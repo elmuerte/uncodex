@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   General function/utils that require Forms
- $Id: unit_utils.pas,v 1.9 2004-08-24 19:42:31 elmuerte Exp $
+ $Id: unit_utils.pas,v 1.10 2004-10-18 11:31:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,6 +25,8 @@
 }
 
 unit unit_utils;
+
+{$I defines.inc}
 
 interface
 

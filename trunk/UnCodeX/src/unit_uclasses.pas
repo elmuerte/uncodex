@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   definitions for Unreal Classes
- $Id: unit_uclasses.pas,v 1.33 2004-10-17 13:17:19 elmuerte Exp $
+ $Id: unit_uclasses.pas,v 1.34 2004-10-18 11:31:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,6 +25,8 @@
 }
 
 unit unit_uclasses;
+
+{$I defines.inc}
 
 interface
 

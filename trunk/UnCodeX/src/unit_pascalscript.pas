@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   General PascalScript routines
- $Id: unit_pascalscript.pas,v 1.6 2004-08-03 20:31:42 elmuerte Exp $
+ $Id: unit_pascalscript.pas,v 1.7 2004-10-18 11:31:46 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -24,6 +24,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
 unit unit_pascalscript;
+
+{$I defines.inc}
 
 interface
 

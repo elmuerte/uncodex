@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Advanced "run..." dialog
- $Id: unit_rungame.pas,v 1.4 2004-07-21 14:24:52 elmuerte Exp $
+ $Id: unit_rungame.pas,v 1.5 2004-10-18 11:31:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -24,6 +24,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
 unit unit_rungame;
+
+{$I defines.inc}
 
 interface
 

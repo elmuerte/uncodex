@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   main code for the commandline utility
- $Id: unit_ucxcumain.pas,v 1.10 2004-07-24 14:35:13 elmuerte Exp $
+ $Id: unit_ucxcumain.pas,v 1.11 2004-10-18 11:31:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,6 +25,8 @@
 }
 
 unit unit_ucxcumain;
+
+{$I ../defines.inc}
 
 interface
 
@@ -69,6 +71,9 @@ var
   LogFile: TextFile;
   Logging: boolean = false;
   ActiveThread: TThread;
+  {$IFDEF FPC}
+	ErrOutput : TextFile;
+  {$ENDIF}
 
 {$IFDEF LINUX}
 procedure SigProc(signum: integer);
@@ -200,9 +205,13 @@ begin
 	if (CmdOption('p', tmp)) then begin
     lst := TStringList.Create;
     try
+    	{$IFNDEF FPC}
 			lst.Delimiter := ',';
       lst.QuoteChar := '"';
       lst.DelimitedText := tmp;
+      {$ELSE}
+      {$MESSAGE warn 'FIX'}
+      {$ENDIF}
       packagepriority.Clear;
       packagepriority.Assign(lst);
     finally
@@ -212,9 +221,13 @@ begin
   if (CmdOption('pa', tmp)) then begin
     lst := TStringList.Create;
     try
+			{$IFNDEF FPC}
 			lst.Delimiter := ',';
       lst.QuoteChar := '"';
       lst.DelimitedText := tmp;
+      {$ELSE}
+      {$MESSAGE warn 'FIX'}
+      {$ENDIF}
       packagepriority.AddStrings(lst);
     finally
     	lst.Free;
@@ -351,6 +364,9 @@ initialization
   unit_definitions.Log := Log;
   unit_definitions.LogClass := LogClass;
   unit_analyse.GetExternalComment := unit_definitions.RetExternalComment;
+  {$IFDEF FPC}
+	ErrOutput := stderr;
+  {$ENDIF}
 finalization
   sourcepaths.Free;
   packagepriority.Free;

@@ -1,13 +1,13 @@
 {-----------------------------------------------------------------------------
- Unit Name: unit_props
+ Unit Name: unit_definitions
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
- Purpose:   multi line input box
- $Id: unit_multilinequery.pas,v 1.2 2004-10-18 11:31:46 elmuerte Exp $
+ Purpose:   FreePascalCompile compatibility unit
+ $Id: unit_fpc_compat.pas,v 1.1 2004-10-18 11:31:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
-    Copyright (C) 2003, 2004  Michiel Hendriks
+    Copyright (C) 2003,2004  Michiel Hendriks
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -24,33 +24,18 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
 
-unit unit_multilinequery;
+unit unit_fpc_compat;
 
 {$I defines.inc}
 
 interface
-
-uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons;
-
-type
-  Tfrm_MultiLineQuery = class(TForm)
-    lbl_Prompt: TLabel;
-    mm_Input: TMemo;
-    BitBtn1: TBitBtn;
-    BitBtn2: TBitBtn;
-  private
-    { Private declarations }
-  public
-    { Public declarations }
-  end;
-
-var
-  frm_MultiLineQuery: Tfrm_MultiLineQuery;
+	function ForceDirectories(const Dir: string): Boolean;
 
 implementation
 
-{$R *.dfm}
+function ForceDirectories(const Dir: string): Boolean;
+begin
+	//TODO:
+end;
 
 end.

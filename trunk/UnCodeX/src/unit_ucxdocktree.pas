@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2004 Michiel 'El Muerte' Hendriks
  Purpose:   replacement docktree
- $Id: unit_ucxdocktree.pas,v 1.3 2004-03-07 13:57:29 elmuerte Exp $
+ $Id: unit_ucxdocktree.pas,v 1.4 2004-10-18 11:31:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,6 +25,8 @@
 }
 
 unit unit_ucxdocktree;
+
+{$I defines.inc}
 
 interface
 
