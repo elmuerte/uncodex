@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<title>UnCodeX - Pascal Script - TUEnum</title>
+	<link href="../images/default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="../images/UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">TUEnum</div>
+</div>
+
+<div class="content">
+<h1>TUEnumList</h1>
+<pre>
+TUEnumList = class(TUObjectList)
+    procedure Sort;
+    function Find(name: string): TUEnum;
+    property Items[Index: Integer]: TUEnum; default;
+  end;
+</pre>
+
+<h1>TUEnum</h1>
+<pre>
+TUEnum = class(TUObject)
+    options:    string;
+  end;
+</pre>
+
+</div>
+</div>
+</body>
+</html>
