@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript package scanner, search for UnrealScript classes
 
-  $Id: unit_packages.pas,v 1.40 2004-12-18 23:52:00 elmuerte Exp $
+  $Id: unit_packages.pas,v 1.41 2004-12-19 12:34:56 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -42,6 +42,19 @@ uses
   unit_uclasses, unit_outputdefs, IniFiles, Hashes;
 
 type
+  TPackageScannerConfig = record
+    paths: TStringList;
+    {$IFDEF USE_TREEVIEW}
+    packagetree, classtree: TTreeNodes;
+    {$ENDIF}
+    status: TStatusReport;
+    packagelist: TUPackageList;
+    classlist: TUClassList;
+    PackagePriority, IgnorePackages: TStringList;
+    CHash: TObjectHash;
+    PDFile: string
+  end;
+
   TPackageScanner = class(TThread)
   private
     paths: TStringList;
@@ -66,17 +79,7 @@ type
     procedure CreateClassTree(classlist: TUClassList; parent: TUClass = nil);
     {$ENDIF}
   public
-    {$IFDEF USE_TREEVIEW}
-    constructor Create(paths: TStringList; packagetree, classtree: TTreeNodes;
-      status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
-      PackagePriority, IgnorePackages: TStringList; CHash: TObjectHash = nil;
-      PDFile: string = '');
-    {$ELSE}
-    constructor Create(paths: TStringList;
-      status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
-      PackagePriority, IgnorePackages: TStringList; CHash: TObjectHash = nil;
-      PDFile: string = '');
-    {$ENDIF}
+    constructor Create(rec: TPackageScannerConfig);
     destructor Destroy; override;
     procedure Execute; override;
   end;
@@ -139,24 +142,33 @@ begin
         if (p.TokenSymbolIs('class')) then begin
           p.NextToken;
           result := TUClass.Create;
-          result.name := p.TokenString;
-          p.NextToken;
-          if (p.TokenSymbolIs('extends') or p.TokenSymbolIs('expands')) then begin
+          try
+            result.name := p.TokenString;
             p.NextToken;
-            result.parentname := p.TokenString;
-            if (p.NextToken = '.') then begin // package.class
-              p.NextToken;                    // (should work with checking package)
-              result.parentname := result.parentname+'.'+p.TokenString;
+            if (p.TokenSymbolIs('extends') or p.TokenSymbolIs('expands')) then begin
+              p.NextToken;
+              result.parentname := p.TokenString;
+              if (p.NextToken = '.') then begin // package.class
+                p.NextToken;                    // (should work with checking package)
+                result.parentname := result.parentname+'.'+p.TokenString;
+              end;
             end;
+          except
+            FreeAndNil(result);
+            raise;
           end;
           break; // we don't need to parse the rest
         end
         else if (p.TokenSymbolIs('interface')) then begin
           p.NextToken;
           result := TUClass.Create;
-          result.name := p.TokenString;
-          result.InterfaceType := itTribesV;
-          //logclass('Found interface class: '+result.name, result);
+          try
+            result.name := p.TokenString;
+            result.InterfaceType := itTribesV;
+          except
+            FreeAndNil(result);
+            raise;
+          end;
           break;
         end;
       end;
@@ -169,31 +181,26 @@ begin
   unguard;
 end;
 
-{$IFDEF USE_TREEVIEW}
-constructor TPackageScanner.Create(paths: TStringList; packagetree, classtree: TTreeNodes;
-  status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
-  PackagePriority, IgnorePackages: TStringList; CHash: TObjectHash = nil;
-  PDFile: string = '');
-{$ELSE}
-constructor TPackageScanner.Create(paths: TStringList;
-  status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
-  PackagePriority, IgnorePackages: TStringList; CHash: TObjectHash = nil;
-  PDFile: string = '');
-{$ENDIF}
+constructor TPackageScanner.Create(rec: TPackageScannerConfig);
 begin
-  Self.paths := paths;
+  Self.paths := rec.paths;
   {$IFDEF USE_TREEVIEW}
-  Self.packagetree := packagetree;
-  Self.classtree := classtree;
+  Self.packagetree := rec.packagetree;
+  Self.classtree := rec.classtree;
   {$ENDIF}
-  Self.status := status;
-  Self.packagelist := packagelist;
-  Self.classlist := ClassList;
-  self.PackagePriority := PackagePriority;
-  self.IgnorePackages := IgnorePackages;
+  Self.status := rec.status;
+  Self.packagelist := rec.packagelist;
+  Self.classlist := rec.ClassList;
+  self.PackagePriority := rec.PackagePriority;
+  self.IgnorePackages := rec.IgnorePackages;
   Self.FreeOnTerminate := true;
-  Self.ClassHash := CHash;
-  if (FileExists(PDFile)) then Self.PDF := TMemIniFile.Create(PDFile);
+  Self.ClassHash := rec.CHash;
+  try
+    if (FileExists(rec.PDFile)) then Self.PDF := TMemIniFile.Create(rec.PDFile);
+  except
+    log('Failed loading PackageDescriptionFile: '+rec.PDFile);
+    Self.PDF := nil;
+  end;
   DuplicateHash := TStringHash.Create;
   inherited Create(true);
 end;
@@ -257,35 +264,22 @@ begin
               if (knownpackages.IndexOf(LowerCase(sr.Name)) = -1) then begin
                 Inc(pathpkgcount);
                 UPackage := TUPackage.Create;
-                UPackage.name := sr.Name;
-                UPackage.path := tmp;
-                UPackage.priority := PackagePriority.IndexOf(LowerCase(UPackage.name));
-                if (UPackage.priority = -1) then begin
-                  log('Scanner: (Warning) Unprioritised package: '+sr.Name);
-                  UPackage.priority := PackagePriority.Count;
-                  PackagePriority.Add(LowerCase(sr.Name));
-                end
-                else begin
-                  UPackage.tagged := PackagePriority.Objects[UPackage.priority] <> nil;
-                end;
-
-                // first location <package>.upkg
-                tmp := iFindFile(UPackage.path+PATHDELIM+UPackage.name+PKGCFG);
-                if (FileExists(tmp)) then begin
-                  lst := TStringList.Create;
-                  ini := TMemIniFile.Create(tmp);
-                  try
-                    ini.ReadSectionValues('package_description', lst);
-                    UPackage.comment := lst.Text;
-                  finally
-                    lst.Free;
-                    ini.Free;
+                try
+                  UPackage.name := sr.Name;
+                  UPackage.path := tmp;
+                  UPackage.priority := PackagePriority.IndexOf(LowerCase(UPackage.name));
+                  if (UPackage.priority = -1) then begin
+                    log('Scanner: (Warning) Unprioritised package: '+sr.Name);
+                    UPackage.priority := PackagePriority.Count;
+                    PackagePriority.Add(LowerCase(sr.Name));
+                  end
+                  else begin
+                    UPackage.tagged := PackagePriority.Objects[UPackage.priority] <> nil;
                   end;
-                end;
-                // second location: uncodex.ini
-                if (UPackage.comment = '') then begin
-                  tmp := iFindFile(paths[i]+PATHDELIM+sr.name+PATHDELIM+UCXPACKAGEINFO);
-                  if ( FileExists(tmp)) then begin
+
+                  // first location <package>.upkg
+                  tmp := iFindFile(UPackage.path+PATHDELIM+UPackage.name+PKGCFG);
+                  if (FileExists(tmp)) then begin
                     lst := TStringList.Create;
                     ini := TMemIniFile.Create(tmp);
                     try
@@ -295,23 +289,41 @@ begin
                       lst.Free;
                       ini.Free;
                     end;
-                  end
-                end;
-                // third location, general file
-                if (UPackage.comment = '') then begin
-                  if (PDF <> nil) then begin
-                    // get from package description file
-                    lst := TStringList.Create;
-                    try
-                      PDF.ReadSectionValues(UPackage.name, lst);
-                      UPackage.comment := lst.Text;
-                    finally
-                      lst.Free;
+                  end;
+                  // second location: uncodex.ini
+                  if (UPackage.comment = '') then begin
+                    tmp := iFindFile(paths[i]+PATHDELIM+sr.name+PATHDELIM+UCXPACKAGEINFO);
+                    if ( FileExists(tmp)) then begin
+                      lst := TStringList.Create;
+                      ini := TMemIniFile.Create(tmp);
+                      try
+                        ini.ReadSectionValues('package_description', lst);
+                        UPackage.comment := lst.Text;
+                      finally
+                        lst.Free;
+                        ini.Free;
+                      end;
+                    end
+                  end;
+                  // third location, general file
+                  if (UPackage.comment = '') then begin
+                    if (PDF <> nil) then begin
+                      // get from package description file
+                      lst := TStringList.Create;
+                      try
+                        PDF.ReadSectionValues(UPackage.name, lst);
+                        UPackage.comment := lst.Text;
+                      finally
+                        lst.Free;
+                      end;
                     end;
                   end;
-                end;                
-                PackageList.Add(UPackage);
-                knownpackages.Add(LowerCase(sr.Name));
+                  PackageList.Add(UPackage);
+                  knownpackages.Add(LowerCase(sr.Name));
+                except
+                  FreeAndnil(UPackage);
+                  raise;
+                end;
               end
               else begin
                 log('Scanner: (Error) Package collision: '+paths[i]+PATHDELIM+sr.Name);
@@ -521,12 +533,12 @@ end;
 
 constructor TNewClassScanner.Create(mypackagelist: TUPackageList; myclasslist: TUClassList; mystatus: TStatusReport; CHash: TObjectHash = nil);
 begin
-  Self.FreeOnTerminate := true;
   packagelist := mypackagelist;
   classlist := myclasslist;
   ClassHash := CHash;
   status := mystatus;
   inherited Create(true);
+  Self.FreeOnTerminate := true;
 end;
 
 procedure TNewClassScanner.Execute;

@@ -6,7 +6,7 @@
   Purpose:
     Main code for the commandline utility
 
-  $Id: unit_ucxcumain.pas,v 1.15 2004-12-08 09:25:44 elmuerte Exp $
+  $Id: unit_ucxcumain.pas,v 1.16 2004-12-19 12:34:58 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -252,6 +252,7 @@ end;
 
 procedure Main;
 var
+  prec: TPackageScannerConfig;
   ps: TPackageScanner;
   ca: TClassAnalyser;
   ho: THTMLOutput;
@@ -265,7 +266,16 @@ begin
   else if (Verbose = 2) then StatusFormat := 'Phase %d)';
 
   PhaseLabel := format(StatusFormat, [1, 'Scanning packages']);
-  ps := TPackageScanner.Create(sourcepaths, statusreport, PackageList, ClassList, packagepriority, ignorepackages, nil, PackageDescFile);
+
+  prec.paths := sourcepaths;
+  prec.status := statusreport;
+  prec.packagelist := PackageList;
+  prec.classlist := ClassList;
+  prec.PackagePriority := packagepriority;
+  prec.IgnorePackages := ignorepackages;
+  prec.PDFile := PackageDescFile;
+
+  ps := TPackageScanner.Create(prec);
   ActiveThread := ps;
   try
     ps.FreeOnTerminate := false;
