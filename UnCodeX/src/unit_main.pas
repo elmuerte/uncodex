@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.54 2003-06-15 19:51:08 elmuerte Exp $
+ $Id: unit_main.pas,v 1.55 2003-06-18 10:08:23 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_main;
@@ -247,6 +247,7 @@ type
     procedure tv_ClassesKeyPress(Sender: TObject; var Key: Char);
     procedure tmr_InlineSearchTimer(Sender: TObject);
     procedure tv_ClassesExit(Sender: TObject);
+    procedure ae_AppEventMessage(var Msg: tagMSG; var Handled: Boolean);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -287,6 +288,7 @@ type
     // inline search
     procedure InlineSearchNext(skipcurrent: boolean = false);
     procedure InlineSearchPrevious(skipcurrent: boolean = false);
+    procedure InlineSearchComplete;
   public
     statustext : string; // current status text
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
@@ -971,6 +973,37 @@ begin
       tv.Select(tv.Items[i]);
       exit;
     end
+  end;
+end;
+
+procedure Tfrm_UnCodeX.InlineSearchComplete;
+var
+  tv: TTreeView;
+  i: integer;
+  sl: TStringList;
+  common: string;
+begin
+  if (InlineSearch = '') then exit;
+  if (ActiveControl.ClassType <> TTreeView) then ActiveControl := tv_Classes;
+  tv := TTreeView(ActiveControl);
+  sl := TStringList.Create;
+  try
+    // find all similar
+    for i := tv.Selected.AbsoluteIndex+1 to tv.Items.Count-1 do begin
+      if (CompareText(Copy(tv.Items[i].Text, 1, Length(inlinesearch)), inlinesearch) = 0) then begin
+        sl.Add(LowerCase(tv.Items[i].Text));
+      end
+    end;
+    sl.Sort;
+    // find common part
+    common := LowerCase(tv.Selected.Text);
+    for i := 0 to sl.Count-1 do begin
+      while ((Pos(common, sl[i]) = 0) and (common <> '')) do Delete(common, Length(common), 1);
+      if (common = '') then break;
+    end;
+    if (common <> '') then InlineSearch := common;
+  finally
+    sl.Free;
   end;
 end;
 
@@ -2304,6 +2337,20 @@ end;
 procedure Tfrm_UnCodeX.tv_ClassesExit(Sender: TObject);
 begin
   if (IsInlineSearch) then tmr_InlineSearch.OnTimer(Sender);
+end;
+
+procedure Tfrm_UnCodeX.ae_AppEventMessage(var Msg: tagMSG;
+  var Handled: Boolean);
+begin
+  if (Msg.Message = WM_KEYDOWN) then begin
+    // InlineSearch TAB completion
+    if ((Msg.wParam = VK_TAB) and (IsInlineSearch)) then begin
+      Handled := true;
+      InlineSearchComplete;
+      StatusReport('Inline search for: '+inlinesearch);
+      tmr_StatusText.OnTimer(nil);
+    end;
+  end;
 end;
 
 initialization
