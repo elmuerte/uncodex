@@ -4,28 +4,38 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, unit_outputdefs, unit_uclasses, Buttons, unit_deplist;
+  Dialogs, StdCtrls, unit_outputdefs, unit_uclasses, Buttons, unit_deplist,
+  ComCtrls, ExtCtrls;
 
 type
   Tfrm_GraphViz = class(TForm)
-    lb_Packages: TListBox;
     sd_Save: TSaveDialog;
     Label1: TLabel;
+    BitBtn1: TBitBtn;
+    lv_Packages: TListView;
+    cb_Color: TComboBox;
     Label2: TLabel;
+    Label3: TLabel;
     cb_Vars: TCheckBox;
     cb_Funcs: TCheckBox;
-    Label3: TLabel;
     cb_Own: TCheckBox;
     cb_Other: TCheckBox;
-    BitBtn1: TBitBtn;
+    cb_PackageBorder: TCheckBox;
+    cb_Legenda: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure lv_PackagesAdvancedCustomDrawSubItem(Sender: TCustomListView;
+      Item: TListItem; SubItem: Integer; State: TCustomDrawState;
+      Stage: TCustomDrawStage; var DefaultDraw: Boolean);
+    procedure lv_PackagesDblClick(Sender: TObject);
+    procedure cb_ColorExit(Sender: TObject);
+    procedure cb_ColorChange(Sender: TObject);
   private
-    plist: TUPackageList;
+    plist: TGraphUPAckageList;
     deplist: TDepList;
     procedure CreateDeps(vars,funcs: boolean);
-    procedure CreateDotFile(filename: string; own,other: boolean);
+    procedure CreateDotFile(filename: string);
   public
     GInfo: TUCXOutputInfo;
     procedure Init;
@@ -82,7 +92,7 @@ begin
   deplist.SortOnPackage;
 end;
 
-procedure Tfrm_GraphViz.CreateDotFile(filename: string; own,other: boolean);
+procedure Tfrm_GraphViz.CreateDotFile(filename: string);
 var
   i,j: integer;
   sl: TStringList;
@@ -92,13 +102,15 @@ begin
   sl := TStringList.Create;
   try
     sl.Add('graph PackageDep {');
-    sl.Add('  clusterrank=none;');
+    if (not cb_PackageBorder.Checked) then sl.Add('  clusterrank=none;');
     sl.Add('  node [shape=box];');
     sl.Add('  edge [dir=back];');
 
     for i := 0 to plist.Count-1 do begin
-      sl.Add('  subgraph package_'+plist[i].name+' {');
+      sl.Add('  subgraph cluster_'+plist[i].name+' {');
       sl.Add('    label="'+plist[i].name+'";');
+      sl.Add('    color='+plist.colors[i]+';');
+      sl.Add('    node [color='+plist.colors[i]+'];');
       for j := 0 to plist[i].classes.count-1 do begin
        sl.Add('    '+plist[i].name+'_'+plist[i].classes[j].name+' [label="'+plist[i].classes[j].name+'"];');
       end;
@@ -120,9 +132,13 @@ end;
 procedure Tfrm_GraphViz.Init;
 var
   i: integer;
+  li: TListItem;
 begin
   for i := 0 to GInfo.APackageList.Count-1 do begin
-    lb_Packages.Items.AddObject(GInfo.APackageList[i].name, GInfo.APackageList[i]);
+    li := lv_Packages.Items.Add;
+    li.Caption := GInfo.APackageList[i].name;
+    li.SubItems.Add('black');
+    li.Data := GInfo.APackageList[i];
   end;
 end;
 
@@ -130,7 +146,7 @@ end;
 
 procedure Tfrm_GraphViz.FormCreate(Sender: TObject);
 begin
-  plist := TUPackageList.Create(false);
+  plist := TGraphUPAckageList.Create(false);
   deplist := TDepList.Create(true);
 end;
 
@@ -140,14 +156,15 @@ var
 begin
   if (sd_Save.Execute) then begin
     plist.Clear;
-    for i := 0 to lb_Packages.Items.Count-1 do begin
-      if (lb_Packages.Selected[i]) then begin
-        plist.Add(TUPackage(lb_Packages.Items.Objects[i]));
+    for i := 0 to lv_Packages.Items.Count-1 do begin
+      if (lv_Packages.Items[i].Checked) then begin
+        plist.Add(TUPackage(lv_Packages.Items[i].Data));
+        plist.colors.Add(lv_Packages.Items[i].SubItems[0]);
       end;
     end;
     try
       CreateDeps(cb_Vars.Checked, cb_Funcs.Checked);
-      CreateDotFile(sd_Save.FileName, cb_Own.Checked, cb_Other.Checked);
+      CreateDotFile(sd_Save.FileName);
     except;
     end;
   end;
@@ -157,6 +174,47 @@ procedure Tfrm_GraphViz.FormDestroy(Sender: TObject);
 begin
   plist.Free;
   deplist.Free;
+end;
+
+procedure Tfrm_GraphViz.lv_PackagesAdvancedCustomDrawSubItem(
+  Sender: TCustomListView; Item: TListItem; SubItem: Integer;
+  State: TCustomDrawState; Stage: TCustomDrawStage;
+  var DefaultDraw: Boolean);
+{var
+  R: TRect;}
+begin
+  {Sender.Canvas.Brush.Color := StrToIntDef(Item.SubItems[0], clBlack);
+  R := Item.DisplayRect(drBounds);
+  R.Left := Sender.Column[0].Width;
+  Sender.Canvas.FillRect(R);}
+end;
+
+procedure Tfrm_GraphViz.lv_PackagesDblClick(Sender: TObject);
+var
+  R: TRect;
+begin
+  if (lv_Packages.Selected = nil) then exit;
+  R := lv_Packages.Selected.DisplayRect(drBounds);
+  cb_Color.Left := lv_Packages.Left+lv_Packages.Columns[0].Width;
+  cb_Color.Width := lv_Packages.Columns[1].Width+2;
+  cb_Color.Top := lv_Packages.Top+R.Top;
+  cb_Color.Height := R.Bottom-R.Top;
+  cb_Color.ItemIndex := cb_Color.Items.IndexOf(lv_Packages.Selected.SubItems[0]);
+  cb_Color.Visible := true;
+  ActiveControl := cb_Color;
+end;
+
+procedure Tfrm_GraphViz.cb_ColorExit(Sender: TObject);
+begin
+  cb_Color.Visible := false;
+end;
+
+procedure Tfrm_GraphViz.cb_ColorChange(Sender: TObject);
+begin
+  if (lv_Packages.Selected = nil) then exit;
+  if (cb_Color.Items[cb_Color.ItemIndex] = '') then exit;
+  lv_Packages.Selected.SubItems[0] := cb_Color.Items[cb_Color.ItemIndex];
+  cb_Color.Visible := false;
 end;
 
 end.
