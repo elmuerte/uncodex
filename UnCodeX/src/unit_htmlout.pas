@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.76 2005-04-02 20:37:03 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.77 2005-04-03 07:23:26 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -36,7 +36,7 @@ interface
 
 uses
   Classes, SysUtils, unit_uclasses, StrUtils, Hashes, DateUtils, IniFiles,
-  unit_outputdefs, unit_clpipe, unit_copyparser
+  unit_outputdefs, unit_clpipe, unit_copyparser, unit_definitions
   {$IFDEF HTMLOUT_PASCALSCRIPT}
   , uPSComponent
   {$ENDIF};
@@ -63,12 +63,12 @@ type
     PackageList: TUPackageList;
     ClassList: TUClassList;
     OutputDir, TemplateDir: string;
-    CreateSource: boolean;
+    CreateSource: TTriBool;
     TabsToSpaces: integer;
     TargetExtention: string;
     CPP: string;
     DefaultTitle: string;
-    GZCompress: integer;
+    GZCompress: TTriBool;
   end;
 
   // General replace function
@@ -79,7 +79,7 @@ type
     MaxInherit: integer;
     HTMLOutputDir: string;
     TemplateDir: string;
-    CreateSource: boolean;
+    CreateSource: TTriBool;
     TabsToSpaces: integer;
     CPP: string;
     IsCPP: boolean;
@@ -92,7 +92,7 @@ type
     DelegateCache: Hashes.TStringHash;
     CPPPipe: TCLPipe;
     ConfDefaultTitle: string;
-    GZCompress: integer;
+    GZCompress: TTriBool;
     
     PackageList: TUPackageList;
     ClassList: TUClassList;
@@ -180,7 +180,7 @@ var
 implementation
 
 uses
-  unit_definitions, unit_sourceparser, Contnrs
+  unit_sourceparser, Contnrs
 {$IFDEF FPC}
   , unit_fpc_compat
   , zstream // for the TGZStream
@@ -331,10 +331,10 @@ begin
 	{$ENDIF}
 	MaxInherit := ini.ReadInteger('Settings', 'MaxInherit', MaxInt);
 	if (TargetExtention = '') then TargetExtention := ini.ReadString('Settings', 'TargetExt', 'html');
-  if (GZCompress = -1) then GZCompress := ini.ReadInteger('Settings', 'GZCompress', 0);
+  if (GZCompress = tbMaybe) then GZCompress := TTriBool(ini.ReadInteger('Settings', 'GZCompress', 0));
 
   root_filename := 'index.'+TargetExtention;
-  if (GZCompress > 0) then begin
+  if (GZCompress = tbTrue) then begin
     if (not SameText(Copy(TargetExtention, Length(TargetExtention)-3, 3), '.gz')) then begin
       TargetExtention := TargetExtention+'.gz';
     end
@@ -402,7 +402,7 @@ begin
     if (ini.ReadBool('Settings', 'CreateClassTree', true) and (not Self.Terminated)) then htmlTree; // create class tree
     if (ini.ReadBool('Settings', 'CreateGlossary', true) and (not Self.Terminated)) then htmlGlossary; // iglossery
     subDirDepth := 1;
-    if (ini.ReadBool('Settings', 'SourceCode', true) and (not Self.Terminated) and CreateSource) then SourceCode; //
+    if (ini.ReadBool('Settings', 'SourceCode', true) and (not Self.Terminated) and (CreateSource = tbTrue)) then SourceCode; //
     if (IsCPP and (CPPPipe <> nil)) then CPPPipe.Close;
     Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds');
   except
@@ -419,7 +419,7 @@ end;
 
 function THTMLOutput.CreateOutputStream(filename: string; forceNoCompress: boolean = false): TStream;
 begin
-  if ((GZCompress > 0) and not forceNoCompress) then begin
+  if ((GZCompress = tbTrue) and not forceNoCompress) then begin
     {$IFDEF WITH_ZLIB}
     result := TGZFileStream.Create(filename, gzOpenWrite);
     {$ELSE}

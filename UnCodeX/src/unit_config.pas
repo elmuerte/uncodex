@@ -6,7 +6,7 @@
   Purpose:
     Contains the configuration of UnCodeX
 
-  $Id: unit_config.pas,v 1.2 2005-04-02 20:37:03 elmuerte Exp $
+  $Id: unit_config.pas,v 1.3 2005-04-03 07:23:26 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -35,7 +35,7 @@ interface
 
 uses
   {$IFNDEF CONSOLE}
-  Graphics,
+  Graphics, Controls,
   {$ENDIF}
   unit_htmlout, Classes, IniFiles, SysUtils;
 
@@ -76,6 +76,12 @@ type
   {$IFNDEF CONSOLE}
   TAppBarLocation = (abNone, abLeft, abRight);
 
+  TStoreControl = class(TControl)
+  published
+    property Font;
+    property Color;
+  end;
+
   TComponentSettgins = class(TObject)
   public
     Font: record
@@ -86,7 +92,7 @@ type
     end;
     Color:                TColor;
   public
-    procedure Assign(target: TComponent);
+    procedure Assign(target: TControl);
   end;
 
   TSourcePreviewFont = record
@@ -158,6 +164,7 @@ type
       Color:              TColor;
       FontName:           TFontName;
       FontSize:           integer;
+      FontColor:          TColor;
       TabSize:            integer;
       Keyword1:           TSourcePreviewFont;
       Keyword2:           TSourcePreviewFont;
@@ -189,6 +196,9 @@ type
 
 implementation
 
+uses
+  unit_definitions;
+
 const
   // always increase this when change have been made in the structure
   CURRENT_CONFIG_VERSION = 1;
@@ -202,7 +212,19 @@ begin
   IgnorePackages := TStringList.Create;
   SourcePaths := TStringList.Create;
 
-  //TODO: set defaults
+  HTMLOutput.OutputDir := ExtractFilePath(ParamStr(0))+'UnCodeX-Output';
+  HTMLOutput.TemplateDir := ExtractFilePath(ParamStr(0))+TEMPLATEPATH+PATHDELIM+DEFTEMPLATE;
+  HTMLOutput.CreateSource := tbMaybe;
+  HTMLOutput.TabsToSpaces := 0;
+  HTMLOutput.TargetExtention := '';
+  HTMLOutput.CPP := '';
+  HTMLOutput.DefaultTitle := '';
+  HTMLOutput.GZCompress := tbMaybe;
+  HTMLHelp.Compiler := '';
+  HTMLHelp.OutputFile := ExtractFilePath(ParamStr(0))+'UnCodeX.chm';
+  HTMLHelp.Title := '';
+  Comments.Packages := ExtractFilePath(ParamStr(0))+DefaultPDF;
+  Comments.ExternalComments := ExtractFilePath(ParamStr(0))+DefaultECF;
 end;
 
 destructor TUCXConfig.Destroy;
@@ -223,7 +245,7 @@ begin
     if (ConfigVersion < 0) then begin
       UpgradeConfig;
       InternalSaveToIni;
-    end;
+    end
     else InternalLoadFromIni;
   finally
     FreeAndNil(ini);
@@ -260,12 +282,11 @@ var
 begin
   HTMLOutput.OutputDir := ini.ReadString('Config', 'HTMLOutputDir', HTMLOutput.OutputDir);
   HTMLOutput.TemplateDir := ini.ReadString('Config', 'TemplateDir', HTMLOutput.TemplateDir);
-  HTMLOutput.CreateSource := true; // TODO: never set, should be 3 state
   HTMLOutput.TabsToSpaces := ini.ReadInteger('Config', 'TabsToSpaces', HTMLOutput.TabsToSpaces);
   HTMLOutput.TargetExtention := ini.ReadString('Config', 'HTMLTargetExt', HTMLOutput.TargetExtention);
   HTMLOutput.CPP := ini.ReadString('Config', 'CPP', HTMLOutput.CPP);
   HTMLOutput.DefaultTitle := ini.ReadString('Config', 'HTMLDefaultTitle', HTMLOutput.DefaultTitle);
-  HTMLOutput.GZCompress := ini.ReadInteger('Config', 'GZCompress', HTMLOutput.GZCompress);
+  HTMLOutput.GZCompress := TTriBool(ini.ReadInteger('Config', 'GZCompress', Ord(HTMLOutput.GZCompress)));
   HTMLHelp.Compiler := ini.ReadString('Config', 'HHCPath', HTMLHelp.Compiler);
   HTMLHelp.OutputFile := ini.ReadString('Config', 'HTMLHelpFile', HTMLHelp.OutputFile);
   HTMLHelp.Title := ini.ReadString('Config', 'HHTitle', HTMLHelp.Title);
@@ -323,7 +344,76 @@ begin
   DockState.data.Right := TMemoryStream.Create;
   HotKeys := TStringList.Create;
 
-  //TODO: defaults
+  Layout.StayOnTop := false;
+  Layout.SavePosition := true;
+  Layout.SaveSize := true;
+  Layout.IsMaximized := false;
+  Layout.Top := -1;
+  Layout.Left := -1;
+  Layout.Height := -1;
+  Layout.Width := -1;
+  Layout.MenuBar := true;
+  Layout.Toolbar := true;
+  Layout.PackageTree := true;
+  Layout.Log := true;
+  Layout.SourcePreview := true;
+  Layout.PropertyInspector := false;
+  Layout.MinimizeOnClose := false;
+  Layout.ExpandObject := true;
+  Layout.TreeView.Font.Color := clWindowText;
+  Layout.TreeView.Font.Name := 'MS Sans Serif';
+  Layout.TreeView.Font.Style := [];
+  Layout.TreeView.Font.Size := 8;
+  Layout.LogWindow.Color := clWindow;
+  Layout.LogWindow.Font.Color := clWindowText;
+  Layout.LogWindow.Font.Name := 'Courier New';
+  Layout.LogWindow.Font.Style := [];
+  Layout.LogWindow.Font.Size := 8;
+  Layout.LogWindow.Color := clWindow;
+  Layout.InlineSearchTimeout := 5; // in seconds
+  DockState.size.Top := 0;
+  DockState.size.Bottom := 0;
+  DockState.size.Left := 0;
+  DockState.size.Right := 0;
+  DockState.host.Classes := 'pnlCenter';
+  DockState.host.Packages := 'dckLeft';
+  DockState.host.Log := 'dckBottom';
+  DockState.host.SourcePreview := 'dckRight';
+  DockState.host.PropertyInspector := 'pnlCenter';
+  ApplicationBar.Width := 150;
+  ApplicationBar.AutoHide := false;
+  ApplicationBar.Location := abNone;
+  SourcePreview.Color := clWindow;
+  SourcePreview.FontName := 'Courier New';
+  SourcePreview.FontSize := 9;
+  SourcePreview.FontColor := clBlack;
+  SourcePreview.TabSize := 4;
+  SourcePreview.Keyword1.Color := $00000000;
+  SourcePreview.Keyword1.Style := [fsBold];
+  SourcePreview.Keyword2.Color := $00555555;
+  SourcePreview.Keyword2.Style := [fsBold];
+  SourcePreview.StringType.Color := $00FF0000;
+  SourcePreview.StringType.Style := [];
+  SourcePreview.Number.Color := $00FF0000;
+  SourcePreview.Number.Style := [];
+  SourcePreview.Macro.Color := $000000CC;
+  SourcePreview.Macro.Style := [];
+  SourcePreview.Comment.Color := $00339900;
+  SourcePreview.Comment.Style := [fsItalic];
+  SourcePreview.Name.Color := $00000066;
+  SourcePreview.Name.Style := [];
+  SourcePreview.ClassLink.Color := $00990000;
+  SourcePreview.ClassLink.Style := [fsUnderline];
+  PropertyInspector.InheritenceDepth := 0;
+  PropertyInspector.AlwaysWindow := false;
+  Commands.Server := '';
+  Commands.ServerPriority := 1;
+  Commands.Client := '';
+  Commands.Compiler := '';
+  Commands.OpenClass := '';
+  //TODO: fix this
+  //StateFile := ChangeFileExt(ExtractFilename(ConfigFile), '.ucx');
+  NewClassTemplate := ExtractFilePath(ParamStr(0))+TEMPLATEPATH+PathDelim+'NewClass.uc';
 end;
 
 destructor TUCXGUIConfig.Destroy;
@@ -340,12 +430,12 @@ end;
 
 procedure TUCXGUIConfig.InternalLoadFromIni;
 begin
-
+  inherited InternalLoadFromIni;
 end;
 
 procedure TUCXGUIConfig.InternalSaveToIni;
 begin
-
+  inherited InternalSaveToIni;
 end;
 
 procedure TUCXGUIConfig.UpgradeConfig;
@@ -446,9 +536,16 @@ end;
 
 { TComponentSettgins }
 
-procedure TComponentSettgins.Assign(target: TComponent);
+procedure TComponentSettgins.Assign(target: TControl);
 begin
-
+  try
+    TStoreControl(target).Font.Name := Font.Name;
+    TStoreControl(target).Font.Size := Font.Size;
+    TStoreControl(target).Font.Color := Font.Color;
+    TStoreControl(target).Font.Style := Font.Style;
+    TStoreControl(target).Color := Color;
+  except
+  end;
 end;
 
 {$ENDIF}
