@@ -252,6 +252,12 @@ begin
     prev := last;
     last := p.TokenString;
     p.NextToken;
+    // check if Class.type
+    if (p.Token = '.') then begin
+      p.NextToken;
+      last := last+'.'+p.TokenString;
+      p.NextToken;
+    end;
     while (p.Token = ',') do begin
       p.NextToken;
       last := last+','+p.TokenString;
@@ -327,6 +333,12 @@ begin
       p.NextToken;
       result.parent := p.TokenString;
       p.NextToken;
+      // check if Class.type
+      if (p.Token = '.') then begin
+        p.NextToken;
+        result.parent := result.parent+'.'+p.TokenString;
+        p.NextToken;
+      end;
       break;
     end;
   end;
@@ -402,6 +414,12 @@ begin
   pBrackets; // possible operator precendence
   result.return := p.TokenString; // optional return
   p.NextToken;
+  // check if Class.Type
+  if (p.Token = '.') then begin
+    p.NextToken;
+    result.return := result.return+'.'+p.TokenString;
+    p.NextToken;
+  end;
   // check if return is array<> or class<>
   if ((CompareText(result.return, 'array') = 0) or
       (CompareText(result.return, 'class') = 0)) then result.return := result.return+pAngleBrackets;
@@ -423,6 +441,11 @@ begin
     // todo params
     result.params := result.params+' '+p.TokenString;
     p.NextToken;
+    if (p.Token = '.') then begin
+      p.NextToken;
+      result.params := result.params+'.'+p.TokenString;
+      p.NextToken;
+    end;
     result.params := result.params+pAngleBrackets
   end;
   p.NextToken; // )

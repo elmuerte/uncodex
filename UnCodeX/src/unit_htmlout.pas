@@ -1106,7 +1106,8 @@ end;
 function THTMLOutput.GetTypeLink(name: string): string;
 var
   tname: string;
-  i: integer;
+  i, j: integer;
+  uclass: TUClass;
 begin
   name := Trim(name);
   if (name = '') then exit;
@@ -1116,7 +1117,42 @@ begin
     result := tname+'&lt;'+GetTypeLink(Copy(name,i+1, Length(name)-i-1))+'&gt;';
     exit;
   end;
-  // do .
+
+  // Class.type
+  i := Pos('.', name);
+  if (i > 0) then begin
+    if (TypeCache.Exists(name)) then begin
+      result := TypeCache.Items[name];
+    end
+    else begin
+      uclass := nil;
+      tname := Copy(name, 1, i-1);
+      // search in package
+      for j := 0 to currentClass.package.classes.Count-1 do begin
+        if (CompareText(currentClass.package.classes[j].name, tname) = 0) then begin
+          uclass := currentClass.package.classes[j];
+          break;
+        end;
+      end;
+      // search in parent classes
+      if (uclass = nil) then begin
+        uclass := currentClass;
+        while (uclass <> nil) do begin
+          if (CompareText(uclass.name, tname) = 0) then break;
+          uclass := uclass.parent;
+        end;
+      end;
+      // if we found a class
+      if (uclass <> nil) then begin
+        result := TypeLink(Copy(name,i+1, MaxInt), uclass);
+        if (result <> '') then TypeCache.Items[name] := result;
+      end;
+    end;
+    if (result <> '') then result := '<a href="'+result+'">'+HTMLChars(name)+'</a>'
+    else result := HTMLChars(name);
+    exit;
+  end;
+
   tname := LowerCase(name);
   if (not TypeCache.Exists(tname)) then begin
     result := TypeLink(name, currentClass);
