@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.66 2004-12-24 18:36:19 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.67 2005-03-16 21:28:08 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -2516,15 +2516,15 @@ begin
     while ((i < gl.Count) and (UpperCase(gl[i][1]) = TGlossaryInfo(data).item)) do begin
       if ((i < (gl.Count-1)) and (CompareText(lastname, gl[i]) <> 0)) then begin
         if (CompareText(gl[i+1], gl[i]) = 0) then begin
-          replacement := replacement+gl[i]+'<br>'+#13#10;
+          replacement := replacement+gl[i]+'<br />'+#13#10;
           lastname := gl[i];
         end;
       end;
       if (CompareText(lastname, gl[i]) = 0) then begin
-        replacement := replacement+GlossaryElipse+'<a href="'+TGlossaryItem(gl.Objects[i]).link+'">'+TGlossaryItem(gl.Objects[i]).classname+'</a><br>';
+        replacement := replacement+GlossaryElipse+'<a href="'+TGlossaryItem(gl.Objects[i]).link+'">'+TGlossaryItem(gl.Objects[i]).classname+'</a><br />';
       end
       else begin
-        replacement := replacement+'<a href="'+TGlossaryItem(gl.Objects[i]).link+'">'+gl[i]+'</a><br>'+#13#10;
+        replacement := replacement+'<a href="'+TGlossaryItem(gl.Objects[i]).link+'">'+gl[i]+'</a><br />'+#13#10;
       end;
       lastname := gl[i];
       //TGlossaryItem(gl.Objects[i]).Free;
@@ -2775,7 +2775,7 @@ begin
       replacement := '<td class="source_lineno"><span class="source_lineno">';
       output.WriteBuffer(PChar(replacement)^, Length(replacement));
       for i := 1 to p.SourceLine do begin
-        replacement := format('%.5d<br>'+#10, [i]);
+        replacement := format('%.5d<br />'+#10, [i]);
         output.WriteBuffer(PChar(replacement)^, Length(replacement));
       end;
       replacement := '</span></td>';

@@ -6,7 +6,7 @@
   Purpose:
     Main code for the commandline utility
 
-  $Id: unit_ucxcumain.pas,v 1.17 2004-12-25 14:13:00 elmuerte Exp $
+  $Id: unit_ucxcumain.pas,v 1.18 2005-03-16 21:28:11 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -272,6 +272,7 @@ begin
   prec.PackagePriority := packagepriority;
   prec.IgnorePackages := ignorepackages;
   prec.PDFile := PackageDescFile;
+  prec.CHash := nil;
 
   ps := TPackageScanner.Create(prec);
   ActiveThread := ps;
@@ -365,7 +366,7 @@ begin
     WriteLn(LogFile, '['+LogLabel[mt]+'] '+msg);
     if (IsA(obj, TLogEntry)) then begin
       if (TLogEntry(obj).filename <> '') then
-	WriteLn(LogFile, #9'File: '+TLogEntry(obj).filename+' #'+IntToStr(TLogEntry(obj).line)+','+IntToStr(TLogEntry(obj).pos));
+        WriteLn(LogFile, #9'File: '+TLogEntry(obj).filename+' #'+IntToStr(TLogEntry(obj).line)+','+IntToStr(TLogEntry(obj).pos));
     end;
   end;
 end;
