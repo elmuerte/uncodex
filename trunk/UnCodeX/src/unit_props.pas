@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Class property inpector frame
 
-  $Id: unit_props.pas,v 1.22 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_props.pas,v 1.23 2004-12-08 20:09:05 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -339,6 +339,38 @@ begin
     Inc(j);
   end;
   if (cnt = 0) then lib.Delete;
+
+  lib := lv_Properties.Items.Add;
+  lib.Caption := '-';
+  lib.SubItems.Add('States');
+  cnt := 0;
+  j := 0;
+  pclass := uclass;
+  while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
+    if ((j > 0) and (pclass.functions.Count > 0)) then begin
+      li := lv_Properties.Items.Add;
+      li.Caption := '=';
+      li.SubItems.Add(pclass.name);
+      li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
+    end;
+    for i := 0 to pclass.states.Count-1 do begin
+    		Inc(cnt);
+      li := lv_Properties.Items.Add;
+      li.Caption := 'state';
+      lasttag := pclass.states[i].name;
+      li.SubItems.AddObject(lasttag, pclass.states[i]);
+      li.SubItems.Add(IntToStr(pclass.states[i].srcline));
+      li.SubItems.Add(IntToStr(j));
+      li.SubItems.Add(MakeHint(pclass.states[i].declaration));
+      li.SubItems.Add(pclass.states[i].comment);
+      li.Data := pclass;
+      //li.ImageIndex := 6;
+    end;
+    pclass := pclass.parent;
+    Inc(j);
+  end;
+  if (cnt = 0) then lib.Delete;
+
   lv_Properties.Items.EndUpdate;
   result := true;
 end;
