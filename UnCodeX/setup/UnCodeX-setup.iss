@@ -1,7 +1,7 @@
 [Setup]
 AppName=UnCodeX
-AppVerName=UnCodeX version 209
-AppVersion=209
+AppVerName=UnCodeX version 219
+AppVersion=219
 AppPublisher=Michiel 'El Muerte' Hendriks
 AppPublisherURL=http://wiki.beyondunreal.com/wiki/UnCodeX
 AppSupportURL=http://wiki.beyondunreal.com/wiki/UnCodeX
@@ -15,12 +15,12 @@ SolidCompression=true
 OutputBaseFilename=UnCodeX-setup
 WizardImageFile=InstallLarge2.bmp
 WizardSmallImageFile=InstallSmall2.bmp
-AppCopyright=Copyright 2003, 2004 Michiel Hendriks
+AppCopyright=Copyright 2003-2005 Michiel Hendriks
 ShowLanguageDialog=yes
 UninstallDisplayIcon={app}\UnCodeX.exe
 UninstallDisplayName=UnCodeX
 AppID={{FDD6ED8B-DB77-43BC-B0B2-608A1F27AABC}}
-VersionInfoVersion=2.1.3.209
+VersionInfoVersion=2.1.3.219
 
 [Types]
 Name: full; Description: Full installation
