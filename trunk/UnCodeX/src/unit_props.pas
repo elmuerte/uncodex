@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   property inspector frame
- $Id: unit_props.pas,v 1.8 2004-04-05 13:36:51 elmuerte Exp $
+ $Id: unit_props.pas,v 1.9 2004-04-19 20:38:56 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -391,9 +391,10 @@ end;
 
 procedure Tfr_Properties.lv_PropertiesResize(Sender: TObject);
 begin
-	{$R-}
-	lv_Properties.Columns[1].Width := lv_Properties.ClientWidth-lv_Properties.Columns[0].Width
-  {$R+}
+  try
+		lv_Properties.Columns[1].Width := abs(lv_Properties.ClientWidth-lv_Properties.Columns[0].Width);
+  except;
+  end;
 end;
 
 procedure Tfr_Properties.btn_ShotBarClick(Sender: TObject);

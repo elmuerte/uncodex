@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons, unit_uclasses;
+  Dialogs, StdCtrls, Buttons, unit_uclasses, ExtCtrls;
 
 type
   Tfrm_RenameClass = class(TForm)
