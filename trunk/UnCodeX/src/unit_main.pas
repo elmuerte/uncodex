@@ -51,7 +51,6 @@ type
     btn_CreateHTML: TToolButton;
     btn_Sep3: TToolButton;
     btn_Settings: TToolButton;
-    il_Large: TImageList;
     il_Small: TImageList;
     btn_Sep4: TToolButton;
     btn_Abort: TToolButton;
@@ -80,7 +79,7 @@ type
     mi_Expandall: TMenuItem;
     mi_Collapseall: TMenuItem;
     mi_Compile: TMenuItem;
-    mi_Find: TMenuItem;
+    mi_FindClass2: TMenuItem;
     mi_View: TMenuItem;
     mi_Toolbar: TMenuItem;
     mi_N10: TMenuItem;
@@ -111,6 +110,16 @@ type
     spl_Main3: TSplitter;
     mi_SourceSnoop: TMenuItem;
     mi_FindNext2: TMenuItem;
+    mi_Find: TMenuItem;
+    mi_N14: TMenuItem;
+    mi_FullTextSearch: TMenuItem;
+    ac_FullTextSearch: TAction;
+    tb_FindNext: TToolButton;
+    tb_FullTextSearch: TToolButton;
+    ToolButton2: TToolButton;
+    tb_RunServer: TToolButton;
+    tb_JoinServer: TToolButton;
+    ToolButton4: TToolButton;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_OpenClassClick(Sender: TObject);
@@ -151,6 +160,7 @@ type
     procedure mi_MenubarClick(Sender: TObject);
     procedure mi_LeftClick(Sender: TObject);
     procedure ac_FindNextExecute(Sender: TObject);
+    procedure ac_FullTextSearchExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -187,7 +197,7 @@ type
 
 var
   frm_UnCodeX: Tfrm_UnCodeX;
-  runningthread: TThread;
+  runningthread: TThread = nil;
   DoInit: boolean = true;
   PackageList: TUPackageList;
   ClassList: TUClassList;
@@ -200,11 +210,12 @@ var
   ServerPrio: integer;
   SourcePaths: TStringList;
   PackagePriority: TStringList;
+  IgnorePackages: TStringList;
 
 implementation
 
-uses unit_settings, unit_definitions, unit_analyse, unit_htmlout,
-  unit_treestate, unit_about, unit_mshtmlhelp;
+uses unit_settings, unit_analyse, unit_htmlout, unit_definitions,
+  unit_treestate, unit_about, unit_mshtmlhelp, unit_fulltextsearch;
 
 const
   PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
@@ -508,6 +519,7 @@ begin
   sl := TStringList.Create;
   PackagePriority := TStringList.Create;
   SourcePaths := TStringList.Create;
+  IgnorePackages := TStringList.Create;
   try
     mi_MenuBar.Checked := ini.ReadBool('Layout', 'MenuBar', true);
     mi_Toolbar.Checked := ini.ReadBool('Layout', 'Toolbar', true);
@@ -563,6 +575,13 @@ begin
       Delete(tmp, 1, Pos('=', tmp));
       Log('Config: Path = '+tmp);
       SourcePaths.Add(LowerCase(tmp));
+    end;
+    ini.ReadSectionValues('IgnorePackages', sl);
+    for i := 0 to sl.Count-1 do begin
+      tmp := sl[i];
+      Delete(tmp, 1, Pos('=', tmp));
+      Log('Config: Ignore = '+tmp);
+      IgnorePackages.Add(LowerCase(tmp));
     end;
   finally
     ini.Free;
@@ -620,7 +639,8 @@ begin
     tv_Classes.Items.Clear;
     PackageList.Clear;
     ClassList.Clear;
-    runningthread := TPackageScanner.Create(SourcePaths, tv_Packages, tv_Classes, statusReport, PackageList, PackagePriority, ClassList);
+    runningthread := TPackageScanner.Create(SourcePaths, tv_Packages, tv_Classes,
+          statusReport, PackageList, ClassList, PackagePriority, IgnorePackages);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
   end;
@@ -681,6 +701,7 @@ begin
     cb_ServerPriority.ItemIndex := ServerPrio;
     ed_ClientCommandline.Text := ClientCmd;
     ed_CompilerCommandline.Text := CompilerCmd;
+    lb_IgnorePackages.Items := IgnorePackages;
     if (ShowModal = mrOk) then begin
       HTMLOutputDir := ed_HTMLOutputDir.Text;
       TemplateDir := ed_TemplateDir.Text;
@@ -694,6 +715,8 @@ begin
       SourcePaths.AddStrings(lb_Paths.Items);
       PackagePriority.Clear;
       PackagePriority.AddStrings(lb_PackagePriority.Items);
+      IgnorePackages.Clear;
+      IgnorePackages.AddStrings(lb_IgnorePackages.Items);
       ini := TMemIniFile.Create(ExtractFilePath(ParamStr(0))+'\UnCodeX.ini');
       data := TStringList.Create;
       try
@@ -710,6 +733,8 @@ begin
         for i := 0 to SourcePaths.Count-1 do data.Add('Path='+SourcePaths[i]);
         data.Add('[PackagePriority]');
         for i := 0 to PackagePriority.Count-1 do data.Add('Packages='+PackagePriority[i]);
+        data.Add('[IgnorePackages]');
+        for i := 0 to IgnorePackages.Count-1 do data.Add('Package='+IgnorePackages[i]);
         ini.SetStrings(data);
         ini.UpdateFile;
       finally
@@ -765,6 +790,7 @@ begin
   PackageList.Free;
   ClassList.Free;
   SourcePaths.Free;
+  IgnorePackages.Free;
 end;
 
 procedure Tfrm_UnCodeX.ac_OpenClassExecute(Sender: TObject);
@@ -1058,6 +1084,16 @@ begin
     end;
   end;
   statustext := 'No more classes containing '''+searchclass+''' found';
+end;
+
+procedure Tfrm_UnCodeX.ac_FullTextSearchExecute(Sender: TObject);
+begin
+  if (ThreadCreate) then begin
+    lb_Log.Items.Clear;
+    runningthread := TSearchThread.Create(PackageList, StatusReport);
+    runningthread.OnTerminate := ThreadTerminate;
+    runningthread.Resume;
+  end;
 end;
 
 end.

@@ -16,11 +16,14 @@ type
     packagelist: TUPackageList;
     classlist: TUClassList;
     PackagePriority: TStringList;
+    IgnorePackages: TStringList;
     procedure ScanPackages;
     procedure CreateClassTree(classlist: TUClassList; parent: TUClass = nil; pnode: TTreeNode = nil);
     function GetClassName(filename: string): TUClass;
   public
-    constructor Create(paths: TStringList; packagetree, classtree: TTreeView; status: TStatusReport; packagelist: TUPackageList; PackagePriority: TStringList; classlist: TUClassList);
+    constructor Create(paths: TStringList; packagetree, classtree: TTreeView;
+      status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
+      PackagePriority, IgnorePackages: TStringList);
     destructor Destroy; override;
     procedure Execute; override;
   end;
@@ -29,7 +32,9 @@ implementation
 
 uses unit_main, unit_parser;
 
-constructor TPackageScanner.Create(paths: TStringList; packagetree, classtree: TTreeView; status: TStatusReport; packagelist: TUPackageList; PackagePriority: TStringList; classlist: TUClassList);
+constructor TPackageScanner.Create(paths: TStringList; packagetree, classtree: TTreeView;
+  status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
+  PackagePriority, IgnorePackages: TStringList);
 begin
   Self.paths := paths;
   Self.packagetree := packagetree;
@@ -38,6 +43,7 @@ begin
   Self.packagelist := packagelist;
   Self.classlist := ClassList;
   self.PackagePriority := PackagePriority;
+  self.IgnorePackages := IgnorePackages;
   Self.FreeOnTerminate := true;
   inherited Create(true);
 end;
@@ -75,7 +81,8 @@ begin
       if FindFirst(paths[i]+PATHDELIM+WILDCARD, faDirectory, sr) = 0 then begin
         repeat
           if ((sr.Name <> '.') and (sr.Name <> '..')) then begin
-            if (DirectoryExists(paths[i]+PATHDELIM+sr.name+PATHDELIM+CLASSDIR)) then begin
+            if (DirectoryExists(paths[i]+PATHDELIM+sr.name+PATHDELIM+CLASSDIR) and
+              (IgnorePackages.IndexOf(sr.Name) = -1)) then begin
               if (knownpackages.IndexOf(LowerCase(sr.Name)) = -1) then begin
                 UPackage := TUPackage.Create;
                 UPackage.name := sr.Name;
@@ -94,8 +101,9 @@ begin
               end;
             end;
           end;
-        until FindNext(sr) <> 0;
+        until (FindNext(sr) <> 0) or (Self.Terminated);
         FindClose(sr);
+        if (Self.Terminated) then break;
       end;
     end;
     PackageList.Sort; // sort on priority
@@ -126,13 +134,16 @@ begin
             end;
           end
           else log('Scanner: No class found in this file: '+sr.Name);
-        until FindNext(sr) <> 0;
+        until (FindNext(sr) <> 0) or (Self.Terminated);
         FindClose(sr);
+        if (Self.Terminated) then break;
       end;
     end;
-    packagetree.Items.AlphaSort(true); // sorting
-    CreateClassTree(classlist);
-    classtree.Items.AlphaSort(true); // sorting
+    if (not Self.Terminated) then begin
+      packagetree.Items.AlphaSort(true); // sorting
+      CreateClassTree(classlist);
+      classtree.Items.AlphaSort(true); // sorting
+    end;
   finally
     knownpackages.Free;
     packagetree.Items.EndUpdate;

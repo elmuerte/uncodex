@@ -2,6 +2,9 @@ unit unit_definitions;
 
 interface
 
+uses
+  Classes;
+
 type
   TStatusReport = procedure(msg: string; progress: byte = 255) of Object;
 
@@ -9,13 +12,14 @@ type
   
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '033 Beta';
+  APPVERSION = '034 Beta';
 
   PATHDELIM = '\';
   WILDCARD = '*.*';
   SOURCECARD = '*.uc';
   CLASSDIR = 'Classes';
   TEMPLATEPATH = 'Templates';
+
 
 implementation
 

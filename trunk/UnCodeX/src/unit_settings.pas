@@ -70,6 +70,11 @@ type
     lbl_ClientCommandline: TLabel;
     ed_ClientCommandline: TEdit;
     btn_ClientCommandline: TBitBtn;
+    ts_IgnorePackages: TTabSheet;
+    gb_IgnorePackages: TGroupBox;
+    lb_IgnorePackages: TListBox;
+    btn_AddIgnore: TBitBtn;
+    btn_DelIgnore: TBitBtn;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -93,6 +98,8 @@ type
     procedure mi_PackagepathClick(Sender: TObject);
     procedure btn_BrowseServerClick(Sender: TObject);
     procedure btn_ClientCommandlineClick(Sender: TObject);
+    procedure btn_AddIgnoreClick(Sender: TObject);
+    procedure btn_DelIgnoreClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -281,6 +288,21 @@ procedure Tfrm_Settings.btn_ClientCommandlineClick(Sender: TObject);
 begin
   od_BrowseExe.FileName := ed_ClientCommandline.Text;
   if (od_BrowseExe.Execute) then ed_ClientCommandline.Text := od_BrowseExe.FileName;
+end;
+
+procedure Tfrm_Settings.btn_AddIgnoreClick(Sender: TObject);
+var
+  tmp: string;
+begin
+  if (InputQuery('Add package', 'Enter the package name', tmp)) then begin
+    lb_IgnorePackages.Items.Add(LowerCase(tmp));
+  end;
+end;
+
+procedure Tfrm_Settings.btn_DelIgnoreClick(Sender: TObject);
+begin
+  if (lb_IgnorePackages.ItemIndex = -1) then exit;
+  lb_IgnorePackages.Items.Delete(lb_IgnorePackages.ItemIndex);
 end;
 
 end.

@@ -161,15 +161,15 @@ begin
       else Log('Type already cached '+ClassTree.Items[i].Text);
   end;
 
-  htmlIndex;
-  htmlOverview;
-  htmlPackagesList;
-  htmlClassesList;
-  htmlPackageOverview;
-  htmlClassOverview;
-  if (ini.ReadBool('Settings', 'CreateClassTree', true)) then htmlTree; // create class tree
-  if (ini.ReadBool('Settings', 'CreateGlossary', true)) then htmlGlossary; // iglossery
-  CopyFiles;
+  if (not Self.Terminated) then htmlIndex;
+  if (not Self.Terminated) then htmlOverview;
+  if (not Self.Terminated) then htmlPackagesList;
+  if (not Self.Terminated) then htmlClassesList;
+  if (not Self.Terminated) then htmlPackageOverview;
+  if (not Self.Terminated) then htmlClassOverview;
+  if (ini.ReadBool('Settings', 'CreateClassTree', true) and (not Self.Terminated)) then htmlTree; // create class tree
+  if (ini.ReadBool('Settings', 'CreateGlossary', true) and (not Self.Terminated)) then htmlGlossary; // iglossery
+  if (not Self.Terminated) then CopyFiles;
   Status('Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds');
 end;
 
@@ -301,6 +301,7 @@ begin
       for i := 0 to PackageList.Count-1 do begin
         template.Position := 0;
         parseTemplate(template, target, replacePackagesListEntry, PackageList[i]);
+        if (Self.Terminated) then break;
       end;
       replacement := target.DataString;
       result := true;
@@ -341,6 +342,7 @@ begin
       for i := 0 to PackageList.Count-1 do begin
         template.Position := 0;
         parseTemplate(template, target, replacePackagesListEntry, PackageList[i]);
+        if (Self.Terminated) then break;
       end;
       replacement := target.DataString;
       result := true;
@@ -403,6 +405,7 @@ begin
       for i := 0 to ClassList.Count-1 do begin
         template.Position := 0;
         parseTemplate(template, target, replaceClass, ClassList[i]);
+        if (Self.Terminated) then break;
       end;
       replacement := target.DataString;
       result := true;
@@ -430,6 +433,7 @@ begin
       finally
         target.Free;
       end;
+      if (Self.Terminated) then break;
     end;
   finally
     template.Free;
@@ -451,6 +455,7 @@ begin
       for i := 0 to TUPackage(data).classes.Count-1 do begin
         template.Position := 0;
         parseTemplate(template, target, replaceClass, TUPackage(data).classes[i]);
+        if (Self.Terminated) then break;
       end;
       replacement := target.DataString;
       result := true;
@@ -475,6 +480,7 @@ begin
       try
         template.Position := 0;
         parseTemplate(template, target, replaceClass, ClassList[i]);
+        if (Self.Terminated) then break;
       finally
         target.Free;
       end;
@@ -541,6 +547,7 @@ begin
         replacement := replacement+'<a href="'+uclass.package.name+'_'+
           uclass.name+'.html">'+uclass.name+'</a>'
       end;
+      if (Self.Terminated) then break;
     end;
     if (replacement <> '') then begin
       replacement := ini.ReadString('titles', 'DirectSubclasses', '')+replacement;
@@ -554,6 +561,7 @@ begin
       for i := 0 to TUClass(data).consts.Count-1 do begin
         template.Position := 0;
         parseTemplate(template, target, replaceClassConst, TUClass(data).consts[i]);
+        if (Self.Terminated) then break;
       end;
       replacement := target.DataString;
       result := true;
@@ -590,6 +598,7 @@ begin
         end;
         up := up.parent;
         Inc(cnt);
+        if (Self.Terminated) then break;
       end;
       if (replacement <> '') then begin
         replacement := ini.ReadString('titles', 'InheritedConstants', '')+replacement;
@@ -607,6 +616,7 @@ begin
       for i := 0 to TUClass(data).properties.Count-1 do begin
         template.Position := 0;
         parseTemplate(template, target, replaceClassVar, TUClass(data).properties[i]);
+        if (Self.Terminated) then break;
       end;
       replacement := target.DataString;
       result := true;
@@ -643,6 +653,7 @@ begin
         end;
         up := up.parent;
         Inc(cnt);
+        if (Self.Terminated) then break;
       end;
       if (replacement <> '') then begin
         replacement := ini.ReadString('titles', 'InheritedVariables', '')+replacement;
@@ -660,6 +671,7 @@ begin
       for i := 0 to TUClass(data).enums.Count-1 do begin
         template.Position := 0;
         parseTemplate(template, target, replaceClassEnum, TUClass(data).enums[i]);
+        if (Self.Terminated) then break;
       end;
       replacement := target.DataString;
       result := true;
@@ -696,6 +708,7 @@ begin
         end;
         up := up.parent;
         Inc(cnt);
+        if (Self.Terminated) then break;
       end;
       if (replacement <> '') then begin
         replacement := ini.ReadString('titles', 'InheritedEnums', '')+replacement;
@@ -713,6 +726,7 @@ begin
       for i := 0 to TUClass(data).structs.Count-1 do begin
         template.Position := 0;
         parseTemplate(template, target, replaceClassStruct, TUClass(data).structs[i]);
+        if (Self.Terminated) then break;
       end;
       replacement := target.DataString;
       result := true;
@@ -749,6 +763,7 @@ begin
         end;
         up := up.parent;
         Inc(cnt);
+        if (Self.Terminated) then break;
       end;
       if (replacement <> '') then begin
         replacement := ini.ReadString('titles', 'InheritedStructs', '')+replacement;
@@ -766,6 +781,7 @@ begin
       for i := 0 to TUClass(data).functions.Count-1 do begin
         template.Position := 0;
         parseTemplate(template, target, replaceClassFunction, TUClass(data).functions[i]);
+        if (Self.Terminated) then break;
       end;
       replacement := target.DataString;
       result := true;
@@ -802,6 +818,7 @@ begin
         end;
         up := up.parent;
         Inc(cnt);
+        if (Self.Terminated) then break;
       end;
       if (replacement <> '') then begin
         replacement := ini.ReadString('titles', 'InheritedFunctions', '')+replacement;
@@ -1133,11 +1150,13 @@ begin
         gi.link := cgi.link+'#'+classlist[i].functions[j].name;
         gl.AddObject(classlist[i].functions[j].name, gi);
       end;
+      if (Self.Terminated) then break;
     end;
     gl.Sort;
     // create table -- end
     gli.glossay := gl;
     for i := Low(glossaryitems) to high(glossaryitems) do begin
+      if (Self.Terminated) then break;
       gli.item := glossaryitems[i];
       Status('Creating glossary_'+glossaryitems[i]+'.html');
       template.Position := 0;
