@@ -1,3 +1,10 @@
+{-----------------------------------------------------------------------------
+ Unit Name: unit_tags
+ Author:    elmuerte
+ Purpose:   class properties window
+ History:
+-----------------------------------------------------------------------------}
+
 unit unit_tags;
 
 interface
@@ -207,7 +214,7 @@ begin
         else li.SubItems.Add(pclass.functions[i].name);
       li.SubItems.Add(IntToStr(pclass.functions[i].srcline));
       li.SubItems.Add(IntToStr(j));
-      if ((pclass.functions[i].ftype = uftFunction) or (pclass.functions[i].ftype = uftEvent)) then begin
+      if ((pclass.functions[i].ftype = uftFunction) or (pclass.functions[i].ftype = uftEvent) or (pclass.functions[i].ftype = uftDelegate)) then begin
         if (pclass.functions[i].return = '') then return := ''
           else return := pclass.functions[i].return+' = ';
         li.SubItems.Add(return+pclass.functions[i].name+'( '+pclass.functions[i].params+' )');
@@ -225,6 +232,7 @@ begin
       li.Data := pclass;
       if (pclass.functions[i].ftype = uftFunction) then li.ImageIndex := 4
       else if (pclass.functions[i].ftype = uftEvent) then li.ImageIndex := 5
+      else if (pclass.functions[i].ftype = uftDelegate) then li.ImageIndex := 5 // delegate is an event
       else li.ImageIndex := 6;
     end;
     pclass := pclass.parent;

@@ -1,3 +1,10 @@
+{-----------------------------------------------------------------------------
+ Unit Name: unit_about
+ Author:    elmuerte
+ Purpose:   about UnCodeX dialog
+ History:
+-----------------------------------------------------------------------------}
+
 unit unit_about;
 
 interface
@@ -39,6 +46,7 @@ uses unit_definitions;
 procedure Tfrm_About.FormCreate(Sender: TObject);
 begin
   lbl_Version.Caption := APPVERSION;
+  img_Icons.Picture.Assign(Application.Icon);
 end;
 
 end.

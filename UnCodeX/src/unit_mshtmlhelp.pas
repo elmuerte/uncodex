@@ -11,6 +11,7 @@ type
     HCCPath: string;
     OutputPath: string;
     ResultFile: string;
+    MainTitle: string;
     hhp: TStringList;
     PackageList: TUPackageList;
     ClassTree: TTreeView;
@@ -20,7 +21,7 @@ type
     procedure RunHHCompiler;
     function ExecConsoleApp(const Commandline: String): Cardinal;
   public
-    constructor Create(hccpath, outputpath, resultfile: string; PackageList: TUPackageList; ClassTree: TTreeView; status: TStatusReport);
+    constructor Create(hccpath, outputpath, resultfile, title: string; PackageList: TUPackageList; ClassTree: TTreeView; status: TStatusReport);
     procedure Execute; override;
     destructor Destroy; override;
   end;
@@ -30,12 +31,19 @@ const
 
 implementation
 
+{-----------------------------------------------------------------------------
+ Unit Name: unit_mshtmlhelp
+ Author:    elmuerte
+ Purpose:   creates the HTML Help project file and runs the compiler
+ History:
+-----------------------------------------------------------------------------}
+
 uses unit_htmlout, unit_main;
 
 var
   nFiles: integer;
 
-constructor TMSHTMLHelp.Create(hccpath, outputpath, resultfile: string; PackageList: TUPackageList; ClassTree: TTreeView; status: TStatusReport);
+constructor TMSHTMLHelp.Create(hccpath, outputpath, resultfile, title: string; PackageList: TUPackageList; ClassTree: TTreeView; status: TStatusReport);
 begin
   hhp := TStringList.Create;
   Self.HCCPath := hccpath;
@@ -44,6 +52,8 @@ begin
   Self.PackageList := PackageList;
   Self.ClassTree := ClassTree;
   Self.status := status;
+  Self.MainTitle := title;
+  if (MainTitle = '') then MainTitle := APPTITLE+' - '+APPVERSION;
   inherited Create(true);
 end;
 
@@ -80,11 +90,10 @@ begin
   hhp.Add('Display compile progress=Yes');
   hhp.Add('Full-text search=Yes');
   hhp.Add('Language=0x409 English (United States)');
-  hhp.Add('Title='+APPTITLE+' - '+APPVERSION);
+  hhp.Add('Title='+MainTitle);
   hhp.Add('');
   hhp.Add('[WINDOWS]');
-  // TODO: make title configurable
-  hhp.Add('Main="'+APPTITLE+' - '+APPVERSION+'","_htmlhelp.hhc",,"index.html","index.html",,,,,0x62520,,0x104e,[0,0,800,600],,,,1,,,0');
+  hhp.Add('Main="'+MainTitle+'","_htmlhelp.hhc",,"index.html","index.html",,,,,0x62520,,0x104e,[0,0,800,600],,,,1,,,0');
   hhp.Add('');
   hhp.Add('[FILES]');
   nFiles := 0;

@@ -1,3 +1,10 @@
+{-----------------------------------------------------------------------------
+ Unit Name: unit_outputdefs
+ Author:    elmuerte
+ Purpose:   Definitions used from custom output modules
+ History:
+-----------------------------------------------------------------------------}
+
 unit unit_outputdefs;
 
 interface

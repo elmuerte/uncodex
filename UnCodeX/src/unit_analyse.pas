@@ -1,3 +1,10 @@
+{-----------------------------------------------------------------------------
+ Unit Name: unit_analyse
+ Author:    elmuerte
+ Purpose:   class anaylser
+ History:
+-----------------------------------------------------------------------------}
+
 unit unit_analyse;
 
 interface
@@ -41,6 +48,7 @@ implementation
 
 uses unit_main;
 
+// Create for a class list
 constructor TClassAnalyser.Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false);
 begin
   self.classes := classes;
@@ -51,6 +59,7 @@ begin
   inherited Create(true);
 end;
 
+// Create for a single class
 constructor TClassAnalyser.Create(uclass: TUClass; status: TStatusReport; onlynew: boolean = false);
 begin
   self.classes := nil;
@@ -130,6 +139,7 @@ begin
   end;
 end;
 
+// Process (...)
 function TClassAnalyser.pBrackets: string;
 begin
   result := '';
@@ -146,6 +156,7 @@ begin
   if (p.Token = toEOF) then result := '';
 end;
 
+// Process [...]
 function TClassAnalyser.pSquareBrackets: string;
 begin
   result := '';
@@ -162,6 +173,7 @@ begin
   if (p.Token = toEOF) then result := '';
 end;
 
+// Process <...>
 function TClassAnalyser.pAngleBrackets: string;
 var
   bcount: integer;
@@ -184,6 +196,7 @@ begin
   if (p.Token = toEOF) then result := '';
 end;
 
+// Process {...}
 function TClassAnalyser.pCurlyBrackets: string;
 var
   bcount: integer;
@@ -385,7 +398,6 @@ begin
   else if (p.TokenSymbolIs('delegate')) then result.ftype := uftDelegate
   else result.ftype := uftFunction;
   result.comment := p.GetCopyData;
-  //FIXME: todo function type
   p.NextToken;
   pBrackets; // possible operator precendence
   result.return := p.TokenString; // optional return
@@ -462,83 +474,83 @@ var
 begin
   bHadClass := false;
   while ((p.token <> toEOF) and (not Self.Terminated)) do begin
-
-      // first check class
-      // class <classname> extends [<package>].<classname> <modifiers>;
-      if (p.TokenSymbolIs('class') and not bHadClass) then begin
-        bHadClass := true;
+    // TODO: accept initial comments ?
+    // first check class
+    // class <classname> extends [<package>].<classname> <modifiers>;
+    if (p.TokenSymbolIs('class') and not bHadClass) then begin
+      bHadClass := true;
+      p.NextToken;
+      uclass.name := p.TokenString;
+      uclass.comment := p.GetCopyData;
+      p.NextToken;
+      if (p.TokenSymbolIs('extends') or p.TokenSymbolIs('expands')) then begin
         p.NextToken;
-        uclass.name := p.TokenString;
-        uclass.comment := p.GetCopyData;
-        p.NextToken;
-        if (p.TokenSymbolIs('extends') or p.TokenSymbolIs('expands')) then begin
-          p.NextToken;
+        uclass.parentname := p.TokenString;
+        if (p.NextToken = '.') then begin // package.class
+          p.NextToken;                    // (should work with checking package)
           uclass.parentname := p.TokenString;
-          if (p.NextToken = '.') then begin // package.class
-            p.NextToken;                    // (should work with checking package)
-            uclass.parentname := p.TokenString;
-          end;
         end;
-        uclass.modifiers := '';
-        while (p.Token <> ';') do begin
-          uclass.modifiers := uclass.modifiers+p.TokenString+' ';
-          p.NextToken;
-        end;
-        continue;
       end;
-      if (p.TokenSymbolIs('var')) then begin
+      uclass.modifiers := '';
+      while (p.Token <> ';') do begin
+        uclass.modifiers := uclass.modifiers+p.TokenString+' ';
         p.NextToken;
-        pVar();
-        continue;
       end;
-      if (p.TokenSymbolIs('const')) then begin
-        p.NextToken;
-        pConst();
-        continue;
-      end;
-      if (p.TokenSymbolIs('enum')) then begin
-        p.NextToken;
-        pEnum();
-        continue;
-      end;
-      if (p.TokenSymbolIs('struct')) then begin
-        p.NextToken;
-        pStruct();
-        continue;
-      end;
-      if (p.TokenSymbolIs('defaultproperties')) then begin
-        p.GetCopyData(true);// preflush
-        p.NextToken;
-        uclass.defaultproperties := p.TokenString;
-        p.FullCopy := true;
-        pCurlyBrackets();
-        p.FullCopy := false;
-        uclass.defaultproperties := uclass.defaultproperties+p.GetCopyData(true);
-        continue;
-      end;
-      if (p.TokenSymbolIs('replication')) then begin
-        p.NextToken;
-        pCurlyBrackets();
-        continue;
-      end;
-      if (p.TokenSymbolIs('cpptext')) then begin
-        p.NextToken;
-        pCurlyBrackets();
-        continue;
-      end;
-      if ((p.Token = '}') and instate) then begin
-        currentState := nil;
-        instate := false;
-        p.NextToken;
-        continue;
-      end;
-      if (p.Token = toSymbol) then begin
-        // I think it's a function or an event
-        pFunc();
-        continue;
-      end;
-
-    p.NextToken;
+      continue;
+    end;
+    // TODO: FIXME: stuff breaks when we don't have a class 
+    if (p.TokenSymbolIs('var')) then begin
+      p.NextToken;
+      pVar();
+      continue;
+    end;
+    if (p.TokenSymbolIs('const')) then begin
+      p.NextToken;
+      pConst();
+      continue;
+    end;
+    if (p.TokenSymbolIs('enum')) then begin
+      p.NextToken;
+      pEnum();
+      continue;
+    end;
+    if (p.TokenSymbolIs('struct')) then begin
+      p.NextToken;
+      pStruct();
+      continue;
+    end;
+    if (p.TokenSymbolIs('defaultproperties')) then begin
+      p.GetCopyData(true);// preflush
+      p.NextToken;
+      uclass.defaultproperties := p.TokenString;
+      p.FullCopy := true;
+      pCurlyBrackets();
+      p.FullCopy := false;
+      uclass.defaultproperties := uclass.defaultproperties+p.GetCopyData(true);
+      continue;
+    end;
+    if (p.TokenSymbolIs('replication')) then begin
+      p.NextToken;
+      pCurlyBrackets();
+      continue;
+    end;
+    if (p.TokenSymbolIs('cpptext')) then begin
+      p.NextToken;
+      pCurlyBrackets();
+      continue;
+    end;
+    if ((p.Token = '}') and instate) then begin
+      currentState := nil;
+      instate := false;
+      p.NextToken;
+      continue;
+    end;
+    if (p.Token = toSymbol) then begin
+      // I think it's a function or an event
+      pFunc();
+      continue;
+    end;
+    p.NextToken; // we should not even get here
   end;
 end;
 

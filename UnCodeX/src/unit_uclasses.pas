@@ -1,3 +1,10 @@
+{-----------------------------------------------------------------------------
+ Unit Name: unit_uclasses
+ Author:    elmuerte
+ Purpose:   definitions for Unreal Classes
+ History:
+-----------------------------------------------------------------------------}
+
 unit unit_uclasses;
 
 interface

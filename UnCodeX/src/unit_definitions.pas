@@ -1,3 +1,10 @@
+{-----------------------------------------------------------------------------
+ Unit Name: unit_definitions
+ Author:    elmuerte
+ Purpose:   General definitions
+ History:
+-----------------------------------------------------------------------------}
+
 unit unit_definitions;
 
 interface
@@ -7,6 +14,7 @@ uses
   Messages;
 
 type
+  // Used for -reuse
   TRedirectStruct = packed record
     Find: string[64];
     OpenFind: boolean;
@@ -15,6 +23,7 @@ type
     NewHandle: integer;
   end;
 
+  // New hint window
   TPropertyHintWindow = class(THintWindow)
     constructor Create(AOwner: TComponent); override;
     function CalcHintRect(MaxWidth: Integer; const AHint: string; AData: Pointer): TRect; override;
@@ -29,8 +38,10 @@ type
     property Caption;
   end;
 
+  // repeat a string
   function StrRepeat(line: string; count: integer): string;
 
+  // Query dialog
   function SearchQuery(const ACaption, APrompt: string; var value: string; var checkvalue: array of boolean;
     var history: TStringList; CheckPrompt: array of string): boolean; overload;
   function SearchQuery(const ACaption, APrompt: string; var value: string; var history: TStringList): boolean; overload;
@@ -45,10 +56,12 @@ const
   CLASSDIR = 'Classes';
   TEMPLATEPATH = 'Templates';
 
+  // Full Text search tokens
   FTS_LN_BEGIN = ' #';
   FTS_LN_END = ': ';
   FTS_LN_SEP = ',';
 
+  // Tree icons
   ICON_PACKAGE = 0;
   ICON_PACKAGE_TAGGED = 1;
   ICON_CLASS = 2;
@@ -83,6 +96,8 @@ begin
     Dec(count);
   end;
 end;
+
+{ SearchQuery }
 
 function GetAveCharSize(Canvas: TCanvas): TPoint;
 var
@@ -199,6 +214,7 @@ begin
   result := SearchQuery(ACaption, APrompt, value, tmpb, history, tmps);
 end;
 
+{ SearchQuery -- END }
 { TPropertyHintWindow }
 
 constructor TPropertyHintWindow.Create(AOwner: TComponent);
@@ -267,6 +283,8 @@ begin
   Width := Canvas.TextWidth(Caption) + 32;
   Height := Canvas.TextHeight(Caption) + 4;
 end;
+
+{ TPropertyHintWindow -- END }
 
 initialization
   Application.HintColor := clWindow;

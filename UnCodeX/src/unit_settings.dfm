@@ -491,6 +491,13 @@ object frm_Settings: Tfrm_Settings
           Height = 13
           Caption = 'Output file'
         end
+        object lbl_HTMLTitle: TLabel
+          Left = 8
+          Top = 96
+          Width = 153
+          Height = 13
+          Caption = 'Title (leave blank for default title)'
+        end
         object ed_WorkshopPath: TEdit
           Left = 8
           Top = 32
@@ -531,6 +538,16 @@ object frm_Settings: Tfrm_Settings
           Caption = '...'
           TabOrder = 3
           OnClick = btn_HTMLHelpOutputClick
+        end
+        object ed_HHTitle: TEdit
+          Left = 8
+          Top = 112
+          Width = 417
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          TabOrder = 4
         end
       end
     end
@@ -935,12 +952,12 @@ object frm_Settings: Tfrm_Settings
           Height = 13
           Caption = 'State file (relative to the config file)'
         end
-        object lbl_HotKeys: TLabel
+        object Label1: TLabel
           Left = 8
-          Top = 128
-          Width = 42
+          Top = 120
+          Width = 210
           Height = 13
-          Caption = 'Hot keys'
+          Caption = 'Default inheritance depth for class properties'
         end
         object ed_StateFilename: TEdit
           Left = 8
@@ -960,70 +977,122 @@ object frm_Settings: Tfrm_Settings
           Caption = 'Minimize on close'
           TabOrder = 1
         end
-        object lv_HotKeys: TListView
-          Left = 8
-          Top = 168
-          Width = 417
-          Height = 193
-          Anchors = [akLeft, akTop, akRight, akBottom]
-          BevelKind = bkSoft
-          BorderStyle = bsNone
-          Columns = <
-            item
-              AutoSize = True
-              Caption = 'Command'
-            end
-            item
-              AutoSize = True
-              Caption = 'Hot key'
-            end>
-          ColumnClick = False
-          ReadOnly = True
-          RowSelect = True
-          SortType = stText
-          TabOrder = 2
-          ViewStyle = vsReport
-          OnSelectItem = lv_HotKeysSelectItem
-        end
-        object ed_HotKey: TEdit
-          Left = 8
-          Top = 144
-          Width = 177
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          BevelKind = bkSoft
-          BorderStyle = bsNone
-          ReadOnly = True
-          TabOrder = 3
-        end
-        object btn_SetHotKey: TBitBtn
-          Left = 368
-          Top = 144
-          Width = 57
-          Height = 21
-          Anchors = [akTop, akRight]
-          Caption = 'Set'
-          TabOrder = 4
-          OnClick = btn_SetHotKeyClick
-        end
-        object hk_HotKey: THotKey
-          Left = 192
-          Top = 144
-          Width = 169
-          Height = 21
-          Anchors = [akTop, akRight]
-          HotKey = 0
-          InvalidKeys = [hcNone]
-          Modifiers = []
-          TabOrder = 5
-        end
         object cb_ModifiedOnStartup: TCheckBox
           Left = 8
           Top = 56
           Width = 193
           Height = 17
           Caption = 'Analyse modified classes on startup'
-          TabOrder = 6
+          TabOrder = 2
+        end
+        object ed_DefInheritanceDepth: TEdit
+          Left = 8
+          Top = 136
+          Width = 401
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          TabOrder = 3
+          Text = '0'
+        end
+        object ud_DefInheritDepth: TUpDown
+          Left = 409
+          Top = 136
+          Width = 16
+          Height = 21
+          Anchors = [akTop, akRight]
+          Associate = ed_DefInheritanceDepth
+          Min = 0
+          Max = 255
+          Position = 0
+          TabOrder = 4
+          Thousands = False
+          Wrap = False
+        end
+        object cb_LoadCustomModules: TCheckBox
+          Left = 8
+          Top = 96
+          Width = 161
+          Height = 17
+          Caption = 'Load custom output modules'
+          Checked = True
+          State = cbChecked
+          TabOrder = 5
+        end
+      end
+    end
+    object ts_HotKeys: TTabSheet
+      Caption = 'Hot keys'
+      ImageIndex = 10
+      TabVisible = False
+      object gb_HotKeys: TGroupBox
+        Left = 0
+        Top = 0
+        Width = 433
+        Height = 368
+        Align = alClient
+        Caption = 'Hot keys'
+        TabOrder = 0
+        DesignSize = (
+          433
+          368)
+        object ed_HotKey: TEdit
+          Left = 8
+          Top = 16
+          Width = 177
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          ReadOnly = True
+          TabOrder = 0
+        end
+        object hk_HotKey: THotKey
+          Left = 192
+          Top = 16
+          Width = 169
+          Height = 21
+          Anchors = [akTop, akRight]
+          HotKey = 0
+          InvalidKeys = [hcNone]
+          Modifiers = []
+          TabOrder = 1
+        end
+        object btn_SetHotKey: TBitBtn
+          Left = 368
+          Top = 16
+          Width = 57
+          Height = 21
+          Anchors = [akTop, akRight]
+          Caption = 'Set'
+          TabOrder = 2
+          OnClick = btn_SetHotKeyClick
+        end
+        object lv_HotKeys: TListView
+          Left = 8
+          Top = 42
+          Width = 417
+          Height = 323
+          Anchors = [akLeft, akTop, akRight, akBottom]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          Columns = <
+            item
+              AutoSize = True
+              Caption = 'Action'
+            end
+            item
+              AutoSize = True
+              Caption = 'Hotkey'
+            end>
+          ColumnClick = False
+          ReadOnly = True
+          RowSelect = True
+          SortType = stText
+          TabOrder = 3
+          ViewStyle = vsReport
+          OnSelectItem = lv_HotKeysSelectItem
         end
       end
     end

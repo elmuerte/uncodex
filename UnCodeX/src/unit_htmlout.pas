@@ -1,3 +1,10 @@
+{-----------------------------------------------------------------------------
+ Unit Name: unit_htmlout
+ Author:    elmuerte
+ Purpose:   creates HTML output
+ History:
+-----------------------------------------------------------------------------}
+
 unit unit_htmlout;
 
 interface
@@ -24,6 +31,7 @@ type
     outputdir, TemplateDir: string;
   end;
 
+  // General replace function
   TReplacement = function(var replacement: string; data: TObject = nil): boolean of Object;
 
   THTMLOutput = class(TThread)
@@ -99,12 +107,15 @@ begin
   result := LowerCase(uclass.package.name+'_'+uclass.name+'.html');
 end;
 
+// convert to HTML chars
 function HTMLChars(line: string): string;
 begin
   result := StringReplace(line, '<', '&lt;', [rfReplaceAll]);
   result := StringReplace(result, '>', '&gt;', [rfReplaceAll]);
   result := StringReplace(result, '"', '&quot;', [rfReplaceAll]);
 end;
+
+{ THTMLOutput }
 
 constructor THTMLOutput.Create(config: THTMLoutConfig; status: TStatusReport);
 begin
@@ -1320,5 +1331,7 @@ begin
     result := true;
   end
 end;
+
+{ THTMLOutput -- END }
 
 end.
