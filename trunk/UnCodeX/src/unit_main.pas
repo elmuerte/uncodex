@@ -3,8 +3,26 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.59 2003-10-27 10:25:02 elmuerte Exp $
+ $Id: unit_main.pas,v 1.60 2003-11-04 19:35:27 elmuerte Exp $
 -----------------------------------------------------------------------------}
+{
+    UnCodeX - UnrealScript source browser & documenter
+    Copyright (C) 2003  Michiel Hendriks
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+}
 
 unit unit_main;
 
@@ -178,6 +196,8 @@ type
     cmd: TDdeServerItemEx;
     mi_ClassName: TMenuItem;
     mi_PackageName: TMenuItem;
+    mi_License: TMenuItem;
+    ac_License: TAction;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -258,6 +278,7 @@ type
     procedure pm_ClassTreePopup(Sender: TObject);
     procedure mi_PackageNameDrawItem(Sender: TObject; ACanvas: TCanvas;
       ARect: TRect; Selected: Boolean);
+    procedure ac_LicenseExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -382,7 +403,7 @@ implementation
 
 uses unit_settings, unit_analyse, unit_htmlout, unit_definitions,
   unit_treestate, unit_about, unit_mshtmlhelp, unit_fulltextsearch,
-  unit_tags, unit_outputdefs, unit_rtfhilight, unit_utils;
+  unit_tags, unit_outputdefs, unit_rtfhilight, unit_utils, unit_license;
 
 const
   PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
@@ -2059,6 +2080,9 @@ begin
   tv_Packages.Visible := mi_PackageTree.Checked;
   if (tv_Packages.Visible) then begin
     if (spl_Main1.Left > spl_Main3.Left) then tv_Packages.Width := spl_Main3.Left-spl_Main1.MinSize;
+  end
+  else begin
+    if (ActiveControl = nil) then ActiveControl := tv_Classes;
   end;
 end;
 
@@ -2212,6 +2236,8 @@ end;
 
 procedure Tfrm_UnCodeX.tv_ClassesChange(Sender: TObject; Node: TTreeNode);
 begin
+  if (Sender = nil) then exit;
+  if (not (Sender as TWinControl).Visible) then exit;
   ActiveControl := (Sender as TWinControl);
   if (re_SourceSnoop.Visible) then begin
     ac_SourceSnoop.Execute;
@@ -2490,6 +2516,11 @@ begin
   capt := (Sender as TMenuItem).Caption;
   capt := StringReplace(capt, '&', '', []);
   ACanvas.TextRect(ARect, ARect.Left + 5, ARect.Top+(ARect.Bottom-ARect.Top-ACanvas.TextHeight(capt)) div 2, capt);
+end;
+
+procedure Tfrm_UnCodeX.ac_LicenseExecute(Sender: TObject);
+begin
+  frm_License.ShowModal();
 end;
 
 initialization

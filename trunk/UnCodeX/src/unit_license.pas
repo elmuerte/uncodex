@@ -1,9 +1,9 @@
 {-----------------------------------------------------------------------------
- Unit Name: unit_outputdefs
+ Unit Name: unit_license
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
- Purpose:   Definitions used from custom output modules
- $Id: unit_outputdefs.pas,v 1.7 2003-11-04 19:35:27 elmuerte Exp $
+ Purpose:   Display the LICENSE.TXT file
+ $Id: unit_license.pas,v 1.1 2003-11-04 19:35:28 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -24,37 +24,42 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
 
-unit unit_outputdefs;
+unit unit_license;
 
 interface
 
 uses
-  Classes, unit_uclasses;
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls;
 
 type
-  TStatusReport = procedure(msg: string; progress: byte = 255);
-
-  TUCXOutputInfo = record
-    // input
-    AClassList: TUClassList;
-    ASelectedClass: TUClass; // only used if ASingleClass = true
-    APackageList: TUPackageList;
-    AStatusReport: TStatusReport;
-    AThreadTerminated: TNotifyEvent;
-    // output
-    AThread: TThread;
-    WaitForTerminate: boolean; // use AThreadTerminated to signal an end
+  Tfrm_License = class(TForm)
+    mm_License: TMemo;
+    procedure FormShow(Sender: TObject);
+    procedure FormKeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
   end;
 
-  TUCXOutputDetails = record
-    AName: string;
-    ADescription: string;
-    ASingleClass: boolean; // selected class only output
-  end;
-
-  TUCX_Output = function(var Info: TUCXOutputInfo): boolean; stdcall;
-  TUCX_Details = function(var Info: TUCXOutputDetails): boolean; stdcall;
+var
+  frm_License: Tfrm_License;
 
 implementation
+
+{$R *.dfm}
+
+procedure Tfrm_License.FormShow(Sender: TObject);
+begin
+  mm_License.Lines.LoadFromFile(ExtractFilePath(ParamStr(0))+'LICENSE.TXT');
+end;
+
+procedure Tfrm_License.FormKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if (Key = VK_ESCAPE) then Close;
+end;
 
 end.
