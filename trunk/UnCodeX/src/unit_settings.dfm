@@ -1,5 +1,5 @@
 object frm_Settings: Tfrm_Settings
-  Left = 254
+  Left = 482
   Top = 152
   Width = 670
   Height = 405
@@ -71,7 +71,7 @@ object frm_Settings: Tfrm_Settings
     Top = 24
     Width = 432
     Height = 353
-    ActivePage = ts_ProgramOptions
+    ActivePage = ts_HotKeys
     Align = alCustom
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -1033,6 +1033,12 @@ object frm_Settings: Tfrm_Settings
           end
           item
             Caption = 'Hotkey'
+            Width = -1
+            WidthType = (
+              -1)
+          end
+          item
+            Caption = 'Hint'
             Width = -1
             WidthType = (
               -1)

@@ -1,13 +1,13 @@
 object fr_Properties: Tfr_Properties
   Left = 0
   Top = 0
-  Width = 193
+  Width = 139
   Height = 272
   TabOrder = 0
   object bvl_Nothing: TBevel
     Left = 0
     Top = 21
-    Width = 193
+    Width = 139
     Height = 9
     Align = alTop
     Shape = bsSpacer
@@ -15,7 +15,7 @@ object fr_Properties: Tfr_Properties
   object lv_Properties: TListView
     Left = 0
     Top = 30
-    Width = 193
+    Width = 139
     Height = 242
     Align = alClient
     Columns = <
@@ -65,7 +65,7 @@ object fr_Properties: Tfr_Properties
   object pnl_Ctrls: TPanel
     Left = 0
     Top = 0
-    Width = 193
+    Width = 139
     Height = 21
     Align = alTop
     BevelOuter = bvNone
@@ -123,7 +123,7 @@ object fr_Properties: Tfr_Properties
     Left = 8
     Top = 64
     Bitmap = {
-      494C010109000E00040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010109000E00040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -655,7 +655,8 @@ object fr_Properties: Tfr_Properties
       FF3FF780F83FED87F81FE380E00F8001E00F80008003E507C00780010001C007
       C003800180038001C00380838003C007C00381C70001C197C003860380038001
       C0039C038003CC07E003FC030001EC07F00FFC0380038001F83FFC03E00FEC17
-      FCFFFC07F83FEDB7FFFFFC07FEFFFFFF}
+      FCFFFC07F83FEDB7FFFFFC07FEFFFFFF00000000000000000000000000000000
+      000000000000}
   end
   object pm_Props: TPopupMenu
     Images = il_Types

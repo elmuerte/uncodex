@@ -6,7 +6,7 @@
   Purpose:
     Program settings dialog
 
-  $Id: unit_settings.pas,v 1.46 2005-03-18 07:43:22 elmuerte Exp $
+  $Id: unit_settings.pas,v 1.47 2005-03-28 12:22:52 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -506,6 +506,7 @@ begin
     li := lv_HotKeys.Items.Add;
     li.Caption := TAction(frm_UnCodeX.al_Main.Actions[i]).Caption;
     li.SubItems.Add(ShortCutToText(TAction(frm_UnCodeX.al_Main.Actions[i]).ShortCut));
+    li.SubItems.Add(GetLongHint(TAction(frm_UnCodeX.al_Main.Actions[i]).Hint));
     li.Data := frm_UnCodeX.al_Main.Actions[i];
     li.ImageIndex := TAction(frm_UnCodeX.al_Main.Actions[i]).ImageIndex;
   end;
