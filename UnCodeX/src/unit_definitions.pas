@@ -25,7 +25,7 @@ type
   
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '051 Beta';
+  APPVERSION = '052 Beta';
 
   PATHDELIM = '\';
   WILDCARD = '*.*';

@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, Menus, StdCtrls, unit_packages, ExtCtrls, unit_uclasses,
   IniFiles, ShellApi, AppEvnts, ImgList, ActnList, ToolWin, StrUtils, Clipbrd,
-  hh, hh_funcs;
+  hh, hh_funcs, StdActns;
 
 const
   WM_APPBAR                      = WM_USER+$100;
