@@ -22,7 +22,9 @@ uses
   unit_mshtmlhelp in 'unit_mshtmlhelp.pas',
   unit_fulltextsearch in 'unit_fulltextsearch.pas',
   RegExpr in 'RegExpr.pas',
-  unit_tags in 'unit_tags.pas' {frm_Tags};
+  unit_tags in 'unit_tags.pas' {frm_Tags},
+  hh_funcs in 'hh_funcs.pas',
+  hh in 'hh.pas';
 
 {$R *.res}
 
@@ -143,7 +145,7 @@ begin
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-    Application.CreateForm(Tfrm_About, frm_About);
-    Application.Run;
+  Application.CreateForm(Tfrm_About, frm_About);
+  Application.Run;
   end;
 end.

@@ -3,6 +3,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
   Top = 114
   Width = 666
   Height = 616
+  HelpType = htKeyword
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -61,6 +62,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Top = 30
     Width = 287
     Height = 422
+    HelpType = htKeyword
+    HelpKeyword = 'classtree'
     Align = alClient
     HideSelection = False
     Images = il_Small
@@ -78,6 +81,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Top = 30
     Width = 281
     Height = 422
+    HelpType = htKeyword
+    HelpKeyword = 'packagetree'
     Align = alLeft
     HideSelection = False
     Images = il_Small
@@ -117,6 +122,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Top = 456
     Width = 658
     Height = 87
+    HelpType = htKeyword
+    HelpKeyword = 'log'
     Align = alBottom
     ExtendedSelect = False
     Font.Charset = DEFAULT_CHARSET
@@ -265,6 +272,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Top = 30
     Width = 82
     Height = 422
+    HelpType = htKeyword
+    HelpKeyword = 'sourcesnoop'
     Align = alRight
     Color = clMoneyGreen
     Lines.Strings = (
@@ -427,7 +436,9 @@ object frm_UnCodeX: Tfrm_UnCodeX
     object mi_HelpMenu: TMenuItem
       Caption = 'Help'
       object mi_Help2: TMenuItem
-        Action = ac_Help
+        Caption = 'Help'
+        ImageIndex = 23
+        OnClick = mi_Help2Click
       end
       object mi_About: TMenuItem
         Action = ac_About
@@ -652,6 +663,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Category = 'Program'
       Caption = 'Help'
       ImageIndex = 23
+      ShortCut = 112
+      OnExecute = ac_HelpExecute
     end
     object ac_Close: TAction
       Category = 'Program'

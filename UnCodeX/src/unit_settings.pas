@@ -119,6 +119,7 @@ type
     ed_HotKey: TEdit;
     btn_SetHotKey: TBitBtn;
     hk_HotKey: THotKey;
+    btn_Help: TBitBtn;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -162,6 +163,7 @@ type
     procedure btn_LogColorClick(Sender: TObject);
     procedure lv_HotKeysClick(Sender: TObject);
     procedure btn_SetHotKeyClick(Sender: TObject);
+    procedure btn_HelpClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -517,6 +519,11 @@ procedure Tfrm_Settings.btn_SetHotKeyClick(Sender: TObject);
 begin
   if (lv_HotKeys.Selected = nil) then exit;
   lv_HotKeys.Selected.SubItems[0] := ShortCutToText(hk_HotKey.HotKey);
+end;
+
+procedure Tfrm_Settings.btn_HelpClick(Sender: TObject);
+begin
+  hh_Help.HelpTopic('window_settings.html#'+pc_Settings.ActivePage.HelpKeyword);
 end;
 
 end.
