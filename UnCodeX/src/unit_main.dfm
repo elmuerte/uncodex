@@ -9,6 +9,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
+  KeyPreview = True
   Menu = mm_Main
   OldCreateOrder = False
   Position = poDefaultPosOnly
@@ -123,9 +124,9 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Font.Name = 'Courier New'
     Font.Style = []
     ItemHeight = 14
-    ParentColor = True
     ParentFont = False
     TabOrder = 4
+    OnDblClick = lb_LogDblClick
   end
   object tb_Tools: TToolBar
     Left = 0
@@ -547,7 +548,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Enabled = False
       Hint = 'Abort|Try to abort the current running thread'
       ImageIndex = 8
-      ShortCut = 16528
+      ShortCut = 16430
       OnExecute = ac_AbortExecute
     end
     object ac_FindClass: TAction
@@ -628,6 +629,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Category = 'Find'
       Caption = 'Full Text Search'
       Hint = 'Full Text Search|Search all class files'
+      ShortCut = 16468
       OnExecute = ac_FullTextSearchExecute
     end
   end

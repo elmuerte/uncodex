@@ -161,6 +161,7 @@ type
     procedure mi_LeftClick(Sender: TObject);
     procedure ac_FindNextExecute(Sender: TObject);
     procedure ac_FullTextSearchExecute(Sender: TObject);
+    procedure lb_LogDblClick(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -194,6 +195,7 @@ type
   end;
 
   procedure Log(msg: string);
+  procedure LogClass(msg: string; uclass: TUClass = nil);
 
 var
   frm_UnCodeX: Tfrm_UnCodeX;
@@ -206,11 +208,14 @@ var
 // config vars
 var
   HTMLOutputDir, TemplateDir, HHCPath, HTMLHelpFile, ServerCmd, CompilerCmd,
-    ClientCmd: string;
+    ClientCmd, OpenResultCmd: string;
   ServerPrio: integer;
   SourcePaths: TStringList;
   PackagePriority: TStringList;
   IgnorePackages: TStringList;
+  FTSRegexp: boolean;
+  FTSHistory: TStringList;
+  CSHistory: TStringList;
 
 implementation
 
@@ -228,6 +233,13 @@ procedure Log(msg: string);
 begin
   if (msg='') then exit;
   frm_UnCodeX.lb_Log.Items.Add(msg);
+  frm_UnCodeX.lb_Log.ItemIndex := frm_UnCodeX.lb_Log.Items.Count-1;
+end;
+
+procedure LogClass(msg: string; uclass: TUClass = nil);
+begin
+  if (msg='') then exit;
+  frm_UnCodeX.lb_Log.Items.AddObject(msg, uclass);
   frm_UnCodeX.lb_Log.ItemIndex := frm_UnCodeX.lb_Log.Items.Count-1;
 end;
 
@@ -520,6 +532,8 @@ begin
   PackagePriority := TStringList.Create;
   SourcePaths := TStringList.Create;
   IgnorePackages := TStringList.Create;
+  FTSHistory := TStringList.Create;
+  CSHistory := TStringList.Create;
   try
     mi_MenuBar.Checked := ini.ReadBool('Layout', 'MenuBar', true);
     mi_Toolbar.Checked := ini.ReadBool('Layout', 'Toolbar', true);
@@ -561,6 +575,8 @@ begin
     ServerPrio := ini.ReadInteger('Config', 'ServerPrio', 1);
     ClientCmd := ini.ReadString('Config', 'ClientCmd', '');
     CompilerCmd := ini.ReadString('Config', 'CompilerCmd', '');
+    OpenResultCmd := ini.ReadString('Config', 'OpenResultCmd', '');
+    FTSRegexp := ini.ReadBool('Config', 'FullTextSearchRegExp', false);
 
     ini.ReadSectionValues('PackagePriority', sl);
     for i := 0 to sl.Count-1 do begin
@@ -582,6 +598,18 @@ begin
       Delete(tmp, 1, Pos('=', tmp));
       Log('Config: Ignore = '+tmp);
       IgnorePackages.Add(LowerCase(tmp));
+    end;
+    ini.ReadSectionValues('FullTextSearch', sl);
+    for i := 0 to sl.Count-1 do begin
+      tmp := sl[i];
+      Delete(tmp, 1, Pos('=', tmp));
+      FTSHistory.Add(tmp);
+    end;
+    ini.ReadSectionValues('ClassSearch', sl);
+    for i := 0 to sl.Count-1 do begin
+      tmp := sl[i];
+      Delete(tmp, 1, Pos('=', tmp));
+      CSHistory.Add(tmp);
     end;
   finally
     ini.Free;
@@ -702,6 +730,8 @@ begin
     ed_ClientCommandline.Text := ClientCmd;
     ed_CompilerCommandline.Text := CompilerCmd;
     lb_IgnorePackages.Items := IgnorePackages;
+    ed_OpenResultCmd.Text := OpenResultCmd;
+    cb_FTSRegExp.Checked := FTSRegexp;
     if (ShowModal = mrOk) then begin
       HTMLOutputDir := ed_HTMLOutputDir.Text;
       TemplateDir := ed_TemplateDir.Text;
@@ -711,6 +741,8 @@ begin
       ServerPrio := cb_ServerPriority.ItemIndex;
       ClientCmd := ed_ClientCommandline.Text;
       CompilerCmd := ed_CompilerCommandline.Text;
+      OpenResultCmd := ed_OpenResultCmd.Text;
+      FTSRegexp := cb_FTSRegExp.Checked;
       SourcePaths.Clear;
       SourcePaths.AddStrings(lb_Paths.Items);
       PackagePriority.Clear;
@@ -729,6 +761,8 @@ begin
         data.Add('ServerPrio='+IntToStr(ServerPrio));
         data.Add('ClientCmd='+ClientCmd);
         data.Add('CompilerCmd='+CompilerCmd);
+        data.Add('OpenResultCmd='+OpenResultCmd);
+        data.Add('FullTextSearchRegExp='+IntToStr(Ord(FTSRegexp)));
         data.Add('[SourcePaths]');
         for i := 0 to SourcePaths.Count-1 do data.Add('Path='+SourcePaths[i]);
         data.Add('[PackagePriority]');
@@ -769,7 +803,7 @@ var
   i: integer;
 begin
   if (ActiveControl.ClassType = TTreeView) then begin
-    if (InputQuery('Find a class', 'Enter the name of the class you want to find', searchclass)) then begin
+    if (SearchQuery('Find a class', 'Enter the name of the class you want to find', searchclass, CSHistory)) then begin
       with (ActiveControl as TTreeView) do begin
         for i := 0 to Items.Count-1 do begin
           if (AnsiContainsText(items[i].Text, searchclass)) then begin
@@ -791,6 +825,8 @@ begin
   ClassList.Free;
   SourcePaths.Free;
   IgnorePackages.Free;
+  FTSHistory.Free;
+  CSHistory.Free;
 end;
 
 procedure Tfrm_UnCodeX.ac_OpenClassExecute(Sender: TObject);
@@ -827,6 +863,7 @@ procedure Tfrm_UnCodeX.FormClose(Sender: TObject;
   var Action: TCloseAction);
 var
   ini: TMemIniFile;
+  i: integer;
 begin
   SaveState;
   ini := TMemIniFile.Create(ExtractFilePath(ParamStr(0))+'\UnCodeX.ini');
@@ -865,6 +902,12 @@ begin
     ini.WriteBool('Layout', 'AutoHide', mi_AutoHide.Checked);
     ini.WriteBool('Layout', 'ABRight', mi_Right.Checked);
     ini.WriteBool('Layout', 'ABLeft', mi_Left.Checked);
+    for i := 0 to FTSHistory.Count-1 do begin
+      ini.WriteString('FullTextSearch', IntToStr(i), FTSHistory[i]);
+    end;
+    for i := 0 to CSHistory.Count-1 do begin
+      ini.WriteString('ClassSearch', IntToStr(i), CSHistory[i]);
+    end;
     ini.UpdateFile;
   finally
     ini.Free;
@@ -1087,12 +1130,72 @@ begin
 end;
 
 procedure Tfrm_UnCodeX.ac_FullTextSearchExecute(Sender: TObject);
+var
+  query: string;
+  isregex: boolean;
 begin
   if (ThreadCreate) then begin
-    lb_Log.Items.Clear;
-    runningthread := TSearchThread.Create(PackageList, StatusReport);
-    runningthread.OnTerminate := ThreadTerminate;
-    runningthread.Resume;
+    isregex := FTSRegexp;
+    if (SearchQuery('Full text search', 'Enter your search query', query, isregex, FTSHistory)) then begin
+      mi_Log.Checked := true;
+      mi_Log.OnClick(Sender);
+      lb_Log.Items.Clear;
+      runningthread := TSearchThread.Create(PackageList, StatusReport, query, isregex);
+      runningthread.OnTerminate := ThreadTerminate;
+      runningthread.Resume;
+    end
+    else ac_Abort.Enabled := false;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.lb_LogDblClick(Sender: TObject);
+var
+  i, j: integer;
+  linenr, curpos, exe: string;
+  lst: TStringList;
+begin
+  if (lb_Log.ItemIndex = -1) then exit;
+  if (lb_Log.Items.Objects[lb_Log.ItemIndex] = nil) then exit;
+  if (TObject(lb_Log.Items.Objects[lb_Log.ItemIndex]).ClassType <> TUClass) then exit;
+  with (TObject(lb_Log.Items.Objects[lb_Log.ItemIndex]) as TUClass) do begin
+    linenr := lb_Log.Items[lb_Log.ItemIndex];
+    i := Pos(FTS_LN_BEGIN, linenr);
+    j := Pos(FTS_LN_END, linenr);
+    linenr := Copy(linenr, i+Length(FTS_LN_BEGIN), j-i-Length(FTS_LN_BEGIN));
+    i := Pos(FTS_LN_SEP, linenr);
+    curpos := Copy(linenr, i+Length(FTS_LN_SEP), MaxInt);
+    Delete(linenr, i, MaxInt);
+
+    if (OpenResultCmd = '') then begin
+      ExecuteProgram(package.path+PATHDELIM+CLASSDIR+PATHDELIM+filename);
+      exit;
+    end;
+
+    lst := TStringList.Create;
+    try
+      lst.Delimiter := ' ';
+      lst.QuoteChar := '"';
+      lst.DelimitedText := OpenResultCmd;
+      exe := lst[0];
+      lst.Delete(0);
+      for i := 0 to lst.Count-1 do begin
+        if (CompareText(lst[i], '%classname%') = 0) then
+          lst[i] := name
+        else if (CompareText(lst[i], '%classfile%') = 0) then
+          lst[i] := filename
+        else if (CompareText(lst[i], '%classpath%') = 0) then
+          lst[i] := package.path+PATHDELIM+CLASSDIR+PATHDELIM+filename
+        else if (CompareText(lst[i], '%packagename%') = 0) then
+          lst[i] := package.name
+        else if (CompareText(lst[i], '%packagepath%') = 0) then
+          lst[i] := package.path;
+        lst[i] := AnsiReplaceStr(lst[i], '%resultline%', linenr);
+        lst[i] := AnsiReplaceStr(lst[i], '%resultpos%', curpos);
+      end;
+      ExecuteProgram(exe, lst);
+    finally
+      lst.Free;
+    end;
   end;
 end;
 
