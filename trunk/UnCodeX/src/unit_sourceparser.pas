@@ -422,8 +422,10 @@ begin
           if (P^ = '/') then begin // comment
             Inc(P);
             while not (P^ in [#10, toEOF]) do Inc(P);
-            Inc(P);
-            Inc(FSourceLine); // next line
+            if (P^ <> toEOF) then begin
+              Inc(P);
+              Inc(FSourceLine); // next line
+            end;
             Result := toComment; // not realy a comment but we just ignore it
           end
           else if (P^ = '*') then begin // block comment
