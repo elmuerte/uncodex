@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Search form, much better than the previous version
- $Id: unit_searchform.pas,v 1.6 2004-03-23 16:25:45 elmuerte Exp $
+ $Id: unit_searchform.pas,v 1.7 2004-03-29 19:51:04 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -147,7 +147,7 @@ begin
   for i := 0 to searchconfig.history.Count-1 do begin
     ini.WriteString(section, 'history:'+IntToStr(i), searchconfig.history[i]);
   end;
-  ini.WriteInteger(section, 'ftshistory', searchconfig.history.Count);
+  ini.WriteInteger(section, 'ftshistory', searchconfig.ftshistory.Count);
   for i := 0 to searchconfig.ftshistory.Count-1 do begin
     ini.WriteString(section, 'ftshistory:'+IntToStr(i), searchconfig.ftshistory[i]);
   end;
