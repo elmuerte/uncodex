@@ -103,6 +103,7 @@ begin
       li.ImageIndex := 0;
     end;
     pclass := pclass.parent;
+    Inc(j);
   end;
 
   li := lv_Properties.Items.Add;
