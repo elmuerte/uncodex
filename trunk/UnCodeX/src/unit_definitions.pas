@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   General definitions
- $Id: unit_definitions.pas,v 1.106 2004-07-20 12:09:13 elmuerte Exp $
+ $Id: unit_definitions.pas,v 1.107 2004-07-21 14:24:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -29,11 +29,12 @@ unit unit_definitions;
 interface
 
 uses
-  Hashes, unit_uclasses, Classes;
+  Hashes, unit_uclasses, Classes, IniFiles;
 
 type
   TLogProc = procedure (msg: string);
   TLogClassProc = procedure (msg: string; uclass: TUClass = nil);
+  TExternaComment = function(ref: string): string;
 
   // Used for -reuse
   TRedirectStruct = packed record
@@ -55,6 +56,11 @@ type
   procedure guard(s: string);
   procedure unguard;
   procedure resetguard();
+
+  function RetExternalComment(ref: string): string;
+  procedure SetExtCommentFile(ini: string);
+
+  function MInputQuery(const ACaption, APrompt: string; var Value: string): Boolean;
 
 const
   APPTITLE = 'UnCodeX';
@@ -82,6 +88,7 @@ const
   DEFAULTPDF = 'PackageDescriptions.ini';
   KEYWORDFILE1 = 'keywords1.list';
   KEYWORDFILE2 = 'keywords2.list';
+  DEFAULTECF = 'ExternalComments.ini';
 
   // Full Text search tokens
   FTS_LN_BEGIN = ' #';
@@ -128,10 +135,11 @@ uses
 {$IFDEF MSWINDOWS}
   Windows,
 {$ENDIF}
-  SysUtils;
+  SysUtils, unit_multilinequery, Forms;
 
 var
-  sl: TStringList;
+  sl, TmpExtCmt: TStringList;
+  ExtCommentIni: TMemIniFile;
 
 function StrRepeat(line: string; count: integer): string;
 begin
@@ -270,6 +278,35 @@ begin
   end;
 end;
 
+function RetExternalComment(ref: string): string;
+begin
+	if (ExtCommentIni = nil) then exit;
+  TmpExtCmt.Clear;
+  ExtCommentIni.ReadSectionValues(ref, TmpExtCmt);
+  result := trim(TmpExtCmt.Text);
+end;
+
+procedure SetExtCommentFile(ini: string);
+begin
+  if (not FileExists(ini)) then exit;
+  if (ExtCommentIni <> nil) then FreeAndNil(ExtCommentIni);
+  ExtCommentIni := TMemIniFile.Create(ini);
+end;
+
+function MInputQuery(const ACaption, APrompt: string; var Value: string): Boolean;
+begin
+	result := false;
+  with (Tfrm_MultiLineQuery.Create(nil)) do begin
+    Caption := ACaption;
+    lbl_Prompt.Caption := APrompt;
+    mm_Input.Lines.Text := Value;
+    if (ShowModal = IDOK) then begin
+			Value := mm_Input.Lines.Text;
+      result := true;
+    end;
+  end;
+end;
+
 initialization
 	GuardStack := TStringList.Create;
 	kwl1 := false;
@@ -385,8 +422,11 @@ initialization
     end;
   end;
   // fill keyword table -- end
+  TmpExtCmt := TStringList.Create;
 finalization
   Keywords1.Clear;
   Keywords2.Clear;
   GuardStack.Free;
+  TmpExtCmt.Free;
+  if (Assigned(ExtCommentIni)) then ExtCommentIni.Free;
 end.

@@ -61,7 +61,6 @@ object fr_Properties: Tfr_Properties
     OnCustomDrawSubItem = lv_PropertiesCustomDrawSubItem
     OnInfoTip = lv_PropertiesInfoTip
     OnResize = lv_PropertiesResize
-    OnSelectItem = lv_PropertiesSelectItem
   end
   object pnl_Ctrls: TPanel
     Left = 0
@@ -532,6 +531,7 @@ object fr_Properties: Tfr_Properties
     Top = 96
     object mi_CopyToClipboard: TMenuItem
       Caption = 'Copy to clipboard'
+      OnClick = mi_CopyToClipboardClick
     end
     object mi_InsertText: TMenuItem
       Caption = 'Insert text'
@@ -540,6 +540,14 @@ object fr_Properties: Tfr_Properties
     object mi_OpenLocation: TMenuItem
       Caption = 'Open source code'
       OnClick = mi_OpenLocationClick
+    end
+    object mi_N1: TMenuItem
+      Caption = '-'
+    end
+    object mi_Editexternalcomment1: TMenuItem
+      Caption = 'Edit external comment'
+      Hint = 'Set or edit the external comment'
+      OnClick = mi_Editexternalcomment1Click
     end
   end
 end

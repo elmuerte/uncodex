@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.37 2004-07-17 22:59:51 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.38 2004-07-21 14:24:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -34,7 +34,8 @@ unit unit_analyse;
 interface
 
 uses
-  SysUtils, Classes, DateUtils, unit_uclasses, unit_parser, unit_outputdefs;
+  SysUtils, Classes, DateUtils, unit_uclasses, unit_parser, unit_outputdefs,
+  unit_definitions;
 
 type
   TClassAnalyser = class(TThread)
@@ -63,6 +64,7 @@ type
     function pCurlyBrackets(ignoreFirst: boolean = false): string;
     procedure ExecuteList;
     function ExecuteSingle: integer;
+    function GetSecondaryComment(ref :string): string;
   public
     constructor Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false); overload;
     constructor Create(uclass: TUClass; status: TStatusReport; onlynew: boolean = false); overload;
@@ -71,19 +73,18 @@ type
   end;
 
   EOFException = class(Exception)
-
   end;
 
 var
   TreeUpdated: boolean = false;
+  GetExternalComment: TExternaComment;
 
 implementation
 
+{$IFDEF __USE_TREEVIEW}
 uses
-	{$IFDEF __USE_TREEVIEW}
-  ComCtrls,
-  {$ENDIF}
-  unit_definitions;
+  ComCtrls;
+{$ENDIF}
 
 const
   KEYWORD_Class = 'class';
@@ -262,6 +263,15 @@ begin
   end;
 end;
 
+// second secondary comment
+// ref= package.class.member
+// ref= package.class.struct.member
+// ref= package.class.function state
+function TClassAnalyser.GetSecondaryComment(ref :string): string;
+begin
+  if (Assigned(GetExternalComment)) then result := GetExternalComment(ref);
+end;
+
 // Process (...)
 function TClassAnalyser.pBrackets(exclude: boolean = false): string;
 begin
@@ -375,6 +385,7 @@ begin
   p.FullCopy := false;
   p.FCIgnoreComments := false;
   p.NextToken; // = ;
+  if (result.comment = '') then result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
   uclass.consts.Add(result);
   unguard;
 end;
@@ -457,13 +468,26 @@ begin
     nprop.ptype := result.ptype;
     nprop.modifiers := result.modifiers;
     nprop.name := Copy(result.name, 1, i-1);
-    if (UseOverWriteStruct) then OverWriteUstruct.properties.Add(nprop)
-      else uclass.properties.Add(nprop);
+    if (UseOverWriteStruct) then begin
+    	if (nprop.comment = '') then nprop.comment := GetSecondaryComment(uclass.FullName+'.'+OverWriteUstruct.name+'.'+nprop.name);
+    	OverWriteUstruct.properties.Add(nprop)
+    end
+    else begin
+    	if (nprop.comment = '') then nprop.comment := GetSecondaryComment(uclass.FullName+'.'+nprop.name);
+    	uclass.properties.Add(nprop);
+    end;
     Delete(result.name, 1, i);
     i := Pos(',', result.name);
   end;
-  if (UseOverWriteStruct) then OverWriteUstruct.properties.Add(result)
-    else uclass.properties.Add(result);
+  if (UseOverWriteStruct) then begin
+  	// package.class.struct.name
+  	if (result.comment = '') then result.comment := GetSecondaryComment(uclass.FullName+'.'+OverWriteUstruct.name+'.'+result.name);
+  	OverWriteUstruct.properties.Add(result)
+  end
+  else begin
+  	if (result.comment = '') then result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
+  	uclass.properties.Add(result);
+  end;
   p.NextToken;
   unguard;
 end;
@@ -487,6 +511,7 @@ begin
     p.NextToken;
   end;
   p.NextToken; // = ;
+  if (result.comment = '') then result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
   uclass.enums.Add(result);
   unguard;
 end;
@@ -554,6 +579,7 @@ begin
   UseOverWriteStruct := false;
   {$IFEND}
   if (p.Token = ';') then p.NextToken; // = ;
+  if (result.comment = '') then result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
   uclass.structs.Add(result);
   unguard;
 end;
@@ -662,8 +688,11 @@ begin
   else p.NextToken; // = } or ;
   result.state := currentState;
   if (currentState <> nil) then begin
+  	// package.class.name state
+  	if (result.comment = '') then result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name+' '+currentState.name);
     currentState.functions.Add(result);
   end;
+  if (result.comment = '') then result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
   if (result.ftype = uftDelegate) then uclass.delegates.Add(result)
   else uclass.functions.Add(result);
   unguard;
@@ -703,6 +732,7 @@ begin
     end;
   end;
   currentState := Result;
+  if (result.comment = '') then result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
   uclass.states.Add(result);
   unguard;
 end;
@@ -721,6 +751,7 @@ begin
       p.NextToken;
       uclass.name := p.TokenString;
       uclass.comment := trim(p.GetCopyData);
+      if (uclass.comment = '') then uclass.comment := GetSecondaryComment(uclass.FullName);
       p.NextToken;
       if (p.TokenSymbolIs(KEYWORD_extends) or p.TokenSymbolIs(KEYWORD_expands)) then begin
         p.NextToken;

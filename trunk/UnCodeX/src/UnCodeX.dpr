@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
- $Id: UnCodeX.dpr,v 1.41 2004-07-17 22:59:51 elmuerte Exp $
+ $Id: UnCodeX.dpr,v 1.42 2004-07-21 14:24:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -69,7 +69,8 @@ uses
   unit_moveclass in 'unit_moveclass.pas' {frm_MoveClass},
   unit_defprops in 'unit_defprops.pas' {frm_DefPropsBrowser},
   unit_renameclass in 'unit_renameclass.pas' {frm_RenameClass},
-  unit_rungame in 'unit_rungame.pas' {frm_Run};
+  unit_rungame in 'unit_rungame.pas' {frm_Run},
+  unit_multilinequery in 'unit_multilinequery.pas' {frm_MultiLineQuery};
 
 {$R *.res}
 
@@ -192,9 +193,9 @@ begin
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-	  Application.CreateForm(Tfrm_About, frm_About);
-  	Application.CreateForm(Tfrm_License, frm_License);
-	  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+  Application.CreateForm(Tfrm_About, frm_About);
+  Application.CreateForm(Tfrm_License, frm_License);
+  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end
   else if (frm_Splash <> nil) then frm_Splash.Close;

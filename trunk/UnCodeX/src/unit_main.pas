@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.109 2004-07-18 09:36:50 elmuerte Exp $
+ $Id: unit_main.pas,v 1.110 2004-07-21 14:24:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -457,7 +457,7 @@ var
 // config vars
 var
   // general
-  StateFile, GPDF: string;
+  StateFile, GPDF, ExtCommentFile: string;
   SourcePaths: TStringList;
   PackagePriority: TStringList;
   IgnorePackages: TStringList;
@@ -586,7 +586,10 @@ begin
 	if (runningthread.ClassType = TMSHTMLHelp) then ac_OpenHTMLHelp.Enabled := FileExists(HTMLHelpFile);
   runningthread := nil;
   ac_Abort.Enabled := false;
-  if (IsBatching) then NextBatchCommand;
+  if (IsBatching) then NextBatchCommand
+  else begin
+    if (TreeUpdated and fr_Props.Visible) then fr_Props.LoadClass;
+  end;
 end;
 
 procedure Tfrm_UnCodeX.SearchThreadTerminate(Sender: TObject);
@@ -1476,6 +1479,7 @@ begin
     ini.WriteBool('Config', 'ClassPropertiesWindow', ClassPropertiesWindow);
     ini.WriteInteger('Config', 'InlineSearchTimeout', tmr_InlineSearch.Interval div 1000);
     ini.WriteString('Config', 'PackageDescriptionFile', GPDF);
+    ini.WriteString('Config', 'ExternalCommentFile', ExtCommentFile);
 
     ini.WriteString('Layout', 'Log.Font.Name', lb_Log.Font.Name);
     ini.WriteInteger('Layout', 'Log.Font.Color', lb_Log.Font.Color);
@@ -1785,6 +1789,8 @@ begin
       StateFile := ChangeFileExt(ExtractFilename(ConfigFile), '.ucx');
     end;
     GPDF := ini.ReadString('Config', 'PackageDescriptionFile', ExtractFilePath(ParamStr(0))+DefaultPDF);
+		ExtCommentFile := ini.ReadString('Config', 'ExternalCommentFile', ExtractFilePath(ParamStr(0))+DefaultECF);
+    SetExtCommentFile(ExtCommentFile);
     AnalyseModified := ini.ReadBool('Config', 'AnalyseModified', true);
     DefaultInheritanceDepth := ini.ReadInteger('Config', 'DefaultInheritanceDepth', 0);
     if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ConfigFile)+StateFile;
@@ -2080,6 +2086,7 @@ begin
     cb_CPAsWindow.Checked := ClassPropertiesWindow;
     ud_InlineSearchTimeout.Position := tmr_InlineSearch.Interval div 1000;
     ed_gpdf.text := GPDF;
+    //TODO: ExtCommentFile
     if (ShowModal = mrOk) then begin
       { HTML output }
       HTMLOutputDir := ed_HTMLOutputDir.Text;
@@ -2119,6 +2126,8 @@ begin
       ClassPropertiesWindow := cb_CPAsWindow.Checked;
       tmr_InlineSearch.Interval := ud_InlineSearchTimeout.Position * 1000;
       GPDF := ed_gpdf.Text;
+      //TODO: ExtCommentFile
+      SetExtCommentFile(ExtCommentFile);
       { Source paths }
       SourcePaths.Clear;
       SourcePaths.AddStrings(lb_Paths.Items);
@@ -3371,4 +3380,5 @@ initialization
 	DefaultDockTreeClass := TUCXDockTree;
   unit_definitions.Log := Log;
   unit_definitions.LogClass := LogClass;
+  unit_analyse.GetExternalComment := unit_definitions.RetExternalComment;
 end.

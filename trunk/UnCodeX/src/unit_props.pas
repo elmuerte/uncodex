@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   property inspector frame
- $Id: unit_props.pas,v 1.9 2004-04-19 20:38:56 elmuerte Exp $
+ $Id: unit_props.pas,v 1.10 2004-07-21 14:24:52 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -31,7 +31,7 @@ interface
 uses 
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   Menus, ImgList, StdCtrls, Buttons, ComCtrls, unit_uclasses, Clipbrd,
-  ExtCtrls, Tabs;
+  ExtCtrls, Tabs, Inifiles;
 
 type
   Tfr_Properties = class(TFrame)
@@ -47,10 +47,10 @@ type
     ud_InheritanceLevel: TUpDown;
     bvl_Nothing: TBevel;
     btn_ShowBar: TBitBtn;
+    mi_N1: TMenuItem;
+    mi_Editexternalcomment1: TMenuItem;
     procedure lv_PropertiesInfoTip(Sender: TObject; Item: TListItem;
       var InfoTip: String);
-    procedure lv_PropertiesSelectItem(Sender: TObject; Item: TListItem;
-      Selected: Boolean);
     procedure lv_PropertiesClick(Sender: TObject);
     procedure mi_OpenLocationClick(Sender: TObject);
     procedure lv_PropertiesCustomDrawSubItem(Sender: TCustomListView;
@@ -59,6 +59,8 @@ type
     procedure btn_RefreshClick(Sender: TObject);
     procedure lv_PropertiesResize(Sender: TObject);
     procedure btn_ShotBarClick(Sender: TObject);
+    procedure mi_Editexternalcomment1Click(Sender: TObject);
+    procedure mi_CopyToClipboardClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -68,7 +70,7 @@ type
 
 implementation
 
-uses unit_main;
+uses unit_main, unit_analyse, unit_definitions;
 
 {$R *.dfm}
 
@@ -111,7 +113,7 @@ begin
       li := lv_Properties.Items.Add;
       li.Caption := 'const';
       {if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.consts[i].name)
-        else} li.SubItems.Add(pclass.consts[i].name);
+        else} li.SubItems.AddObject(pclass.consts[i].name, pclass.consts[i]);
       li.SubItems.Add(IntToStr(pclass.consts[i].srcline));
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(pclass.consts[i].name+' = '+pclass.consts[i].value);
@@ -149,7 +151,7 @@ begin
       li := lv_Properties.Items.Add;
       li.Caption := 'var';
       {if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.properties[i].name)
-        else} li.SubItems.Add(pclass.properties[i].name);
+        else} li.SubItems.AddObject(pclass.properties[i].name, pclass.properties[i]);
       li.SubItems.Add(IntToStr(pclass.properties[i].srcline));
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(pclass.properties[i].ptype+' '+pclass.properties[i].name);
@@ -177,7 +179,7 @@ begin
       li := lv_Properties.Items.Add;
       li.Caption := 'enum';
       {if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.enums[i].name)
-        else} li.SubItems.Add(pclass.enums[i].name);
+        else} li.SubItems.AddObject(pclass.enums[i].name, pclass.enums[i]);
       li.SubItems.Add(IntToStr(pclass.enums[i].srcline));
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(pclass.enums[i].name+' = '+StringReplace(pclass.enums[i].options, ',', ', ', [rfReplaceAll]));
@@ -205,7 +207,7 @@ begin
       li := lv_Properties.Items.Add;
       li.Caption := 'struct';
       {if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.structs[i].name)
-        else} li.SubItems.Add(pclass.structs[i].name);
+        else} li.SubItems.AddObject(pclass.structs[i].name, pclass.structs[i]);
       li.SubItems.Add(IntToStr(pclass.structs[i].srcline));
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(pclass.structs[i].name);
@@ -232,7 +234,7 @@ begin
     for i := 0 to pclass.delegates.Count-1 do begin
       li := lv_Properties.Items.Add;
       li.Caption := 'delegate';
-      li.SubItems.Add(pclass.delegates[i].name);
+      li.SubItems.AddObject(pclass.delegates[i].name, pclass.delegates[i]);
       li.SubItems.Add(IntToStr(pclass.delegates[i].srcline));
       li.SubItems.Add(IntToStr(j));
       if (pclass.delegates[i].return = '') then return := ''
@@ -267,7 +269,7 @@ begin
       if (pclass.functions[i].state <> nil) then begin
         lasttag := lasttag+' (state:'+pclass.functions[i].state.name+')';
       end;
-      li.SubItems.Add(lasttag);
+      li.SubItems.AddObject(lasttag, pclass.functions[i]);
       li.SubItems.Add(IntToStr(pclass.functions[i].srcline));
       li.SubItems.Add(IntToStr(j));
       if ((pclass.functions[i].ftype = uftFunction) or (pclass.functions[i].ftype = uftEvent) or (pclass.functions[i].ftype = uftDelegate)) then begin
@@ -307,16 +309,6 @@ begin
   if (Item.SubItems.Count < 5) then exit;
   InfoTip := Item.SubItems[3];
   if (Item.SubItems[4] <> '') then InfoTip := InfoTip+#13#10#13#10+StringReplace(Item.SubItems[4], #9, '', [rfReplaceAll]);
-end;
-
-procedure Tfr_Properties.lv_PropertiesSelectItem(Sender: TObject;
-  Item: TListItem; Selected: Boolean);
-begin
-	if (not Selected) then exit;
-  if ((Item.Caption <> '-') and (Item.Caption <> '=')) then begin
-    if (Item.SubItems.Count > 4) then Clipboard.SetTextBuf(PChar(Item.SubItems[4]))
-    else Clipboard.SetTextBuf(PChar(Item.SubItems[0]));
-  end;
 end;
 
 procedure Tfr_Properties.lv_PropertiesClick(Sender: TObject);
@@ -401,6 +393,64 @@ procedure Tfr_Properties.btn_ShotBarClick(Sender: TObject);
 begin
   pnl_Ctrls.Visible := not pnl_Ctrls.Visible;
   bvl_Nothing.Visible := not pnl_Ctrls.Visible;
+end;
+
+procedure Tfr_Properties.mi_Editexternalcomment1Click(Sender: TObject);
+var
+	ini: TMemIniFile;
+  ref, comment: string;
+  pclass: TUClass;
+  uobj: TUObject;
+  lst: TStringList;
+begin
+	try
+		if (lv_Properties.Selected = nil) then exit;
+  	if (lv_Properties.Selected.Data = nil) then exit;
+	  pclass := TUClass(lv_Properties.Selected.Data);
+  	if (pclass = nil) then exit;
+  	uobj := TUObject(lv_Properties.Selected.SubItems.Objects[0]);
+	  if (uobj = nil) then exit;
+  except
+  	exit;
+  end;
+  
+	ini := TMemIniFile.Create(ExtCommentFile);
+  ref := pclass.FullName+'.'+uobj.name;
+  if (uobj.ClassType = TUFunction) then begin
+		if (TUFunction(uobj).state <> nil) then ref := ref+' '+TUFunction(uobj).state.name;
+  end;
+  lst := TStringList.Create;
+  try
+		if ((not ini.SectionExists(ref)) and (uobj.comment <> '')) then begin
+			if (MessageDlg('There already is a comment for this entity but not in the external comment file.'+#13+#10+
+      	'Mostlikely this comment is set in the source file. Setting an external comment will have no effect.'+#13+#10+
+        'Are you sure you want to set an external comment?', mtWarning, [mbYes, mbNo], 0) = mrNo) then Exit;
+    end;
+    comment := uobj.comment;
+    if (MInputQuery('Comment for '+ref, 'Please enter a comment', comment)) then begin
+			ini.EraseSection(ref);
+      ini.GetStrings(lst);
+      lst.Add('['+ref+']');
+      lst.Add(comment);
+      ini.SetStrings(lst);
+      ini.UpdateFile;
+      uobj.comment := comment;
+      TreeUpdated := true;
+      SetExtCommentFile(ExtCommentFile);
+    end;
+  finally
+  	lst.Free;
+		ini.Free;
+  end;
+end;
+
+procedure Tfr_Properties.mi_CopyToClipboardClick(Sender: TObject);
+begin
+	if (lv_Properties.Selected = nil) then exit;
+  if ((lv_Properties.Selected.Caption <> '-') and (lv_Properties.Selected.Caption <> '=')) then begin
+    if (lv_Properties.Selected.SubItems.Count > 4) then Clipboard.SetTextBuf(PChar(lv_Properties.Selected.SubItems[4]))
+    else Clipboard.SetTextBuf(PChar(lv_Properties.Selected.SubItems[0]));
+  end;
 end;
 
 end.

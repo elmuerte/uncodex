@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Advanced "run..." dialog
- $Id: unit_rungame.pas,v 1.3 2004-07-20 12:09:13 elmuerte Exp $
+ $Id: unit_rungame.pas,v 1.4 2004-07-21 14:24:52 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -170,6 +170,7 @@ var
 	i: integer;
   ini: TMemIniFile;
 begin
+  pc_Args.ActivePage := ts_URL;
 	for i := 0 to ClassList.Count-1 do begin
 		if (CompareText(ClassList[i].name, 'gameinfo') = 0) then FillGameInfo(ClassList[i]);
     if (CompareText(ClassList[i].name, 'mutator') = 0) then FillMutator(ClassList[i])
