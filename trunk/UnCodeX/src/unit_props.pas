@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Class property inpector frame
 
-  $Id: unit_props.pas,v 1.25 2004-12-23 22:18:27 elmuerte Exp $
+  $Id: unit_props.pas,v 1.26 2004-12-24 11:05:10 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -397,7 +397,7 @@ begin
   if (lv_Properties.Selected.Data = nil) then exit;
   if (frm_UnCodeX.Visible and frm_UnCodeX.mi_SourceSnoop.Checked) then begin
     frm_UnCodeX.OpenSourceInline(ResolveFilename(TUClass(lv_Properties.Selected.Data), TUDeclaration(lv_Properties.Selected.SubItems.Objects[0])),
-      StrToIntDef(lv_Properties.Selected.SubItems[1], 1)-1, 0, TUClass(lv_Properties.Selected.Data));
+        StrToIntDef(lv_Properties.Selected.SubItems[1], 1)-1, 0, TUClass(lv_Properties.Selected.Data));
   end;
 end;
 
@@ -405,7 +405,8 @@ procedure Tfr_Properties.mi_OpenLocationClick(Sender: TObject);
 begin
   if (lv_Properties.Selected = nil) then exit;
   if (lv_Properties.Selected.Data = nil) then exit;
-  frm_UnCodeX.OpenSourceLine(TUClass(lv_Properties.Selected.Data), StrToIntDef(lv_Properties.Selected.SubItems[1], 0), 0);
+  frm_UnCodeX.OpenSourceLine(ResolveFilename(TUClass(lv_Properties.Selected.Data), TUDeclaration(lv_Properties.Selected.SubItems.Objects[0])),
+      StrToIntDef(lv_Properties.Selected.SubItems[1], 0), 0, TUClass(lv_Properties.Selected.Data));
 end;
 
 procedure Tfr_Properties.lv_PropertiesCustomDrawSubItem(

@@ -6,7 +6,7 @@
   Purpose:
     Replacement docktree
 
-  $Id: unit_ucxdocktree.pas,v 1.11 2004-12-23 22:18:27 elmuerte Exp $
+  $Id: unit_ucxdocktree.pas,v 1.12 2004-12-24 11:05:10 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -177,13 +177,22 @@ procedure TUCXDockTree.PaintDockFrame(Canvas: TCanvas; Control: TControl; const 
     end;
   end;
 
+  procedure RTrim(var str: string; width: integer);
+  var
+    x: integer;
+  begin
+    x := Canvas.TextWidth(str);
+    if (x < width) then exit;
+    Delete(str, 1, round(Length(str)*(1-width/x))+3);
+    str := '...'+str;
+  end;
+
 var
   tx: integer;
   caption: string;
 begin
   tx := 0;
   with ARect do begin
-    //TODO: trim string (to end)
     Canvas.Brush.Style := bsClear;
     Canvas.Font.Size := 8;
     Canvas.Font.Name := 'Arial';
@@ -192,6 +201,7 @@ begin
     begin
       if (caption <> '') then begin
         RotateFont(canvas, 90);
+        RTrim(caption, bottom-Top-12);
         Canvas.TextOut(Left-2, bottom-8, caption);
         tx := Canvas.TextWidth(caption)+8;
 
@@ -206,6 +216,7 @@ begin
     else
     begin
       if (caption <> '') then begin
+        RTrim(caption, Right-Left-16);
         Canvas.TextOut(Left+8, Top-2, caption);
         tx := Canvas.TextWidth(caption)+8;
 

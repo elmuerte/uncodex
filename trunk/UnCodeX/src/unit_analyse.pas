@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.57 2004-12-20 22:22:30 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.58 2004-12-24 11:05:02 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -594,7 +594,7 @@ begin
         FreeAndNil(nprop);
         raise;
       end;
-      // TODO: fix
+      // TODO: is this broken?
       Delete(last, 1, i);
       i := Pos(',', last);
     end;
