@@ -6,7 +6,7 @@
   Purpose:
     Utility functions that have a GUI dependency
 
-  $Id: unit_utils.pas,v 1.17 2005-03-28 12:22:52 elmuerte Exp $
+  $Id: unit_utils.pas,v 1.18 2005-03-30 11:43:03 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -170,13 +170,13 @@ begin
   HTMLView.Left := 0;
   HTMLView.ParentWindow := Handle;
   bInitialized := false;
+  HTMLView.OnDocumentComplete := HTMLOnDocumentComplete;
   HTMLView.Navigate('about:blank');
   HTMLView.Align := alClient;
   HTMLView.Offline := true;
   HTMLView.RegisterAsBrowser := false;
   HTMLView.RegisterAsDropTarget := false;
   HTMLView.Silent := true;
-  HTMLView.OnDocumentComplete := HTMLOnDocumentComplete;
 end;
 
 procedure THTMLHintWindow.HTMLOnDocumentComplete(Sender: TObject; const pDisp: IDispatch; var URL: OleVariant);
@@ -188,8 +188,12 @@ begin
     end;
     Height := HTMLView.OleObject.Document.Body.ScrollHeight + 2;
     if (not VarIsNull(HTMLView.OleObject.Document.all.item('sizespan'))) then begin
-      if (HTMLView.OleObject.Document.all.item('sizespan').ScrollWidth < MaxHintWidth) then
+      if (HTMLView.OleObject.Document.all.item('sizespan').ScrollWidth < MaxHintWidth) then begin
         Width := HTMLView.OleObject.Document.all.item('sizespan').ScrollWidth+6;
+      end
+      else begin
+        Width := HTMLView.OleObject.Document.all.item('sizespan').ScrollWidth+16;
+      end;
     end;
     HTMLView.Width := Width-2;
     HTMLView.Height := Height-1;
@@ -231,6 +235,7 @@ begin
   HTMLView.Width := MaxHintWidth;
   if Assigned(HTMLView.Document) then
   begin
+    bInitialized := true;
     sl := TStringList.Create;
     try
       ms := TMemoryStream.Create;

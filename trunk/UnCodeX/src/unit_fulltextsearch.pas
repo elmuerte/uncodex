@@ -6,7 +6,7 @@
   Purpose:
     Full text search thread. Includes support for regular expressions.
 
-  $Id: unit_fulltextsearch.pas,v 1.20 2004-12-21 08:53:43 elmuerte Exp $
+  $Id: unit_fulltextsearch.pas,v 1.21 2005-03-30 11:43:02 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -103,7 +103,7 @@ begin
           SearchStack[High(SearchStack)].offset := 0;
           SearchStack[High(SearchStack)].uclass := curclass;
         end;
-    3:  if (Tree.Selected <> nil) then begin
+    3,4:if (Tree.Selected <> nil) then begin
           curclass := TUClass(Tree.Selected.Data);
         end;
   end;
@@ -135,6 +135,7 @@ begin
       if (res and config.isFindFirst) then begin
         break;
       end;
+      if (config.Scope = 4) then break;
       inc(ccount);
       uclass := GetNextClass();
       if (Self.Terminated) then break;
@@ -184,6 +185,9 @@ begin
         end;
     3:  begin // parent classes
           curclass := curclass.parent;
+          result := curclass;
+        end;
+    4:  begin
           result := curclass;
         end;
   end;

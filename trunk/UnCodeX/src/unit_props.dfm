@@ -1,13 +1,13 @@
 object fr_Properties: Tfr_Properties
   Left = 0
   Top = 0
-  Width = 139
+  Width = 152
   Height = 272
   TabOrder = 0
   object bvl_Nothing: TBevel
     Left = 0
     Top = 21
-    Width = 139
+    Width = 152
     Height = 9
     Align = alTop
     Shape = bsSpacer
@@ -15,7 +15,7 @@ object fr_Properties: Tfr_Properties
   object lv_Properties: TListView
     Left = 0
     Top = 30
-    Width = 139
+    Width = 152
     Height = 242
     Align = alClient
     Columns = <
@@ -65,7 +65,7 @@ object fr_Properties: Tfr_Properties
   object pnl_Ctrls: TPanel
     Left = 0
     Top = 0
-    Width = 139
+    Width = 152
     Height = 21
     Align = alTop
     BevelOuter = bvNone
@@ -81,14 +81,14 @@ object fr_Properties: Tfr_Properties
     object ed_InheritanceLevel: TEdit
       Left = 96
       Top = 0
-      Width = 33
+      Width = 25
       Height = 21
       TabOrder = 0
       Text = '0'
       OnChange = btn_RefreshClick
     end
     object ud_InheritanceLevel: TUpDown
-      Left = 129
+      Left = 121
       Top = 0
       Width = 15
       Height = 21

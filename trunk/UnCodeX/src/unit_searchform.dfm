@@ -4,7 +4,7 @@ object frm_SearchForm: Tfrm_SearchForm
   ActiveControl = cb_History
   BorderStyle = bsDialog
   Caption = 'Search'
-  ClientHeight = 199
+  ClientHeight = 207
   ClientWidth = 400
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -19,7 +19,7 @@ object frm_SearchForm: Tfrm_SearchForm
   OnKeyUp = FormKeyUp
   DesignSize = (
     400
-    199)
+    207)
   PixelsPerInch = 96
   TextHeight = 13
   object lbl_Text: TLabel
@@ -33,7 +33,7 @@ object frm_SearchForm: Tfrm_SearchForm
     Left = 192
     Top = 48
     Width = 9
-    Height = 144
+    Height = 152
     Anchors = [akLeft, akTop, akBottom]
     Shape = bsLeftLine
   end
@@ -113,7 +113,7 @@ object frm_SearchForm: Tfrm_SearchForm
     Left = 200
     Top = 112
     Width = 193
-    Height = 81
+    Height = 89
     Hint = 'Search scope'
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Scope'
@@ -122,7 +122,8 @@ object frm_SearchForm: Tfrm_SearchForm
       '&All classes'
       'From s&elected class'
       '&Subclasses'
-      '&Parent classes')
+      '&Parent classes'
+      'Current class &only')
     TabOrder = 9
   end
   object cb_Default: TCheckBox
@@ -136,7 +137,7 @@ object frm_SearchForm: Tfrm_SearchForm
   end
   object btn_Ok: TBitBtn
     Left = 8
-    Top = 168
+    Top = 176
     Width = 75
     Height = 25
     TabOrder = 1
@@ -144,7 +145,7 @@ object frm_SearchForm: Tfrm_SearchForm
   end
   object btn_Cancel: TBitBtn
     Left = 112
-    Top = 168
+    Top = 176
     Width = 75
     Height = 25
     TabOrder = 2
