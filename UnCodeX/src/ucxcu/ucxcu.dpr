@@ -1,10 +1,13 @@
-{-----------------------------------------------------------------------------
- Unit Name: ucxcu
- Author:    elmuerte
- Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
- Purpose:   UnCodeX commandline Utility
- $Id: ucxcu.dpr,v 1.9 2004-10-18 11:31:47 elmuerte Exp $
------------------------------------------------------------------------------}
+{*******************************************************************************
+    Name:
+        ucxcu.pas
+    Author(s):
+        Michiel 'El Muerte' Hendriks
+    Purpose:
+        UnCodeX Commandline Utility Client
+
+    $Id: ucxcu.dpr,v 1.10 2004-10-20 14:19:33 elmuerte Exp $
+*******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
     Copyright (C) 2003, 2004  Michiel Hendriks
