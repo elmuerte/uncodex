@@ -2,9 +2,10 @@ object frm_License: Tfrm_License
   Left = 237
   Top = 153
   BorderStyle = bsDialog
+  BorderWidth = 2
   Caption = 'UnCodeX License'
-  ClientHeight = 513
-  ClientWidth = 671
+  ClientHeight = 509
+  ClientWidth = 667
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -21,8 +22,8 @@ object frm_License: Tfrm_License
   object mm_License: TMemo
     Left = 0
     Top = 0
-    Width = 671
-    Height = 513
+    Width = 667
+    Height = 509
     Cursor = crArrow
     Align = alClient
     BorderStyle = bsNone
