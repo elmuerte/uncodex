@@ -982,6 +982,7 @@ begin
       Width := ini.ReadInteger('Layout', 'Width', Width);
       Height := ini.ReadInteger('Layout', 'Height', Height);
     end;
+    if (ini.ReadBool('Layout', 'IsMaximized', false)) then WindowState := wsMaximized;
     ABWidth := ini.ReadInteger('Layout', 'ABWidth', 150);
     ac_VAutoHide.Checked := ini.ReadBool('Layout', 'AutoHide', false);
     mi_AutoHide.OnClick(Sender);
@@ -1136,7 +1137,7 @@ begin
     ClassList.Clear;
     runningthread := TPackageScanner.Create(SourcePaths, tv_Packages.Items,
           tv_Classes.items, statusReport, PackageList, ClassList,
-          PackagePriority, IgnorePackages);
+          PackagePriority, IgnorePackages, unit_rtfhilight.ClassesHash);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
   end;
@@ -1466,7 +1467,7 @@ begin
           ini.WriteInteger('Layout', 'Top', OldSize.Top);
           ini.WriteInteger('Layout', 'Left', OldSize.Left);
         end
-        else begin
+        else if (WindowState = wsNormal) then begin
           ini.WriteInteger('Layout', 'Top', Top);
           ini.WriteInteger('Layout', 'Left', Left);
         end;
@@ -1476,7 +1477,11 @@ begin
           ini.WriteInteger('Layout', 'Width', OldSize.Right);
           ini.WriteInteger('Layout', 'Height', OldSize.Bottom);
         end
-        else begin
+        else if (WindowState = wsMaximized) then begin
+          ini.WriteBool('Layout', 'IsMaximized', true);
+        end
+        else if (WindowState = wsNormal) then begin
+          ini.WriteBool('Layout', 'IsMaximized', false);
           ini.WriteInteger('Layout', 'Width', Width);
           ini.WriteInteger('Layout', 'Height', Height);
         end;
@@ -1734,7 +1739,7 @@ begin
         re_SourceSnoop.ClearBgColor();
         re_SourceSnoop.SelStart := k;
         re_SourceSnoop.SelLength := re_SourceSnoop.Perform(EM_LINELENGTH, k, 0);
-        re_SourceSnoop.SetSelBgColor(clSilver);
+        re_SourceSnoop.SetSelBgColor(clBtnFace);
       end;
       exit;
     end;
@@ -1844,6 +1849,9 @@ procedure Tfrm_UnCodeX.ac_VPackageTreeExecute(Sender: TObject);
 begin
   spl_Main1.Visible := mi_PackageTree.Checked;
   tv_Packages.Visible := mi_PackageTree.Checked;
+  if (tv_Packages.Visible) then begin
+    if (spl_Main1.Left > spl_Main3.Left) then tv_Packages.Width := spl_Main3.Left-spl_Main1.MinSize;
+  end;
 end;
 
 procedure Tfrm_UnCodeX.ac_VLogExecute(Sender: TObject);
@@ -1997,6 +2005,9 @@ begin
   spl_Main3.Visible := mi_SourceSnoop.Checked;
   re_SourceSnoop.Visible := mi_SourceSnoop.Checked;
   if (mi_SourceSnoop.Checked and not DoInit) then ac_SourceSnoop.Execute;
+  if (re_SourceSnoop.Visible) then begin
+    if (re_SourceSnoop.Left < tv_Classes.Left) then re_SourceSnoop.Width := spl_Main3.MinSize;
+  end;
 end;
 
 procedure Tfrm_UnCodeX.ac_CopySelectionExecute(Sender: TObject);
@@ -2016,9 +2027,21 @@ end;
 
 procedure Tfrm_UnCodeX.re_SourceSnoopMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
+var
+  pt: TPoint;
+  curpos: integer;
+  tr: TEXTRANGE;
+  tmp: array[0..256] of char;
 begin
-  if (ssCtrl in Shift) then re_SourceSnoop.Cursor := crHandPoint
-  else re_SourceSnoop.Cursor := crDefault;
+  pt := Point(X, Y);
+  curpos := re_SourceSnoop.Perform(EM_CHARFROMPOS, 0, Integer(@pt));
+  tr.chrg.cpMin := re_SourceSnoop.Perform(EM_FINDWORDBREAK, WB_LEFT, curpos);
+  tr.chrg.cpMax := re_SourceSnoop.Perform(EM_FINDWORDBREAK, WB_RIGHT, curpos);
+  tr.lpstrText := tmp;
+  re_SourceSnoop.Cursor := crDefault;
+  if (re_SourceSnoop.Perform(EM_GETTEXTRANGE, 0, integer(@tr)) > 0) then begin
+    if unit_rtfhilight.ClassesHash.Exists(LowerCase(tmp)) then re_SourceSnoop.Cursor := crHandPoint;
+  end;
 end;
 
 procedure Tfrm_UnCodeX.mi_ClearHilightClick(Sender: TObject);
@@ -2053,8 +2076,7 @@ begin
     pt := re_SourceSnoop.ClientToScreen(Point(x,y));
     pm_SourceSnoop.Popup(pt.X, pt.Y);
   end;
-  if ((ssCtrl in Shift) and (button = mbLeft)) then begin
-    re_SourceSnoop.Cursor := crHandPoint;
+  if ((re_SourceSnoop.Cursor = crHandPoint) and (button = mbLeft)) then begin
     pt := Point(X, Y);
     curpos := re_SourceSnoop.Perform(EM_CHARFROMPOS, 0, Integer(@pt));
     tr.chrg.cpMin := re_SourceSnoop.Perform(EM_FINDWORDBREAK, WB_LEFT, curpos);

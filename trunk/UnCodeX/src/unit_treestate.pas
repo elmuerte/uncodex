@@ -37,6 +37,8 @@ type
 
 implementation
 
+uses unit_rtfhilight;
+
 const
   TabChar = #9;
   EndOfLine = #13#10;
@@ -184,6 +186,7 @@ begin
     for n := 0 to NumClasses-1 do begin
       uclass := TUClass.Create;
       uclass.name := Reader.ReadString;
+      unit_rtfhilight.ClassesHash.Items[LowerCase(uclass.name)] := '-';
       ALevel := Reader.ReadInteger;
       uclass.package := GetPackage(Reader.ReadString);
       uclass.tagged := uclass.package.tagged;
@@ -391,6 +394,7 @@ begin
   if (StrComp(tmp, UCXheader) = 0) then begin
     Clear;
     LoadPackagesFromStream(stream);
+    unit_rtfhilight.ClassesHash.Clear;
     LoadClassesFromStream(stream);
     FClassList.Sort;
     FPackageList.Sort;

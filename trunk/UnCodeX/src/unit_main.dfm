@@ -2,6 +2,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
   Left = 282
   Top = 114
   HelpType = htKeyword
+  ActiveControl = tv_Classes
   AutoScroll = False
   ClientHeight = 570
   ClientWidth = 658
@@ -295,6 +296,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Font.Height = -11
     Font.Name = 'Courier New'
     Font.Style = []
+    HideSelection = False
     ParentFont = False
     ReadOnly = True
     ScrollBars = ssBoth
@@ -721,7 +723,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Caption = 'Menu bar'
       Checked = True
       Hint = 'Menu bar|Show or hide the menu bar'
-      ShortCut = 32845
+      ShortCut = 49229
       OnExecute = ac_VMenuBarExecute
     end
     object ac_VToolbar: TAction
@@ -729,7 +731,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
       AutoCheck = True
       Caption = 'Toolbar'
       Checked = True
-      ShortCut = 32852
+      ShortCut = 49236
       OnExecute = ac_VToolbarExecute
     end
     object ac_VPackageTree: TAction
@@ -737,7 +739,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
       AutoCheck = True
       Caption = 'Package Tree'
       Checked = True
-      ShortCut = 32848
+      ShortCut = 49232
       OnExecute = ac_VPackageTreeExecute
     end
     object ac_VLog: TAction
@@ -745,7 +747,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
       AutoCheck = True
       Caption = 'Log'
       Checked = True
-      ShortCut = 32844
+      ShortCut = 49228
       OnExecute = ac_VLogExecute
     end
     object ac_VSaveSize: TAction
@@ -764,28 +766,28 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Category = 'Layout'
       AutoCheck = True
       Caption = 'Stay on top'
-      ShortCut = 32851
+      ShortCut = 49235
       OnExecute = ac_VStayOnTopExecute
     end
     object ac_VAutoHide: TAction
       Category = 'Layout'
       AutoCheck = True
       Caption = 'Auto hide'
-      ShortCut = 41025
+      ShortCut = 49217
       OnExecute = ac_VAutoHideExecute
     end
     object ac_VTRight: TAction
       Category = 'Layout'
       AutoCheck = True
       Caption = 'Right'
-      ShortCut = 40999
+      ShortCut = 49191
       OnExecute = ac_VTRightExecute
     end
     object ac_VTLeft: TAction
       Category = 'Layout'
       AutoCheck = True
       Caption = 'Left'
-      ShortCut = 40997
+      ShortCut = 49189
       OnExecute = ac_VTLeftExecute
     end
     object ac_SourceSnoop: TAction
@@ -798,7 +800,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
       AutoCheck = True
       Caption = 'Source Snoop'
       Hint = 'View the source code of a file'
-      ShortCut = 32835
+      ShortCut = 49219
       OnExecute = ac_VSourceSnoopExecute
     end
     object ac_CopySelection: TAction

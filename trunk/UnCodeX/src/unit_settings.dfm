@@ -43,7 +43,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_Layout
+    ActivePage = ts_SourceSnoop
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -1199,9 +1199,9 @@ object frm_Settings: Tfrm_Settings
         object Label8: TLabel
           Left = 224
           Top = 125
-          Width = 74
+          Width = 24
           Height = 13
-          Caption = 'Type (not used)'
+          Caption = 'Type'
         end
         object Label9: TLabel
           Left = 224

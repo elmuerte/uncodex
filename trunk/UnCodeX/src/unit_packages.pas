@@ -10,7 +10,7 @@ unit unit_packages;
 interface
 
 uses
-  Windows, SysUtils, Classes, ComCtrls, unit_uclasses, unit_outputdefs;
+  Windows, SysUtils, Classes, ComCtrls, unit_uclasses, unit_outputdefs, Hashes;
 
 type
   TPackageScanner = class(TThread)
@@ -23,13 +23,14 @@ type
     classlist: TUClassList;
     PackagePriority: TStringList;
     IgnorePackages: TStringList;
+    ClassHash: TStringHash;
     procedure ScanPackages;
     procedure CreateClassTree(classlist: TUClassList; parent: TUClass = nil; pnode: TTreeNode = nil);
     function GetClassName(filename: string): TUClass;
   public
     constructor Create(paths: TStringList; packagetree, classtree: TTreeNodes;
       status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
-      PackagePriority, IgnorePackages: TStringList);
+      PackagePriority, IgnorePackages: TStringList; CHash: TStringHash = nil);
     destructor Destroy; override;
     procedure Execute; override;
   end;
@@ -41,7 +42,7 @@ uses
 
 constructor TPackageScanner.Create(paths: TStringList; packagetree, classtree: TTreeNodes;
   status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
-  PackagePriority, IgnorePackages: TStringList);
+  PackagePriority, IgnorePackages: TStringList; CHash: TStringHash = nil);
 begin
   Self.paths := paths;
   Self.packagetree := packagetree;
@@ -52,6 +53,7 @@ begin
   self.PackagePriority := PackagePriority;
   self.IgnorePackages := IgnorePackages;
   Self.FreeOnTerminate := true;
+  Self.ClassHash := CHash;
   inherited Create(true);
 end;
 
@@ -82,6 +84,7 @@ begin
   classtree.BeginUpdate;
   knownpackages := TStringList.Create;
   uclass := nil;
+  if (ClassHash <> nil) then ClassHash.Clear;
   try
     // first get all packages
     for i := 0 to paths.count-1 do begin
@@ -158,6 +161,7 @@ begin
                 SelectedIndex := ICON_CLASS;
               end;
             end;
+            if (ClassHash <> nil) then ClassHash.Items[LowerCase(uclass.name)] := '-';
           end
           else log('Scanner: No class found in this file: '+sr.Name);
         until (FindNext(sr) <> 0) or (Self.Terminated);
