@@ -61,6 +61,8 @@ developer_status.html
 developer_config.html
 developer_commands.html
 templates_sourcecode.html
+templates_packageclasses_list_entry.html
+templates_packageclasses_list.html
 
 [INFOTYPES]
 

@@ -29,6 +29,7 @@ type
     FSaveChar: Char;
     FToken: Char;
     FFloatType: Char;
+    IsInMComment: boolean;
     procedure ReadBuffer;
     procedure SkipBlanks(DoCopy: Boolean);
     function SkipToNextToken(CopyBlanks, DoCopy: Boolean): Char;
@@ -72,8 +73,10 @@ type
 const
   toComment = Char(6);
   toName = Char(7);
-  toEOL = Char(8);
-  toMacro = Char(9);
+  toMacro = Char(8);
+  toEOL = Char(10);
+  toMCommentBegin = Char(11);
+  toMCommentEnd = Char(12);
 
 implementation
 
@@ -307,89 +310,90 @@ begin
   SkipBlanks(CopyBlanks);
   P := FSourcePtr;
   FTokenPtr := P;
-  case P^ of
-    'A'..'Z', 'a'..'z', '_':
-      begin
-        Inc(P);
-        while P^ in ['A'..'Z', 'a'..'z', '0'..'9', '_'] do Inc(P);
-        Result := toSymbol;
+  if (IsInMComment) then begin
+    Result := toMCommentEnd;
+    IsInMComment := false;
+    repeat begin
+      Inc(P);
+      if (P^ = #0) then begin
+        Result := toMCommentBegin;
+        IsInMComment := true;
+        break;
       end;
-    '"':
-      begin
-        Inc(P);
-        while true do begin
-          case P^ of
-            #0, #10, #13: begin
-                            Break;
-                            //Error(SInvalidString);
-                          end;
-            '\':  Inc(P);
-            '"':  begin
-                    Inc(P);
-                    Break;
-                  end;
-          end;
+      if (P^ = #10) then Inc(FSourceLine); // next line
+    end
+    until ((P^ ='*') and ((P+1)^ ='/' ));
+    if (Result = toMCommentEnd) then Inc(P, 2);
+  end
+  else begin
+    case P^ of
+      'A'..'Z', 'a'..'z', '_':
+        begin
           Inc(P);
+          while P^ in ['A'..'Z', 'a'..'z', '0'..'9', '_'] do Inc(P);
+          Result := toSymbol;
         end;
-        Result := toString;
-      end;
-    '''':
-      begin
-        Inc(P);
-        while true do begin
-          case P^ of
-            #0, #10, #13: begin
-                            Break;
-                            //Error(SInvalidString);
-                          end;
-            '\':  Inc(P);
-            '''':  begin
-                    Inc(P);
-                    Break;
-                  end;
-          end;
+      '"':
+        begin
           Inc(P);
-        end;
-        Result := toName;
-      end;
-    {'-', '+', }'0'..'9':
-      begin
-        Result := toInteger;
-        Inc(P);
-        if (((P-1)^ = '0') and (P^ in ['x', 'X'])) then begin
-          Inc(P); // hex notation
-          while P^ in ['0'..'9', 'a', 'f', 'A', 'F'] do Inc(P);
-        end
-        else begin
-          while P^ in ['0'..'9'] do begin
+          while true do begin
+            case P^ of
+              #0, #10, #13: begin
+                              Break;
+                              //Error(SInvalidString);
+                            end;
+              '\':  Inc(P);
+              '"':  begin
+                      Inc(P);
+                      Break;
+                    end;
+            end;
             Inc(P);
           end;
-          if (P^ = '.') then begin
+          Result := toString;
+        end;
+      '''':
+        begin
+          Inc(P);
+          while true do begin
+            case P^ of
+              #0, #10, #13: begin
+                              Break;
+                              //Error(SInvalidString);
+                            end;
+              '\':  Inc(P);
+              '''':  begin
+                      Inc(P);
+                      Break;
+                    end;
+            end;
             Inc(P);
+          end;
+          Result := toName;
+        end;
+      {'-', '+', }'0'..'9':
+        begin
+          Result := toInteger;
+          Inc(P);
+          if (((P-1)^ = '0') and (P^ in ['x', 'X'])) then begin
+            Inc(P); // hex notation
+            while P^ in ['0'..'9', 'a', 'f', 'A', 'F'] do Inc(P);
+          end
+          else begin
             while P^ in ['0'..'9'] do begin
               Inc(P);
-              Result := toFloat;
+            end;
+            if (P^ = '.') then begin
+              Inc(P);
+              while P^ in ['0'..'9'] do begin
+                Inc(P);
+                Result := toFloat;
+              end;
             end;
           end;
         end;
-      end;
-    '#':
-      begin
-        while not (P^ in [#10, toEOF]) do Inc(P);
-        if (P^ = toEOF) then begin
-          Result := toEOF;
-        end
-        else begin
-          Inc(P);
-          Inc(FSourceLine); // next line
-          Result := toMacro; // not realy a comment but we just ignore it
-        end;
-      end;
-    '/':
-      begin
-        Inc(P);
-        if (P^ = '/') then begin // comment
-          Inc(P);
+      '#':
+        begin
           while not (P^ in [#10, toEOF]) do Inc(P);
           if (P^ = toEOF) then begin
             Result := toEOF;
@@ -397,38 +401,49 @@ begin
           else begin
             Inc(P);
             Inc(FSourceLine); // next line
-            Result := toComment; // not realy a comment but we just ignore it
+            Result := toMacro; // not realy a comment but we just ignore it
           end;
-        end
-        else if (P^ = '*') then begin // block comment
-          repeat begin
-            Inc(P);
-            if ((P^ = #0) or (P^ = #0)) then begin
-              FSourcePtr := P;
-              ReadBuffer;
-              P := FSourcePtr;
-              FTokenPtr := P;
-            end;
-            if (P^ = #10) then Inc(FSourceLine); // next line
-          end
-          until ((P^ ='*') and ((P+1)^ ='/' ));
-          Inc(P, 2);
-          Result := toComment;
-        end
-        else begin
-          Result := P^;
-          if Result <> toEOF then Inc(P);
         end;
-      end;
-    #10:
-      begin
-        Inc(P);
-        Inc(FSourceLine);
-        Result := toEOL;
-      end;
-  else
-    Result := P^;
-    if Result <> toEOF then Inc(P);
+      '/':
+        begin
+          Inc(P);
+          if (P^ = '/') then begin // comment
+            Inc(P);
+            while not (P^ in [#10, toEOF]) do Inc(P);
+            Inc(P);
+            Inc(FSourceLine); // next line
+            Result := toComment; // not realy a comment but we just ignore it
+          end
+          else if (P^ = '*') then begin // block comment
+            Result := toComment;
+            repeat begin
+              Inc(P);
+              if (P^ = #0) then begin
+                Dec(P);
+                Result := toMCommentBegin;
+                IsInMComment := true;
+                break;
+              end;
+              if (P^ = #10) then Inc(FSourceLine); // next line
+            end
+            until ((P^ ='*') and ((P+1)^ ='/' ));
+            if (Result <> toMCommentBegin) then Inc(P, 2);
+          end
+          else begin
+            Result := P^;
+            if Result <> toEOF then Inc(P);
+          end;
+        end;
+      #10:
+        begin
+          Inc(P);
+          Inc(FSourceLine);
+          Result := toEOL;
+        end;
+    else
+      Result := P^;
+      if Result <> toEOF then Inc(P);
+    end;
   end;
   StartPos := FSourcePtr;
   FSourcePtr := P;

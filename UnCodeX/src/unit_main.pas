@@ -337,7 +337,7 @@ var
   AnalyseModified: boolean;
   LoadCustomOutputModules: boolean = true;
   // HTML out
-  HTMLOutputDir, TemplateDir: string;
+  HTMLOutputDir, TemplateDir, HTMLTargetExt: string;
   // HTML Help out
   HHCPath, HTMLHelpFile, HHTitle: string;
   // Start server
@@ -1002,6 +1002,7 @@ begin
     { Program configuration }
     HTMLOutputDir := ini.ReadString('Config', 'HTMLOutputDir', ExtractFilePath(ParamStr(0))+'Output');
     TemplateDir := ini.ReadString('Config', 'TemplateDir', ExtractFilePath(ParamStr(0))+'Templates'+PATHDELIM+'UnrealWiki');
+    HTMLTargetExt := ini.ReadString('Config', 'HTMLTargetExt', '');
     HHCPath := ini.ReadString('Config', 'HHCPath', '');
     HTMLHelpFile := ini.ReadString('Config', 'HTMLHelpFile', ExtractFilePath(ParamStr(0))+'UnCodeX.chm');
     HHTitle := ini.ReadString('Config', 'HHTitle', '');
@@ -1155,6 +1156,7 @@ begin
     htmlconfig.outputdir := HTMLOutputDir;
     htmlconfig.TemplateDir := TemplateDir;
     htmlconfig.CreateSource := true; // TODO: make configurable
+    htmlconfig.TargetExtention := HTMLTargetExt;
     runningthread := THTMLoutput.Create(htmlconfig, StatusReport);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
@@ -1178,6 +1180,7 @@ begin
     { HTML output }
     ed_HTMLOutputDir.Text := HTMLOutputDir;
     ed_TemplateDir.Text := TemplateDir;
+    ed_HTMLTargetExt.Text := HTMLTargetExt;
     { HTML Help }
     ed_WorkshopPath.Text := HHCPath;
     ed_HTMLHelpOutput.Text := HTMLHelpFile;
@@ -1210,6 +1213,7 @@ begin
       { HTML output }
       HTMLOutputDir := ed_HTMLOutputDir.Text;
       TemplateDir := ed_TemplateDir.Text;
+      HTMLTargetExt := ed_HTMLTargetExt.Text;
       { HTML Help }
       HHCPath := ed_WorkshopPath.Text;
       HTMLHelpFile := ed_HTMLHelpOutput.Text;
@@ -1260,6 +1264,7 @@ begin
         data.Add('[Config]');
         data.Add('HTMLOutputDir='+HTMLOutputDir);
         data.Add('TemplateDir='+TemplateDir);
+        data.Add('HTMLTargetExt='+HTMLTargetExt);
         data.Add('HHCPath='+HHCPath);
         data.Add('HTMLHelpFile='+HTMLHelpFile);
         data.Add('HHTitle='+HHTitle);
@@ -1782,8 +1787,8 @@ procedure Tfrm_UnCodeX.FormActivate(Sender: TObject);
 begin
   if ((RestoreHandle <> Handle) and InitActivateFix) then begin
     if (RestoreHandle <> 0) then SetActiveWindow(RestoreHandle);
-    InitActivateFix := false;
   end;
+  InitActivateFix := false;
 end;
 
 procedure Tfrm_UnCodeX.ac_CloseExecute(Sender: TObject);

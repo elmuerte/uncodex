@@ -311,7 +311,7 @@ procedure Tfrm_Tags.FormCreate(Sender: TObject);
 var
   pt: TPoint;
 begin
-  isWindow := not FAsWindow;
+  isWindow := FAsWindow;
   if (FAsWindow) then FormDblClick(Sender);
   if (GetCaretPosition(pt)) then begin
     Left := pt.X;

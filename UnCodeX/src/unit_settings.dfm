@@ -43,7 +43,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_PackagePriority
+    ActivePage = ts_HTMLOutput
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -437,6 +437,13 @@ object frm_Settings: Tfrm_Settings
           Height = 13
           Caption = 'Templates directory'
         end
+        object lbl_HTMLTargetExt: TLabel
+          Left = 8
+          Top = 96
+          Width = 126
+          Height = 13
+          Caption = 'leave blank for the default)'
+        end
         object ed_HTMLOutputDir: TEdit
           Left = 8
           Top = 32
@@ -478,6 +485,16 @@ object frm_Settings: Tfrm_Settings
           Caption = '...'
           TabOrder = 3
           OnClick = btn_SelectTemplateDirClick
+        end
+        object ed_HTMLTargetExt: TEdit
+          Left = 8
+          Top = 112
+          Width = 417
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          TabOrder = 4
         end
       end
     end
