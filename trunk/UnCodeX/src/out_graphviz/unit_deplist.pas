@@ -89,9 +89,9 @@ end;
 function TDepListSortOnPackage(Item1, Item2: Pointer): integer;
 begin
   result := CompareText(TDependency(Item1).source.package.name, TDependency(Item2).source.package.name);
-  //if (result = 0) then result := CompareText(TDependency(Item1).source.name, TDependency(Item2).source.name);
+  if (result = 0) then result := CompareText(TDependency(Item1).source.name, TDependency(Item2).source.name);
   //if (result = 0) then result := CompareText(TDependency(Item1).depends.name, TDependency(Item2).depends.name);
-  //if (result = 0) then result := Ord(TDependency(Item1).isChild)-Ord(TDependency(Item2).isChild);
+  if (result = 0) then result := Ord(TDependency(Item1).isChild)-Ord(TDependency(Item2).isChild);
 end;
 
 procedure TDepList.SortOnPackage;
