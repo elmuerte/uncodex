@@ -82,7 +82,7 @@ end;
 { TUnCodeXState }
 
 const
-  UCXheader = 'UCX051'+#13#10#0;
+  UCXheader = 'UCX059'+#13#10#0;
 
 procedure TUnCodeXState.SavePackageToStream(upackage: TUPackage; stream: TStream);
 var
@@ -124,6 +124,7 @@ begin
       Writer.WriteString(uclass.properties[i].name);
       Writer.WriteString(uclass.properties[i].ptype);
       Writer.WriteString(uclass.properties[i].modifiers);
+      Writer.WriteString(uclass.properties[i].tag);
       Writer.WriteInteger(uclass.properties[i].srcline);
     end;
     Writer.WriteInteger(uclass.enums.Count);
@@ -206,6 +207,7 @@ begin
         uprop.name := Reader.ReadString;
         uprop.ptype := Reader.ReadString;
         uprop.modifiers := Reader.ReadString;
+        uprop.tag := Reader.ReadString;
         uprop.srcline := Reader.ReadInteger;
         uclass.properties.Add(uprop);
       end;
