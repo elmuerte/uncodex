@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.52 2004-03-29 10:39:25 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.53 2004-03-29 19:51:04 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -1443,7 +1443,7 @@ begin
     end;
   end
   // function
-  else if (IsReplacement(replacement, 'class_block_delegate')) then begin
+  else if (IsReplacement(replacement, 'class_block_function')) then begin
     template := TFileStream.Create(templatedir+LowerCase(replacement)+'.html', fmOpenRead);
     target := TStringStream.Create('');
     try
