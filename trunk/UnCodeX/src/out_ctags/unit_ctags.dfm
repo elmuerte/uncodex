@@ -4,7 +4,7 @@ object frm_CTAGS: Tfrm_CTAGS
   BorderStyle = bsDialog
   Caption = 'CTAGS'
   ClientHeight = 417
-  ClientWidth = 614
+  ClientWidth = 375
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,7 +14,7 @@ object frm_CTAGS: Tfrm_CTAGS
   OldCreateOrder = False
   Position = poMainFormCenter
   DesignSize = (
-    614
+    375
     417)
   PixelsPerInch = 96
   TextHeight = 13
@@ -28,7 +28,7 @@ object frm_CTAGS: Tfrm_CTAGS
   object bvl_Splt: TBevel
     Left = 8
     Top = 48
-    Width = 600
+    Width = 361
     Height = 9
     Anchors = [akLeft, akTop, akRight]
     Shape = bsBottomLine
@@ -43,7 +43,7 @@ object frm_CTAGS: Tfrm_CTAGS
   object bvl_Ctrls: TBevel
     Left = 209
     Top = 384
-    Width = 399
+    Width = 160
     Height = 25
     Anchors = [akLeft, akRight, akBottom]
     Style = bsRaised
@@ -57,7 +57,7 @@ object frm_CTAGS: Tfrm_CTAGS
     Style = bsRaised
   end
   object btn_Cancel: TSpeedButton
-    Left = 463
+    Left = 224
     Top = 384
     Width = 73
     Height = 25
@@ -85,7 +85,7 @@ object frm_CTAGS: Tfrm_CTAGS
     OnClick = btn_CancelClick
   end
   object btn_Ok: TSpeedButton
-    Left = 535
+    Left = 296
     Top = 384
     Width = 73
     Height = 25
@@ -258,14 +258,14 @@ object frm_CTAGS: Tfrm_CTAGS
   object ed_OutputFile: TEdit
     Left = 8
     Top = 24
-    Width = 576
+    Width = 337
     Height = 21
     Anchors = [akLeft, akTop, akRight]
     TabOrder = 0
     OnChange = ed_OutputFileChange
   end
   object btn_Browse: TBitBtn
-    Left = 583
+    Left = 344
     Top = 24
     Width = 25
     Height = 21
@@ -316,7 +316,6 @@ object frm_CTAGS: Tfrm_CTAGS
       Height = 17
       Caption = 'Tagged packages'
       Checked = True
-      Enabled = False
       State = cbChecked
       TabOrder = 0
     end
@@ -327,7 +326,6 @@ object frm_CTAGS: Tfrm_CTAGS
       Height = 17
       Caption = 'Untagged packages'
       Checked = True
-      Enabled = False
       State = cbChecked
       TabOrder = 1
     end
