@@ -1,8 +1,8 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_treestate
  Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   loading/saving the tree state
- History:
 -----------------------------------------------------------------------------}
 
 unit unit_treestate;

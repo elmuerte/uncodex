@@ -1,8 +1,8 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_richeditex
  Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   we need RichEdit control version 2
- History:
 -----------------------------------------------------------------------------}
 
 unit unit_richeditex;

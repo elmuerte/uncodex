@@ -1,8 +1,8 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_packages
  Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Unreal Package scanner, searches for classes in directories
- History:
 -----------------------------------------------------------------------------}
 
 unit unit_packages;

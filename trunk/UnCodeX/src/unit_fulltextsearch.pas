@@ -1,8 +1,8 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_fulltextsearch
  Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Full Text Search (+ regular expressions) thread
- History:
 -----------------------------------------------------------------------------}
 
 unit unit_fulltextsearch;

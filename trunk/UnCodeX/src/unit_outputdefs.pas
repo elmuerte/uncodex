@@ -1,8 +1,8 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_outputdefs
  Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Definitions used from custom output modules
- History:
 -----------------------------------------------------------------------------}
 
 unit unit_outputdefs;

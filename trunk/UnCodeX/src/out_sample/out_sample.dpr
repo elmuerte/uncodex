@@ -1,3 +1,10 @@
+{-----------------------------------------------------------------------------
+ Unit Name: out_sample
+ Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Purpose:   Custom output sample
+-----------------------------------------------------------------------------}
+
 library out_sample;
 
 { Important note about DLL memory management: ShareMem must be the

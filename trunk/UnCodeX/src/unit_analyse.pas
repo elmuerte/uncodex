@@ -1,8 +1,8 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_analyse
  Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- History:
 -----------------------------------------------------------------------------}
 
 unit unit_analyse;

@@ -1,8 +1,8 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_tags
  Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class properties window
- History:
 -----------------------------------------------------------------------------}
 
 unit unit_tags;

@@ -1,8 +1,8 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_settings
  Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   program settings window
- History:
 -----------------------------------------------------------------------------}
 
 unit unit_settings;
@@ -106,13 +106,9 @@ type
     tv_TreeLayout: TTreeView;
     btn_FontSelect: TBitBtn;
     fd_Font: TFontDialog;
-    btn_BGColor: TBitBtn;
     cd_Color: TColorDialog;
-    btn_FontColor: TBitBtn;
     lbl_LogLayout: TLabel;
     btn_LogFont: TBitBtn;
-    btn_LogFontColor: TBitBtn;
-    btn_LogColor: TBitBtn;
     lb_LogLayout: TListBox;
     cb_ExpandObject: TCheckBox;
     ts_ProgramOptions: TTabSheet;
@@ -160,6 +156,10 @@ type
     cb_CPAsWindow: TCheckBox;
     lbl_HTMLTargetExt: TLabel;
     ed_HTMLTargetExt: TEdit;
+    cb_FontColor: TColorBox;
+    cb_BGColor: TColorBox;
+    cb_LogFontColor: TColorBox;
+    cb_LogColor: TColorBox;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -196,11 +196,7 @@ type
     procedure mi_Resultposition1Click(Sender: TObject);
     procedure btn_ImportClick(Sender: TObject);
     procedure btn_FontSelectClick(Sender: TObject);
-    procedure btn_FontColorClick(Sender: TObject);
-    procedure btn_BGColorClick(Sender: TObject);
     procedure btn_LogFontClick(Sender: TObject);
-    procedure btn_LogFontColorClick(Sender: TObject);
-    procedure btn_LogColorClick(Sender: TObject);
     procedure btn_SetHotKeyClick(Sender: TObject);
     procedure btn_HelpClick(Sender: TObject);
     procedure lv_HotKeysSelectItem(Sender: TObject; Item: TListItem;
@@ -217,6 +213,10 @@ type
     procedure cb_BackgroundChange(Sender: TObject);
     procedure btn_CancelClick(Sender: TObject);
     procedure ed_TabSizeChange(Sender: TObject);
+    procedure cb_FontColorChange(Sender: TObject);
+    procedure cb_BGColorChange(Sender: TObject);
+    procedure cb_LogFontColorChange(Sender: TObject);
+    procedure cb_LogColorChange(Sender: TObject);
   private
   public
     procedure ReloadPreview;
@@ -564,43 +564,11 @@ begin
   end;
 end;
 
-procedure Tfrm_Settings.btn_FontColorClick(Sender: TObject);
-begin
-  cd_Color.Color := tv_TreeLayout.Font.Color;
-  if (cd_Color.Execute) then begin
-    tv_TreeLayout.Font.Color := cd_Color.Color;
-  end;
-end;
-
-procedure Tfrm_Settings.btn_BGColorClick(Sender: TObject);
-begin
-  cd_Color.Color := tv_TreeLayout.Color;
-  if (cd_Color.Execute) then begin
-    tv_TreeLayout.Color := cd_Color.Color;
-  end;
-end;
-
 procedure Tfrm_Settings.btn_LogFontClick(Sender: TObject);
 begin
   fd_Font.Font := lb_LogLayout.Font;
   if (fd_Font.Execute) then begin
     lb_LogLayout.Font := fd_Font.Font;        
-  end;
-end;
-
-procedure Tfrm_Settings.btn_LogFontColorClick(Sender: TObject);
-begin
-  cd_Color.Color := lb_LogLayout.Font.Color;
-  if (cd_Color.Execute) then begin
-    lb_LogLayout.Font.Color := cd_Color.Color;
-  end;
-end;
-
-procedure Tfrm_Settings.btn_LogColorClick(Sender: TObject);
-begin
-  cd_Color.Color := lb_LogLayout.Color;
-  if (cd_Color.Execute) then begin
-    lb_LogLayout.Color := cd_Color.Color;
   end;
 end;
 
@@ -705,6 +673,26 @@ procedure Tfrm_Settings.ed_TabSizeChange(Sender: TObject);
 begin
   unit_rtfhilight.tabs := ud_TabSize.Position;
   ReloadPreview;
+end;
+
+procedure Tfrm_Settings.cb_FontColorChange(Sender: TObject);
+begin
+  tv_TreeLayout.Font.Color := cb_FontColor.Selected;
+end;
+
+procedure Tfrm_Settings.cb_BGColorChange(Sender: TObject);
+begin
+  tv_TreeLayout.Color := cb_BGColor.Selected;
+end;
+
+procedure Tfrm_Settings.cb_LogFontColorChange(Sender: TObject);
+begin
+  lb_LogLayout.Font.Color := cb_LogFontColor.Selected;
+end;
+
+procedure Tfrm_Settings.cb_LogColorChange(Sender: TObject);
+begin
+  lb_LogLayout.Color := cb_LogColor.Selected;
 end;
 
 initialization

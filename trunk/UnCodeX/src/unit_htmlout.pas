@@ -1,8 +1,8 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_htmlout
  Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- History:
 -----------------------------------------------------------------------------}
 
 unit unit_htmlout;

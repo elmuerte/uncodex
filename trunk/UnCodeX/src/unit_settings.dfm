@@ -43,7 +43,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_HTMLOutput
+    ActivePage = ts_Layout
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -440,9 +440,9 @@ object frm_Settings: Tfrm_Settings
         object lbl_HTMLTargetExt: TLabel
           Left = 8
           Top = 96
-          Width = 126
+          Width = 209
           Height = 13
-          Caption = 'leave blank for the default)'
+          Caption = 'Target extention (leave blank for the default)'
         end
         object ed_HTMLOutputDir: TEdit
           Left = 8
@@ -850,83 +850,6 @@ object frm_Settings: Tfrm_Settings
           Height = 13
           Caption = 'Log layout'
         end
-        object tv_TreeLayout: TTreeView
-          Left = 8
-          Top = 32
-          Width = 305
-          Height = 73
-          Anchors = [akLeft, akTop, akRight]
-          HideSelection = False
-          Indent = 19
-          ReadOnly = True
-          TabOrder = 0
-          Items.Data = {
-            010000001F0000000000000000000000FFFFFFFFFFFFFFFF0000000002000000
-            064F626A6563741E0000000000000000000000FFFFFFFFFFFFFFFF0000000001
-            000000054163746F721D0000000000000000000000FFFFFFFFFFFFFFFF000000
-            000000000004496E666F200000000000000000000000FFFFFFFFFFFFFFFF0000
-            0000000000000753657373696F6E}
-        end
-        object btn_FontSelect: TBitBtn
-          Left = 320
-          Top = 32
-          Width = 105
-          Height = 25
-          Anchors = [akTop, akRight]
-          Caption = 'Font'
-          TabOrder = 1
-          OnClick = btn_FontSelectClick
-        end
-        object btn_FontColor: TBitBtn
-          Left = 320
-          Top = 56
-          Width = 105
-          Height = 25
-          Anchors = [akTop, akRight]
-          Caption = 'Font color'
-          TabOrder = 3
-          OnClick = btn_FontColorClick
-        end
-        object btn_BGColor: TBitBtn
-          Left = 320
-          Top = 80
-          Width = 105
-          Height = 25
-          Anchors = [akTop, akRight]
-          Caption = 'Background color'
-          TabOrder = 2
-          OnClick = btn_BGColorClick
-        end
-        object btn_LogFont: TBitBtn
-          Left = 320
-          Top = 152
-          Width = 105
-          Height = 25
-          Anchors = [akTop, akRight]
-          Caption = 'Font'
-          TabOrder = 4
-          OnClick = btn_LogFontClick
-        end
-        object btn_LogFontColor: TBitBtn
-          Left = 320
-          Top = 176
-          Width = 105
-          Height = 25
-          Anchors = [akTop, akRight]
-          Caption = 'Font color'
-          TabOrder = 5
-          OnClick = btn_LogFontColorClick
-        end
-        object btn_LogColor: TBitBtn
-          Left = 320
-          Top = 200
-          Width = 105
-          Height = 25
-          Anchors = [akTop, akRight]
-          Caption = 'Background color'
-          TabOrder = 6
-          OnClick = btn_LogColorClick
-        end
         object lb_LogLayout: TListBox
           Left = 8
           Top = 152
@@ -954,7 +877,44 @@ object frm_Settings: Tfrm_Settings
             
               'PhysicsVolume.uc #114,16:    PainTimer = spawn(class'#39'VolumeTimer' +
               #39', self);')
-          TabOrder = 7
+          TabOrder = 3
+        end
+        object tv_TreeLayout: TTreeView
+          Left = 8
+          Top = 32
+          Width = 305
+          Height = 73
+          Anchors = [akLeft, akTop, akRight]
+          HideSelection = False
+          Indent = 19
+          ReadOnly = True
+          TabOrder = 0
+          Items.Data = {
+            010000001F0000000000000000000000FFFFFFFFFFFFFFFF0000000002000000
+            064F626A6563741E0000000000000000000000FFFFFFFFFFFFFFFF0000000001
+            000000054163746F721D0000000000000000000000FFFFFFFFFFFFFFFF000000
+            000000000004496E666F200000000000000000000000FFFFFFFFFFFFFFFF0000
+            0000000000000753657373696F6E}
+        end
+        object btn_FontSelect: TBitBtn
+          Left = 320
+          Top = 32
+          Width = 105
+          Height = 25
+          Anchors = [akTop, akRight]
+          Caption = 'Font'
+          TabOrder = 1
+          OnClick = btn_FontSelectClick
+        end
+        object btn_LogFont: TBitBtn
+          Left = 320
+          Top = 152
+          Width = 105
+          Height = 25
+          Anchors = [akTop, akRight]
+          Caption = 'Font'
+          TabOrder = 2
+          OnClick = btn_LogFontClick
         end
         object cb_ExpandObject: TCheckBox
           Left = 8
@@ -962,7 +922,47 @@ object frm_Settings: Tfrm_Settings
           Width = 305
           Height = 17
           Caption = 'Expand '#39'Object'#39' on startup'
+          TabOrder = 4
+        end
+        object cb_FontColor: TColorBox
+          Left = 320
+          Top = 56
+          Width = 105
+          Height = 22
+          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
+          ItemHeight = 16
+          TabOrder = 5
+          OnChange = cb_FontColorChange
+        end
+        object cb_BGColor: TColorBox
+          Left = 320
+          Top = 80
+          Width = 105
+          Height = 22
+          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
+          ItemHeight = 16
+          TabOrder = 6
+          OnChange = cb_BGColorChange
+        end
+        object cb_LogFontColor: TColorBox
+          Left = 320
+          Top = 176
+          Width = 105
+          Height = 22
+          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
+          ItemHeight = 16
+          TabOrder = 7
+          OnChange = cb_LogFontColorChange
+        end
+        object cb_LogColor: TColorBox
+          Left = 320
+          Top = 200
+          Width = 105
+          Height = 22
+          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
+          ItemHeight = 16
           TabOrder = 8
+          OnChange = cb_LogColorChange
         end
       end
     end

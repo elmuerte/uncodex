@@ -1,8 +1,8 @@
 {-----------------------------------------------------------------------------
  Unit Name: UnCodeX
  Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
- History:
 -----------------------------------------------------------------------------}
 
 program UnCodeX;

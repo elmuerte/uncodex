@@ -1,3 +1,10 @@
+{-----------------------------------------------------------------------------
+ Unit Name: unit_mshtmlhelp
+ Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Purpose:   creates the HTML Help project file and runs the compiler
+-----------------------------------------------------------------------------}
+
 unit unit_mshtmlhelp;
 
 interface
@@ -30,13 +37,6 @@ const
   COMPILER = 'HHC.EXE';
 
 implementation
-
-{-----------------------------------------------------------------------------
- Unit Name: unit_mshtmlhelp
- Author:    elmuerte
- Purpose:   creates the HTML Help project file and runs the compiler
- History:
------------------------------------------------------------------------------}
 
 uses
   unit_htmlout;

@@ -1,3 +1,10 @@
+{-----------------------------------------------------------------------------
+ Unit Name: unit_wiki
+ Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Purpose:   Copy paste window
+-----------------------------------------------------------------------------}
+
 unit unit_wiki;
 
 interface

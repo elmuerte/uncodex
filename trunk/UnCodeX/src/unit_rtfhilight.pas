@@ -1,8 +1,8 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_rtfhilight
  Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   UScript to RTF
- History:
 -----------------------------------------------------------------------------}
 
 unit unit_rtfhilight;

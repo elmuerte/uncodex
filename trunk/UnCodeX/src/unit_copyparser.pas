@@ -3,7 +3,6 @@
  Author:    elmuerte
  Purpose:   parser class based on CopyParser.pas used for processing the HTML
             templates
- History:
 -----------------------------------------------------------------------------}
 
 { *************************************************************************** }

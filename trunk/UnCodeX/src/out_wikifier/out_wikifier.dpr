@@ -1,3 +1,10 @@
+{-----------------------------------------------------------------------------
+ Unit Name: out_wikifier
+ Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Purpose:   Converts the UScript class info to UnrealWiki format
+-----------------------------------------------------------------------------}
+
 library out_wikifier;
 
 { Important note about DLL memory management: ShareMem must be the
@@ -16,7 +23,8 @@ uses
   Classes,
   unit_uclasses in '..\unit_uclasses.pas',
   unit_outputdefs in '..\unit_outputdefs.pas',
-  unit_wiki in 'unit_wiki.pas' {frm_Wikifier};
+  unit_wiki in 'unit_wiki.pas' {frm_Wikifier},
+  unit_exec in '..\ucxc\unit_exec.pas';
 
 {$R *.res}
 
