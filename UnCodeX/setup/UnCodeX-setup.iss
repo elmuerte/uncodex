@@ -1,7 +1,7 @@
 [Setup]
 AppName=UnCodeX
-AppVerName=UnCodeX version 208
-AppVersion=208
+AppVerName=UnCodeX version 209
+AppVersion=209
 AppPublisher=Michiel 'El Muerte' Hendriks
 AppPublisherURL=http://wiki.beyondunreal.com/wiki/UnCodeX
 AppSupportURL=http://wiki.beyondunreal.com/wiki/UnCodeX
@@ -20,7 +20,7 @@ ShowLanguageDialog=yes
 UninstallDisplayIcon={app}\UnCodeX.exe
 UninstallDisplayName=UnCodeX
 AppID={{FDD6ED8B-DB77-43BC-B0B2-608A1F27AABC}}
-VersionInfoVersion=2.1.3.208
+VersionInfoVersion=2.1.3.209
 
 [Types]
 Name: full; Description: Full installation
@@ -49,10 +49,11 @@ Source: ..\Bin\PackageDescriptions.ini; DestDir: {app}; Flags: ignoreversion; Co
 Source: ..\Bin\ExternalComments.ini; DestDir: {app}; Flags: ignoreversion; Components: main
 Source: ..\Bin\ucxcu.exe; DestDir: {app}; Flags: ignoreversion; Components: commandline
 Source: ..\Bin\UnCodeX-help.chm; DestDir: {app}; Flags: ignoreversion; Components: help
-Source: ..\Bin\Templates\*.*; DestDir: {app}\Templates\DocStyle2; Flags: ignoreversion recursesubdirs; Components: templates
+Source: ..\Bin\Templates\*.*; DestDir: {app}\Templates\DocStyle2; Flags: ignoreversion recursesubdirs; Components: templates; Excludes: "CVS"
 Source: ..\Bin\out_wikifier.dll; DestDir: {app}; Flags: ignoreversion; Components: gui\customoutput
 Source: ..\Bin\out_graphviz.dll; DestDir: {app}; Flags: ignoreversion; Components: gui\customoutput
 Source: ..\Bin\out_ctags.dll; DestDir: {app}; Flags: ignoreversion; Components: gui\customoutput
+Source: ..\Bin\out_unrealwiki.dll; DestDir: {app}; Flags: ignoreversion; Components: gui\customoutput
 
 Source: ..\Bin\out_sample\*.*; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
 Source: ..\src\out_sample\*.pas; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   property inspector frame
- $Id: unit_props.pas,v 1.10 2004-07-21 14:24:52 elmuerte Exp $
+ $Id: unit_props.pas,v 1.11 2004-07-28 21:31:44 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -421,13 +421,13 @@ begin
   end;
   lst := TStringList.Create;
   try
-		if ((not ini.SectionExists(ref)) and (uobj.comment <> '')) then begin
-			if (MessageDlg('There already is a comment for this entity but not in the external comment file.'+#13+#10+
-      	'Mostlikely this comment is set in the source file. Setting an external comment will have no effect.'+#13+#10+
+		if ((uobj.CommentType = ctSource) and (uobj.comment <> '')) then begin
+			if (MessageDlg('There already is a comment for this entity defined in the source code.'+#13+#10+
+      	'Setting an external comment will have no effect.'+#13+#10+
         'Are you sure you want to set an external comment?', mtWarning, [mbYes, mbNo], 0) = mrNo) then Exit;
     end;
     comment := uobj.comment;
-    if (MInputQuery('Comment for '+ref, 'Please enter a comment', comment)) then begin
+    if (MInputQuery('Comment for '+ref, 'Please enter a comment (HTML can be used)', comment)) then begin
 			ini.EraseSection(ref);
       ini.GetStrings(lst);
       lst.Add('['+ref+']');
