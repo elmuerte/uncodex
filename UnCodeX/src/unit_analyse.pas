@@ -6,7 +6,7 @@
 	Purpose:
         UnrealScript class analyser
 
-    $Id: unit_analyse.pas,v 1.45 2004-10-18 15:36:06 elmuerte Exp $
+	$Id: unit_analyse.pas,v 1.46 2004-10-20 13:00:40 elmuerte Exp $
 *******************************************************************************}
 {
 	UnCodeX - UnrealScript source browser & documenter

@@ -7,7 +7,7 @@
         text parser based on Borland's TCopyParser, used for processing the HTML
         templates. Only special token is %
 
-    $Id: unit_copyparser.pas,v 1.10 2004-10-18 15:36:06 elmuerte Exp $
+	$Id: unit_copyparser.pas,v 1.11 2004-10-20 13:00:40 elmuerte Exp $
 *******************************************************************************}
 
 {

@@ -6,7 +6,7 @@
 	Purpose:
         Main window for the GUI
 
-    $Id: unit_main.pas,v 1.127 2004-10-18 15:36:06 elmuerte Exp $
+	$Id: unit_main.pas,v 1.128 2004-10-20 13:00:41 elmuerte Exp $
 *******************************************************************************}
 
 {

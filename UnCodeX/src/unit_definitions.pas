@@ -6,7 +6,7 @@
 	Purpose:
         General definitions and independed utility functions
 
-    $Id: unit_definitions.pas,v 1.116 2004-10-18 15:36:06 elmuerte Exp $
+	$Id: unit_definitions.pas,v 1.117 2004-10-20 13:00:40 elmuerte Exp $
 *******************************************************************************}
 
 {

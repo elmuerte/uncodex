@@ -6,7 +6,7 @@
 	Purpose:
         Full text search thread. Includes support for regular expressions.
 
-    $Id: unit_fulltextsearch.pas,v 1.15 2004-10-18 15:36:06 elmuerte Exp $
+	$Id: unit_fulltextsearch.pas,v 1.16 2004-10-20 13:00:40 elmuerte Exp $
 *******************************************************************************}
 
 {

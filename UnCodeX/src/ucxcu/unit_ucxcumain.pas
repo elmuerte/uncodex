@@ -6,7 +6,7 @@
 	Purpose:
         Main code for the commandline utility
 
-    $Id: unit_ucxcumain.pas,v 1.12 2004-10-18 15:36:11 elmuerte Exp $
+	$Id: unit_ucxcumain.pas,v 1.13 2004-10-20 13:00:46 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter

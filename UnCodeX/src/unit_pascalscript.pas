@@ -6,7 +6,7 @@
 	Purpose:
         Global PascalScript routines and functionality
 
-    $Id: unit_pascalscript.pas,v 1.8 2004-10-18 15:36:07 elmuerte Exp $
+	$Id: unit_pascalscript.pas,v 1.9 2004-10-20 13:00:41 elmuerte Exp $
 *******************************************************************************}
 
 {
