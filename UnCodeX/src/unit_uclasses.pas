@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.43 2004-12-08 09:25:40 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.44 2004-12-08 20:09:05 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -469,7 +469,7 @@ end;
 function TUState.declaration: string;
 begin
   result := modifiers+' state '+name;
-  if (extends <> '') then result := ' extends '+extends;
+  if (extends <> '') then result := result+' extends '+extends;
 end;
 
 { TUStateList }
