@@ -30,6 +30,7 @@ type
     ClassTree: TTreeNodes;
     outputdir, TemplateDir: string;
     CreateSource: boolean;
+    TabsToSpaces: integer;
     TargetExtention: string;
   end;
 
@@ -42,6 +43,7 @@ type
     HTMLOutputDir: string;
     TemplateDir: string;
     CreateSource: boolean;
+    TabsToSpaces: integer;
     TypeCache: Hashes.TStringHash;
     ConstCache: Hashes.TStringHash;
     VarCache: Hashes.TStringHash;
@@ -138,6 +140,7 @@ begin
   Self.HTMLOutputDir := Config.outputdir;
   Self.TemplateDir := Config.TemplateDir+PATHDELIM;
   Self.CreateSource := config.CreateSource;
+  Self.TabsToSpaces := config.TabsToSpaces;
   TargetExtention := config.TargetExtention;
   TypeCache := Hashes.TStringHash.Create;
   ConstCache := Hashes.TStringHash.Create;
@@ -149,6 +152,9 @@ begin
   MaxInherit := ini.ReadInteger('Settings', 'MaxInherit', MaxInt);
   if (TargetExtention = '') then TargetExtention := ini.ReadString('Settings', 'TargetExt', 'html');
   if (MaxInherit <= 0) then MaxInherit := MaxInt;
+  // 0 = use template default
+  // -1 = disable
+  if (TabsToSpaces = 0) then TabsToSpaces := ini.ReadInteger('Settings', 'TabsToSpaces', TabsToSpaces);
   inherited Create(true);
 end;
 
@@ -1595,7 +1601,7 @@ var
   i: integer;
 begin
   ms := TMemoryStream.Create;
-  p := TSourceParser.Create(input, ms);
+  p := TSourceParser.Create(input, ms, false);
   try
     replacement := '<pre class="source"><a name="'+IntToStr(p.SourceLine-1)+'"></a>';
     p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
@@ -1674,6 +1680,14 @@ begin
       else if (p.Token = toEOL) then begin
         replacement := p.TokenString+'<a name="'+IntToStr(p.SourceLine)+'"></a>';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+      end
+      else if (p.Token = #9) then begin
+        // tabs to spaces
+        if (TabsToSpaces >= 0) then begin
+          replacement := StrRepeat(' ', TabsToSpaces);
+          p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+        end
+        else p.CopyTokenToOutput;
       end
       else p.CopyTokenToOutput;
       p.SkipToken(true);

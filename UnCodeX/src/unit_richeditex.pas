@@ -27,6 +27,7 @@ type
     procedure SetSelBgColor(color: TColor);
     procedure ClearBgColor();
     procedure makeurl();
+    property GutterWidth: integer read FGutterWidth write FGutterWidth;
   end;
 
   procedure Register;

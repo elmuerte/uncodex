@@ -161,6 +161,9 @@ type
     cb_LogFontColor: TColorBox;
     cb_LogColor: TColorBox;
     btn_UnIgnore: TBitBtn;
+    Label11: TLabel;
+    ed_TabsToSpaces: TEdit;
+    ud_TabsToSpaces: TUpDown;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
