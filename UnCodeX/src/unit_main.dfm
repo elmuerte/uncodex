@@ -2419,12 +2419,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Top = 200
   end
   object ps_Main: TPSScript
-    Script.Strings = (
-      'begin'
-      #9'acRun;'
-      #9'acAbout;'
-      'end.'
-      '')
     CompilerOptions = [icAllowNoBegin, icAllowUnit, icAllowNoEnd]
     OnLine = ps_MainLine
     OnCompile = ps_MainCompile

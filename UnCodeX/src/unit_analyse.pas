@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.63 2005-03-20 20:25:55 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.64 2005-03-23 11:40:48 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -1018,7 +1018,6 @@ procedure TClassAnalyser.pReplication;
 begin
   p.NextToken;
   pCurlyBrackets();
-  continue;
 end;
 
 procedure TClassAnalyser.AnalyseClass;
