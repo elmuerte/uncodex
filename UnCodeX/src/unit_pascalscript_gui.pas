@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   PascalScript routines for the GUI
- $Id: unit_pascalscript_gui.pas,v 1.1 2004-07-31 13:29:03 elmuerte Exp $
+ $Id: unit_pascalscript_gui.pas,v 1.2 2004-08-01 20:25:34 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -28,7 +28,7 @@ unit unit_pascalscript_gui;
 interface
 
 uses
-  Classes, uPSComponent;
+  Classes, uPSComponent, Dialogs;
 
 	procedure RegisterPSGui(ps: TPSScript);
 
@@ -242,6 +242,9 @@ begin
   ps.AddFunction(@acSwitchTree, 'function acSwitchTree: boolean;');
   ps.AddFunction(@acTags, 'function acTags: boolean;');
   { Other gui things }
+  ps.AddFunction(@ShowMessage, 'procedure ShowMessage(const Msg: string);');
+  ps.AddFunction(@ShowMessageFmt, 'procedure ShowMessageFmt(const Msg: string; Params: array of const);');
+
 end;
 
 end.
