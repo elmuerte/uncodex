@@ -3,7 +3,7 @@
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
             Based on the TParser class by Borland Software Corporation
- $Id: unit_parser.pas,v 1.11 2003-12-07 21:33:11 elmuerte Exp $
+ $Id: unit_parser.pas,v 1.12 2004-03-08 20:02:24 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 { *************************************************************************** }
@@ -103,7 +103,7 @@ end;
 
 function TUCParser.NextTokenTmp: Char;
 var
-  P: PChar;
+  P, PX: PChar;
   isComment: boolean;
   CommentString: string;
   comminit: integer; // so strip of the first /**
@@ -232,7 +232,10 @@ begin
           end
           until ((P^ ='*') and ((P+1)^ ='/' ));
           if (isComment) then begin
-            SetString(CommentString, FTokenPtr + comminit, P - FTokenPtr - comminit); // 3 to strip /**
+          	while ((FTokenPtr + comminit)^ = '*') do Inc(comminit);
+            PX := P;
+            while (PX^ = '*') do Dec(PX);
+            SetString(CommentString, FTokenPtr + comminit, PX - FTokenPtr - comminit); // 3 to strip /**
             FCopyStream.WriteString(CommentString);
           end;
           Inc(P, 2);

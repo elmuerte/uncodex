@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.49 2004-03-07 13:57:28 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.50 2004-03-08 20:02:24 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -2307,6 +2307,7 @@ var
   replacement, tmp: string;
   ms: TMemoryStream;
   i: integer;
+  incomment: boolean;
 begin
   ms := TMemoryStream.Create;
   p := TSourceParser.Create(input, ms, false);
@@ -2315,8 +2316,44 @@ begin
     if (not nopre) then replacement := '<pre class="source">';
     if (not nolineno) then replacement := replacement+'<a name="'+IntToStr(p.SourceLine-1)+'"></a>';
     p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+    incomment := false;
     while (p.Token <> toEOF) do begin
-      if (p.Token = '<') then begin
+    	if (p.Token = toMCommentBegin) then begin
+        replacement := '<font class="source_comment">'+p.TokenString; // cf2 = comment
+        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+        incomment := true;
+      end
+      else if (p.Token = toMCommentEnd) then begin
+        replacement := p.TokenString+'</font>'; // close it
+        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+        incomment := false;
+      end
+      else if (incomment) then begin
+
+        if (p.Token = toEOL) then begin
+      		if (nolineno) then replacement := p.TokenString
+        	else replacement := p.TokenString+'<a name="'+IntToStr(p.SourceLine)+'"></a>';
+        	p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+      	end
+      	else if (p.Token = #9) then begin
+        	// tabs to spaces
+        	if (TabsToSpaces >= 0) then begin
+        		i := TabsToSpaces - ((p.LinePos-1) mod TabsToSpaces);
+      	    replacement := StrRepeat(' ', i);
+       	   	p.LinePos := p.LinePos+(i-1);
+        	  p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+        	end
+        	else p.CopyTokenToOutput;
+      	end
+      	else begin
+          replacement := p.TokenString;
+        	replacement := StringReplace(replacement, '<', '&lt;', [rfReplaceAll]);
+        	replacement := StringReplace(replacement, '>', '&gt;', [rfReplaceAll]);
+        	p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+    		end;
+
+      end
+      else if (p.Token = '<') then begin
         replacement := '&lt;';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
@@ -2337,22 +2374,6 @@ begin
         replacement := StringReplace(replacement, '>', '&gt;', [rfReplaceAll]);
         replacement := '<font class="source_comment">'+replacement+'</font>';
         replacement := replacement+'<a name="'+IntToStr(p.SourceLine)+'"></a>';
-        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
-      end
-      else if (p.Token = toMCommentBegin) then begin
-        replacement := p.TokenString;
-        replacement := StringReplace(replacement, '<', '&lt;', [rfReplaceAll]);
-        replacement := StringReplace(replacement, '>', '&gt;', [rfReplaceAll]);
-        replacement := '<font class="source_comment">'+replacement; // cf2 = comment
-        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
-        while (p.Token <> toMCommentEnd) do begin
-          p.SkipToken(true);
-          replacement := p.TokenString;
-          replacement := StringReplace(replacement, '<', '&lt;', [rfReplaceAll]);
-          replacement := StringReplace(replacement, '>', '&gt;', [rfReplaceAll]);
-          p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
-        end;
-        replacement := '</font>'; // close it
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toInteger) then begin
@@ -2398,9 +2419,9 @@ begin
       else if (p.Token = #9) then begin
         // tabs to spaces
         if (TabsToSpaces >= 0) then begin
-        	i := TabsToSpaces - (p.LinePos mod TabsToSpaces);
+        	i := TabsToSpaces - ((p.LinePos-1) mod TabsToSpaces);
           replacement := StrRepeat(' ', i);
-          p.LinePos := p.LinePos+i;
+          p.LinePos := p.LinePos+(i-1);
           p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
         end
         else p.CopyTokenToOutput;

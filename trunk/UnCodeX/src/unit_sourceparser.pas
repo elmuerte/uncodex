@@ -3,7 +3,7 @@
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
             Based on the TCopyParser class by Borland Software Corporation
- $Id: unit_sourceparser.pas,v 1.12 2004-02-23 22:02:47 elmuerte Exp $           
+ $Id: unit_sourceparser.pas,v 1.13 2004-03-08 20:02:24 elmuerte Exp $           
 -----------------------------------------------------------------------------}
 
 { *************************************************************************** }
@@ -68,6 +68,7 @@ const
   toEOL = Char(10);
   toMCommentBegin = Char(11);
   toMCommentEnd = Char(12);
+  toMComment = Char(14);
 
 implementation
 
@@ -117,26 +118,41 @@ begin
   P := FSourcePtr;
   FTokenPtr := P;
   if (IsInMComment) then begin
-    Result := toMCommentEnd;
-    IsInMComment := false;
-    repeat begin
-      Inc(P);
-      Inc(FLinePos);
-      if (P^ = #0) then begin
-        Result := toMCommentBegin;
-        IsInMComment := true;
-        break;
-      end;
-      if (P^ = #10) then begin
-      	Inc(FSourceLine); // next line
-        FLinePos := 0;
-      end;
-    end
-    until ((P^ ='*') and ((P+1)^ ='/' ));
-    if (Result = toMCommentEnd) then begin
-    	Inc(P, 2);
-      Inc(FLinePos, 2);
+  	Result := toMComment;
+  	case P^ of
+    	#9:		begin
+      				Result := P^;
+              Inc(P);
+          		Inc(FLinePos);
+      			end;
+      #10:	begin
+              Inc(P);
+          		Inc(FSourceLine);
+          		FLinePos := 0;
+          		Result := toEOL;
+      			end;
+      '*':	begin
+              Inc(P);
+          		Inc(FLinePos);
+              if (P^ = '/') then begin
+              	Inc(P);
+          			Inc(FLinePos);
+              	IsInMComment := false;
+                Result := toMCommentEnd;
+              end
+      			end;
+      else begin
+      	if Result <> toEOF then begin
+        	Inc(P);
+          Inc(FLinePos);
+        end;
+    	end;
     end;
+    StartPos := FSourcePtr;
+  	FSourcePtr := P;
+  	if DoCopy then UpdateOutStream(StartPos);
+  	FToken := Result;
+    exit;
   end
   else begin
     case P^ of
@@ -179,6 +195,7 @@ begin
       '''':
         begin
           Inc(P);
+          Inc(FLinePos);
           while true do begin
             case P^ of
               #0, #10, #13: begin
@@ -243,7 +260,7 @@ begin
             Inc(P);
             Inc(FSourceLine); // next line
             FLinePos := 0;
-            Result := toMacro; 
+            Result := toMacro;
           end;
         end;
       '/':
@@ -265,27 +282,10 @@ begin
             Result := toComment;
           end
           else if (P^ = '*') then begin // block comment
-            Result := toComment;
-            repeat begin
-              Inc(P);
-              Inc(FLinePos);
-              if (P^ = #0) then begin
-                Dec(P);
-                Dec(FLinePos);
-                Result := toMCommentBegin;
-                IsInMComment := true;
-                break;
-              end;
-              if (P^ = #10) then begin
-              	Inc(FSourceLine); // next line
-                FLinePos := 0;
-              end;
-            end
-            until ((P^ ='*') and ((P+1)^ ='/' ));
-            if (Result <> toMCommentBegin) then begin
-            	Inc(P, 2);
-              Inc(FLinePos, 2);
-            end;
+          	Inc(P);
+            Inc(FLinePos);
+            Result := toMCommentBegin;
+            IsInMComment := true;
           end
           else begin
             Result := P^;
@@ -304,7 +304,10 @@ begin
         end;
     else
       Result := P^;
-      if Result <> toEOF then Inc(P);
+      if Result <> toEOF then begin
+      	Inc(P);
+        Inc(FLinePos);
+      end;
     end;
   end;
   StartPos := FSourcePtr;
@@ -358,7 +361,6 @@ begin
         if (not TabIsWS) then Break;
       #10:
         begin
-          //Inc(FSourceLine);
           FLinePos := 0;
           break;
         end;

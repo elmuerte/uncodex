@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.78 2004-03-07 13:57:28 elmuerte Exp $
+ $Id: unit_main.pas,v 1.79 2004-03-08 20:02:24 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -2565,9 +2565,11 @@ begin
   SelectedUPackage := nil;
   if (Sender.ClassType = TTreeView) then begin
   	with (Sender as TTreeView) do begin
-    	if (Selected.Data = nil) then exit;
-			if (TObject(Selected.Data).ClassType = TUClass) then SelectedUClass := TUClass(Selected.Data)
-      else if (TObject(Selected.Data).ClassType = TUPackage) then SelectedUPackage := TUPackage(Selected.Data);
+    	if (Selected <> nil) then begin
+	    	if (Selected.Data = nil) then exit;
+				if (TObject(Selected.Data).ClassType = TUClass) then SelectedUClass := TUClass(Selected.Data)
+    	  else if (TObject(Selected.Data).ClassType = TUPackage) then SelectedUPackage := TUPackage(Selected.Data);
+      end;
 		end;
   end;
   if (re_SourceSnoop.Visible) then begin

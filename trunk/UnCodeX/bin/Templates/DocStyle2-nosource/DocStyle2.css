@@ -220,6 +220,10 @@ BLOCKQUOTE.comment {
 	margin-top: 5px;
 }
 
+H3.vartag {
+	background-color: #B1A6EA;
+}
+
 /* source code listing */
 
 A.source {
@@ -267,7 +271,7 @@ FONT.source_name {
 }
 
 FONT.source_type {
-	color: #000099;
+	color: #000033;
 }
 
 DIV.source {
