@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Unreal Package scanner, searches for classes in directories
- $Id: unit_packages.pas,v 1.19 2004-02-23 12:20:47 elmuerte Exp $
+ $Id: unit_packages.pas,v 1.20 2004-03-16 08:47:00 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -313,12 +313,13 @@ procedure TPackageScanner.CreateClassTree(classlist: TUClassList; parent: TUClas
 {$ENDIF}
 var
   pprio: integer;
-  tmp: string;
-  i: integer;
+  tmp, pname, packn, ppackn: string;
+  i,j: integer;
 begin
   pprio := 0;
   if (parent <> nil) then begin
     tmp := parent.name;
+    ppackn := parent.package.name;
     pprio := parent.priority;
   end;
 
@@ -327,7 +328,14 @@ begin
   for i := 0 to classlist.Count-1 do begin
     if ((classlist[i].parent = nil) and
       (classlist[i].priority >= pprio)) then begin
-      if (CompareText(classlist[i].parentname, tmp) = 0) then begin
+      pname := classlist[i].parentname;
+      j := Pos('.', pname);
+      if (j > 0) then begin
+      	packn := copy(pname, 1, j-1);
+        Delete(pname, 1, j);
+      end
+      else packn := '';
+      if ((CompareText(pname, tmp) = 0) and ((packn = '') or (CompareText(packn, ppackn) = 0))) then begin
         classlist[i].parent := parent;
         if (parent <> nil) then parent.children.Add(classlist[i]);
         {$IFDEF __USE_TREEVIEW}
@@ -374,7 +382,7 @@ begin
             result.parentname := p.TokenString;
             if (p.NextToken = '.') then begin // package.class
               p.NextToken;                    // (should work with checking package)
-              result.parentname := p.TokenString;
+              result.parentname := result.parentname+'.'+p.TokenString;
             end;
           end;
           break; // we don't need to parse the rest
