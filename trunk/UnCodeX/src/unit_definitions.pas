@@ -12,6 +12,7 @@ type
   TRedirectStruct = packed record
     Find: string[64];
     OpenFind: boolean;
+    OpenTags: boolean;
     Batch: string[255];
     NewHandle: integer;
   end;
@@ -24,7 +25,7 @@ type
   
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '046 Beta';
+  APPVERSION = '047 Beta';
 
   PATHDELIM = '\';
   WILDCARD = '*.*';
@@ -57,7 +58,8 @@ const
               '-hide'#9#9#9'hides UnCodeX'+#13+#10+
               '-handle'#9#9#9'Window handle'+#13+#10+
               '-open'#9#9#9'find and open a class'+#13+#10+
-              '-reuse'#9#9#9'reuse a previous window';
+              '-reuse'#9#9#9'reuse a previous window'+#13+#10+
+              '-tags'#9#9#9'display class properties';
 
 implementation
 

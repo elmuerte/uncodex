@@ -57,8 +57,10 @@ var
 begin
   EnumWindows(@EnumWindowCallBack, 0);
   if (PrevInst <> 0) then begin
-    SetForegroundWindow(PrevInst);
-    BringWindowToTop(PrevInst);
+    if (not RedirectData.OpenTags) then begin
+      SetForegroundWindow(PrevInst);
+      BringWindowToTop(PrevInst);
+    end;
     CopyData.cbData := SizeOf(RedirectData);
     CopyData.dwData := PrevInst;
     CopyData.lpData := @RedirectData;
@@ -98,7 +100,7 @@ begin
       Inc(j);
       ConfigFile := ParamStr(j);
       if (ExtractFilePath(ConfigFile) = '') then ConfigFile := ExtractFilePath(ParamStr(0))+ConfigFile;
-      StateFile := ExtractFilePath(ConfigFile)+ExtractFilename(ConfigFile)+'.state';
+      StateFile := ExtractFilePath(ConfigFile)+ExtractFilename(ConfigFile)+'.ucx';
     end
     else if (LowerCase(ParamStr(j)) = '-handle') then begin
       Inc(j);
@@ -108,16 +110,19 @@ begin
     else if (LowerCase(ParamStr(j)) = '-reuse') then begin
       reuse := true;
     end
-    else if (LowerCase(ParamStr(j)) = '-find') or (LowerCase(ParamStr(j)) = '-open') then begin
+    else if (LowerCase(ParamStr(j)) = '-find') or (LowerCase(ParamStr(j)) = '-open')
+      or (LowerCase(ParamStr(j)) = '-tags') then begin
       OpenFind := LowerCase(ParamStr(j)) = '-open';
+      OpenTags := LowerCase(ParamStr(j)) = '-tags';
       Inc(j);
       tmp := ParamStr(j);
       i := Pos('.', tmp);
       if (i > 0) then Delete(tmp, i, MaxInt);
       searchclass := tmp;
       RedirectData.Find := tmp;
-      if (OpenFind) then CSprops[2] := true;
+      if (OpenFind or OpenTags) then CSprops[2] := true;
       RedirectData.OpenFind := OpenFind;
+      RedirectData.OpenTags := OpenTags;
     end;
     Inc(j);
   end;
