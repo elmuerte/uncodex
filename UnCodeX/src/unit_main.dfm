@@ -693,7 +693,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
     object mi_DefProps: TMenuItem
       Action = ac_DefProps
-      Visible = False
     end
     object mi_Properties: TMenuItem
       Action = ac_PackageProps
@@ -1106,6 +1105,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     object ac_DefProps: TAction
       Category = 'Class Tree'
       Caption = 'Defaultproperties'
+      Hint = 'Show this class'#39' defaultproperties values'
       OnExecute = ac_DefPropsExecute
     end
     object ac_Run: TAction

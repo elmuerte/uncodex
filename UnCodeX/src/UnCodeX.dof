@@ -51,7 +51,7 @@ Conditionals=DEBUG_BUILD
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
-RunParams=-findmemleak -debug -config tribesv.ini
+RunParams=-findmemleak -debug
 HostApplication=
 Launcher=
 UseLauncher=0

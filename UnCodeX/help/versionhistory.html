@@ -16,32 +16,33 @@
 
 <h2>Changes since 220</h2>
 <ul>
-<li>[ucxcu] major fixes to the commandline version, it now works again.
-<li>[ucxcu] ucxcu assumes more default now, it can be run from an unrealengine game base directory and automatically find the Default.ini and packages. It can also reside in the System directory. As long as the HTML output template can be found it will run without additional paramaters. Or when the unrealengine config file is provided (the -uc switch) it will assume the package source directory is in the parent directory of the unrealengine config file.
-<li>[HTML generation] fixed the HTML output highlighted source code to be aligned with the line numbers
-<li>[HTML generation] added some magic for jumping to frames with the right content file.
-<li>[GUI] fixed some forms being scaled incorrectly when a DPI other than 96 was set
-<li>[ucxcu] fixes for the linux build. You are not able to create a working linux build with FPC for ucxcu.
+<li>[ucxcu] major fixes to the commandline version, it now works again.</li>
+<li>[ucxcu] ucxcu assumes more default now, it can be run from an unrealengine game base directory and automatically find the Default.ini and packages. It can also reside in the System directory. As long as the HTML output template can be found it will run without additional paramaters. Or when the unrealengine config file is provided (the -uc switch) it will assume the package source directory is in the parent directory of the unrealengine config file.</li>
+<li>[HTML generation] fixed the HTML output highlighted source code to be aligned with the line numbers</li>
+<li>[HTML generation] added some magic for jumping to frames with the right content file.</li>
+<li>[GUI] fixed some forms being scaled incorrectly when a DPI other than 96 was set</li>
+<li>[ucxcu] fixes for the linux build. You are not able to create a working linux build with FPC for ucxcu.</li>
+<li>[GUI] defaultproperty value browser is now available in the tree pop-up menu</li>
 </ul>
 
 <h2>Changes since 219</h2>
 <ul>
-<li>Fixed bug where a search result line was longer than 255 chars (used for browse history).
+<li>Fixed bug where a search result line was longer than 255 chars (used for browse history).</li>
 </ul>
 
 <h2>Changes since 218</h2>
 <ul>
-<li>Fixed junk in variable's "modifiers" element.
-<li>Fixed LogType, LogTypeObject PascalScript functions
-<li>Fixed trying to open empty filenames in log entries
+<li>Fixed junk in variable's "modifiers" element.</li>
+<li>Fixed LogType, LogTypeObject PascalScript functions</li>
+<li>Fixed trying to open empty filenames in log entries</li>
 </ul>
 
 <h2>Changes since 217</h2>
 <ul>
-<li>Redid quite some of the docking code, so some things might be broken (again)
-<li>Added a dirty hack to fix the problem with the packages tree being hidden on startup + no state file + recreate tree
-<li>Fixed memory leak in full text search
-<li>Redone the logging system
+<li>Redid quite some of the docking code, so some things might be broken (again)</li>
+<li>Added a dirty hack to fix the problem with the packages tree being hidden on startup + no state file + recreate tree</li>
+<li>Fixed memory leak in full text search</li>
+<li>Redone the logging system</li>
 </ul>
 
 <h2>Changes since 216</h2>
@@ -54,122 +55,122 @@
 
 <h2>Changes since 215</h2>
 <ul>
-<li>Debug compiles (unless I forget to enable it) are now compiled with a memory leak detection ( http://v.mahon.free.fr/pro/freeware/memcheck ). To enable the memory leak detection start UnCodeX with <code>-findmemleak</code>. This will produce a file called <code>UnCodeX_MemCheck.log</code> when UnCodeX is closed. If that file contains information please email it to me.
+<li>Debug compiles (unless I forget to enable it) are now compiled with a memory leak detection ( http://v.mahon.free.fr/pro/freeware/memcheck ). To enable the memory leak detection start UnCodeX with <code>-findmemleak</code>. This will produce a file called <code>UnCodeX_MemCheck.log</code> when UnCodeX is closed. If that file contains information please email it to me.</li>
 </ul>
 
 <h2>Changes since 214</h2>
 <ul>
-<li>Fixed a serious bug in both parsers, unterminated block comments where fatal
-<li>Added more guards to catch errors
+<li>Fixed a serious bug in both parsers, unterminated block comments where fatal</li>
+<li>Added more guards to catch errors</li>
 </ul>
 
 <h2>Changes since 213</h2>
 <ul>
-<li>bug fix: tags where not copied for multiple variable definitions in unrealscript.
-<li>#include macro's are now processed and the information is included in the class reference. However, line numbers of included entities are incorrect.
-<li>Fixed a bug in the HTML otuput comment parsing, some links where not converted correctly.
-<li>Added new function to UClasses: <code>function declaration: string;</code> This returns a valid unrealscript declaration of that function/variable/etc. Note: this may not be exact as the source declaration.
-<li>Variables with an empty tag (<code>var()</code>) now get their tag set to the class name.
-<li>source snoop component updates
-<li>more #include updates for the GUI
-<li>Added states to the property list
+<li>bug fix: tags where not copied for multiple variable definitions in unrealscript.</li>
+<li>#include macro's are now processed and the information is included in the class reference. However, line numbers of included entities are incorrect.</li>
+<li>Fixed a bug in the HTML otuput comment parsing, some links where not converted correctly.</li>
+<li>Added new function to UClasses: <code>function declaration: string;</code> This returns a valid unrealscript declaration of that function/variable/etc. Note: this may not be exact as the source declaration.</li>
+<li>Variables with an empty tag (<code>var()</code>) now get their tag set to the class name.</li>
+<li>source snoop component updates</li>
+<li>more #include updates for the GUI</li>
+<li>Added states to the property list</li>
 </ul>
 
 <h2>Changes since 212</h2>
 <ul>
 <li>Initial macro processor code, supports #define, #if, #else and #endif<br />
-	#if expression evaluation is limited.
-<li>Class tree analisation is now tree based instead of alphabetica (required for #defines).
-<li>Added #ifdef macro support
-<li>Implemented #if expression evaluator
-<li>"create subclass" now checks if the class already exists in the current package
-<li>Added support for subdirectories in packages (Tribes:V feature).
-<li>Improved class tree constructions, it should now create a correct class tree for all duplicates (was an issue with Tribes:V).
-<li>Clear command stack for batch processes when a new batch is started.
-<li>Fixed bug in HTML output for Package.Class types besides the Class.Type types
-<li>Added %if:<i>something</i>% and %endif% statements to the HTML template, the <i>something</i> differs per template. The if statemens can be nested.
+	#if expression evaluation is limited.</li>
+<li>Class tree analisation is now tree based instead of alphabetica (required for #defines).</li>
+<li>Added #ifdef macro support</li>
+<li>Implemented #if expression evaluator</li>
+<li>"create subclass" now checks if the class already exists in the current package</li>
+<li>Added support for subdirectories in packages (Tribes:V feature).</li>
+<li>Improved class tree constructions, it should now create a correct class tree for all duplicates (was an issue with Tribes:V).</li>
+<li>Clear command stack for batch processes when a new batch is started.</li>
+<li>Fixed bug in HTML output for Package.Class types besides the Class.Type types</li>
+<li>Added %if:<i>something</i>% and %endif% statements to the HTML template, the <i>something</i> differs per template. The if statemens can be nested.</li>
 </ul>
 
 <h2>Changes since 211</h2>
 <ul>
-<li>Fixed opening op package directories via the tree context menu
-<li>Added support for UnrealEngine2 style variable descriptions. These have a lower priority than the description in the comment because the comment has more freedom of expression.
-<li>Added a hook for macro processing in the code anaylzing parser (Tribes:V support requirement)
-<li>Added support for interface classes (Tribes:V support requirement)
-<li>Added support for the FreePascal compiler for ucxcu
+<li>Fixed opening op package directories via the tree context menu</li>
+<li>Added support for UnrealEngine2 style variable descriptions. These have a lower priority than the description in the comment because the comment has more freedom of expression.</li>
+<li>Added a hook for macro processing in the code anaylzing parser (Tribes:V support requirement)</li>
+<li>Added support for interface classes (Tribes:V support requirement)</li>
+<li>Added support for the FreePascal compiler for ucxcu</li>
 </ul>
 
 <h2>Changes since 210</h2>
 <ul>
-<li>Fixed a bug in the HTML output when the last part of a comment was a http link
+<li>Fixed a bug in the HTML output when the last part of a comment was a http link</li>
 </ul>
 
 <h2>Changes since 209</h2>
 <ul>
-<li>New hint window. It now supports the HTML codes included with the comments.
-<li>Added "find new classes" features, can be used in a batch command: findnew
-<li>Analyse Modified on startup now first does a "find new classes"
+<li>New hint window. It now supports the HTML codes included with the comments.</li>
+<li>Added "find new classes" features, can be used in a batch command: findnew</li>
+<li>Analyse Modified on startup now first does a "find new classes"</li>
 </ul>
 
 <h2>Changes since 208</h2>
 <ul>
-<li>Fixed usage of threads in output modules (to wait for). These threads should call the AThreadTerminate event manualy at the end of the execution.
-<li>Created a new output module to open the UnrealWiki page (if available)
-<li>Fixed "minimize on close", this was been broken since the first release
-<li>Added PascalScript support for the GUI (documentation generator pending), this will allow you to write scripts to do certain things from within UnCodeX. see the <a href="pascalscript.html">Pascal Script guide</a> for more information.
-<li>Fixed issues with the property inspectors after a tree rebuild or analyse
-<li>Changed the way output modules are loaded, no more 2 different module version. UClasses revision number is used to check for valid modules.
+<li>Fixed usage of threads in output modules (to wait for). These threads should call the AThreadTerminate event manualy at the end of the execution.</li>
+<li>Created a new output module to open the UnrealWiki page (if available)</li>
+<li>Fixed "minimize on close", this was been broken since the first release</li>
+<li>Added PascalScript support for the GUI (documentation generator pending), this will allow you to write scripts to do certain things from within UnCodeX. see the <a href="pascalscript.html">Pascal Script guide</a> for more information.</li>
+<li>Fixed issues with the property inspectors after a tree rebuild or analyse</li>
+<li>Changed the way output modules are loaded, no more 2 different module version. UClasses revision number is used to check for valid modules.</li>
 </ul>
 
 <h2>Changes since 207</h2>
 <ul>
-<li>Added additional replacements for the run command: %rand% and %inc%
-<li>Added support for <a href="guidelines.html#external">external commenting</a>
-<li>Fixed aborting of the HTML help compiler
+<li>Added additional replacements for the run command: %rand% and %inc%</li>
+<li>Added support for <a href="guidelines.html#external">external commenting</a></li>
+<li>Fixed aborting of the HTML help compiler</li>
 </ul>
 
 <h2>Changes since 206</h2>
 <ul>
-<li>Added a new feature "Run...", this will allow you do construct a commandline on the fly (and save multiple presets).
-<li>Fixed a couple of docking glitches.
+<li>Added a new feature "Run...", this will allow you do construct a commandline on the fly (and save multiple presets).</li>
+<li>Fixed a couple of docking glitches.</li>
 </ul>
 
 <h2>Changes since 205</h2>
 <ul>
-<li>Made some changes to the uclasses unit, requires a recompile for all output modules.
-<li>Added alternative stylesheets, selectable via the browser's style switcher (MSIE doesn't have one)
-<li>Fixed comment preprocessor feature, due to buffering the comments where out of sync
+<li>Made some changes to the uclasses unit, requires a recompile for all output modules.</li>
+<li>Added alternative stylesheets, selectable via the browser's style switcher (MSIE doesn't have one)</li>
+<li>Fixed comment preprocessor feature, due to buffering the comments where out of sync</li>
 </ul>
 
 <h2>Changes since 204</h2>
 <ul>
-<li>Fixed a little bug in the source parser where the character after / was skipped
-<li>Added the current line as hint to the "browse history" entry
+<li>Fixed a little bug in the source parser where the character after / was skipped</li>
+<li>Added the current line as hint to the "browse history" entry</li>
 </ul>
 
 <h2>Changes since 203</h2>
 <ul>
-<li>Added "browse history"
-<li>Fixed bug in the default state file naming resulting in an empty state filename
+<li>Added "browse history"</li>
+<li>Fixed bug in the default state file naming resulting in an empty state filename</li>
 </ul>
 
 <h2>Changes since 202</h2>
 <ul>
-<li>Implemented search offsets for CTAGS output, it's not adviced to use those because there's a big chance the search will fail
-<li>Fixed the automatic state file naming
-<li>MSUC Phase 3 release
+<li>Implemented search offsets for CTAGS output, it's not adviced to use those because there's a big chance the search will fail</li>
+<li>Fixed the automatic state file naming</li>
+<li>MSUC Phase 3 release</li>
 </ul>
 
 <h2>Changes since 201</h2>
 <ul>
-<li>New batch command: "analysemodified"
-<li>Commandline support fo CTAGS output module
+<li>New batch command: "analysemodified"</li>
+<li>Commandline support fo CTAGS output module</li>
 </ul>
 
 <h2>Changes since 200</h2>
 <ul>
-<li>Added CTAGS output modules
-<li>New output module interface, old modules are still compatible.
+<li>Added CTAGS output modules</li>
+<li>New output module interface, old modules are still compatible.</li>
 </ul>
 
 <h2>Changes since 177</h2>
