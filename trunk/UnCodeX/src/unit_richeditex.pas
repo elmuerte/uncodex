@@ -6,7 +6,7 @@
     Purpose:
         TRichEdit control that uses version 2
 
-    $Id: unit_richeditex.pas,v 1.19 2004-10-20 14:19:29 elmuerte Exp $
+    $Id: unit_richeditex.pas,v 1.20 2004-12-03 15:17:19 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -41,6 +41,7 @@ type
     private
         xCanvas: TCanvas;
         FGutterWidth: integer;
+        ffilename: TFilename;
     protected
         procedure CreateParams(var Params: TCreateParams); override;
         procedure WMPaint( var Msg : TWMPaint ); message WM_PAINT;
@@ -51,8 +52,10 @@ type
         procedure SetSelBgColor(color: TColor);
         procedure ClearBgColor();
         procedure makeurl();
-        property GutterWidth: integer read FGutterWidth write FGutterWidth;
         procedure UpdateWindowRect;
+    published
+        property GutterWidth: integer read FGutterWidth write FGutterWidth;
+        property filename: Tfilename read ffilename write ffilename;
     end;
 
     procedure Register;

@@ -6,7 +6,7 @@
     Purpose:
         Main window for the GUI
 
-    $Id: unit_main.pas,v 1.132 2004-12-01 06:40:11 elmuerte Exp $
+    $Id: unit_main.pas,v 1.133 2004-12-03 15:17:19 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -264,7 +264,7 @@ type
         ps_dll: TPSDllPlugin;
         ac_FindNewClasses: TAction;
         mi_FindNew: TMenuItem;
-    mi_Clear: TMenuItem;
+        mi_Clear: TMenuItem;
         procedure tmr_StatusTextTimer(Sender: TObject);
         procedure FormCreate(Sender: TObject);
         procedure mi_AnalyseclassClick(Sender: TObject);
@@ -430,6 +430,7 @@ type
         procedure OnDockVisChange(client: TControl; visible: boolean; var CanChange: boolean);
         // other
         procedure DeleteClass(uclass: TUClass; recurse: boolean = false);
+        procedure SourceSnoopOpen(uclass: TUClass; upackage: TUPackage = nil; exfile: string = '');
         // settings
         procedure SaveSettings;
         procedure SaveLayoutSettings;
@@ -1007,24 +1008,17 @@ end;
 //TODO: open include files where required
 procedure Tfrm_UnCodeX.OpenSourceInline(uclass: TUClass; line, caret: integer; exfile: string = '');
 var
-    oldsel: TUClass;
     tmp2:   array[0..255] of char;
 begin
-    exfile := ResolveFilename(uclass, exfile);
-    if (not fileExists(exfile)) then begin
-        Log('Could not open file '+exfile);
-        exit;
-    end;
-
-    oldsel := SelectedUClass;
     SelectedUClass := uclass;
     SelectedUPackage := nil;
     if (mi_SourceSnoop.Checked) then begin
-        if (SelectedUClass <> oldsel) then ac_SourceSnoop.Execute;
+        SourceSnoopOpen(uclass, nil, exfile);
+        
         if (line < 0) then exit;
         tmp2[0] := #255;
         re_SourceSnoop.Perform(EM_GETLINE, line, integer(@tmp2));
-        AddBrowserHistory(uclass, line+1, tmp2);
+        AddBrowserHistory(uclass, line+1, tmp2); //TODO: add include file
         //re_SourceSnoop.Perform(EM_LINESCROLL, 0, -1*re_SourceSnoop.Lines.Count);
         //re_SourceSnoop.Perform(EM_LINESCROLL, 0, line);
         line := re_SourceSnoop.Perform(EM_LINEINDEX, line, 0); // get line index
@@ -1569,6 +1563,53 @@ begin
     if (uclass.treenode2 <> nil) then TTreeNode(uclass.treenode2).Delete;
     ClassList.Remove(uclass);
     TreeUpdated := true;
+end;
+
+{ SourceSnoopOpen }
+
+procedure Tfrm_UnCodeX.SourceSnoopOpen(uclass: TUClass; upackage: TUPackage = nil; exfile: string = '');
+var
+    ms:         TMemoryStream;
+    fs:         TFileStream;
+    filename:   string;
+begin
+    if (uclass <> nil) then begin
+        filename := ResolveFilename(uclass, exfile);
+        if (not fileExists(filename)) then begin
+            Log('Could not open file '+exfile);
+            exit;
+        end;
+        if (re_SourceSnoop.filename = filename) then exit;
+        re_SourceSnoop.filename := filename;
+        re_SourceSnoop.Hint := filename;
+        fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
+        ms := TMemoryStream.Create;
+        try
+            RTFHilightUScript(fs, ms, uclass);
+            re_SourceSnoop.Lines.Clear;
+            re_SourceSnoop.WordWrap := false;
+            re_SourceSnoop.ScrollBars := ssBoth;
+            ms.Position := 0;
+            re_SourceSnoop.Lines.LoadFromStream(ms);
+        finally
+            ms.Free;
+            fs.Free;
+        end;
+    end
+    else if (upackage <> nil) then begin
+        ms := TMemoryStream.Create;
+        re_SourceSnoop.Hint := upackage.path;
+        try
+            RTFHilightUPackage(ms, upackage);
+            re_SourceSnoop.Lines.Clear;
+            re_SourceSnoop.WordWrap := true;
+            re_SourceSnoop.ScrollBars := ssVertical;
+            ms.Position := 0;
+            re_SourceSnoop.Lines.LoadFromStream(ms);
+        finally
+            ms.Free;
+        end;
+    end;
 end;
 
 { Settings -- begin}
@@ -2972,43 +3013,8 @@ begin
 end;
 
 procedure Tfrm_UnCodeX.ac_SourceSnoopExecute(Sender: TObject);
-var
-    ms:         TMemoryStream;
-    fs:         TFileStream;
-    filename:   string;
 begin
-    if (SelectedUClass <> nil) then begin
-        filename := SelectedUClass.package.path+PATHDELIM+SelectedUClass.filename;
-        re_SourceSnoop.Hint := filename;
-        if (not FileExists(filename)) then exit;
-        fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
-        ms := TMemoryStream.Create;
-        try
-            RTFHilightUScript(fs, ms, SelectedUClass);
-            re_SourceSnoop.Lines.Clear;
-            re_SourceSnoop.WordWrap := false;
-            re_SourceSnoop.ScrollBars := ssBoth;
-            ms.Position := 0;
-            re_SourceSnoop.Lines.LoadFromStream(ms);
-        finally
-            ms.Free;
-            fs.Free;
-        end;
-    end
-    else if (SelectedUPackage <> nil) then begin
-        ms := TMemoryStream.Create;
-        re_SourceSnoop.Hint := SelectedUPackage.path;
-        try
-            RTFHilightUPackage(ms, SelectedUPackage);
-            re_SourceSnoop.Lines.Clear;
-            re_SourceSnoop.WordWrap := true;
-            re_SourceSnoop.ScrollBars := ssVertical;
-            ms.Position := 0;
-            re_SourceSnoop.Lines.LoadFromStream(ms);
-        finally
-            ms.Free;
-        end;
-    end;
+    SourceSnoopOpen(SelectedUClass, SelectedUPackage);
 end;
 
 procedure Tfrm_UnCodeX.tv_ClassesChange(Sender: TObject; Node: TTreeNode);
@@ -3080,7 +3086,7 @@ begin
             exit;
         end
         else begin
-            if (SelectedUClass <> nil) then re_SourceSnoop.Hint := SelectedUClass.FullFileName
+            if (SelectedUClass <> nil) then re_SourceSnoop.Hint := re_SourceSnoop.filename
             else re_SourceSnoop.Hint := '';
         end;
     end;

@@ -6,7 +6,7 @@
     Purpose:
         UnrealScript Class property inpector frame
 
-    $Id: unit_props.pas,v 1.19 2004-10-20 14:19:29 elmuerte Exp $
+    $Id: unit_props.pas,v 1.20 2004-12-03 15:17:19 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -73,6 +73,12 @@ type
         function LoadClass: boolean;
     end;
 
+    TTagEntry = class(TObject)
+        uclass: TUClass;
+        uprop: TUDeclaration;
+        constructor Create(uc: TUClass; up: TUDeclaration);
+    end;
+
 implementation
 
 uses unit_main, unit_analyse, unit_definitions, unit_utils;
@@ -97,6 +103,12 @@ begin
     result := StringReplace(result, '>', '&gt;', [rfReplaceAll]);
 end;
 
+constructor TTagEntry.Create(uc: TUClass; up: TUDeclaration);
+begin
+    uclass := uc;
+    uprop := up;
+end;
+
 function Tfr_Properties.LoadClass: boolean;
 var
     i, j:       integer;
@@ -104,6 +116,7 @@ var
     li:         TListItem;
     return:     string;
     lasttag:    string;
+    te:         TTagEntry;
 begin
     result := false;
     lv_Properties.Items.BeginUpdate;
@@ -128,8 +141,8 @@ begin
         for i := 0 to pclass.consts.Count-1 do begin
             li := lv_Properties.Items.Add;
             li.Caption := 'const';
-            {if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.consts[i].name)
-                else} li.SubItems.AddObject(pclass.consts[i].name, pclass.consts[i]);
+            li.SubItems.AddObject(pclass.consts[i].name, pclass.consts[i]);
+
             li.SubItems.Add(IntToStr(pclass.consts[i].srcline));
             li.SubItems.Add(IntToStr(j));
             li.SubItems.Add(MakeHint(pclass.consts[i].name+' = '+pclass.consts[i].value));
@@ -166,8 +179,7 @@ begin
             end;
             li := lv_Properties.Items.Add;
             li.Caption := 'var';
-            {if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.properties[i].name)
-                else} li.SubItems.AddObject(pclass.properties[i].name, pclass.properties[i]);
+            li.SubItems.AddObject(pclass.properties[i].name, pclass.properties[i]);
             li.SubItems.Add(IntToStr(pclass.properties[i].srcline));
             li.SubItems.Add(IntToStr(j));
             li.SubItems.Add(MakeHint(pclass.properties[i].ptype+' '+pclass.properties[i].name));
@@ -194,8 +206,7 @@ begin
         for i := 0 to pclass.enums.Count-1 do begin
             li := lv_Properties.Items.Add;
             li.Caption := 'enum';
-            {if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.enums[i].name)
-                else} li.SubItems.AddObject(pclass.enums[i].name, pclass.enums[i]);
+            li.SubItems.AddObject(pclass.enums[i].name, pclass.enums[i]);
             li.SubItems.Add(IntToStr(pclass.enums[i].srcline));
             li.SubItems.Add(IntToStr(j));
             li.SubItems.Add(MakeHint(pclass.enums[i].name+' = '+StringReplace(pclass.enums[i].options, ',', ', ', [rfReplaceAll])));
@@ -222,8 +233,7 @@ begin
         for i := 0 to pclass.structs.Count-1 do begin
             li := lv_Properties.Items.Add;
             li.Caption := 'struct';
-            {if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.structs[i].name)
-                else} li.SubItems.AddObject(pclass.structs[i].name, pclass.structs[i]);
+            li.SubItems.AddObject(pclass.structs[i].name, pclass.structs[i]);
             li.SubItems.Add(IntToStr(pclass.structs[i].srcline));
             li.SubItems.Add(IntToStr(j));
             li.SubItems.Add(MakeHint(pclass.structs[i].name));
@@ -279,8 +289,6 @@ begin
         for i := 0 to pclass.functions.Count-1 do begin
             li := lv_Properties.Items.Add;
             li.Caption := 'function';
-            {if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.functions[i].name)
-                else}
             lasttag := pclass.functions[i].name;
             if (pclass.functions[i].state <> nil) then begin
                 lasttag := lasttag+' (state:'+pclass.functions[i].state.name+')';
@@ -330,11 +338,15 @@ begin
 end;
 
 procedure Tfr_Properties.lv_PropertiesClick(Sender: TObject);
+var
+    up: TUDeclaration;
 begin
     if (lv_Properties.Selected = nil) then exit;
     if (lv_Properties.Selected.Data = nil) then exit;
-    if (frm_UnCodeX.Visible and frm_UnCodeX.mi_SourceSnoop.Checked) then
-        frm_UnCodeX.OpenSourceInline(TUClass(lv_Properties.Selected.Data), StrToIntDef(lv_Properties.Selected.SubItems[1], 1)-1, 0);
+    if (frm_UnCodeX.Visible and frm_UnCodeX.mi_SourceSnoop.Checked) then begin
+        up := TUDeclaration(lv_Properties.Selected.SubItems.Objects[0]);
+        frm_UnCodeX.OpenSourceInline(TUClass(lv_Properties.Selected.Data), StrToIntDef(lv_Properties.Selected.SubItems[1], 1)-1, 0, up.definedIn);
+    end;
 end;
 
 procedure Tfr_Properties.mi_OpenLocationClick(Sender: TObject);
