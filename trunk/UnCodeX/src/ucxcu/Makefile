@@ -1,7 +1,11 @@
 DCUOUT=../../dcu/ucxcu/
 BINOUT=../../bin/
 
-FPCPATH=-Fu"C:\Program Files\RemObjects Software\Pascal Script for Delphi\Source" -Fi"C:\Program Files\RemObjects Software\Pascal Script for Delphi\Source"
+ifeq ($(strip $(shell uname)),Linux)
+	FPCPATH=-Fu../../../PascalScript-svn/Source -Fi../../../PascalScript-svn/Source
+else
+	FPCPATH=-Fu"C:\Program Files\RemObjects Software\Pascal Script for Delphi\Source" -Fi"C:\Program Files\RemObjects Software\Pascal Script for Delphi\Source"
+endif
 
 FPCOPT=-Mdelphi -Xs -XD -O3 -Op3
 
