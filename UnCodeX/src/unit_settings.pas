@@ -157,6 +157,7 @@ type
     Label10: TLabel;
     ud_TabSize: TUpDown;
     ed_TabSize: TEdit;
+    cb_CPAsWindow: TCheckBox;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -213,8 +214,7 @@ type
     procedure cb_cf5Change(Sender: TObject);
     procedure cb_BackgroundChange(Sender: TObject);
     procedure btn_CancelClick(Sender: TObject);
-    procedure ud_TabSizeChanging(Sender: TObject;
-      var AllowChange: Boolean);
+    procedure ed_TabSizeChange(Sender: TObject);
   private
   public
     procedure ReloadPreview;
@@ -699,8 +699,7 @@ begin
   unit_rtfhilight.tabs := btabs;
 end;
 
-procedure Tfrm_Settings.ud_TabSizeChanging(Sender: TObject;
-  var AllowChange: Boolean);
+procedure Tfrm_Settings.ed_TabSizeChange(Sender: TObject);
 begin
   unit_rtfhilight.tabs := ud_TabSize.Position;
   ReloadPreview;

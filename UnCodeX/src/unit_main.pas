@@ -331,6 +331,7 @@ var
   PackagePriority: TStringList;
   IgnorePackages: TStringList;
   MinimizeOnClose: boolean = false;
+  ClassPropertiesWindow: boolean = false;
   // startup
   ExpandObject: boolean;
   AnalyseModified: boolean;
@@ -1014,7 +1015,8 @@ begin
     AnalyseModified := ini.ReadBool('Config', 'AnalyseModified', true);
     DefaultInheritanceDepth := ini.ReadInteger('Config', 'DefaultInheritanceDepth', 0);
     if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ConfigFile)+StateFile;
-    LoadCustomOutputModules := ini.ReadBool('[config]', 'LoadOutputModules', LoadCustomOutputModules);
+    LoadCustomOutputModules := ini.ReadBool('config', 'LoadOutputModules', LoadCustomOutputModules);
+    ClassPropertiesWindow := ini.ReadBool('config', 'ClassPropertiesWindow', ClassPropertiesWindow);
     { Program configuration -- END }
     for i := 0 to al_Main.ActionCount-1 do begin
       TAction(al_Main.Actions[i]).ShortCut := TextToShortCut(ini.ReadString('HotKeys', TAction(al_Main.Actions[i]).Caption, ShortCutToText(TAction(al_Main.Actions[i]).ShortCut)));
@@ -1203,6 +1205,7 @@ begin
     cb_ModifiedOnStartup.Checked := AnalyseModified;
     ud_DefInheritDepth.Position := DefaultInheritanceDepth;
     cb_LoadCustomModules.Checked := LoadCustomOutputModules;
+    cb_CPAsWindow.Checked := ClassPropertiesWindow;
     if (ShowModal = mrOk) then begin
       { HTML output }
       HTMLOutputDir := ed_HTMLOutputDir.Text;
@@ -1228,6 +1231,7 @@ begin
       MinimizeOnClose := cb_MinimzeOnClose.Checked;
       DefaultInheritanceDepth := ud_DefInheritDepth.Position;
       LoadCustomOutputModules := cb_LoadCustomModules.Checked;
+      ClassPropertiesWindow := cb_CPAsWindow.Checked;
       { Source paths }
       SourcePaths.Clear;
       SourcePaths.AddStrings(lb_Paths.Items);
@@ -1269,6 +1273,7 @@ begin
         data.Add('AnalyseModified='+IntToStr(Ord(AnalyseModified)));
         data.Add('DefaultInheritanceDepth='+IntToStr(DefaultInheritanceDepth));
         data.Add('LoadOutputModules='+IntToStr(Ord(LoadCustomOutputModules)));
+        data.Add('ClassPropertiesWindow='+IntToStr(Ord(ClassPropertiesWindow)));
 
         data.Add('[Layout]');
         data.Add('Log.Font.Name='+lb_Log.Font.Name);
@@ -1750,7 +1755,7 @@ begin
       if (Selected <> nil) then begin
         if (TObject(Selected.Data).ClassType <> TUClass) then exit;
         selclass := TUclass(Selected.Data);
-        with Tfrm_Tags.Create(nil) do begin
+        with Tfrm_Tags.CreateWindow(nil, ClassPropertiesWindow) do begin
           RestoreHandle := Handle;
           uclass := selclass;
           ud_InheritanceLevel.Position := DefaultInheritanceDepth;
@@ -1981,9 +1986,8 @@ end;
 procedure Tfrm_UnCodeX.re_SourceSnoopMouseMove(Sender: TObject;
   Shift: TShiftState; X, Y: Integer);
 begin
-  if (ssCtrl in Shift) then begin
-    
-  end;
+  if (ssCtrl in Shift) then re_SourceSnoop.Cursor := crHandPoint
+  else re_SourceSnoop.Cursor := crDefault;
 end;
 
 procedure Tfrm_UnCodeX.mi_ClearHilightClick(Sender: TObject);
@@ -1992,23 +1996,50 @@ begin
 end;
 
 procedure Tfrm_UnCodeX.mi_FindSelectionClick(Sender: TObject);
+var
+  i: integer;
 begin
   if (re_SourceSnoop.SelText = '') then exit;
-  searchclass := re_SourceSnoop.SelText;
-  CSprops[0] := false;
-  CSprops[1] := false;
-  tv_Classes.Selected := nil;
-  ac_FindNext.Execute;
+  for i := 0 to tv_Classes.Items.Count-1 do begin
+    if (AnsiCompareText(tv_Classes.items[i].Text, re_SourceSnoop.SelText) = 0) then begin
+      tv_Classes.Tag := TV_ALWAYSEXPAND;
+      tv_Classes.Select(tv_Classes.items[i]);
+      exit;
+    end;
+  end;
 end;
 
 procedure Tfrm_UnCodeX.re_SourceSnoopMouseUp(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
   pt: TPoint;
+  curpos: integer;
+  tr: TEXTRANGE;
+  tmp: array[0..256] of char;
+  i: integer;
 begin
   if (Button = mbRight) then begin
     pt := re_SourceSnoop.ClientToScreen(Point(x,y));
     pm_SourceSnoop.Popup(pt.X, pt.Y);
+  end;
+  if ((ssCtrl in Shift) and (button = mbLeft)) then begin
+    re_SourceSnoop.Cursor := crHandPoint;
+    pt := Point(X, Y);
+    curpos := re_SourceSnoop.Perform(EM_CHARFROMPOS, 0, Integer(@pt));
+    tr.chrg.cpMin := re_SourceSnoop.Perform(EM_FINDWORDBREAK, WB_LEFT, curpos);
+    tr.chrg.cpMax := re_SourceSnoop.Perform(EM_FINDWORDBREAK, WB_RIGHT, curpos);
+    tr.lpstrText := tmp;
+    if (re_SourceSnoop.Perform(EM_GETTEXTRANGE, 0, integer(@tr)) > 0) then begin
+      if (tmp <> '') then begin
+        for i := 0 to tv_Classes.Items.Count-1 do begin
+          if (AnsiCompareText(tv_Classes.items[i].Text, tmp) = 0) then begin
+            tv_Classes.Tag := TV_ALWAYSEXPAND;
+            tv_Classes.Select(tv_Classes.items[i]);
+            exit;
+          end;
+        end;
+      end;
+    end;
   end;
 end;
 

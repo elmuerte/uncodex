@@ -42,12 +42,14 @@ type
     procedure lv_PropertiesSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
   private
+    FAsWindow: boolean;
     procedure WMActivate(var Message: TWMActivate); message WM_Activate;
   public
     isWindow: boolean;
     uclass: TUClass;
     function LoadClass: boolean;
     procedure CreateParams(var Params: TCreateParams); override;
+    constructor CreateWindow(Parent: TComponent; AsWindow: boolean); 
   end;
 
 var
@@ -99,6 +101,12 @@ begin
 end;
 
 { Tfrm_Tags }
+
+constructor Tfrm_Tags.CreateWindow(Parent: TComponent; AsWindow: boolean); 
+begin
+  inherited Create(Parent);
+  FAsWindow := AsWindow;
+end;
 
 function Tfrm_Tags.LoadClass: boolean;
 var
@@ -253,6 +261,7 @@ begin
   Params.ExStyle := WS_EX_TOOLWINDOW or WS_EX_NOPARENTNOTIFY or WS_EX_APPWINDOW;
   Params.Style := WS_POPUPWINDOW or WS_SYSMENU or WS_SIZEBOX;
   Params.WndParent := GetDesktopWindow;
+
 end;
 
 procedure Tfrm_Tags.WMActivate(var Message: TWMActivate);
@@ -302,7 +311,8 @@ procedure Tfrm_Tags.FormCreate(Sender: TObject);
 var
   pt: TPoint;
 begin
-  isWindow := false;
+  isWindow := not FAsWindow;
+  if (FAsWindow) then FormDblClick(Sender);
   if (GetCaretPosition(pt)) then begin
     Left := pt.X;
     Top := pt.Y;
