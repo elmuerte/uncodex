@@ -2,8 +2,8 @@
  Unit Name: unit_parser
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
-            Based on the TParser class by Borland Software Corporation
- $Id: unit_sourceparser.pas,v 1.10 2003-11-22 10:45:34 elmuerte Exp $           
+            Based on the TCopyParser class by Borland Software Corporation
+ $Id: unit_sourceparser.pas,v 1.11 2003-12-07 21:33:11 elmuerte Exp $           
 -----------------------------------------------------------------------------}
 
 { *************************************************************************** }
@@ -51,9 +51,6 @@ type
     constructor Create(Stream, OutStream: TStream; TabIsWhiteSpace: boolean = true);
     destructor Destroy; override;
     procedure CopyTokenToOutput;
-    procedure Error(const Ident: string);
-    procedure ErrorFmt(const Ident: string; const Args: array of const);
-    procedure ErrorStr(const Message: string);
     function NextToken: Char;
     function SkipToken(CopyBlanks: Boolean): Char;
     function TokenString: string;
@@ -103,21 +100,6 @@ end;
 procedure TSourceParser.CopyTokenToOutput;
 begin
   UpdateOutStream(FTokenPtr);
-end;
-
-procedure TSourceParser.Error(const Ident: string);
-begin
-  ErrorStr(Ident);
-end;
-
-procedure TSourceParser.ErrorFmt(const Ident: string; const Args: array of const);
-begin
-  ErrorStr(Format(Ident, Args));
-end;
-
-procedure TSourceParser.ErrorStr(const Message: string);
-begin
-  raise EParserError.CreateResFmt(@SParseError, [Message, FSourceLine]);
 end;
 
 function TSourceParser.NextToken: Char;
@@ -295,7 +277,6 @@ begin
   if FSourceEnd = FBufEnd then
   begin
     FSourceEnd := LineStart(FBuffer, FSourceEnd - 1);
-    if FSourceEnd = FBuffer then Error(SLineTooLong);
   end;
   FSaveChar := FSourceEnd[0];
   FSourceEnd[0] := #0;

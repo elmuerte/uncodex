@@ -3,7 +3,7 @@
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
             Based on the TParser class by Borland Software Corporation
- $Id: unit_parser.pas,v 1.10 2003-11-22 10:45:34 elmuerte Exp $
+ $Id: unit_parser.pas,v 1.11 2003-12-07 21:33:11 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 { *************************************************************************** }
@@ -41,19 +41,15 @@ type
     FSourceLine: Integer;
     FSaveChar: Char;
     FToken: Char;
-    FFloatType: Char;
     CopyInitComment: boolean;
     procedure ReadBuffer;
     procedure SkipBlanks;
+    function NextTokenTmp: Char;
   public
     FullCopy: boolean;
     constructor Create(Stream: TStream);
     destructor Destroy; override;
-    procedure Error(const Ident: string);
-    procedure ErrorFmt(const Ident: string; const Args: array of const);
-    procedure ErrorStr(const Message: string);
     function NextToken: Char;
-    function NextTokenTmp: Char;
     function SourcePos: Longint;
     function TokenString: string;
     function TokenSymbolIs(const S: string): Boolean;
@@ -99,21 +95,6 @@ begin
   end;
 end;
 
-procedure TUCParser.Error(const Ident: string);
-begin
-  ErrorStr(Ident);
-end;
-
-procedure TUCParser.ErrorFmt(const Ident: string; const Args: array of const);
-begin
-  ErrorStr(Format(Ident, Args));
-end;
-
-procedure TUCParser.ErrorStr(const Message: string);
-begin
-  raise EParserError.CreateResFmt(@SParseError, [Message, FSourceLine]);
-end;
-
 function TUCParser.NextToken: Char;
 begin
   result := NextTokenTmp;
@@ -131,21 +112,20 @@ begin
   P := FSourcePtr;
   FTokenPtr := P;
   case P^ of
+  	{ identifier }
     'A'..'Z', 'a'..'z', '_':
       begin
         Inc(P);
         while P^ in ['A'..'Z', 'a'..'z', '0'..'9', '_'] do Inc(P);
         Result := toSymbol;
       end;
+    { string }
     '"':
       begin
         Inc(P);
         while true do begin
           case P^ of
-            #0, #10, #13: begin
-                            Break;
-                            //Error(SInvalidString);
-                          end;
+            #0, #10, #13: Break;
             '\':  Inc(P);
             '"':  begin
                     Inc(P);
@@ -156,15 +136,13 @@ begin
         end;
         Result := toString;
       end;
+    { name }
     '''':
       begin
         Inc(P);
         while true do begin
           case P^ of
-            #0, #10, #13: begin
-                            Break;
-                            //Error(SInvalidString);
-                          end;
+            #0, #10, #13: Break;
             '\':  Inc(P);
             '''':  begin
                     Inc(P);
@@ -175,28 +153,29 @@ begin
         end;
         Result := toName;
       end;
+    { number }
     '-', '0'..'9':
       begin
+      	Result := toInteger;
         Inc(P);
-        if ((P-1)^ = '0') and (P^ = 'x') then begin
-          Inc(P);
-          while P^ in ['0'..'9', 'A' .. 'F', 'a' .. 'f'] do Inc(P);
+        if (((P-1)^ = '0') and (P^ in ['x', 'X'])) then begin
+          Inc(P); // hex notation
+          while P^ in ['0'..'9', 'a' .. 'f', 'A' .. 'F'] do Inc(P);
+        end
+        else begin
+          while P^ in ['0'..'9'] do begin
+            Inc(P);
+          end;
+          if (P^ = '.') then begin
+            Inc(P);
+            while P^ in ['0'..'9', 'f' ,'F'] do begin
+              Inc(P);
+              Result := toFloat;
+            end;
+          end;
         end;
-        while P^ in ['0'..'9'] do Inc(P);
-        Result := toInteger;
-        while P^ in ['0'..'9', '.', 'e', 'E', '+', '-', 'f', 'F'] do
-        begin
-          Inc(P);
-          Result := toFloat;
-        end;
-        if (P^ in ['c', 'C', 'd', 'D', 's', 'S']) then
-        begin
-          Result := toFloat;
-          FFloatType := P^;
-          Inc(P);
-        end else
-          FFloatType := #0;
       end;
+    { macro }
     '#':
       begin
         while not (P^ in [#10, toEOF]) do Inc(P);
@@ -209,6 +188,7 @@ begin
           Result := toComment; // not realy a comment but we just ignore it
         end;
       end;
+    { possible comment }
     '/':
       begin
         Inc(P);
@@ -287,7 +267,6 @@ begin
   if FSourceEnd = FBufEnd then
   begin
     FSourceEnd := LineStart(FBuffer, FSourceEnd - 1);
-    if FSourceEnd = FBuffer then Error(SLineTooLong);
   end;
   FSaveChar := FSourceEnd[0];
   FSourceEnd[0] := #0;
