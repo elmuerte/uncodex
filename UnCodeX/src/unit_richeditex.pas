@@ -1,13 +1,13 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_richeditex
  Author:    elmuerte
- Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   we need RichEdit control version 2
- $Id: unit_richeditex.pas,v 1.13 2004-02-23 10:39:04 elmuerte Exp $
+ $Id: unit_richeditex.pas,v 1.14 2004-02-23 12:20:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
-    Copyright (C) 2003  Michiel Hendriks
+    Copyright (C) 2003, 2004  Michiel Hendriks
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public

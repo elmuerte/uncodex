@@ -1,13 +1,13 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_mshtmlhelp
  Author:    elmuerte
- Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   creates the HTML Help project file and runs the compiler
- $Id: unit_mshtmlhelp.pas,v 1.10 2003-11-22 10:45:34 elmuerte Exp $
+ $Id: unit_mshtmlhelp.pas,v 1.11 2004-02-23 12:20:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
-    Copyright (C) 2003  Michiel Hendriks
+    Copyright (C) 2003, 2004  Michiel Hendriks
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -178,7 +178,7 @@ begin
     hhc.Add(' <li><object type="text/sitemap"><param name="name" value="Packages"></object>');
     hhc.Add(' <ul>');
     for i := 0 to PackageList.Count-1 do begin
-      hhc.Add('   <li><object type="text/sitemap"><param name="name" value="'+PackageList[i].name+'"><param name="Local" value="'+PackageLink(PackageList[i])+'.html"></object>');
+      hhc.Add('   <li><object type="text/sitemap"><param name="name" value="'+PackageList[i].name+'"><param name="Local" value="'+PackageLink(PackageList[i])+'"></object>');
       hhc.Add('   <ul>');
       for j := 0 to PackageList[i].classes.Count-1 do begin
         hhc.Add('     <li><object type="text/sitemap"><param name="name" value="'+PackageList[i].classes[j].name+'"><param name="Local" value="'+ClassLink(PackageList[i].classes[j])+'"></object>');

@@ -1,13 +1,13 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_license
  Author:    elmuerte
- Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Display the LICENSE.TXT file
- $Id: unit_license.pas,v 1.2 2003-12-16 11:37:58 elmuerte Exp $
+ $Id: unit_license.pas,v 1.3 2004-02-23 12:20:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
-    Copyright (C) 2003  Michiel Hendriks
+    Copyright (C) 2003, 2004  Michiel Hendriks
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public

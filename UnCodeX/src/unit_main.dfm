@@ -34,7 +34,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Cursor = crHSplit
     AutoSnap = False
     Visible = False
-    OnCanResize = splLeftCanResize
   end
   object splTop: TSplitter
     Left = 0

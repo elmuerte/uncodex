@@ -1,9 +1,9 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_about
  Author:    elmuerte
- Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   about UnCodeX dialog
- $Id: unit_about.pas,v 1.11 2003-12-28 11:36:46 elmuerte Exp $
+ $Id: unit_about.pas,v 1.12 2004-02-23 12:20:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
