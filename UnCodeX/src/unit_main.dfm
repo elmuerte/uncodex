@@ -14,6 +14,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
   OldCreateOrder = False
   Position = poDefaultPosOnly
   Scaled = False
+  OnActivate = FormActivate
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
@@ -70,9 +71,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     RowSelect = True
     SortType = stText
     TabOrder = 2
-    OnCollapsing = tv_ClassesExpanding
     OnDblClick = tv_ClassesDblClick
-    OnExpanding = tv_ClassesExpanding
   end
   object tv_Packages: TTreeView
     Left = 0
@@ -89,9 +88,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     RowSelect = True
     SortType = stText
     TabOrder = 1
-    OnCollapsing = tv_ClassesExpanding
     OnDblClick = tv_ClassesDblClick
-    OnExpanding = tv_ClassesExpanding
   end
   object sb_Status: TStatusBar
     Left = 0
