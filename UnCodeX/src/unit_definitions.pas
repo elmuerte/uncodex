@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   General definitions
- $Id: unit_definitions.pas,v 1.114 2004-09-16 18:36:59 elmuerte Exp $
+ $Id: unit_definitions.pas,v 1.115 2004-10-18 11:31:46 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,6 +25,8 @@
 }
 
 unit unit_definitions;
+
+{$I defines.inc}
 
 interface
 
@@ -377,7 +379,7 @@ initialization
     Keywords1.Items['var'] := '-';
     Keywords1.Items['while'] := '-';
 
-
+    {$IFNDEF DONT_SAVE_KEYWORDS}
     sl := TStringList.Create;
     Keywords1.Restart;
     try
@@ -388,6 +390,7 @@ initialization
     finally
       sl.Free;
     end;
+    {$ENDIF}
   end;
 
   if (not kwl2) then begin
@@ -430,6 +433,7 @@ initialization
 		Keywords2.Items['transient'] := '-';
     Keywords2.Items['within'] := '-';
 
+    {$IFNDEF DONT_SAVE_KEYWORDS}
 		sl := TStringList.Create;
     Keywords2.Restart;
     try
@@ -440,6 +444,7 @@ initialization
     finally
       sl.Free;
     end;
+    {$ENDIF}
   end;
   // fill keyword table -- end
   TmpExtCmt := TStringList.Create;

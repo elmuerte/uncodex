@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.56 2004-09-15 19:24:52 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.57 2004-10-18 11:31:46 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,6 +25,8 @@
 }
 
 unit unit_htmlout;
+
+{$I defines.inc}
 
 interface
 
@@ -158,7 +160,11 @@ var
 implementation
 
 uses
-  unit_definitions, unit_copyparser, unit_sourceparser;
+  unit_definitions, unit_copyparser, unit_sourceparser
+{$IFDEF FPC}
+  , unit_fpc_compat
+{$ENDIF}
+	;
 
 var
   currentClass: TUClass;
@@ -247,7 +253,9 @@ begin
   FunctionCache := Hashes.TStringHash.Create;
   DelegateCache := Hashes.TStringHash.Create;
   ini := TMemIniFile.Create(iFindFile(TemplateDir+'template.ini'));
+  {$IFNDEF FPC}
   ini.CaseSensitive := false;
+  {$ENDIF}
   MaxInherit := ini.ReadInteger('Settings', 'MaxInherit', MaxInt);
   if (TargetExtention = '') then TargetExtention := ini.ReadString('Settings', 'TargetExt', 'html');
   if (MaxInherit <= 0) then MaxInherit := MaxInt;

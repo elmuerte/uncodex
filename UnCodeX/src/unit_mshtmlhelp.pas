@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   creates the HTML Help project file and runs the compiler
- $Id: unit_mshtmlhelp.pas,v 1.13 2004-07-24 14:35:13 elmuerte Exp $
+ $Id: unit_mshtmlhelp.pas,v 1.14 2004-10-18 11:31:46 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,6 +25,8 @@
 }
 
 unit unit_mshtmlhelp;
+
+{$I defines.inc}
 
 interface
 

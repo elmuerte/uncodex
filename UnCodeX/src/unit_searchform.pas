@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Search form, much better than the previous version
- $Id: unit_searchform.pas,v 1.8 2004-05-03 07:54:45 elmuerte Exp $
+ $Id: unit_searchform.pas,v 1.9 2004-10-18 11:31:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,6 +25,8 @@
 }
 
 unit unit_searchform;
+
+{$I defines.inc}
 
 interface
 

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
- $Id: UnCodeX.dpr,v 1.46 2004-08-09 08:08:03 elmuerte Exp $
+ $Id: UnCodeX.dpr,v 1.47 2004-10-18 11:31:46 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -26,6 +26,7 @@
 program UnCodeX;
 
 {$R 'hilight_preview.res' 'hilight_preview.rc'}
+{%File 'defines.inc'}
 
 uses
   FastShareMem in 'FastShareMem.pas',
@@ -198,9 +199,9 @@ begin
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-  	Application.CreateForm(Tfrm_About, frm_About);
-	  Application.CreateForm(Tfrm_License, frm_License);
-	  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+  Application.CreateForm(Tfrm_About, frm_About);
+  Application.CreateForm(Tfrm_License, frm_License);
+  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end
   else if (frm_Splash <> nil) then frm_Splash.Close;

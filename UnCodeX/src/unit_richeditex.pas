@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   we need RichEdit control version 2
- $Id: unit_richeditex.pas,v 1.15 2004-05-08 12:06:28 elmuerte Exp $
+ $Id: unit_richeditex.pas,v 1.16 2004-10-18 11:31:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,6 +25,8 @@
 }
 
 unit unit_richeditex;
+
+{$I defines.inc}
 
 interface
 

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Create a pipe with a commandline application
- $Id: unit_clpipe.pas,v 1.6 2004-06-20 21:10:04 elmuerte Exp $
+ $Id: unit_clpipe.pas,v 1.7 2004-10-18 11:31:46 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,6 +25,8 @@
 }
 
 unit unit_clpipe;
+
+{$I defines.inc}
 
 interface
 

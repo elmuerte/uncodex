@@ -8,6 +8,7 @@ code implementing the class wrapper is taken from Carlo Kok''s conv unility
 
 }
 {$I PascalScript.inc}
+{$I defines.inc}
 interface
  
 uses

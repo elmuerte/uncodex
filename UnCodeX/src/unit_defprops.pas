@@ -2,7 +2,7 @@
  Unit Name: unit_defprops
  Author:    elmuerte
  Purpose:   Defaultproperty browser
- $Id: unit_defprops.pas,v 1.2 2004-05-08 12:06:27 elmuerte Exp $
+ $Id: unit_defprops.pas,v 1.3 2004-10-18 11:31:46 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -23,6 +23,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
 unit unit_defprops;
+
+{$I defines.inc}
 
 interface
 

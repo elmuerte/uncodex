@@ -1,0 +1,13 @@
+{$IFDEF FPC}
+	{$DEFINE CONSOLE}
+{$ENDIF}
+
+
+{$IFDEF CONSOLE}
+	// Console Application
+	{$DEFINE NO_EXPORT}
+  {$DEFINE DONT_SAVE_KEYWORDS}
+{$ELSE}
+	// GUI application
+	{$DEFINE USE_TREEVIEW}
+{$ENDIF}

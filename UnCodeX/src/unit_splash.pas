@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   splash screen
- $Id: unit_splash.pas,v 1.3 2003-12-28 11:41:16 elmuerte Exp $
+ $Id: unit_splash.pas,v 1.4 2004-10-18 11:31:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,6 +25,8 @@
 }
 
 unit unit_splash;
+
+{$I defines.inc}
 
 interface
 

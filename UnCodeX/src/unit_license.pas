@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Display the LICENSE.TXT file
- $Id: unit_license.pas,v 1.3 2004-02-23 12:20:47 elmuerte Exp $
+ $Id: unit_license.pas,v 1.4 2004-10-18 11:31:46 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,6 +25,8 @@
 }
 
 unit unit_license;
+
+{$I defines.inc}
 
 interface
 

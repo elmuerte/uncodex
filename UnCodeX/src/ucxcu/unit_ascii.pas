@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   general console routines
- $Id: unit_ascii.pas,v 1.10 2004-07-24 14:35:13 elmuerte Exp $
+ $Id: unit_ascii.pas,v 1.11 2004-10-18 11:31:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,6 +25,8 @@
 }
 
 unit unit_ascii;
+
+{$I ../defines.inc}
 
 interface
 

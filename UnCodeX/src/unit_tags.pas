@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   class properties window
- $Id: unit_tags.pas,v 1.18 2004-08-09 13:25:15 elmuerte Exp $
+ $Id: unit_tags.pas,v 1.19 2004-10-18 11:31:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,6 +25,8 @@
 }
 
 unit unit_tags;
+
+{$I defines.inc}
 
 interface
 
