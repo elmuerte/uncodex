@@ -2419,7 +2419,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Top = 200
   end
   object ps_Main: TPSScript
-    CompilerOptions = [icAllowNoBegin, icAllowUnit, icAllowNoEnd]
+    CompilerOptions = [icAllowNoBegin, icAllowUnit, icAllowNoEnd, icBooleanShortCircuit]
     OnLine = ps_MainLine
     OnCompile = ps_MainCompile
     OnExecute = ps_MainExecute

@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.148 2005-03-23 11:40:50 elmuerte Exp $
+  $Id: unit_main.pas,v 1.149 2005-03-25 16:01:28 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -3691,6 +3691,7 @@ procedure Tfrm_UnCodeX.ps_MainCompile(Sender: TPSScript);
 begin
   RegisterPS(Sender);
   RegisterPSGui(Sender);
+  Sender.Comp.AllowNoBegin := true;
 end;
 
 procedure Tfrm_UnCodeX.ac_PSEditorExecute(Sender: TObject);
