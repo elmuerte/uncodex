@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.50 2004-03-08 20:02:24 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.51 2004-03-27 14:14:21 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -284,46 +284,50 @@ var
   stime: TDateTime;
   i: integer;
 begin
-  curPos := 0;
-  maxPos := (PackageList.Count*2)+ClassList.Count;
-  if (ini.ReadBool('Settings', 'CreateClassTree', true)) then maxPos := maxPos+1;
-  if (ini.ReadBool('Settings', 'CreateGlossary', true)) then maxPos := maxPos+26;
-  if (ini.ReadBool('Settings', 'SourceCode', true)) then maxPos := maxPos+ClassList.Count;
-  Status('Working ...', 0);
-  stime := Now();
-  forcedirectories(htmloutputdir);
-  PackageList.AlphaSort;
-  ClassList.Sort;
-  TypeCache.Items['int'] := '-';
-  TypeCache.Items['string'] := '-';
-  TypeCache.Items['float'] := '-';
-  TypeCache.Items['bool'] := '-';
-  TypeCache.Items['byte'] := '-';
-  TypeCache.Items['class'] := '-';
-  TypeCache.Items['name'] := '-';
-  for i := 0 to ClassList.Count-1 do begin
-    if (not TypeCache.Exists(LowerCase(ClassList[i].Name))) then
-      TypeCache.Items[LowerCase(ClassList[i].Name)] := ClassLink(ClassList[i])
-      else Log('Type already cached '+ClassList[i].Name);
-  end;
+	try
+	  curPos := 0;
+  	maxPos := (PackageList.Count*2)+ClassList.Count;
+	  if (ini.ReadBool('Settings', 'CreateClassTree', true)) then maxPos := maxPos+1;
+  	if (ini.ReadBool('Settings', 'CreateGlossary', true)) then maxPos := maxPos+26;
+	  if (ini.ReadBool('Settings', 'SourceCode', true)) then maxPos := maxPos+ClassList.Count;
+	  Status('Working ...', 0);
+  	stime := Now();
+	  forcedirectories(htmloutputdir);
+  	PackageList.AlphaSort;
+	  ClassList.Sort;
+  	TypeCache.Items['int'] := '-';
+	  TypeCache.Items['string'] := '-';
+  	TypeCache.Items['float'] := '-';
+	  TypeCache.Items['bool'] := '-';
+  	TypeCache.Items['byte'] := '-';
+	  TypeCache.Items['class'] := '-';
+  	TypeCache.Items['name'] := '-';
+	  for i := 0 to ClassList.Count-1 do begin
+  	  if (not TypeCache.Exists(LowerCase(ClassList[i].Name))) then
+	      TypeCache.Items[LowerCase(ClassList[i].Name)] := ClassLink(ClassList[i])
+  	    else Log('Type already cached '+ClassList[i].Name);
+	  end;
 
-  if (not Self.Terminated) then CopyFiles;
-  subDirDepth := 0;
-  if (not Self.Terminated) then htmlIndex;
-  if (not Self.Terminated) then htmlOverview;
-  if (not Self.Terminated) then htmlPackagesList;
-  if (not Self.Terminated) then htmlClassesList;
-  subDirDepth := 1;
-  if (not Self.Terminated) then htmlPackageClasses;
-  if (not Self.Terminated) then htmlPackageOverview;
-  if (not Self.Terminated) then htmlClassOverview;
-  subDirDepth := 0;
-  if (ini.ReadBool('Settings', 'CreateClassTree', true) and (not Self.Terminated)) then htmlTree; // create class tree
-  if (ini.ReadBool('Settings', 'CreateGlossary', true) and (not Self.Terminated)) then htmlGlossary; // iglossery
-  subDirDepth := 1;
-  if (ini.ReadBool('Settings', 'SourceCode', true) and (not Self.Terminated) and CreateSource) then SourceCode; //
-  if (IsCPP and (CPPPipe <> nil)) then CPPPipe.Close;
-  Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds');
+	  if (not Self.Terminated) then CopyFiles;
+  	subDirDepth := 0;
+	  if (not Self.Terminated) then htmlIndex;
+  	if (not Self.Terminated) then htmlOverview;
+	  if (not Self.Terminated) then htmlPackagesList;
+  	if (not Self.Terminated) then htmlClassesList;
+	  subDirDepth := 1;
+  	if (not Self.Terminated) then htmlPackageClasses;
+	  if (not Self.Terminated) then htmlPackageOverview;
+  	if (not Self.Terminated) then htmlClassOverview;
+	  subDirDepth := 0;
+  	if (ini.ReadBool('Settings', 'CreateClassTree', true) and (not Self.Terminated)) then htmlTree; // create class tree
+	  if (ini.ReadBool('Settings', 'CreateGlossary', true) and (not Self.Terminated)) then htmlGlossary; // iglossery
+  	subDirDepth := 1;
+	  if (ini.ReadBool('Settings', 'SourceCode', true) and (not Self.Terminated) and CreateSource) then SourceCode; //
+  	if (IsCPP and (CPPPipe <> nil)) then CPPPipe.Close;
+	  Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds');
+  except
+		on E: Exception do Log('Unhandled exception: '+E.Message);
+  end;
 end;
 
 procedure THTMLOutput.parseTemplate(input, output: TStream; replace: TReplacement; data: TObject = nil);
@@ -2282,6 +2286,7 @@ begin
         template1.Position := 0;
         parseTemplate(template1, target, replaceClass, ClassList[i]);
         if (Self.Terminated) then break;
+        if (not fileexists(ClassList[i].package.path+PATHDELIM+ClassList[i].filename)) then continue;
         source := TFileStream.Create(ClassList[i].package.path+PATHDELIM+ClassList[i].filename, fmOpenRead or fmShareDenyWrite);
         try
           parseCode(source, target);

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   definitions for Unreal Classes
- $Id: unit_uclasses.pas,v 1.20 2004-02-23 12:20:47 elmuerte Exp $
+ $Id: unit_uclasses.pas,v 1.21 2004-03-27 14:14:21 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -354,11 +354,11 @@ end;
 function TUFunctionListCompare(Item1, Item2: Pointer): integer;
 begin
   result := CompareText(TUFunction(Item1).name, TUFunction(Item2).name);
-  {if (result = 0) then begin  //stack overflow ?!
-    if (TUFunction(Item1).state = nil) then result := -1
-    else if (TUFunction(Item2).state = nil) then result := 1
-      else result := CompareText(TUFunction(Item1).state.name, TUFunction(Item2).state.name);
-  end;}
+	if (result <> 0) then exit;
+  if ((TUFunction(Item1).state = nil) and (TUFunction(Item2).state = nil)) then exit;
+  if ((TUFunction(Item1).state = nil) and (TUFunction(Item2).state <> nil)) then result := -1
+  else if ((TUFunction(Item1).state <> nil) and (TUFunction(Item2).state = nil)) then result := 1
+  else result := CompareText(TUFunction(Item1).state.name, TUFunction(Item2).state.name);
 end;
 
 procedure TUFunctionList.Sort;

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.30 2004-03-16 08:47:00 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.31 2004-03-27 14:14:21 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -132,7 +132,11 @@ begin
   stime := Now();
   if (classes = nil) then begin
     Status('Analysing class '+uclass.name+' ...');
-    ExecuteSingle;
+    try
+	    ExecuteSingle;
+    except
+			on E: Exception do Log('Unhandled exception in class '+uclass.name+': '+E.Message);
+    end;
   end
   else ExecuteList;
   Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds');
@@ -145,7 +149,11 @@ begin
   for i := 0 to classes.Count-1 do begin
     uclass := classes[i];
     Status('Analysing class '+uclass.name+' ...', round(i/(classes.count-1)*100));
-    ExecuteSingle;
+    try
+	    ExecuteSingle;
+    except
+      on E: Exception do Log('Unhandled exception in class '+uclass.name+': '+E.Message);
+    end;
     if (Self.Terminated) then break;
   end;
 end;
@@ -258,7 +266,7 @@ begin
   if (ignoreFirst) then bcount := 1
   	else bcount := 0;
   if ((p.Token = '{') or (ignoreFirst)) then begin
-    Inc(bcount);
+    if (p.Token = '{') then Inc(bcount);
     result := p.TokenString;
     p.NextToken;
     while ((bcount > 0) and (p.Token <> toEOF)) do begin

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Unreal Package scanner, searches for classes in directories
- $Id: unit_packages.pas,v 1.21 2004-03-23 16:25:45 elmuerte Exp $
+ $Id: unit_packages.pas,v 1.22 2004-03-27 14:14:21 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -141,7 +141,11 @@ var
   stime: TDateTime;
 begin
   stime := Now();
-  ScanPackages();
+  try
+	  ScanPackages();
+  except
+    on E: Exception do Log('Unhandled exception: '+E.Message);
+  end;
   Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds, '+IntToStr(classlist.Count)+' classes');
 end;
 
@@ -158,6 +162,7 @@ var
   ini: TMemIniFile;
   lst: TStringList;
   tmp: string;
+	pathpkgcount: integer;
 begin
   {$IFDEF __USE_TREEVIEW}
   packagetree.BeginUpdate;
@@ -169,12 +174,14 @@ begin
   try
     // first get all packages
     for i := 0 to paths.count-1 do begin
+    	pathpkgcount := 0;
       if FindFirst(paths[i]+PATHDELIM+WILDCARD, faDirectory, sr) = 0 then begin
         repeat
           if ((sr.Name <> '.') and (sr.Name <> '..')) then begin
             if (iFindDir(paths[i]+PATHDELIM+sr.name+PATHDELIM+CLASSDIR, tmp) and
               (IgnorePackages.IndexOf(sr.Name) = -1)) then begin
               if (knownpackages.IndexOf(LowerCase(sr.Name)) = -1) then begin
+              	Inc(pathpkgcount);
                 UPackage := TUPackage.Create;
                 UPackage.name := sr.Name;
                 UPackage.path := tmp;
@@ -240,6 +247,9 @@ begin
         until (FindNext(sr) <> 0) or (Self.Terminated);
         FindClose(sr);
         if (Self.Terminated) then break;
+      end;
+      if (pathpkgcount = 0) then begin
+				log('Scanner: no packages found in '+paths[i]);
       end;
     end;
     PackageList.Sort; // sort on priority

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   property inspector frame
- $Id: unit_props.pas,v 1.4 2004-02-23 12:20:47 elmuerte Exp $
+ $Id: unit_props.pas,v 1.5 2004-03-27 14:14:21 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -231,7 +231,12 @@ begin
       li := lv_Properties.Items.Add;
       li.Caption := 'function';
       {if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.functions[i].name)
-        else} li.SubItems.Add(pclass.functions[i].name);
+        else}
+      lasttag := pclass.functions[i].name;
+      if (pclass.functions[i].state <> nil) then begin
+        lasttag := lasttag+' (state:'+pclass.functions[i].state.name+')';
+      end;
+      li.SubItems.Add(lasttag);
       li.SubItems.Add(IntToStr(pclass.functions[i].srcline));
       li.SubItems.Add(IntToStr(j));
       if ((pclass.functions[i].ftype = uftFunction) or (pclass.functions[i].ftype = uftEvent) or (pclass.functions[i].ftype = uftDelegate)) then begin

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   creates the HTML Help project file and runs the compiler
- $Id: unit_mshtmlhelp.pas,v 1.11 2004-02-23 12:20:47 elmuerte Exp $
+ $Id: unit_mshtmlhelp.pas,v 1.12 2004-03-27 14:14:21 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -87,14 +87,18 @@ procedure TMSHTMLHelp.Execute;
 var
   stime: Cardinal;
 begin
-  Status('Creating HTML Help file ...', 0);
-  stime := GetTickCount();
-  CreateHHPFile();
-  CreateHHCFile();
-  RunHHCompiler();
-  if (FileExists(outputpath+PATHDELIM+'_htmlhelp.hhp')) then DeleteFile(outputpath+PATHDELIM+'_htmlhelp.hhp');
-  if (FileExists(outputpath+PATHDELIM+'_htmlhelp.hhc')) then DeleteFile(outputpath+PATHDELIM+'_htmlhelp.hhc');
-  Status('Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds');
+	try
+	  Status('Creating HTML Help file ...', 0);
+  	stime := GetTickCount();
+	  CreateHHPFile();
+  	CreateHHCFile();
+	  RunHHCompiler();
+  	if (FileExists(outputpath+PATHDELIM+'_htmlhelp.hhp')) then DeleteFile(outputpath+PATHDELIM+'_htmlhelp.hhp');
+	  if (FileExists(outputpath+PATHDELIM+'_htmlhelp.hhc')) then DeleteFile(outputpath+PATHDELIM+'_htmlhelp.hhc');
+  	Status('Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds');
+	except
+		on E: Exception do Log('Unhandled exception: '+E.Message);
+  end;
 end;
 
 procedure TMSHTMLHelp.CreateHHPFile;

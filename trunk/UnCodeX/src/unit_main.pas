@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.84 2004-03-23 20:47:18 elmuerte Exp $
+ $Id: unit_main.pas,v 1.85 2004-03-27 14:14:21 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -2994,7 +2994,8 @@ end;
 
 procedure Tfrm_UnCodeX.splRightMoved(Sender: TObject);
 begin
-  dckRight.Width := splRightHack;
+  if (splRightHack <> 0) then dckRight.Width := splRightHack;
+  splRightHack := 0;
 end;
 
 procedure Tfrm_UnCodeX.re_SourceSnoopEndDock(Sender, Target: TObject; X,
