@@ -50,6 +50,10 @@ A.small {
 	font-size: x-small;
 }
 
+A[name] {
+	display: none;
+}
+
 H1, H2, H3, H4, H5 {
 	margin-bottom: 0px;
 	background-color: #F5D8E2;
@@ -226,6 +230,9 @@ H3.vartag {
 /* source code listing */
 
 A.source {
+	border: none; 
+	background-color: transparent;
+	padding: 0px;
 	color: #990000;
 }
 
@@ -234,6 +241,9 @@ A.source:Visited {
 }
 
 A.source:Hover {
+	border: none; 
+	background-color: transparent;
+	padding: 0px;
 	color: #FF0000;
 }
 

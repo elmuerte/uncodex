@@ -12,6 +12,7 @@
 	<td class="header"><a href="%index_link%">%index_title%</a></td>
 	<td class="header_hilight">Package</td>
 	<td class="header">Class</td>
+	<td class="header">Source</td>
 	<td class="header"><a class="header" href="%classtree_link%">%classtree_title%</a></td>
 	<td class="header"><a class="header" href="%glossary_link%">%glossary_title%</a></a>
 	<td class="logo" rowspan="2">UnrealScript<br />Documentation</td>
@@ -29,6 +30,13 @@
 %package_comment%
 </p>
 
+%if:has_interfaces%
+<table class="package_table">
+<tr><th colspan="2">Interface Summary</th></tr>
+%package_interfaces_table%
+</table>
+%endif%
+
 <table class="package_table">
 <tr><th colspan="2">Class Summary</th></tr>
 %package_classes_table%
@@ -40,6 +48,7 @@
 	<td class="header">%index_title%</td>
 	<td class="header_hilight">Package</td>
 	<td class="header">Class</td>
+	<td class="header">Source</td>
 	<td class="header"><a class="header" href="%classtree_link%">%classtree_title%</a></td>
 	<td class="header"><a class="header" href="%glossary_link%">%glossary_title%</a></a>
 	<td class="logo" rowspan="2">UnrealScript<br />Documentation</td>
