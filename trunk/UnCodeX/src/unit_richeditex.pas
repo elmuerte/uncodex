@@ -6,7 +6,7 @@
   Purpose:
     TRichEdit control that uses version 2
 
-  $Id: unit_richeditex.pas,v 1.23 2004-12-30 09:40:21 elmuerte Exp $
+  $Id: unit_richeditex.pas,v 1.24 2005-03-29 08:38:42 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -97,14 +97,15 @@ begin
     WB_LEFT,
     WB_LEFTBREAK,
     WB_MOVEWORDLEFT:  begin
-                        while (ichCurrent > 0) and (not (Char(lpch[ichCurrent-1]) in ADELIM)) do dec(ichCurrent);
-                          Result := ichCurrent;
+                        while (ichCurrent >= 0) and (not (Char(lpch[ichCurrent]) in ADELIM)) do dec(ichCurrent);
+                        if (ichCurrent <> index) then Inc(ichCurrent);
+                        Result := ichCurrent;
                       end;
     WB_RIGHT,
     WB_RIGHTBREAK,
     WB_MOVEWORDRIGHT: begin
-                        while (ichCurrent < cch) and (not (Char(lpch[ichCurrent]) in ADELIM)) do inc(ichCurrent);
-                          Result := ichCurrent;
+                        while (ichCurrent <= cch) and (not (Char(lpch[ichCurrent]) in ADELIM)) do inc(ichCurrent);
+                        Result := ichCurrent;
                       end;
   end;
 end;
