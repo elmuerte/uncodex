@@ -3,7 +3,7 @@ object frm_RenameClass: Tfrm_RenameClass
   Top = 124
   BorderStyle = bsDialog
   Caption = 'Rename class'
-  ClientHeight = 144
+  ClientHeight = 141
   ClientWidth = 442
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -15,7 +15,7 @@ object frm_RenameClass: Tfrm_RenameClass
   Position = poMainFormCenter
   DesignSize = (
     442
-    144)
+    141)
   PixelsPerInch = 96
   TextHeight = 13
   object lbl_Class: TLabel
@@ -96,19 +96,19 @@ object frm_RenameClass: Tfrm_RenameClass
   end
   object btn_Cancel: TBitBtn
     Left = 281
-    Top = 112
+    Top = 109
     Width = 75
     Height = 25
-    Anchors = [akLeft, akTop, akRight]
+    Anchors = [akRight, akBottom]
     TabOrder = 2
     Kind = bkCancel
   end
   object btn_Rename: TBitBtn
     Left = 361
-    Top = 112
+    Top = 109
     Width = 75
     Height = 25
-    Anchors = [akLeft, akTop, akRight]
+    Anchors = [akRight, akBottom]
     Enabled = False
     TabOrder = 3
     Kind = bkOK

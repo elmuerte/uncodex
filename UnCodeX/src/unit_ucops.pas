@@ -50,7 +50,8 @@ var
 implementation
 
 uses unit_main, unit_copyparser, unit_definitions, unit_analyse,
-  unit_rtfhilight, unit_moveclass, shellapi, unit_renameclass;
+  unit_rtfhilight, unit_moveclass, shellapi, unit_renameclass,
+  unit_sourceparser;
 
 {$R *.dfm}
 
@@ -96,6 +97,19 @@ begin
   Log('Moving file "'+filename+'" to "'+dest+'"');
   FillChar(fos, sizeof(fos), 0);
   fos.wFunc := FO_MOVE;
+  fos.pFrom := PChar(filename);
+  fos.pTo := PChar(dest);
+  fos.fFlags := FOF_ALLOWUNDO or FOF_NOCONFIRMATION;
+  result := ShFileOperation(fos) = 0;
+end;
+
+function renameFile(filename, dest: string): boolean;
+var
+  fos: TSHFileOpStruct;
+begin
+  Log('Renaming file "'+filename+'" to "'+dest+'"');
+  FillChar(fos, sizeof(fos), 0);
+  fos.wFunc := FO_RENAME;
   fos.pFrom := PChar(filename);
   fos.pTo := PChar(dest);
   fos.fFlags := FOF_ALLOWUNDO or FOF_NOCONFIRMATION;
@@ -176,13 +190,60 @@ begin
 end;
 
 procedure RenameUClass(mclass: TUClass);
+var
+	i: integer;
+  fsin,fsout: TFileStream;
+  sin, sout: string;
+  p: TSourceParser;
 begin
   with Tfrm_RenameClass.Create(Application) do begin
     ed_Class.Text := mclass.name;
     uclass := mclass;
     uclasslist := ClassList;
 		if (ShowModal = mrOk) then begin
+     	sin := uclass.name;
+      sout := ed_NewClass.Text;
+			fsin := TFileStream.Create(uclass.package.path+PathDelim+uclass.filename, fmOpenRead or fmShareDenyWrite);
+      fsout := TFileStream.Create(uclass.package.path+PathDelim+sout+UCEXT, fmCreate or fmShareExclusive);
+      try
+        p := TSourceParser.Create(fsin, fsout, false);
+        while (p.Token <> toEOF) do begin
+					if ((p.Token = toSymbol) and (CompareText(p.TokenString, sin) = 0)) then begin
+            p.OutputStream.WriteBuffer(PChar(sout)^, Length(sout));
+          end
+          else begin
+            p.CopyTokenToOutput;
+          end;
+          p.SkipToken(true);
+        end;
+        p.Free;
+        FreeAndNil(fsin);
+        FreeAndNil(fsout);
+        DeleteFile(uclass.package.path+PathDelim+uclass.filename);
 
+        TreeUpdated := true;
+        uclass.name := ed_NewClass.Text;
+        uclass.filename := ed_NewClass.Text+UCEXT;
+        TTreeNode(uclass.treenode).Text := uclass.name;
+        TTreeNode(uclass.treenode2).Text := uclass.name;
+        for i := 0 to uclass.children.Count-1 do begin
+          LogClass('Class '+uclass.children[i].FullName+' needs to be updated', uclass.children[i]);
+					uclass.children[i].parentname := uclass.name;
+        end;
+
+        if MessageDlg('Do you want to search all classes for references to the old name of this class?'+#13+#10+'e.g.: '+ed_Class.Text, mtConfirmation, [mbYes,mbNo], 0) = mrYes then begin
+					SearchConfig.query := ed_Class.Text;
+        	SearchConfig.Wrapped := true;
+        	SearchConfig.isFTS := true;
+        	SearchConfig.isRegex := false;
+        	SearchConfig.Scope := 0;
+        	SearchConfig.searchtree := frm_UnCodeX.tv_Classes;
+        	frm_UnCodeX.ac_FindNext.Execute;
+      	end;
+      finally
+      	if (fsin <> nil) then fsin.Free;
+        if (fsout <> nil) then fsout.Free;
+      end
     end;
   end;
 end;
