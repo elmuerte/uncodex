@@ -1,10 +1,12 @@
 object frm_Settings: Tfrm_Settings
   Left = 254
   Top = 182
-  Width = 679
+  Width = 671
   Height = 405
   Caption = 'Settings'
   Color = clBtnFace
+  Constraints.MinHeight = 400
+  Constraints.MinWidth = 670
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -14,12 +16,12 @@ object frm_Settings: Tfrm_Settings
   Position = poScreenCenter
   OnCreate = FormCreate
   DesignSize = (
-    671
+    663
     378)
   PixelsPerInch = 96
   TextHeight = 13
   object btn_Ok: TBitBtn
-    Left = 592
+    Left = 584
     Top = 8
     Width = 75
     Height = 25
@@ -28,7 +30,7 @@ object frm_Settings: Tfrm_Settings
     Kind = bkOK
   end
   object btn_Cancel: TBitBtn
-    Left = 592
+    Left = 584
     Top = 40
     Width = 75
     Height = 25
@@ -40,9 +42,9 @@ object frm_Settings: Tfrm_Settings
   object pc_Settings: TPageControl
     Left = 145
     Top = 0
-    Width = 441
+    Width = 433
     Height = 378
-    ActivePage = ts_FullTextSearch
+    ActivePage = ts_SourceSnoop
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -56,18 +58,18 @@ object frm_Settings: Tfrm_Settings
       object gb_SourcePaths: TGroupBox
         Left = 0
         Top = 0
-        Width = 433
+        Width = 425
         Height = 368
         Align = alClient
         Caption = 'Source paths'
         TabOrder = 0
         DesignSize = (
-          433
+          425
           368)
         object lb_Paths: TListBox
           Left = 8
           Top = 48
-          Width = 417
+          Width = 409
           Height = 311
           Anchors = [akLeft, akTop, akRight, akBottom]
           BevelKind = bkSoft
@@ -112,7 +114,7 @@ object frm_Settings: Tfrm_Settings
             3333333331143333333333333311433333333333333333333333}
         end
         object btn_SUp: TBitBtn
-          Left = 366
+          Left = 358
           Top = 16
           Width = 27
           Height = 25
@@ -136,7 +138,7 @@ object frm_Settings: Tfrm_Settings
             2222222222202222222222222222222222222222222222222222}
         end
         object btn_SDown: TBitBtn
-          Left = 398
+          Left = 390
           Top = 16
           Width = 27
           Height = 25
@@ -170,16 +172,16 @@ object frm_Settings: Tfrm_Settings
       object gb_PackagePriority: TGroupBox
         Left = 0
         Top = 0
-        Width = 433
+        Width = 425
         Height = 368
         Align = alClient
         Caption = 'Package priority'
         TabOrder = 0
         DesignSize = (
-          433
+          425
           368)
         object btn_PUp: TBitBtn
-          Left = 400
+          Left = 392
           Top = 16
           Width = 27
           Height = 25
@@ -203,7 +205,7 @@ object frm_Settings: Tfrm_Settings
             2222222222202222222222222222222222222222222222222222}
         end
         object btn_PDown: TBitBtn
-          Left = 400
+          Left = 392
           Top = 48
           Width = 27
           Height = 25
@@ -227,7 +229,7 @@ object frm_Settings: Tfrm_Settings
             2222222220000022222222222222222222222222222222222222}
         end
         object btn_AddPackage: TBitBtn
-          Left = 400
+          Left = 392
           Top = 238
           Width = 27
           Height = 25
@@ -251,7 +253,7 @@ object frm_Settings: Tfrm_Settings
             2222352342352222222252235223222222222223422222222222}
         end
         object btn_DelPackage: TBitBtn
-          Left = 400
+          Left = 392
           Top = 270
           Width = 27
           Height = 25
@@ -273,7 +275,7 @@ object frm_Settings: Tfrm_Settings
             0000}
         end
         object btn_Import: TBitBtn
-          Left = 400
+          Left = 392
           Top = 334
           Width = 27
           Height = 25
@@ -294,7 +296,7 @@ object frm_Settings: Tfrm_Settings
         object clb_PackagePriority: TCheckListBox
           Left = 8
           Top = 16
-          Width = 385
+          Width = 377
           Height = 343
           OnClickCheck = clb_PackagePriorityClickCheck
           Anchors = [akLeft, akTop, akRight, akBottom]
@@ -304,7 +306,7 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 5
         end
         object btn_Ignore: TBitBtn
-          Left = 400
+          Left = 392
           Top = 302
           Width = 27
           Height = 25
@@ -335,18 +337,18 @@ object frm_Settings: Tfrm_Settings
       object gb_IgnorePackages: TGroupBox
         Left = 0
         Top = 0
-        Width = 433
+        Width = 425
         Height = 368
         Align = alClient
         Caption = 'Ignore Packages'
         TabOrder = 0
         DesignSize = (
-          433
+          425
           368)
         object lb_IgnorePackages: TListBox
           Left = 8
           Top = 16
-          Width = 385
+          Width = 377
           Height = 343
           Anchors = [akLeft, akTop, akRight, akBottom]
           BevelKind = bkSoft
@@ -357,7 +359,7 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 0
         end
         object btn_AddIgnore: TBitBtn
-          Left = 400
+          Left = 392
           Top = 16
           Width = 27
           Height = 25
@@ -381,7 +383,7 @@ object frm_Settings: Tfrm_Settings
             2222352342352222222252235223222222222223422222222222}
         end
         object btn_DelIgnore: TBitBtn
-          Left = 400
+          Left = 392
           Top = 48
           Width = 27
           Height = 25
@@ -402,7 +404,7 @@ object frm_Settings: Tfrm_Settings
             0000}
         end
         object btn_UnIgnore: TBitBtn
-          Left = 400
+          Left = 392
           Top = 80
           Width = 27
           Height = 25
@@ -437,13 +439,13 @@ object frm_Settings: Tfrm_Settings
       object gb_HTMLOutput: TGroupBox
         Left = 0
         Top = 0
-        Width = 433
+        Width = 425
         Height = 368
         Align = alClient
         Caption = 'HTML Output'
         TabOrder = 0
         DesignSize = (
-          433
+          425
           368)
         object lbl_OutputDir: TLabel
           Left = 8
@@ -485,7 +487,7 @@ object frm_Settings: Tfrm_Settings
         object ed_HTMLOutputDir: TEdit
           Left = 8
           Top = 32
-          Width = 393
+          Width = 385
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           BevelKind = bkSoft
@@ -494,7 +496,7 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 0
         end
         object btn_HTMLOutputDir: TBitBtn
-          Left = 400
+          Left = 392
           Top = 32
           Width = 25
           Height = 21
@@ -506,7 +508,7 @@ object frm_Settings: Tfrm_Settings
         object ed_TemplateDir: TEdit
           Left = 8
           Top = 72
-          Width = 393
+          Width = 385
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           BevelKind = bkSoft
@@ -515,7 +517,7 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 2
         end
         object btn_SelectTemplateDir: TBitBtn
-          Left = 400
+          Left = 392
           Top = 72
           Width = 25
           Height = 21
@@ -527,7 +529,7 @@ object frm_Settings: Tfrm_Settings
         object ed_HTMLTargetExt: TEdit
           Left = 8
           Top = 112
-          Width = 417
+          Width = 409
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           BevelKind = bkSoft
@@ -537,7 +539,7 @@ object frm_Settings: Tfrm_Settings
         object ed_TabsToSpaces: TEdit
           Left = 8
           Top = 152
-          Width = 401
+          Width = 393
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           BevelKind = bkSoft
@@ -546,7 +548,7 @@ object frm_Settings: Tfrm_Settings
           Text = '0'
         end
         object ud_TabsToSpaces: TUpDown
-          Left = 409
+          Left = 401
           Top = 152
           Width = 15
           Height = 21
@@ -566,7 +568,7 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 7
         end
         object btn_SelectCPP: TBitBtn
-          Left = 400
+          Left = 392
           Top = 192
           Width = 25
           Height = 21
@@ -586,13 +588,13 @@ object frm_Settings: Tfrm_Settings
       object gb_HTMLHelp: TGroupBox
         Left = 0
         Top = 0
-        Width = 433
+        Width = 425
         Height = 368
         Align = alClient
         Caption = 'MS HTML Help'
         TabOrder = 0
         DesignSize = (
-          433
+          425
           368)
         object lbl_Workshop: TLabel
           Left = 8
@@ -618,7 +620,7 @@ object frm_Settings: Tfrm_Settings
         object ed_WorkshopPath: TEdit
           Left = 8
           Top = 32
-          Width = 393
+          Width = 385
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           BevelKind = bkSoft
@@ -627,7 +629,7 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 0
         end
         object btn_SelectWorkshop: TBitBtn
-          Left = 400
+          Left = 392
           Top = 32
           Width = 25
           Height = 21
@@ -639,7 +641,7 @@ object frm_Settings: Tfrm_Settings
         object ed_HTMLHelpOutput: TEdit
           Left = 8
           Top = 72
-          Width = 393
+          Width = 385
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           BevelKind = bkSoft
@@ -647,7 +649,7 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 2
         end
         object btn_HTMLHelpOutput: TBitBtn
-          Left = 400
+          Left = 392
           Top = 72
           Width = 25
           Height = 21
@@ -659,7 +661,7 @@ object frm_Settings: Tfrm_Settings
         object ed_HHTitle: TEdit
           Left = 8
           Top = 112
-          Width = 417
+          Width = 409
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           BevelKind = bkSoft
@@ -677,13 +679,13 @@ object frm_Settings: Tfrm_Settings
       object gb_Compile: TGroupBox
         Left = 0
         Top = 0
-        Width = 433
+        Width = 425
         Height = 368
         Align = alClient
         Caption = 'Compile'
         TabOrder = 0
         DesignSize = (
-          433
+          425
           368)
         object lbl_CompilerCommandline: TLabel
           Left = 8
@@ -693,7 +695,7 @@ object frm_Settings: Tfrm_Settings
           Caption = 'Compiler commandline'
         end
         object btn_CompilerPlaceholders: TBitBtn
-          Left = 384
+          Left = 376
           Top = 32
           Width = 17
           Height = 21
@@ -711,7 +713,7 @@ object frm_Settings: Tfrm_Settings
         object ed_CompilerCommandline: TEdit
           Left = 8
           Top = 32
-          Width = 377
+          Width = 369
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           BevelKind = bkSoft
@@ -719,7 +721,7 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 0
         end
         object btn_BrowseCompiler: TBitBtn
-          Left = 400
+          Left = 392
           Top = 32
           Width = 25
           Height = 21
@@ -739,13 +741,13 @@ object frm_Settings: Tfrm_Settings
       object gb_GameServer: TGroupBox
         Left = 0
         Top = 0
-        Width = 433
+        Width = 425
         Height = 368
         Align = alClient
         Caption = 'Game Server'
         TabOrder = 0
         DesignSize = (
-          433
+          425
           368)
         object lbl_ServerCommandline: TLabel
           Left = 8
@@ -771,7 +773,7 @@ object frm_Settings: Tfrm_Settings
         object ed_ServerCommandline: TEdit
           Left = 8
           Top = 32
-          Width = 393
+          Width = 385
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           BevelKind = bkSoft
@@ -779,7 +781,7 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 0
         end
         object btn_BrowseServer: TBitBtn
-          Left = 400
+          Left = 392
           Top = 32
           Width = 25
           Height = 21
@@ -791,7 +793,7 @@ object frm_Settings: Tfrm_Settings
         object cb_ServerPriority: TComboBox
           Left = 8
           Top = 72
-          Width = 417
+          Width = 409
           Height = 21
           Style = csDropDownList
           Anchors = [akLeft, akTop, akRight]
@@ -808,7 +810,7 @@ object frm_Settings: Tfrm_Settings
         object ed_ClientCommandline: TEdit
           Left = 8
           Top = 128
-          Width = 393
+          Width = 385
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           BevelKind = bkSoft
@@ -816,7 +818,7 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 3
         end
         object btn_ClientCommandline: TBitBtn
-          Left = 400
+          Left = 392
           Top = 128
           Width = 25
           Height = 21
@@ -836,13 +838,13 @@ object frm_Settings: Tfrm_Settings
       object gb_FullTextSearch: TGroupBox
         Left = 0
         Top = 0
-        Width = 433
+        Width = 425
         Height = 368
         Align = alClient
         Caption = 'Full Text Search'
         TabOrder = 0
         DesignSize = (
-          433
+          425
           368)
         object lbl_OpenResult: TLabel
           Left = 8
@@ -852,7 +854,7 @@ object frm_Settings: Tfrm_Settings
           Caption = 'Open result command (leave blank for default action)'
         end
         object btn_OpenResultPlaceHolder: TBitBtn
-          Left = 384
+          Left = 376
           Top = 32
           Width = 17
           Height = 21
@@ -870,7 +872,7 @@ object frm_Settings: Tfrm_Settings
         object ed_OpenResultCmd: TEdit
           Left = 8
           Top = 32
-          Width = 377
+          Width = 369
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           BevelKind = bkSoft
@@ -878,7 +880,7 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 0
         end
         object btn_OpenResultCmd: TBitBtn
-          Left = 400
+          Left = 392
           Top = 32
           Width = 25
           Height = 21
@@ -890,7 +892,7 @@ object frm_Settings: Tfrm_Settings
         object cb_FTSRegExp: TCheckBox
           Left = 8
           Top = 56
-          Width = 417
+          Width = 409
           Height = 17
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Default to regular expression'
@@ -907,13 +909,13 @@ object frm_Settings: Tfrm_Settings
       object gb_Layout: TGroupBox
         Left = 0
         Top = 0
-        Width = 433
+        Width = 425
         Height = 368
         Align = alClient
         Caption = 'Layout'
         TabOrder = 0
         DesignSize = (
-          433
+          425
           368)
         object lbl_TreeFont: TLabel
           Left = 8
@@ -932,7 +934,7 @@ object frm_Settings: Tfrm_Settings
         object lb_LogLayout: TListBox
           Left = 8
           Top = 152
-          Width = 305
+          Width = 297
           Height = 73
           Anchors = [akLeft, akTop, akRight]
           ExtendedSelect = False
@@ -961,7 +963,7 @@ object frm_Settings: Tfrm_Settings
         object tv_TreeLayout: TTreeView
           Left = 8
           Top = 32
-          Width = 305
+          Width = 297
           Height = 73
           Anchors = [akLeft, akTop, akRight]
           HideSelection = False
@@ -976,7 +978,7 @@ object frm_Settings: Tfrm_Settings
             0000000000000753657373696F6E}
         end
         object btn_FontSelect: TBitBtn
-          Left = 320
+          Left = 312
           Top = 32
           Width = 105
           Height = 25
@@ -986,7 +988,7 @@ object frm_Settings: Tfrm_Settings
           OnClick = btn_FontSelectClick
         end
         object btn_LogFont: TBitBtn
-          Left = 320
+          Left = 312
           Top = 152
           Width = 105
           Height = 25
@@ -1004,7 +1006,7 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 4
         end
         object cb_FontColor: TColorBox
-          Left = 320
+          Left = 312
           Top = 56
           Width = 105
           Height = 22
@@ -1015,7 +1017,7 @@ object frm_Settings: Tfrm_Settings
           OnChange = cb_FontColorChange
         end
         object cb_BGColor: TColorBox
-          Left = 320
+          Left = 312
           Top = 80
           Width = 105
           Height = 22
@@ -1026,7 +1028,7 @@ object frm_Settings: Tfrm_Settings
           OnChange = cb_BGColorChange
         end
         object cb_LogFontColor: TColorBox
-          Left = 320
+          Left = 312
           Top = 176
           Width = 105
           Height = 22
@@ -1037,7 +1039,7 @@ object frm_Settings: Tfrm_Settings
           OnChange = cb_LogFontColorChange
         end
         object cb_LogColor: TColorBox
-          Left = 320
+          Left = 312
           Top = 200
           Width = 105
           Height = 22
@@ -1058,13 +1060,13 @@ object frm_Settings: Tfrm_Settings
       object gb_ProgramOptions: TGroupBox
         Left = 0
         Top = 0
-        Width = 433
+        Width = 425
         Height = 368
         Align = alClient
         Caption = 'Program Options'
         TabOrder = 0
         DesignSize = (
-          433
+          425
           368)
         object lbl_StateFile: TLabel
           Left = 8
@@ -1083,7 +1085,7 @@ object frm_Settings: Tfrm_Settings
         object bvl_Sep1: TBevel
           Left = 8
           Top = 160
-          Width = 417
+          Width = 409
           Height = 9
           Anchors = [akLeft, akTop, akRight]
           Shape = bsBottomLine
@@ -1098,7 +1100,7 @@ object frm_Settings: Tfrm_Settings
         object ed_StateFilename: TEdit
           Left = 8
           Top = 32
-          Width = 417
+          Width = 409
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           BevelKind = bkSoft
@@ -1124,7 +1126,7 @@ object frm_Settings: Tfrm_Settings
         object ed_DefInheritanceDepth: TEdit
           Left = 8
           Top = 192
-          Width = 401
+          Width = 393
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           BevelKind = bkSoft
@@ -1133,7 +1135,7 @@ object frm_Settings: Tfrm_Settings
           Text = '0'
         end
         object ud_DefInheritDepth: TUpDown
-          Left = 409
+          Left = 401
           Top = 192
           Width = 16
           Height = 21
@@ -1167,7 +1169,7 @@ object frm_Settings: Tfrm_Settings
         object ed_InlineSearchTimeout: TEdit
           Left = 8
           Top = 136
-          Width = 401
+          Width = 393
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           BevelKind = bkSoft
@@ -1176,7 +1178,7 @@ object frm_Settings: Tfrm_Settings
           Text = '5'
         end
         object ud_InlineSearchTimeout: TUpDown
-          Left = 409
+          Left = 401
           Top = 136
           Width = 16
           Height = 21
@@ -1200,18 +1202,18 @@ object frm_Settings: Tfrm_Settings
       object gb_HotKeys: TGroupBox
         Left = 0
         Top = 0
-        Width = 433
+        Width = 425
         Height = 368
         Align = alClient
         Caption = 'Hot keys'
         TabOrder = 0
         DesignSize = (
-          433
+          425
           368)
         object ed_HotKey: TEdit
           Left = 8
           Top = 16
-          Width = 177
+          Width = 169
           Height = 21
           Anchors = [akLeft, akTop, akRight]
           BevelKind = bkSoft
@@ -1220,7 +1222,7 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 0
         end
         object hk_HotKey: THotKey
-          Left = 192
+          Left = 184
           Top = 16
           Width = 169
           Height = 21
@@ -1231,7 +1233,7 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 1
         end
         object btn_SetHotKey: TBitBtn
-          Left = 368
+          Left = 360
           Top = 16
           Width = 57
           Height = 21
@@ -1243,7 +1245,7 @@ object frm_Settings: Tfrm_Settings
         object lv_HotKeys: TListView
           Left = 8
           Top = 42
-          Width = 417
+          Width = 409
           Height = 323
           Anchors = [akLeft, akTop, akRight, akBottom]
           BevelKind = bkSoft
@@ -1276,13 +1278,13 @@ object frm_Settings: Tfrm_Settings
       object gb_Sourcesnoop: TGroupBox
         Left = 0
         Top = 0
-        Width = 433
+        Width = 425
         Height = 368
         Align = alClient
         Caption = 'Source snoop'
         TabOrder = 0
         DesignSize = (
-          433
+          425
           368)
         object Label2: TLabel
           Left = 8
@@ -1352,7 +1354,7 @@ object frm_Settings: Tfrm_Settings
         object re_Preview: TRichEditEx
           Left = 8
           Top = 152
-          Width = 417
+          Width = 409
           Height = 209
           Anchors = [akLeft, akTop, akRight, akBottom]
           ReadOnly = True
@@ -1473,7 +1475,7 @@ object frm_Settings: Tfrm_Settings
     OnClick = lb_SettingsClick
   end
   object btn_Help: TBitBtn
-    Left = 592
+    Left = 584
     Top = 72
     Width = 75
     Height = 25
