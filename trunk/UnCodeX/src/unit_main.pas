@@ -276,6 +276,7 @@ type
     // Custom output modules
     procedure LoadOutputModules;
     procedure miCustomOutputClick(sender: TObject);
+    procedure CallCustomOutputModule(module: string; selectedclass: TUClass = nil);
   public
     statustext : string; // current status text
     procedure StatusReport(msg: string; progress: byte = 255);
@@ -761,7 +762,11 @@ begin
   else if (cmd = 'analyse') then ac_AnalyseAll.Execute
   else if (cmd = 'createhtml') then ac_CreateHTMLfiles.Execute
   else if (cmd = 'htmlhelp') then ac_HTMLHelp.Execute
-  else if (cmd = 'close') then Close;
+  else if (cmd = 'close') then Close
+  else if (Pos('ext:', cmd) = 1) then begin
+    Delete(cmd, 1, 4);
+    CallCustomOutputModule('out_'+cmd+'.dll');
+  end
 end;
 
 // Check application for the same ID (config hash)
@@ -861,9 +866,6 @@ end;
 
 procedure Tfrm_UnCodeX.miCustomOutputClick(sender: TObject);
 var
-  omod: THandle;
-  dfunc: TUCX_Output;
-  info: TUCXOutputInfo;
   selected: TTreeNode;
 begin
   selected := nil;
@@ -873,8 +875,16 @@ begin
     if (Selected = nil) then exit;
     if (TObject(Selected.Data).ClassType <> TUClass) then exit;
   end;
+  CallCustomOutputModule(OutputModules.Names[(Sender as TMenuItem).Tag], TUClass(Selected.Data));
+end;
 
-  omod := LoadLibrary(PChar(OutputModules.Names[(Sender as TMenuItem).Tag]));
+procedure Tfrm_UnCodeX.CallCustomOutputModule(module: string; selectedclass: TUClass = nil);
+var
+  omod: THandle;
+  dfunc: TUCX_Output;
+  info: TUCXOutputInfo;
+begin
+  omod := LoadLibrary(PChar(module));
   if (omod <> 0) then begin
     try
       @dfunc := nil;
@@ -885,19 +895,25 @@ begin
         info.AStatusReport := StatusReport;
         info.AThreadTerminated := ThreadTerminate;
         info.WaitForTerminate := false;
-        info.ASelectedClass := TUClass(Selected.Data);
+        info.ASelectedClass := selectedclass;
         info.AThread := nil;
         if dfunc(info) then begin
           if (info.WaitForTerminate) then begin
             lb_Log.Items.Clear;
             runningthread := info.AThread;
             runningthread.Resume;
-          end;
-        end;
+          end
+          else if (IsBatching) then NextBatchCommand;
+        end
+        else if (IsBatching) then NextBatchCommand;
       end;
     finally
       FreeLibrary(omod);
     end;
+  end
+  else begin
+    Log('Failed loading custom output module: '+module);
+    if (IsBatching) then NextBatchCommand;
   end;
 end;
 

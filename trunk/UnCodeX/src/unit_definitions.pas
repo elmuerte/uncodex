@@ -48,7 +48,7 @@ type
   
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '070 Beta';
+  APPVERSION = '071 Beta';
 
   PATHDELIM = '\';
   WILDCARD = '*.*';
@@ -77,6 +77,7 @@ const
               #9'createhtml'#9'create HTML output'+#13+#10+
               #9'htmlhelp'#9#9'create MS HTML Help file'+#13+#10+
               #9'close'#9#9'close UnCodeX'+#13+#10+
+              #9'ext:<name>'#9#9'call an custom output module'+#13+#10+
               #9'--'#9#9'end of batch commands'+#13+#10+
               '-find'#9#9#9'find a class'+#13+#10+
               '-help'#9#9#9'display this message'+#13+#10+
