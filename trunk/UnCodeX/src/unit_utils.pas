@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   General function/utils that require Forms
- $Id: unit_utils.pas,v 1.6 2004-03-20 20:58:27 elmuerte Exp $
+ $Id: unit_utils.pas,v 1.7 2004-07-24 14:35:13 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -131,6 +131,53 @@ begin
   Width := Canvas.TextWidth(Caption) + 32;
   Height := Canvas.TextHeight(Caption) + 4;
 end;
+
+{
+
+uses
+	SHDocVw
+  
+procedure TForm1.Button1Click(Sender: TObject);
+var
+  ms: TMemoryStream;
+
+begin
+  WebBrowser.Navigate('about:blank');
+  while WebBrowser.ReadyState < READYSTATE_INTERACTIVE do
+   Application.ProcessMessages;
+
+  if Assigned(WebBrowser.Document) then
+  begin
+    try
+      ms := TMemoryStream.Create;
+      try
+        Memo1.Lines.SaveToStream(ms);
+        ms.Seek(0, 0);
+        (WebBrowser.Document as IPersistStreamInit).Load(TStreamAdapter.Create(ms));
+      finally
+        ms.Free;
+      end;
+    finally
+    end;
+  end;
+
+
+end;
+
+procedure TForm1.FormPaint(Sender: TObject);
+var
+	  viewObject: IViewObject;
+  sourceDrawRect: Trect;
+begin
+viewObject := WebBrowser.ControlInterface as IViewObject;
+
+  if viewObject = nil then Exit;
+
+  	sourceDrawRect := Rect(0, 0, ClientWidth, ClientHeight);
+  viewObject.Draw(DVASPECT_CONTENT, 1, nil, nil, Form1.Handle,
+        Canvas.Handle, @sourceDrawRect, nil, nil, 0);
+end;
+}
 
 { TPropertyHintWindow -- END }
 

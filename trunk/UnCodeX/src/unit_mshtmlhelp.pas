@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   creates the HTML Help project file and runs the compiler
- $Id: unit_mshtmlhelp.pas,v 1.12 2004-03-27 14:14:21 elmuerte Exp $
+ $Id: unit_mshtmlhelp.pas,v 1.13 2004-07-24 14:35:13 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -233,9 +233,10 @@ var
   ProcessInfo:TProcessInformation;
   SecurityAttributes: TSecurityAttributes;
   TempHandle, WriteHandle, ReadHandle: THandle;
-  ReadBuf, LineBuf: array[0..$100] of Char;
-  BytesRead: Cardinal;
+  c: Char;
+  LineBuf: array[0..$100] of char;
   LineBufPtr, i, Lines: Integer;
+  ReadStream: THandleStream;
 
   procedure OutputLine;
   begin
@@ -247,7 +248,6 @@ var
 
 begin
   FillChar(StartupInfo,SizeOf(StartupInfo), 0);
-  FillChar(ReadBuf, SizeOf(ReadBuf), 0);
   FillChar(SecurityAttributes, SizeOf(SecurityAttributes), 0);
   LineBufPtr:= 0;
   Lines:=0;
@@ -255,7 +255,7 @@ begin
     nLength:= Sizeof(SecurityAttributes);
     bInheritHandle:= true
   end;
-  if not CreatePipe(ReadHandle, WriteHandle, @SecurityAttributes, 0) then
+  if not CreatePipe(ReadHandle, WriteHandle, @SecurityAttributes, 1) then
     RaiseLastOSError;
   try
     if Win32Platform = VER_PLATFORM_WIN32_NT then begin
@@ -274,13 +274,14 @@ begin
       cb:= SizeOf(StartupInfo);
       dwFlags:= STARTF_USESTDHANDLES or STARTF_USESHOWWINDOW;
       wShowWindow:= SW_HIDE;
-      hStdOutput:= WriteHandle;
+      hStdInput := GetStdHandle(STD_INPUT_HANDLE);
+      hStdOutput := WriteHandle;
     end;
 
     if not CreateProcess(nil, PChar(CommandLine),
        nil, nil,
        true,
-       CREATE_NO_WINDOW,
+       CREATE_NEW_PROCESS_GROUP,
        nil,
        PChar(OutputPath),
        StartupInfo,
@@ -288,25 +289,31 @@ begin
 
     CloseHandle(ProcessInfo.hThread);
     CloseHandle(WriteHandle);
-    try                                   
-      while ReadFile(ReadHandle, ReadBuf, SizeOf(ReadBuf), BytesRead, nil) do begin
-        for i:= 0 to BytesRead - 1 do begin
-          if (ReadBuf[i] = LF) then begin
-            Inc(Lines);
-          end
-          else if (ReadBuf[i] = #9) then begin
-            LineBuf[LineBufPtr]:= ' ';
-            Inc(LineBufPtr);
-          end
-          else if (ReadBuf[i] = CR) then begin
+    ReadStream := THandleStream.Create(ReadHandle);
+    try
+    	i := 0;
+    	while (ReadStream.Read(c, 1) > 0) do begin
+        if (Terminated) then begin
+          GenerateConsoleCtrlEvent(CTRL_C_EVENT, ProcessInfo.dwProcessId);
+          GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, ProcessInfo.dwProcessId);
+          Inc(i);
+          if (i > 50) then begin
+          	TerminateProcess(ProcessInfo.hProcess, 1); // fail safe
+            Log('HTML HELP Compiler terminated');
+          end;
+        end;
+        if (c = #9) then c := ' ';
+        if (c = LF) then begin
+          Inc(Lines);
+        end
+        else if (c = CR) then begin
+        	OutputLine;
+        end
+        else begin
+          LineBuf[LineBufPtr]:= c;
+          Inc(LineBufPtr);
+          if LineBufPtr >= (SizeOf(LineBuf) - 1) then begin
             OutputLine;
-          end
-          else begin
-            LineBuf[LineBufPtr]:= ReadBuf[i];
-            Inc(LineBufPtr);
-            if LineBufPtr >= (SizeOf(LineBuf) - 1) then begin
-              OutputLine;
-            end
           end
         end
       end;
@@ -314,6 +321,7 @@ begin
       GetExitCodeProcess(ProcessInfo.hProcess, Result);
       OutputLine;
     finally
+    	ReadStream.Free;
       CloseHandle(ProcessInfo.hProcess)
     end
   finally
