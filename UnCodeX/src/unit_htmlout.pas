@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.64 2004-12-08 09:25:37 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.65 2004-12-18 23:52:00 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -165,7 +165,7 @@ var
 implementation
 
 uses
-  unit_definitions, unit_sourceparser
+  unit_definitions, unit_sourceparser, Contnrs
 {$IFDEF FPC}
   , unit_fpc_compat
 {$ENDIF}
@@ -273,20 +273,20 @@ begin
   TreeL := ini.ReadString('Settings', 'TreeL', ASCII_TREE_L);
   TreeI := ini.ReadString('Settings', 'TreeI', ASCII_TREE_I);
   inherited Create(true);
+  FreeOnTerminate := true;
 end;
 
 destructor THTMLOutput.Destroy;
 begin
-  if (IsCPP and (CPPPipe <> nil)) then CPPPipe.Destroy; 
-  //TypeCache.Free; <-- will crash the system
-  TypeCache.Clear;
-  ConstCache.Clear;
-  VarCache.Clear;
-  EnumCache.Clear;
-  StructCache.Clear;
-  FunctionCache.Clear;
-  DelegateCache.Clear;
-  ini.Free;
+  if (IsCPP and (CPPPipe <> nil)) then FreeAndNil(CPPPipe);
+  FreeAndNil(TypeCache);
+  FreeAndNil(ConstCache);
+  FreeAndNil(VarCache);
+  FreeAndNil(EnumCache);
+  FreeAndNil(StructCache);
+  FreeAndNil(FunctionCache);
+  FreeAndNil(DelegateCache);
+  FreeAndNil(ini);
 end;
 
 procedure THTMLOutput.Execute;
@@ -2484,8 +2484,11 @@ begin
       end;
     end;
   finally
-    gli.Free;
-    gl.Free;
+    FreeAndNil(gli);
+    for i := 0 to gl.count-1 do begin
+      if (gl.Objects[i] <> nil) then gl.Objects[i].Free; 
+    end;
+    FreeAndNil(gl);
     template.Free;
   end;
   unguard;
@@ -2523,7 +2526,7 @@ begin
         replacement := replacement+'<a href="'+TGlossaryItem(gl.Objects[i]).link+'">'+gl[i]+'</a><br>'+#13#10;
       end;
       lastname := gl[i];
-      TGlossaryItem(gl.Objects[i]).Free;
+      //TGlossaryItem(gl.Objects[i]).Free;
       Inc(i);
     end;
     result := true;
