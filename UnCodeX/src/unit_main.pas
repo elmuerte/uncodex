@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.122 2004-08-25 20:31:59 elmuerte Exp $
+ $Id: unit_main.pas,v 1.123 2004-09-14 11:13:03 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -2567,6 +2567,7 @@ begin
     if (SearchConfig.isFTS) then begin
       if (ThreadCreate) then begin
         lb_Log.Items.Clear;
+        if (not lb_Log.Visible) then ac_VLog.Execute;
         SearchConfig.searchtree := (ActiveControl as TTreeView);
         runningthread := TSearchThread.Create(SearchConfig, StatusReport);
         runningthread.OnTerminate := SearchThreadTerminate;
@@ -2670,33 +2671,36 @@ end;
 
 procedure Tfrm_UnCodeX.FormShow(Sender: TObject);
 begin
-  if (DoInit) then begin
-    DoInit := false;
-    LoadState;
-    if (Application.ShowMainForm) then begin
-	    tv_Classes.Show;
-  	  ActiveControl := tv_Classes;
-    end;
-    //if (tv_Classes.Items.Count > 0) then tv_Classes.Select(tv_Classes.Items[0]);
-    if (SearchConfig.query <> '') then begin
-      SearchConfig.isFTS := false;
-      ActiveControl := tv_Classes;
-      ac_FindNext.Execute;
-    end
-    else if (OpenFTS) then ac_FullTextSearch.Execute // TODO: fixed 'enter' bug
-    else if (IsBatching) then NextBatchCommand
-    else if (AnalyseModified) then begin
-    	if (runningthread = nil) then begin
-	  		IsBatching := true;
-				CmdStack.Add('findnew');
-  			CmdStack.Add('analysemodified');
-  			NextBatchCommand;
-      end;
-    end;
-  end;
-  if (frm_Splash <> nil) then begin
-    frm_Splash.Close;
-    frm_Splash := nil;
+	try
+	  if (DoInit) then begin
+  	  DoInit := false;
+    	LoadState;
+	    if (Application.ShowMainForm) then begin
+		    tv_Classes.Show;
+  		  ActiveControl := tv_Classes;
+	    end;
+  	  //if (tv_Classes.Items.Count > 0) then tv_Classes.Select(tv_Classes.Items[0]);
+    	if (SearchConfig.query <> '') then begin
+      	SearchConfig.isFTS := false;
+	      ActiveControl := tv_Classes;
+  	    ac_FindNext.Execute;
+    	end
+	    else if (OpenFTS) then ac_FullTextSearch.Execute // TODO: fixed 'enter' bug
+  	  else if (IsBatching) then NextBatchCommand
+    	else if (AnalyseModified) then begin
+    		if (runningthread = nil) then begin
+	  			IsBatching := true;
+					CmdStack.Add('findnew');
+  				CmdStack.Add('analysemodified');
+  				NextBatchCommand;
+	      end;
+  	  end;
+	  end;
+  finally
+	  if (frm_Splash <> nil) then begin
+  	  frm_Splash.Close;
+    	frm_Splash := nil;
+	  end;
   end;
   if (InitialStartup) then begin
     if MessageDlg('This is the first time you start UnCodeX (with this config file),'+#13+#10+
@@ -3424,7 +3428,10 @@ end;
 
 procedure Tfrm_UnCodeX.pm_LogPopup(Sender: TObject);
 begin
-  mi_OpenClass1.Enabled := (lb_Log.ItemIndex > -1);
+  if (lb_Log.ItemIndex > -1) then begin
+    mi_OpenClass1.Enabled := lb_Log.Items.Objects[lb_Log.ItemIndex] <> nil;
+  end
+  else mi_OpenClass1.Enabled := false;
 end;
 
 procedure Tfrm_UnCodeX.ac_MoveClassExecute(Sender: TObject);

@@ -47,7 +47,7 @@ begin
       cb_ClientOptional.Checked := StrToBool(ini.ReadString('Flags', 'ClientOptional', BoolToStr(cb_ClientOptional.Checked)));
       cb_Official.Checked := StrToBool(ini.ReadString('Flags', 'Official', BoolToStr(cb_Official.Checked)));
       ini.ReadSectionValues('Package_Description', mm_Desc.Lines);
-      Caption := pkg.name;
+      Caption := pkg.name+' - '+pkg.name+PKGCFG;
     	if (ShowModal = mrOk) then begin
         ini.WriteString('Flags', 'AllowDownload', BoolToStr(cb_AllowDownload.Checked, true));
         ini.WriteString('Flags', 'ServerSideOnly', BoolToStr(cb_ServerSideOnly.Checked, true));

@@ -838,8 +838,21 @@ object frm_PSEditor: Tfrm_PSEditor
       Left = 175
       Top = 0
       AutoSize = True
+      Enabled = False
       ImageIndex = 16
       Style = tbsCheck
+    end
+    object btn_spl4: TToolButton
+      Left = 198
+      Top = 0
+      Width = 8
+      ImageIndex = 17
+      Style = tbsSeparator
+    end
+    object btn_Help: TToolButton
+      Left = 206
+      Top = 0
+      Action = ac_Help
     end
   end
   object sb_EditorBar: TStatusBar
@@ -919,6 +932,12 @@ object frm_PSEditor: Tfrm_PSEditor
       SecondaryShortCuts.Strings = (
         'Ctrl+Del')
       OnExecute = ac_AbortExecute
+    end
+    object ac_Help: TAction
+      Caption = 'Help'
+      ImageIndex = 23
+      ShortCut = 112
+      OnExecute = ac_HelpExecute
     end
   end
   object od_Open: TOpenDialog

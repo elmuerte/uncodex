@@ -35,6 +35,9 @@ type
     ac_Abort: TAction;
     pm_Macros: TPopupMenu;
     N1: TMenuItem;
+    btn_spl4: TToolButton;
+    btn_Help: TToolButton;
+    ac_Help: TAction;
     procedure ac_CompileExecute(Sender: TObject);
     procedure ac_RunExecute(Sender: TObject);
     procedure mm_EditorChange(Sender: TObject);
@@ -49,6 +52,7 @@ type
     procedure ac_SaveExecute(Sender: TObject);
     procedure ac_LoadExecute(Sender: TObject);
     procedure ac_AbortExecute(Sender: TObject);
+    procedure ac_HelpExecute(Sender: TObject);
   private
     ScriptSaved: boolean;
     procedure ReopenFile(Sender: TObject);
@@ -247,6 +251,11 @@ begin
 		lb_Output.Items.Add('Abort requested, waiting to finish...');
     exit;
   end;
+end;
+
+procedure Tfrm_PSEditor.ac_HelpExecute(Sender: TObject);
+begin
+  hh_Help.HelpTopic('pascalscript.html');
 end;
 
 end.

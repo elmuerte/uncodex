@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Unreal Package scanner, searches for classes in directories
- $Id: unit_packages.pas,v 1.27 2004-08-25 20:31:59 elmuerte Exp $
+ $Id: unit_packages.pas,v 1.28 2004-09-14 11:13:03 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -503,18 +503,20 @@ begin
   newclasses := TUClassList.Create(false);
   try
 		for i := 0 to packagelist.Count-1 do begin
+    	if (Terminated) then exit;
     	status('Scanning package '+packagelist[i].name+' for new classes', (i+1)*100 div packagelist.Count);
       
       GetFiles(packagelist[i].path+PathDelim+SOURCECARD, faAnyFile and not faDirectory, sl);
       for j := 0 to sl.Count-1 do begin
-      	uclass := nil;
-      	try
-	      	uclass := GetUClassName(sl[j]);
-        except
-          on E: Exception do log('Parser: error: '+E.Message);
-        end;
-        if (not Assigned(uclass)) then continue;
-				if (packagelist[i].classes.Find(uclass.name) = nil) then begin
+				if (packagelist[i].classes.Find(ExtractBaseName(sl[j])) = nil) then begin
+        	uclass := nil;
+        	try
+	      		uclass := GetUClassName(sl[j]);
+        	except
+          	on E: Exception do log('Parser: error: '+E.Message);
+        	end;
+        	if (not Assigned(uclass)) then continue;
+
           classlist.Add(uclass);
           packagelist[i].classes.Add(uclass);
           newclasses.Add(uclass);
@@ -546,9 +548,6 @@ begin
             else ClassHash.Items[LowerCase(uclass.name)] := uclass;
           end;
           logclass('New class found: '+uclass.FullName, uclass);
-        end
-        else begin
-					uclass.Free;
         end;
       end;
   	end;
@@ -556,6 +555,7 @@ begin
 			Log('Found '+IntToStr(newclasses.Count)+' new class(es)');
       SortNewClasses;
       for i := 0 to newclasses.Count-1 do begin
+      	if (Terminated) then exit;
 				uclass := classlist.Find(newclasses[i].parentname);
         if (Assigned(uclass)) then begin
           newclasses[i].parent := uclass;
