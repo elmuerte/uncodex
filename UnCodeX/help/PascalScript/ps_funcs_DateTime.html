@@ -1,0 +1,65 @@
+<html>
+<head>
+	<title>UnCodeX - Pascal Script - Functions - Date Time</title>
+	<link href="default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">Date Time</div>
+</div>
+
+<div class="content">
+<h1>Date Time</h1>
+
+<h2>EncodeDate</h2>
+<pre>function EncodeDate(Year, Month, Day: Word): TDateTime;</pre>
+
+<h2>EncodeTime</h2>
+<pre>function EncodeTime(Hour, Min, Sec, MSec: Word): TDateTime;</pre>
+
+<h2>TryEncodeDate</h2>
+<pre>function TryEncodeDate(Year, Month, Day: Word; var Date: TDateTime): Boolean;</pre>
+
+<h2>TryEncodeTime</h2>
+<pre>function TryEncodeTime(Hour, Min, Sec, MSec: Word; var Time: TDateTime): Boolean;</pre>
+
+<h2>DecodeDate</h2>
+<pre>procedure DecodeDate(const DateTime: TDateTime; var Year, Month, Day: Word);</pre>
+
+<h2>DecodeTime</h2>
+<pre>procedure DecodeTime(const DateTime: TDateTime; var Hour, Min, Sec, MSec: Word);</pre>
+
+<h2>DayOfWeek</h2>
+<pre>function DayOfWeek(const DateTime: TDateTime): Word;</pre>
+
+<h2>Date:</h2>
+<pre>function Date: TDateTime;</pre>
+
+<h2>Time:</h2>
+<pre>function Time: TDateTime;</pre>
+
+<h2>Now:</h2>
+<pre>function Now: TDateTime;</pre>
+
+<h2>DateTimeToUnix</h2>
+<pre>function DateTimeToUnix(D: TDateTime): Int64;</pre>
+
+<h2>UnixToDateTime</h2>
+<pre>function UnixToDateTime(U: Int64): TDateTime;</pre>
+
+<h2>DateToStr</h2>
+<pre>function DateToStr(D: TDateTime): string;</pre>
+
+<h2>StrToDate</h2>
+<pre>function StrToDate(const s: string): TDateTime;</pre>
+
+<h2>FormatDateTime</h2>
+<pre>function FormatDateTime(const fmt: string; D: TDateTime): string;</pre>
+
+</div>
+</div>
+</body>
+</html>

@@ -34,6 +34,7 @@ Name: gui; Description: Graphical User Interface; Types: full compact custom
 Name: gui\customoutput; Description: Additional output modules; Types: full
 Name: commandline; Description: Commandline Utility; Types: full commandline
 Name: templates; Description: HTML Templates; Types: full commandline
+Name: pascalscript; Description: PascalScript Examples; Types: full commandline
 Name: help; Description: Help Files; Types: full
 
 [Tasks]
@@ -64,6 +65,8 @@ Source: ..\src\out_sample\*.dof; DestDir: {app}\out_sample; Flags: ignoreversion
 Source: ..\src\unit_outputdefs.pas; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
 Source: ..\src\unit_uclasses.pas; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
 Source: ..\src\FastShareMem.pas; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
+
+Source: ..\Bin\Macros\*.example; DestDir: {app}\Macros; Flags: ignoreversion recursesubdirs; Components: pascalscript
 
 [INI]
 Filename: {app}\UnCodeX.url; Section: InternetShortcut; Key: URL; String: http://wiki.beyondunreal.com/wiki/UnCodeX

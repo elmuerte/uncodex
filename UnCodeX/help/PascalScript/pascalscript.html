@@ -53,48 +53,6 @@ Depending on the mode some elements are available or not.
 <ul>
 	<li><a href="ps_types_basic.html">Basic types</a>
 	<li><a href="ps_types_enum.html">Enumerations</a>
-	<!--
-	TUCommentType = (ctSource, ctExtern, ctInherited);
-	TUFunctionType = (uftFunction, uftEvent, uftOperator, uftPreOperator, uftPostOperator, uftDelegate);
-
-	TReplaceFlags_ = (rfReplaceAll, rfIgnoreCase);
-	TReplaceFlags = set of TReplaceFlags_;
-
-	Cl.AddTypeS('TComponentStateE', '(csLoading, csReading, csWriting, csDestroying, csDesigning, csAncestor, csUpdating, csFixups, csFreeNotification, csInline, csDesignInstance)');
-	cl.AddTypeS('TComponentState', 'set of TComponentStateE');
-	Cl.AddTypeS('TRect', 'record Left, Top, Right, Bottom: Integer; end;');
-
-  cl.AddConstantN('soFromBeginning', 'Longint').Value.ts32 := 0;
-  cl.AddConstantN('soFromCurrent', 'Longint').Value.ts32 := 1;
-  cl.AddConstantN('soFromEnd', 'Longint').Value.ts32 := 2;
-  cl.AddConstantN('toEOF', 'Char').Value.tchar := #0;
-  cl.AddConstantN('toSymbol', 'Char').Value.tchar := #1;
-  cl.AddConstantN('toString', 'Char').Value.tchar := #2;
-  cl.AddConstantN('toInteger', 'Char').Value.tchar := #3;
-  cl.AddConstantN('toFloat', 'Char').Value.tchar := #4;
-  cl.AddConstantN('fmCreate', 'Longint').Value.ts32 := $FFFF;
-  cl.AddConstantN('fmOpenRead', 'Longint').Value.ts32 := 0;
-  cl.AddConstantN('fmOpenWrite', 'Longint').Value.ts32 := 1;
-  cl.AddConstantN('fmOpenReadWrite', 'Longint').Value.ts32 := 2;
-  cl.AddConstantN('fmShareCompat', 'Longint').Value.ts32 := 0;
-  cl.AddConstantN('fmShareExclusive', 'Longint').Value.ts32 := $10;
-  cl.AddConstantN('fmShareDenyWrite', 'Longint').Value.ts32 := $20;
-  cl.AddConstantN('fmShareDenyRead', 'Longint').Value.ts32 := $30;
-  cl.AddConstantN('fmShareDenyNone', 'Longint').Value.ts32 := $40;
-  cl.AddConstantN('SecsPerDay', 'Longint').Value.ts32 := 86400;
-  cl.AddConstantN('MSecPerDay', 'Longint').Value.ts32 := 86400000;
-  cl.AddConstantN('DateDelta', 'Longint').Value.ts32 := 693594;
-  cl.AddTypeS('TAlignment', '(taLeftJustify, taRightJustify, taCenter)');
-  cl.AddTypeS('THelpEvent', 'function (Command: Word; Data: Longint; var CallHelp: Boolean): Boolean');
-  cl.AddTypeS('TGetStrProc', 'procedure(const S: string)');
-  cl.AddTypeS('TDuplicates', '(dupIgnore, dupAccept, dupError)');
-  cl.AddTypeS('TOperation', '(opInsert, opRemove)');
-  cl.AddTypeS('THANDLE', 'Longint');
-
-  cl.AddTypeS('TNotifyEvent', 'procedure (Sender: TObject)');
-
-  s.AddType('TDateTime', btDouble).ExportName := True;
-	-->
 	<li><a href="ps_types_record.html">Records</a>
 </ul>
 
@@ -143,79 +101,11 @@ These are the PascalScript counterparts of the classes defined by Borland Delphi
 <h3>General functions</h3>
 <ul>
 	<li><a href="ps_funcs_string.html">String</a>
-	<!--
-  ps.AddFunction(@Format, 'function Format(const Format: string; const Args: array of const): string;');
-  ps.AddFunction(@CompareStr, 'function CompareStr(const S1, S2: string): Integer;');
-  ps.AddFunction(@CompareText, 'function CompareText(const S1, S2: string): Integer;');
-  ps.AddFunction(@SameText, 'function SameText(const S1, S2: string): Boolean;');
-  ps.AddFunction(@TrimLeft, 'function TrimLeft(const S: string): string;');
-  ps.AddFunction(@TrimRight, 'function TrimRight(const S: string): string;');
-  ps.AddFunction(@QuotedStr, 'function QuotedStr(const S: string): string;');
-  ps.AddFunction(@IntToHex, 'function IntToHex(Value: Integer; Digits: Integer): string;');
-	ps.AddFunction(@StrToBool, 'function StrToBool(const S: string): Boolean;');
-	ps.AddFunction(@StrToBoolDef, 'function StrToBoolDef(const S: string; const Default: Boolean): Boolean;');
-  ps.AddFunction(@BoolToStr, 'function BoolToStr(B: Boolean; UseBoolStrs: Boolean): string;');
-  ps.AddFunction(@StringReplace, 'function StringReplace(const S, OldPattern, NewPattern: string; Flags: TReplaceFlags): string;');
-	-->
+	<li><a href="ps_funcs_math.html">Math</a>
 	<li><a href="ps_funcs_DateTime.html">Date\Time</a>
-	<!-- 
-  s.AddDelphiFunction('function EncodeDate(Year, Month, Day: Word): TDateTime;');
-  s.AddDelphiFunction('function EncodeTime(Hour, Min, Sec, MSec: Word): TDateTime;');
-  s.AddDelphiFunction('function TryEncodeDate(Year, Month, Day: Word; var Date: TDateTime): Boolean;');
-  s.AddDelphiFunction('function TryEncodeTime(Hour, Min, Sec, MSec: Word; var Time: TDateTime): Boolean;');
-  s.AddDelphiFunction('procedure DecodeDate(const DateTime: TDateTime; var Year, Month, Day: Word);');
-  s.AddDelphiFunction('procedure DecodeTime(const DateTime: TDateTime; var Hour, Min, Sec, MSec: Word);');
-  s.AddDelphiFunction('function DayOfWeek(const DateTime: TDateTime): Word;');
-  s.AddDelphiFunction('function Date: TDateTime;');
-  s.AddDelphiFunction('function Time: TDateTime;');
-  s.AddDelphiFunction('function Now: TDateTime;');
-  s.AddDelphiFunction('function DateTimeToUnix(D: TDateTime): Int64;');
-  s.AddDelphiFunction('function UnixToDateTime(U: Int64): TDateTime;');
-
-  s.AddDelphiFunction('function DateToStr(D: TDateTime): string;');
-  s.AddDelphiFunction('function StrToDate(const s: string): TDateTime;');
-  s.AddDelphiFunction('function FormatDateTime(const fmt: string; D: TDateTime): string;');
-	-->
 	<li><a href="ps_funcs_fs.html">Filesystem</a>
-	<!--
-  ps.Comp.AddTypeS('TCharSet', 'set of Char');
-	ps.AddFunction(@FileAge, 'function FileAge(const FileName: string): Integer;');
-	ps.AddFunction(@FileExists, 'function FileExists(const FileName: string): Boolean;');
-	ps.AddFunction(@DirectoryExists, 'function DirectoryExists(const Directory: string): Boolean;');
-	ps.AddFunction(@ForceDirectories, 'function ForceDirectories(Dir: string): Boolean;');
-  ps.AddFunction(@FileIsReadOnly, 'function FileIsReadOnly(const FileName: string): Boolean;');
-  ps.AddFunction(@DeleteFile, 'function DeleteFile(const FileName: string): Boolean;');
-  ps.AddFunction(@RenameFile, 'function RenameFile(const OldName, NewName: string): Boolean;');
-  ps.AddFunction(@ChangeFileExt, 'function ChangeFileExt(const FileName, Extension: string): string;');
-  ps.AddFunction(@ExtractFilePath, 'function ExtractFilePath(const FileName: string): string;');
-  ps.AddFunction(@ExtractFileDir, 'function ExtractFileDir(const FileName: string): string;');
-  ps.AddFunction(@ExtractFileDrive, 'function ExtractFileDrive(const FileName: string): string;');
-  ps.AddFunction(@ExtractFileName, 'function ExtractFileName(const FileName: string): string;');
-  ps.AddFunction(@ExtractFileExt, 'function ExtractFileExt(const FileName: string): string;');
-  ps.AddFunction(@ExpandFileName, 'function ExpandFileName(const FileName: string): string;');
-  ps.AddFunction(@ExtractRelativePath, 'function ExtractRelativePath(const BaseName, DestName: string): string;');
-  ps.AddFunction(@FileSearch, 'function FileSearch(const Name, DirList: string): string;');
-  ps.AddFunction(@DiskFree, 'function DiskFree(Drive: Byte): Int64;');
-  ps.AddFunction(@DiskSize, 'function DiskSize(Drive: Byte): Int64;');
-  ps.AddFunction(@FileDateToDateTime, 'function FileDateToDateTime(FileDate: Integer): TDateTime;');
-  ps.AddFunction(@DateTimeToFileDate, 'function DateTimeToFileDate(DateTime: TDateTime): Integer;');
-  ps.AddFunction(@CreateDir, 'function CreateDir(const Dir: string): Boolean;');
-  ps.AddFunction(@RemoveDir, 'function RemoveDir(const Dir: string): Boolean;');
-  
-  ps.AddFunction(@GetFiles, 'function GetFiles(path: string; Attr: Integer; var files: TStringList): boolean;');
-  ps.AddFunction(@ExtractBaseName, 'function ExtractBaseName(filename: string): string;');
-	-->
 	<li><a href="ps_funcs_programs.html">Program</a>
-	<!--
-  ps.AddFunction(@FindCmdLineSwitch, 'function FindCmdLineSwitch(const Switch: string; const Chars: TCharSet; IgnoreCase: Boolean): Boolean;');
-  ps.AddFunction(@ParamCount, 'function ParamCount: Integer;');
-	ps.AddFunction(@ParamStr, 'function ParamStr(Index: Integer): string;');
-	-->
 	<li><a href="ps_funcs_misc.html">Miscelaneous</a>
-	<!--
-  ps.AddFunction(@Log, 'procedure Log(msg: string);');
-  ps.AddFunction(@LogClass, 'procedure LogClass(msg: string; uclass: TUClass);');
-	-->
 </ul>
 
 <h3>GUI functions</h3>

@@ -306,10 +306,134 @@
 				<param name="Name" value="TUConst \ TUConstList">
 				<param name="Local" value="ps_uclasses_TUConst.html">
 				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TObject">
+				<param name="Local" value="ps_classes_TObject.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TPersistent">
+				<param name="Local" value="ps_classes_TPersistent.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TComponent">
+				<param name="Local" value="ps_classes_TComponent.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TStrings">
+				<param name="Local" value="ps_classes_TStrings.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TStringList">
+				<param name="Local" value="ps_classes_TStringList.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TBits">
+				<param name="Local" value="ps_classes_TBits.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TStream">
+				<param name="Local" value="ps_classes_TStream.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="THandleStream">
+				<param name="Local" value="ps_classes_THandleStream.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TMemoryStream">
+				<param name="Local" value="ps_classes_TMemoryStream.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TFileStream">
+				<param name="Local" value="ps_classes_TFileStream.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TCustomMemoryStream">
+				<param name="Local" value="ps_classes_TCustomMemoryStream.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TResourceStream">
+				<param name="Local" value="ps_classes_TResourceStream.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TParser">
+				<param name="Local" value="ps_classes_TParser.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TCollection">
+				<param name="Local" value="ps_classes_TCollection.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TCollectionItem">
+				<param name="Local" value="ps_classes_TCollectionItem.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TOwnedCollection">
+				<param name="Local" value="ps_classes_TOwnedCollection.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TList">
+				<param name="Local" value="ps_classes_TList.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TObjectList">
+				<param name="Local" value="ps_classes_TObjectList.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TMemIniFile">
+				<param name="Local" value="ps_classes_TMemIniFile.html">
+				</OBJECT>
 		</UL>
 		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="Functions">
 			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="General">
+				</OBJECT>
+			<UL>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="Strings">
+					<param name="Local" value="ps_funcs_string.html">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="Math">
+					<param name="Local" value="ps_funcs_math.html">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="Date\Time">
+					<param name="Local" value="ps_funcs_DateTime.html">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="Filesystem">
+					<param name="Local" value="ps_funcs_fs.html">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="Program">
+					<param name="Local" value="ps_funcs_programs.html">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="Miscelaneous">
+					<param name="Local" value="ps_funcs_misc.html">
+					</OBJECT>
+			</UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="GUI functions">
+				</OBJECT>
+			<UL>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="Actions">
+					<param name="Local" value="ps_funcs_actions.html">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="Dialogs">
+					<param name="Local" value="ps_funcs_dialogs.html">
+					</OBJECT>
+				<LI> <OBJECT type="text/sitemap">
+					<param name="Name" value="Execution">
+					<param name="Local" value="ps_funcs_exec.html">
+					</OBJECT>
+			</UL>
+		</UL>
 	</UL>
 </UL>
 </BODY></HTML>
