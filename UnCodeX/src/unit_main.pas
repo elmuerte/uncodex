@@ -8,7 +8,10 @@ uses
   IniFiles, ShellApi, AppEvnts, ImgList, ActnList, ToolWin, StrUtils;
 
 const
-  WM_APPBAR = WM_USER+$100;
+  WM_APPBAR                      = WM_USER+$100;
+  UM_APP_ID_CHECK                = WM_APP + 101;
+  UM_RESTORE_APPLICATION         = WM_APP + 102;
+  UM_PREVIOUS_INST_PARAMS        = WM_APP + 103;
 
 type
   Tfrm_UnCodeX = class(TForm)
@@ -163,6 +166,9 @@ type
     procedure lb_LogDblClick(Sender: TObject);
     procedure lb_LogClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure tv_ClassesExpanding(Sender: TObject; Node: TTreeNode;
+      var AllowExpansion: Boolean);
+    procedure tv_ClassesDblClick(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -189,8 +195,10 @@ type
     procedure RegisterABAutoHide;
     procedure UnregisterABAutoHide;
     procedure ABResize;
-    procedure ProcessCommandline;
     procedure NextBatchCommand;
+    procedure UMAppIDCheck(var Message : TMessage); message UM_APP_ID_CHECK;
+    procedure UMRestoreApplication(var Message : TMessage); message UM_RESTORE_APPLICATION;
+    procedure UMPreviousInstParams(var Message : TMessage); message UM_PREVIOUS_INST_PARAMS;
   public
     statustext : string;
     procedure StatusReport(msg: string; progress: byte = 255);
@@ -221,6 +229,9 @@ var
   ConfigFile: string;
   InitialStartup: boolean;
   StatusHandle: integer = -1;
+  // used for -reuse
+  PrevInst: HWND;
+  AppInstanceId: integer = 0;
 
 // config vars
 var
@@ -549,55 +560,6 @@ begin
   end;
 end;
 
-procedure Tfrm_UnCodeX.ProcessCommandline;
-var
-  i,j: integer;
-begin
-  j := 1;
-  while (j <= ParamCount) do begin
-    if (LowerCase(ParamStr(j)) = '-help') then begin
-      MessageDlg('Commandline options:'+#13+#10+
-                 '-help'#9#9#9'display this message'+#13+#10+
-                 '-hide'#9#9#9'hides UnCodeX'+#13+#10+
-                 '-config'#9#9#9'loads a diffirent config file (next argument)'+#13+#10+
-                 '-batch'#9#9#9'start UnCodeX in batch processing mode, the next'+#13+#10+
-                 #9#9#9'arguments must contain the batch order, '+#13+#10+
-                 #9#9#9'which can be on of the following:'+#13+#10+
-                 #9'rebuild'#9#9'rebuild class tree'+#13+#10+
-                 #9'analyse'#9#9'analyse all classes'+#13+#10+
-                 #9'createhtml'#9'create HTML output'+#13+#10+
-                 #9'htmlhelp'#9#9'create MS HTML Help file'+#13+#10+
-                 #9'close'#9#9'close UnCodeX'+#13+#10+
-                 #9'--'#9#9'end of batch commands'
-                 , mtInformation, [mbOK], 0);
-    end
-    else if (LowerCase(ParamStr(j)) = '-batch') then begin
-      IsBatching := true;
-      CmdStack := TStringList.Create;
-      for i := j+1 to ParamCount do begin
-        Inc(j);
-        if (ParamStr(i) = '--') then break;
-        CmdStack.Add(LowerCase(ParamStr(i)));
-      end;
-    end
-    else if (LowerCase(ParamStr(j)) = '-hide') then begin
-      // FIXME:
-      //Visible := false;
-      //Application.ShowMainForm := false;
-    end
-    else if (LowerCase(ParamStr(j)) = '-config') then begin
-      Inc(j);
-      ConfigFile := ParamStr(j);
-      if (ExtractFilePath(ConfigFile) = '') then ConfigFile := ExtractFilePath(ParamStr(0))+ConfigFile;
-    end
-    else if (LowerCase(ParamStr(j)) = '-handle') then begin
-      Inc(j);
-      StatusHandle := StrToIntDef(ParamStr(j), -1);
-    end;
-    Inc(j);
-  end;
-end;
-
 procedure Tfrm_UnCodeX.NextBatchCommand;
 var
   cmd: string;
@@ -618,6 +580,30 @@ begin
   else if (cmd = 'close') then Close;
 end;
 
+procedure Tfrm_UnCodeX.UMAppIDCheck(var Message: TMessage);
+begin
+  Message.Result := AppInstanceId;
+end;
+
+procedure Tfrm_UnCodeX.UMRestoreApplication(var Message: TMessage);
+begin
+  if IsIconic(Application.Handle) then Application.Restore;
+  Application.BringToFront;
+end;
+
+procedure Tfrm_UnCodeX.UMPreviousInstParams(var Message: TMessage);
+var
+ Len : integer;
+ S   : string;
+begin
+  SetLength(S, MAX_PATH);
+  Len := GlobalGetAtomName(Message.wParam, PChar(S), MAX_PATH);
+  if Len > 0 then begin
+    SetLength(S, Len);
+    Log(S);
+  end;
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Auto generated methods
 
@@ -635,8 +621,8 @@ var
 begin
   Caption := APPTITLE+' - '+APPVERSION;
   Application.Title := Caption;
-  if (ParamCount() > 0) then ProcessCommandline;
   if (ConfigFile = '') then ConfigFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ini';
+  if (StateFile = '') then StateFile := ExtractFilePath(ParamStr(0))+'classes.state';
   InitialStartup := not FileExists(ConfigFile);
   ini := TMemIniFile.Create(ConfigFile);
   sl := TStringList.Create;
@@ -702,7 +688,7 @@ begin
     CompilerCmd := ini.ReadString('Config', 'CompilerCmd', '');
     OpenResultCmd := ini.ReadString('Config', 'OpenResultCmd', '');
     FTSRegexp := ini.ReadBool('Config', 'FullTextSearchRegExp', false);
-    StateFile := ini.ReadString('Config', StateFile, 'classes.state');
+    StateFile := ini.ReadString('Config', 'StateFile', StateFile);
     if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ParamStr(0))+StateFile;
 
     ini.ReadSectionValues('PackagePriority', sl);
@@ -1382,6 +1368,11 @@ begin
   if (DoInit) then begin
     DoInit := false;
     LoadState;
+    if (searchclass <> '') then begin
+      CSprops[0] := false;
+      ActiveControl := tv_Classes;
+      ac_FindNext.Execute;
+    end;
     if (IsBatching) then NextBatchCommand;
   end;
   if (InitialStartup) then begin
@@ -1389,6 +1380,36 @@ begin
       'it''s advised that you first configure the program.'+#13+#10+''+#13+#10+
       'Do you want to edit the settings now ?', mtConfirmation, [mbYes,mbNo], 0) = mrYes
       then ac_Settings.Execute; 
+  end;
+end;
+
+procedure Tfrm_UnCodeX.tv_ClassesExpanding(Sender: TObject;
+  Node: TTreeNode; var AllowExpansion: Boolean);
+var
+  pt: TPoint;
+  ht: THitTests;
+begin
+  // FIXME:
+  {with Node.TreeView do begin
+    pt := ScreenToClient(Mouse.CursorPos);
+    ht := GetHitTestInfoAt(Pt.X, Pt.y);
+    AllowExpansion := not (htOnItem in ht);
+  end;}
+  AllowExpansion := true;
+end;
+
+procedure Tfrm_UnCodeX.tv_ClassesDblClick(Sender: TObject);
+var
+  pt: TPoint;
+  ht: THitTests;
+begin
+  if (Sender.ClassType <> TTreeView) then exit;
+  with (Sender as TTreeView) do begin
+    pt := ScreenToClient(Mouse.CursorPos);
+    ht := GetHitTestInfoAt(Pt.X, Pt.y);
+    if (htOnItem in ht) or (htNowhere in ht) then begin
+      ac_OpenClass.Execute;
+    end;
   end;
 end;
 

@@ -55,7 +55,7 @@ DebugSourceDirs=
 UsePackages=0
 
 [Parameters]
-RunParams=
+RunParams=-reuse -find UTelAdSE.uc
 HostApplication=
 Launcher=
 UseLauncher=0
@@ -72,7 +72,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=0
 Release=0
-Build=23
+Build=24
 Debug=0
 PreRelease=1
 Special=0
@@ -84,7 +84,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=
 FileDescription=
-FileVersion=1.0.0.23
+FileVersion=1.0.0.24
 InternalName=
 LegalCopyright=
 LegalTrademarks=

@@ -3,7 +3,8 @@ unit unit_definitions;
 interface
 
 uses
-  Types, Forms, StdCtrls, Classes, Dialogs, Graphics, Windows, Consts, Controls;
+  Types, Forms, StdCtrls, Classes, Dialogs, Graphics, Windows, Consts, Controls,
+  Messages;
 
 type
   TStatusReport = procedure(msg: string; progress: byte = 255) of Object;
@@ -16,7 +17,7 @@ type
   
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '040 Beta';
+  APPVERSION = '041 Beta';
 
   PATHDELIM = '\';
   WILDCARD = '*.*';
