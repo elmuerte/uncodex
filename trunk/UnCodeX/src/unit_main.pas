@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.102 2004-05-13 20:03:45 elmuerte Exp $
+ $Id: unit_main.pas,v 1.103 2004-05-14 12:16:24 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -946,17 +946,23 @@ procedure Tfrm_UnCodeX.NextBatchCommand;
 var
   cmd: string;
 begin
-  if (not IsBatching) then exit;
+  if (not IsBatching) then begin
+    Screen.Cursor := crDefault;
+		exit;
+  end;
   if (CmdStack.Count = 0) then begin
+  	Screen.Cursor := crDefault;
     IsBatching := false;
     Caption := APPTITLE+' - version '+APPVERSION;
     exit;
   end;
+  Screen.Cursor := crAppStart;
   cmd := CmdStack[0];
   Caption := APPTITLE+' - version '+APPVERSION+' - Batch process: '+cmd;
   CmdStack.Delete(0);
   if (cmd = 'rebuild') then ac_RecreateTree.Execute
   else if (cmd = 'analyse') then ac_AnalyseAll.Execute
+  else if (cmd = 'analysemodified') then ac_AnalyseModified.Execute
   else if (cmd = 'createhtml') then ac_CreateHTMLfiles.Execute
   else if (cmd = 'htmlhelp') then ac_HTMLHelp.Execute
   else if (cmd = 'close') then Close
@@ -2488,8 +2494,10 @@ begin
   if (DoInit) then begin
     DoInit := false;
     LoadState;
-    tv_Classes.Show;
-    ActiveControl := tv_Classes;
+    if (Application.ShowMainForm) then begin
+	    tv_Classes.Show;
+  	  ActiveControl := tv_Classes;
+    end;
     //if (tv_Classes.Items.Count > 0) then tv_Classes.Select(tv_Classes.Items[0]);
     if (SearchConfig.query <> '') then begin
       SearchConfig.isFTS := false;
