@@ -6,7 +6,7 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.58 2005-03-20 08:57:55 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.59 2005-03-30 11:43:02 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -240,9 +240,9 @@ begin
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-  Application.CreateForm(Tfrm_About, frm_About);
-  Application.CreateForm(Tfrm_License, frm_License);
-  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+    Application.CreateForm(Tfrm_About, frm_About);
+    Application.CreateForm(Tfrm_License, frm_License);
+    if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end
   else if (frm_Splash <> nil) then frm_Splash.Close;

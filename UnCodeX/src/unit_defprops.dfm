@@ -113,6 +113,7 @@ object frm_DefPropsBrowser: Tfrm_DefPropsBrowser
           WidthType = (
             -1)
         end>
+      ColumnClick = False
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
