@@ -833,6 +833,7 @@ object frm_PSEditor: Tfrm_PSEditor
       Width = 8
       ImageIndex = 19
       Style = tbsSeparator
+      Visible = False
     end
     object btn_HTMLscript: TToolButton
       Left = 175
@@ -841,6 +842,7 @@ object frm_PSEditor: Tfrm_PSEditor
       Enabled = False
       ImageIndex = 16
       Style = tbsCheck
+      Visible = False
     end
     object btn_spl4: TToolButton
       Left = 198
@@ -953,6 +955,7 @@ object frm_PSEditor: Tfrm_PSEditor
     Top = 112
   end
   object pm_Macros: TPopupMenu
+    Images = frm_UnCodeX.il_Small
     Left = 40
     Top = 80
     object N1: TMenuItem

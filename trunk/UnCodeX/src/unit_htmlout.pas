@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.55 2004-06-20 21:10:04 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.56 2004-09-15 19:24:52 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -2646,6 +2646,12 @@ begin
   unguard;
 end;
 
+function Min(i,j: integer): integer;
+begin
+	if (i < j) then result := i
+  else result := j;
+end;
+
 function THTMLOutput.CommentPreprocessor(input: string): string;
 var
 	i: integer;
@@ -2673,14 +2679,17 @@ begin
     else begin
     	// delete up to location
       Delete(input, 1, i-1);
-      i := pos('<br', input); // <br /> word around
-      if (i = 0) then i := pos(' ', input);
-      if (i = 0) then i := pos(#13, input);
-      if (i = 0) then i := pos(#10, input);
-      if (i = 0) then i := pos(#9, input);
+      i := pos('<br', input); // <br /> work around
+      i := Min(pos(' ', input), i);
+      i := Min(pos(#9, input), i);
+      i := Min(pos(#13, input), i);
+      i := Min(pos(#10, input), i);
+      if (i = 0) then begin
+      	i := Length(input)+1;
+      end;
       tmp := copy(input, 1, i-1);
       Delete(input, 1, i-1);
-      result := result+'<a href="'+tmp+'" target="_blank">'+tmp+'</a>';
+      result := result+'<a href="'+trim(tmp)+'" target="_blank">'+tmp+'</a>';
     end;
     i := Pos('http://', LowerCase(input));
   end;
