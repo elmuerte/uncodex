@@ -3,9 +3,9 @@ AppName=UnCodeX
 AppVerName=UnCodeX version 219
 AppVersion=219
 AppPublisher=Michiel 'El Muerte' Hendriks
-AppPublisherURL=http://wiki.beyondunreal.com/wiki/UnCodeX
-AppSupportURL=http://wiki.beyondunreal.com/wiki/UnCodeX
-AppUpdatesURL=http://wiki.beyondunreal.com/wiki/UnCodeX
+AppPublisherURL=http://sourceforge.net/projects/uncodex/
+AppSupportURL=http://sourceforge.net/tracker/?group_id=120421
+AppUpdatesURL=http://sourceforge.net/project/showfiles.php?group_id=120421&package_id=131207
 DefaultDirName={pf}\UnCodeX
 DefaultGroupName=UnCodeX
 AllowNoIcons=true
@@ -16,11 +16,14 @@ OutputBaseFilename=UnCodeX-setup
 WizardImageFile=InstallLarge2.bmp
 WizardSmallImageFile=InstallSmall2.bmp
 AppCopyright=Copyright 2003-2005 Michiel Hendriks
-ShowLanguageDialog=yes
+ShowLanguageDialog=no
 UninstallDisplayIcon={app}\UnCodeX.exe
 UninstallDisplayName=UnCodeX
 AppID={{FDD6ED8B-DB77-43BC-B0B2-608A1F27AABC}}
 VersionInfoVersion=2.1.3.219
+InternalCompressLevel=ultra
+MinVersion=4.0.950,4.0.1381
+ShowTasksTreeLines=true
 
 [Types]
 Name: full; Description: Full installation
@@ -31,11 +34,11 @@ Name: custom; Description: Custom installation; Flags: iscustom
 [Components]
 Name: main; Description: Main Files; Types: full compact custom commandline; Flags: fixed
 Name: gui; Description: Graphical User Interface; Types: full compact custom
-Name: gui\customoutput; Description: Additional output modules; Types: full
-Name: commandline; Description: Commandline Utility; Types: full commandline
-Name: templates; Description: HTML Templates; Types: full commandline
-Name: pascalscript; Description: PascalScript Examples; Types: full commandline
-Name: help; Description: Help Files; Types: full
+Name: gui\customoutput; Description: Additional output modules; Types: full custom
+Name: commandline; Description: Commandline Utility; Types: full commandline custom
+Name: templates; Description: HTML Templates; Types: full commandline custom
+Name: pascalscript; Description: PascalScript Examples; Types: full commandline custom
+Name: help; Description: Help Files; Types: full custom
 
 [Tasks]
 Name: desktopicon; Description: Create a &desktop icon; GroupDescription: Additional icons:; Components: gui
@@ -45,12 +48,12 @@ Name: quicklaunchicon; Description: Create a &Quick Launch icon; GroupDescriptio
 
 [Files]
 Source: ..\Bin\UnCodeX.exe; DestDir: {app}; Flags: ignoreversion; Components: gui
-Source: ..\Bin\LICENSE.TXT; DestDir: {app}; Flags: ignoreversion; Components: main
+Source: ..\Bin\LICENSE.TXT; DestDir: {app}; Flags: ignoreversion overwritereadonly; Components: main
 Source: ..\Bin\PackageDescriptions.ini; DestDir: {app}; Flags: ignoreversion; Components: main
 Source: ..\Bin\ExternalComments.ini; DestDir: {app}; Flags: ignoreversion; Components: main
 Source: ..\Bin\ucxcu.exe; DestDir: {app}; Flags: ignoreversion; Components: commandline
 Source: ..\Bin\UnCodeX-help.chm; DestDir: {app}; Flags: ignoreversion; Components: help
-Source: ..\Bin\Templates\*.*; DestDir: {app}\Templates\DocStyle2; Flags: ignoreversion recursesubdirs; Components: templates; Excludes: "CVS"
+Source: ..\Bin\Templates\*.*; DestDir: {app}\Templates\DocStyle2; Flags: ignoreversion recursesubdirs; Components: templates; Excludes: CVS
 Source: ..\Bin\out_wikifier.dll; DestDir: {app}; Flags: ignoreversion; Components: gui\customoutput
 Source: ..\Bin\out_graphviz.dll; DestDir: {app}; Flags: ignoreversion; Components: gui\customoutput
 Source: ..\Bin\out_ctags.dll; DestDir: {app}; Flags: ignoreversion; Components: gui\customoutput
