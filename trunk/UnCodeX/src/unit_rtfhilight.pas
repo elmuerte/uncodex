@@ -87,7 +87,7 @@ begin
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toName) then begin
-        replacement := '{\cf3 '+p.TokenString+'}'; // cf3 = name
+        replacement := '{\cf4 '+p.TokenString+'}'; // cf4 = name
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toMacro) then begin
@@ -95,7 +95,7 @@ begin
         replacement := StringReplace(replacement, '{', '\{', [rfReplaceAll]);
         replacement := StringReplace(replacement, '}', '\}', [rfReplaceAll]);
         replacement := StringReplace(replacement, '\', '\\', [rfReplaceAll]);
-        replacement := '{\cf4 '+replacement+'}\par '; // cf4 = macro
+        replacement := '{\cf3 '+replacement+'}\par '; // cf3 = macro
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toSymbol) then begin
@@ -149,6 +149,7 @@ initialization
   Keywords.Items['enum'] := '';
   Keywords.Items['event'] := '';
   Keywords.Items['exec'] := '';
+  Keywords.Items['expands'] := '';
   Keywords.Items['export'] := '';
   Keywords.Items['exportstructs'] := '';
   Keywords.Items['extends'] := '';

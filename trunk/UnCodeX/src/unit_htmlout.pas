@@ -1518,6 +1518,7 @@ begin
   Keywords.Items['enum'] := '';
   Keywords.Items['event'] := '';
   Keywords.Items['exec'] := '';
+  Keywords.Items['expands'] := '';
   Keywords.Items['export'] := '';
   Keywords.Items['exportstructs'] := '';
   Keywords.Items['extends'] := '';

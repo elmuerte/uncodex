@@ -10,7 +10,7 @@ unit unit_richeditex;
 interface
 
 uses
-  Windows, Controls, Classes, RichEdit, ComCtrls, Graphics, Messages;
+  Windows, Controls, Classes, RichEdit, ComCtrls, Graphics, Messages, sysUtils;
 
 type
   TRichEditEx = class(TRichEdit)
@@ -28,6 +28,8 @@ type
 
 implementation
 
+uses unit_main;
+
 const
   RichEditModuleName = 'RICHED20.DLL';
 
@@ -39,12 +41,15 @@ begin
   RegisterComponents('UnCodeX', [TRichEditEx]);
 end;
 
-function EditWordBreak(lpch: LPWSTR; ichCurrent: integer; cch: integer; code: integer): integer; stdcall;
+function EditWordBreak(lpch: LPWSTR; index: integer; cch: integer; code: integer): integer; stdcall;
 const
   SPACE = [' ', #9, #10, #13];
-  DELIM = ['@', '$', '.', '-', '+', '/', '=', ';', '*', '(', ')', '|', ',', '{', '}', '[', ']', '<', '>'];
+  DELIM = ['@', '$', '.', '-', '+', '/', '=', ';', '*', '(', ')', '|', ',', '{', '}', '[', ']', '<', '>', ':', '''', '"'];
   ADELIM = SPACE+DELIM;
+var
+  ichCurrent: integer;
 begin
+  ichCurrent := index;
   result := 0;
   case code of
     WB_ISDELIMITER: result := ord(Char(lpch[ichCurrent]) in ADELIM);
@@ -53,10 +58,7 @@ begin
                     end;
     WB_LEFT,
     WB_MOVEWORDLEFT:begin
-                      while (ichCurrent >= 0) and (not (Char(lpch[ichCurrent]) in ADELIM)) do begin
-                        dec(ichCurrent);
-                      end;
-                      inc(ichCurrent);
+                      while (ichCurrent > 0) and (not (Char(lpch[ichCurrent-1]) in ADELIM)) do dec(ichCurrent);
                       Result := ichCurrent;
                     end;
     WB_RIGHT,
@@ -72,7 +74,7 @@ begin
   inherited;
   SendMessage(Self.Handle, EM_SETWORDBREAKPROC, 0, LPARAM(@EditWordBreak));
   SendMessage(Self.Handle, EM_SETOPTIONS, ECOOP_OR, ECO_SELECTIONBAR);
-  SendMessage(Self.Handle, EM_AUTOURLDETECT, Integer(True), 0);
+  //SendMessage(Self.Handle, EM_AUTOURLDETECT, Integer(True), 0);
 end;
 
 procedure TRichEditEx.CreateParams(var Params: TCreateParams);
