@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.53 2004-03-29 19:51:04 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.54 2004-04-01 18:40:25 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -217,6 +217,11 @@ begin
     uftPostOperator:  result := 'postoperator';
     uftDelegate:      result := 'delegate';
   end;
+end;
+
+function IgnoreComment(cmt: string): boolean;
+begin
+  result := Pos(IGNORE_KEYWORD, LowerCase(Copy(trim(cmt), 1, 8))) = 1;
 end;
 
 { THTMLOutput }
@@ -771,7 +776,7 @@ begin
     try
       for i := 0 to TUPackage(data).classes.Count-1 do begin
         // ignore class when comment = @ignore
-        if (CompareText(TUPackage(data).classes[i].comment, IGNORE_KEYWORD) <> 0) then begin
+        if (not IgnoreComment(TUPackage(data).classes[i].comment)) then begin
           template.Position := 0;
           parseTemplate(template, target, replaceClass, TUPackage(data).classes[i]);
         end;
@@ -797,7 +802,7 @@ begin
   try
     for i := 0 to ClassList.Count-1 do begin
       // ignore class when comment = @ignore
-      if (CompareText(ClassList[i].comment, IGNORE_KEYWORD) <> 0) then begin
+      if (not IgnoreComment(ClassList[i].comment)) then begin
         Status('Creating '+ClassLink(ClassList[i]), round(curPos/maxPos*100));
         curPos := curPos+1;
         currentClass := ClassList[i];
@@ -923,7 +928,7 @@ begin
       uclass := TUClass(data).children[i];
       if (uclass <> nil) then begin
         // ignore class when comment = @ignore
-        if (CompareText(uclass.comment, IGNORE_KEYWORD) <> 0) then begin
+        if (not IgnoreComment(uclass.comment)) then begin
           if (replacement <> '') then replacement := replacement+', ';
           replacement := replacement+'<a href="'+StrRepeat('../', subDirDepth)+ClassLink(uclass)+'">'+uclass.name+'</a>'
         end;
@@ -1005,7 +1010,7 @@ begin
     try
       for i := 0 to TUClass(data).consts.Count-1 do begin
         // ignore const when comment = @ignore
-        if (CompareText(TUClass(data).consts[i].comment, IGNORE_KEYWORD) <> 0) then begin
+        if (not IgnoreComment(TUClass(data).consts[i].comment)) then begin
           template.Position := 0;
           parseTemplate(template, target, replaceClassConst, TUClass(data).consts[i]);
         end;
@@ -1028,7 +1033,7 @@ begin
       up := TUClass(data).parent;
       idata.itype := ini.ReadString('titels', 'Contants', 'Contants');
       while ((up <> nil) and (cnt < MaxInherit)) do begin
-        if (CompareText(up.comment, IGNORE_KEYWORD) <> 0) then begin
+        if (not IgnoreComment(up.comment)) then begin
           template.Position := 0;
           idata.uclass := up;
           if (ConstCache.Exists(up.FullName)) then begin
@@ -1038,7 +1043,7 @@ begin
             tmp := '';
             for i := 0 to up.consts.Count-1 do begin
               // ignore const when comment = @ignore
-              if (CompareText(up.consts[i].comment, IGNORE_KEYWORD) <> 0) then begin
+              if (not IgnoreComment(up.consts[i].comment)) then begin
                 if (i > 0) then tmp := tmp+', ';
                 tmp := tmp+'<a href="'+StrRepeat('../', subDirDepth)+ClassLink(up)+'#'+up.consts[i].name+'">'+up.consts[i].name+'</a>';
               end;
@@ -1100,7 +1105,7 @@ begin
     	tmp := '';
       for i := 0 to TUClass(data).properties.Count-1 do begin
         // ignore const when comment = @ignore
-        if (CompareText(TUClass(data).properties[i].comment, IGNORE_KEYWORD) <> 0) then begin
+        if (not IgnoreComment(TUClass(data).properties[i].comment)) then begin
 					if ((CompareText(tmp, TUClass(data).properties[i].tag) <> 0) and VarOnTag) then begin
             template2 := TFileStream.Create(templatedir+LowerCase(replacement)+'_tag.html', fmOpenRead);
             try
@@ -1132,7 +1137,7 @@ begin
       up := TUClass(data).parent;
       idata.itype := ini.ReadString('titels', 'Variables', 'Variables');
       while ((up <> nil) and (cnt < MaxInherit)) do begin
-        if (CompareText(up.comment, IGNORE_KEYWORD) <> 0) then begin
+        if (not IgnoreComment(up.comment)) then begin
           template.Position := 0;
           idata.uclass := up;
           if (VarCache.Exists(up.FullName)) then begin
@@ -1143,7 +1148,7 @@ begin
             up.properties.Sort;
             for i := 0 to up.properties.Count-1 do begin
               // ignore const when comment = @ignore
-              if (CompareText(up.properties[i].comment, IGNORE_KEYWORD) <> 0) then begin
+              if (not IgnoreComment(up.properties[i].comment)) then begin
                 if (i > 0) then tmp := tmp+', ';
                 tmp := tmp+'<a href="'+StrRepeat('../', subDirDepth)+ClassLink(up)+'#'+up.properties[i].name+'">'+up.properties[i].name+'</a>';
               end;
@@ -1201,7 +1206,7 @@ begin
     try
       for i := 0 to TUClass(data).enums.Count-1 do begin
         // ignore const when comment = @ignore
-        if (CompareText(TUClass(data).enums[i].comment, IGNORE_KEYWORD) <> 0) then begin
+        if (not IgnoreComment(TUClass(data).enums[i].comment)) then begin
           template.Position := 0;
           parseTemplate(template, target, replaceClassEnum, TUClass(data).enums[i]);
         end;
@@ -1224,7 +1229,7 @@ begin
       up := TUClass(data).parent;
       idata.itype := ini.ReadString('titels', 'Enumerations', 'Enumerations');
       while ((up <> nil) and (cnt < MaxInherit)) do begin
-        if (CompareText(up.comment, IGNORE_KEYWORD) <> 0) then begin
+        if (not IgnoreComment(up.comment)) then begin
           template.Position := 0;
           idata.uclass := up;
           if (EnumCache.Exists(up.FullName)) then begin
@@ -1234,7 +1239,7 @@ begin
             tmp := '';
             for i := 0 to up.enums.Count-1 do begin
               // ignore const when comment = @ignore
-              if (CompareText(up.enums[i].comment, IGNORE_KEYWORD) <> 0) then begin
+              if (not IgnoreComment(up.enums[i].comment)) then begin
                 if (i > 0) then tmp := tmp+', ';
                 tmp := tmp+'<a href="'+StrRepeat('../', subDirDepth)+ClassLink(up)+'#'+up.enums[i].name+'">'+up.enums[i].name+'</a>';
               end;
@@ -1292,7 +1297,7 @@ begin
     try
       for i := 0 to TUClass(data).structs.Count-1 do begin
         // ignore const when comment = @ignore
-        if (CompareText(TUClass(data).structs[i].comment, IGNORE_KEYWORD) <> 0) then begin
+        if (not IgnoreComment(TUClass(data).structs[i].comment)) then begin
           template.Position := 0;
           parseTemplate(template, target, replaceClassStruct, TUClass(data).structs[i]);
         end;
@@ -1315,7 +1320,7 @@ begin
       up := TUClass(data).parent;
       idata.itype := ini.ReadString('titels', 'Structures', 'Structures');
       while ((up <> nil) and (cnt < MaxInherit)) do begin
-        if (CompareText(up.comment, IGNORE_KEYWORD) <> 0) then begin
+        if (not IgnoreComment(up.comment)) then begin
           template.Position := 0;
           idata.uclass := up;
           if (StructCache.Exists(up.FullName)) then begin
@@ -1325,7 +1330,7 @@ begin
             tmp := '';
             for i := 0 to up.structs.Count-1 do begin
               // ignore const when comment = @ignore
-              if (CompareText(up.structs[i].comment, IGNORE_KEYWORD) <> 0) then begin
+              if (not IgnoreComment(up.structs[i].comment)) then begin
                 if (i > 0) then tmp := tmp+', ';
                 tmp := tmp+'<a href="'+StrRepeat('../', subDirDepth)+ClassLink(up)+'#'+up.structs[i].name+'">'+up.structs[i].name+'</a>';
               end;
@@ -1383,7 +1388,7 @@ begin
     try
       for i := 0 to TUClass(data).delegates.Count-1 do begin
         // ignore const when comment = @ignore
-        if (CompareText(TUClass(data).delegates[i].comment, IGNORE_KEYWORD) <> 0) then begin
+        if (not IgnoreComment(TUClass(data).delegates[i].comment)) then begin
           template.Position := 0;
           parseTemplate(template, target, replaceClassFunction, TUClass(data).delegates[i]);
         end;
@@ -1406,7 +1411,7 @@ begin
       up := TUClass(data).parent;
       idata.itype := ini.ReadString('titels', 'Delegates', 'Delegates');
       while ((up <> nil) and (cnt < MaxInherit)) do begin
-        if (CompareText(up.comment, IGNORE_KEYWORD) <> 0) then begin
+        if (not IgnoreComment(up.comment)) then begin
           template.Position := 0;
           idata.uclass := up;
           if (DelegateCache.Exists(up.FullName)) then begin
@@ -1419,7 +1424,7 @@ begin
               if (CompareText(last, up.delegates[i].name) = 0) then continue;
               last := up.delegates[i].name;
               // ignore const when comment = @ignore
-              if (CompareText(up.delegates[i].comment, IGNORE_KEYWORD) <> 0) then begin
+              if (not IgnoreComment(up.delegates[i].comment)) then begin
                 if (i > 0) then tmp := tmp+', ';
                 tmp := tmp+'<a href="'+StrRepeat('../', subDirDepth)+ClassLink(up)+'#'+HTMLChars(up.delegates[i].name)+'">'+HTMLChars(up.delegates[i].name)+'</a>';
               end;
@@ -1477,7 +1482,7 @@ begin
     try
       for i := 0 to TUClass(data).functions.Count-1 do begin
         // ignore const when comment = @ignore
-        if (CompareText(TUClass(data).functions[i].comment, IGNORE_KEYWORD) <> 0) then begin
+        if (not IgnoreComment(TUClass(data).functions[i].comment)) then begin
           template.Position := 0;
           parseTemplate(template, target, replaceClassFunction, TUClass(data).functions[i]);
         end;
@@ -1500,7 +1505,7 @@ begin
       up := TUClass(data).parent;
       idata.itype := ini.ReadString('titels', 'Functions', 'Functions');
       while ((up <> nil) and (cnt < MaxInherit)) do begin
-        if (CompareText(up.comment, IGNORE_KEYWORD) <> 0) then begin
+        if (not IgnoreComment(up.comment)) then begin
           template.Position := 0;
           idata.uclass := up;
           if (FunctionCache.Exists(up.FullName)) then begin
@@ -1513,7 +1518,7 @@ begin
               if (CompareText(last, up.functions[i].name) = 0) then continue;
               last := up.functions[i].name;
               // ignore const when comment = @ignore
-              if (CompareText(up.functions[i].comment, IGNORE_KEYWORD) <> 0) then begin
+              if (not IgnoreComment(up.functions[i].comment)) then begin
                 if (i > 0) then tmp := tmp+', ';
                 tmp := tmp+'<a href="'+StrRepeat('../', subDirDepth)+ClassLink(up)+'#'+HTMLChars(up.functions[i].name)+'">'+HTMLChars(up.functions[i].name)+'</a>';
               end;
@@ -1558,7 +1563,7 @@ begin
     try
       for i := 0 to TUClass(data).states.Count-1 do begin
         // ignore const when comment = @ignore
-        if (CompareText(TUClass(data).states[i].comment, IGNORE_KEYWORD) <> 0) then begin
+        if (not IgnoreComment(TUClass(data).states[i].comment)) then begin
           template.Position := 0;
           parseTemplate(template, target, replaceClassState, TUClass(data).states[i]);
         end;
@@ -1827,7 +1832,7 @@ begin
     try
       for i := 0 to TUStruct(data).properties.Count-1 do begin
         // ignore var when comment = @ignore
-        if (CompareText(TUStruct(data).properties[i].comment, IGNORE_KEYWORD) <> 0) then begin
+        if (not IgnoreComment(TUStruct(data).properties[i].comment)) then begin
           template.Position := 0;
           parseTemplate(template, target, replaceClassVar, TUStruct(data).properties[i]);
         end;
@@ -1864,7 +1869,7 @@ begin
     try
       for i := 0 to TUStruct(data).properties.Count-1 do begin
         // ignore var when comment = @ignore
-        if ((CompareText(TUStruct(data).properties[i].comment, IGNORE_KEYWORD) <> 0) and
+        if ((not IgnoreComment(TUStruct(data).properties[i].comment)) and
         	(TUStruct(data).properties[i].comment <> ''))then begin
           template.Position := 0;
           parseTemplate(template, target, replaceClassVar, TUStruct(data).properties[i]);
@@ -2204,7 +2209,7 @@ var
   tmp: string;
 begin
   // ignore class when comment = @ignore
-  if (CompareText(uclass.comment, IGNORE_KEYWORD) = 0) then exit;
+  if (IgnoreComment(uclass.comment)) then exit; 
   guard('ProcTreeNode '+uclass.Name);
   Status('Creating '+classtree_filename+TargetExtention+' class: '+uclass.Name);
   for i := 0 to uclass.children.Count-1 do begin
@@ -2266,7 +2271,7 @@ begin
     // create table
     for i := 0 to ClassList.Count-1 do begin
       // ignore class when comment = @ignore
-      if (CompareText(classlist[i].comment, IGNORE_KEYWORD) = 0) then continue;
+      if (IgnoreComment(classlist[i].comment)) then continue;
       gi := TGlossaryItem.Create;
       cgi := gi;
       gi.classname := classlist[i].name;
@@ -2274,7 +2279,7 @@ begin
       gl.AddObject(classlist[i].name, gi);
       for j := 0 to ClassList[i].consts.Count-1 do begin
         // ignore class when comment = @ignore
-        if (CompareText(ClassList[i].consts[j].comment, IGNORE_KEYWORD) = 0) then continue;
+        if (IgnoreComment(ClassList[i].consts[j].comment)) then continue;
         gi := TGlossaryItem.Create;
         gi.classname := cgi.classname;
         gi.link := cgi.link+'#'+classlist[i].consts[j].name;
@@ -2282,7 +2287,7 @@ begin
       end;
       for j := 0 to ClassList[i].properties.Count-1 do begin
         // ignore class when comment = @ignore
-        if (CompareText(ClassList[i].properties[j].comment, IGNORE_KEYWORD) = 0) then continue;
+        if (IgnoreComment(ClassList[i].properties[j].comment)) then continue;
         gi := TGlossaryItem.Create;
         gi.classname := cgi.classname;
         gi.link := cgi.link+'#'+classlist[i].properties[j].name;
@@ -2290,7 +2295,7 @@ begin
       end;
       for j := 0 to ClassList[i].enums.Count-1 do begin
         // ignore class when comment = @ignore
-        if (CompareText(ClassList[i].enums[j].comment, IGNORE_KEYWORD) = 0) then continue;
+        if (IgnoreComment(ClassList[i].enums[j].comment)) then continue;
         gi := TGlossaryItem.Create;
         gi.classname := cgi.classname;
         gi.link := cgi.link+'#'+classlist[i].enums[j].name;
@@ -2298,7 +2303,7 @@ begin
       end;
       for j := 0 to ClassList[i].structs.Count-1 do begin
         // ignore class when comment = @ignore
-        if (CompareText(ClassList[i].structs[j].comment, IGNORE_KEYWORD) = 0) then continue;
+        if (IgnoreComment(ClassList[i].structs[j].comment)) then continue;
         gi := TGlossaryItem.Create;
         gi.classname := cgi.classname;
         gi.link := cgi.link+'#'+classlist[i].structs[j].name;
@@ -2306,7 +2311,7 @@ begin
       end;
       for j := 0 to ClassList[i].functions.Count-1 do begin
         // ignore class when comment = @ignore
-        if (CompareText(ClassList[i].functions[j].comment, IGNORE_KEYWORD) = 0) then continue;
+        if (IgnoreComment(ClassList[i].functions[j].comment)) then continue;
         gi := TGlossaryItem.Create;
         gi.classname := cgi.classname;
         gi.link := cgi.link+'#'+classlist[i].functions[j].name;
@@ -2446,7 +2451,7 @@ begin
       // ignore class when comment = @ignore
       fname := SOURCEPRE+ClassLink(ClassList[i], true);
       ForceDirectories(ExtractFilePath(htmloutputdir+PATHDELIM+fname));
-      if (CompareText(ClassList[i].comment, IGNORE_KEYWORD) = 0) then continue;
+      if (IgnoreComment(ClassList[i].comment)) then continue;
       Status('Creating source '+fname, round(curPos/maxPos*100));
       curPos := curPos+1;
       currentClass := ClassList[i];
