@@ -1,7 +1,7 @@
 [OPTIONS]
 Auto Index=Yes
 Compatibility=1.1 or later
-Compiled file=../Bin/UnCodeX-help.chm
+Compiled file=..\Bin\UnCodeX-help.chm
 Contents file=UnCodeX-help.hhc
 Default Window=main
 Default topic=index.html
@@ -26,6 +26,17 @@ versionhistory.html
 credits.html
 commandline.html
 developer.html
+UnCodeX-main.gif
+UnCodeX-tags.gif
+window_main_toolbar.html
+window_main_menu.html
+x04_operator.gif
+x01_var.gif
+x02_enum.gif
+x03_struct.gif
+x04_event.gif
+x04_func.gif
+x00_const.gif
 
 [INFOTYPES]
 
