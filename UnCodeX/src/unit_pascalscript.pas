@@ -6,7 +6,7 @@
   Purpose:
     Global PascalScript routines and functionality
 
-  $Id: unit_pascalscript.pas,v 1.16 2005-01-12 18:23:01 elmuerte Exp $
+  $Id: unit_pascalscript.pas,v 1.17 2005-03-13 09:25:20 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -60,7 +60,8 @@ begin
   ps.Comp.AddTypeS('TReplaceFlags_', '(rfReplaceAll, rfIgnoreCase);');
   ps.Comp.AddTypeS('TReplaceFlags', 'set of TReplaceFlags_;');
   ps.AddFunction(@StringReplace, 'function StringReplace(const S, OldPattern, NewPattern: string; Flags: TReplaceFlags): string;');
-
+  ps.AddFunction(@GetToken, 'function GetToken(var input: string; delim: char; nocut: boolean): string;');
+  ps.AddFunction(@StrRepeat, 'function StrRepeat(line: string; count: integer): string;');
 
   { file access }
   ps.Comp.AddTypeS('TCharSet', 'set of Char');

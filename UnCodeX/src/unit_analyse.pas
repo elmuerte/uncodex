@@ -6,11 +6,11 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.61 2005-01-09 10:21:12 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.62 2005-03-13 09:25:20 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
-  Copyright (C) 2003, 2004  Michiel Hendriks
+  Copyright (C) 2003-2005  Michiel Hendriks
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -111,6 +111,7 @@ const
   KEYWORD_State             = 'state';
   KEYWORD_Defaultproperties = 'defaultproperties';
   KEYWORD_Cpptext           = 'cpptext';
+  KEYWORD_Cppstruct         = 'cppstruct';
   KEYWORD_Replication       = 'replication';
   KEYWORD_Array             = 'array';
   KEYWORD_Ignores           = 'ignores';
@@ -703,6 +704,16 @@ begin
         p.NextToken;
         pVar();
         continue;
+      end
+      else if (p.TokenSymbolIs(KEYWORD_const)) then begin
+        p.NextToken;
+        pConst();
+        continue;
+      end
+      else if (p.TokenSymbolIs(KEYWORD_Cppstruct)) then begin
+        p.NextToken;
+        pCurlyBrackets();
+        continue;
       end;
       p.NextToken;
     end;
@@ -899,22 +910,12 @@ end;
 procedure TClassAnalyser.pMacro(Sender: TUCParser);
 var
   macro, args: string;
-  i: integer;
 begin
-  macro := TrimMacro(Sender.TokenString);
-  // TODO: this sucks
-  i := Pos(' ', macro);
-  if (i > 0) then begin
-    args := Copy(macro, i+1, Length(macro));
-    Delete(macro, i, Length(macro));
-  end;
+  args := TrimMacro(Sender.TokenString);
+  macro := GetToken(args, ' ');
   macro := UpperCase(macro);
   if (macro = 'DEFINE') then begin
-    i := Pos(' ', args);
-    if (i > 0) then begin
-      macro := Copy(args, 1, i-1);
-      Delete(args, 1, i);
-    end;
+    macro := GetToken(args, ' ');
     uclass.defs.define(macro, args);
     if (DEBUG_MACRO_EVAL) then Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': define '+macro+' = '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
   end
@@ -1106,6 +1107,7 @@ begin
       continue;
     end;
     if (p.TokenSymbolIs(KEYWORD_replication)) then begin
+      //TODO: process replication block
       p.NextToken;
       pCurlyBrackets();
       continue;

@@ -6,11 +6,11 @@
   Purpose:
     Utility functions that have a GUI dependency
 
-  $Id: unit_utils.pas,v 1.15 2004-12-25 12:00:06 elmuerte Exp $
+  $Id: unit_utils.pas,v 1.16 2005-03-13 09:25:20 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
-  Copyright (C) 2003, 2004  Michiel Hendriks
+  Copyright (C) 2003-2005  Michiel Hendriks
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
