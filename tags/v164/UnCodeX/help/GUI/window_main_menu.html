@@ -1,0 +1,92 @@
+<html>
+<head>
+	<title>UnCodeX - Main menu</title>
+	<link href="default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">main menu</div>
+</div>
+
+<div class="content">
+<h1>Main menu</h1>
+<h2>Tree</h2>
+<h3>Rebuild and Analyse</h3>
+This is a batch command that will rebuild the tree and analyse all classes. Use this option when you are sure you don't have any orphan classes.
+<h3>Rebuild tree</h3>
+Scan the source paths for packages and classes and rebuild the package and class tree.
+<h3>Find orphans</h3>
+Scan the classes to find orphan classes, classes that have a parent class but are not listed in the class tree. This is usualy the result of an incorrect configuration of the <a href="window_settings.html#packagepriority">package priority</a>
+<h3>Analyse all classes</h3>
+Analyse the content of all classes. This will search each class for variables, functions, structures, etc. You need to analyse all classes before you can use the more advanced features of UnCodeX like the HTML generation or class properties window. You only have to do this once after you rebuild the tree.
+<h3>Save state</h3>
+Save the state of the current tree. This is done automatically when the program closes
+<h3>Load state</h3>
+Load the tree state, this is done at start up.
+<h3>Settings</h3>
+Open the <a href="window_settings.html">settings window</a>
+<h3>Quit</h3>
+Close UnCodeX
+
+<h2>Find</h2>
+<h3>Find class</h3>
+Find a class in the currently active tree. <br>
+This command will display a new window with the following options:
+<table>
+<tr>
+	<td><i>Search class body</i></td>
+	<td>This will search the body of all classes for a match instead of the active tree</td>
+</tr>
+<tr>
+	<td><i>Regular expression</i></td>
+	<td>The search query is a regular expression, this only work with a body search</td>
+</tr>
+<tr>
+	<td><i>Compare strict</i></td>
+	<td>The search string is the complete class name, not a part of it. This does not work with a body search</td>
+</tr>
+</table>
+<h3>Find next</h3>
+Find the next match
+<h3>Full Text Search</h3>
+This will search all class files for one or more matches. Unlike a body search this will not stop with searching on the first match.
+
+<h2>View</h2>
+This menu is also available when you right click the application title bar.
+These option will toggle the visibility of various items in the main window.
+<h3>Tool window</h3>
+These options control if the main window should be registered as a Tool window. A tool window is a special window that get's a reserved part on the screen that no other application can use. Like the windows task bar, or the office tool bar.
+<br>
+It's adviced to turn on the "stay on top" option when you enable the tool window feature.
+
+<h2>HTML Output</h2>
+<h3>Create all files</h3>
+This will create all HTML files. You have to analyse all classes before you use this option
+<h3>Open output</h3>
+This will open the main HTML file after the output has been created
+<h3>Create HTML Help</h3>
+This will convert all generated HTML files to a MS HTML Help file. This is a single compressed file that can be used with the MS HTML Help system. For this to work you need to install the <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/htmlhelp/html/vsconHH1Start.asp" target="_blank">MS HTML Help Workshop</a>
+<h3>Open HTML Help file</h3>
+This will open the generated HTML Help file.
+
+<h2>Game server</h2>
+<h3>Run server</h3>
+Run a test server
+<h3>Join server</h3>
+Join the server
+
+<h2>Help</h2>
+<h3>Help</h3>
+Display the UnCodeX help
+<h3>License</h3>
+This will show the UnCodeX license
+<h3>About</h3>
+Display a little bit of information about UnCodeX
+
+</div>
+</div>
+</body>
+</html>
