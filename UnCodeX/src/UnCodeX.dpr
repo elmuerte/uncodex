@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
- $Id: UnCodeX.dpr,v 1.33 2004-03-23 16:25:45 elmuerte Exp $
+ $Id: UnCodeX.dpr,v 1.34 2004-04-05 13:36:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 program UnCodeX;
@@ -48,7 +48,9 @@ uses
   unit_props in 'unit_props.pas' {fr_Properties: TFrame},
   unit_ucxdocktree in 'unit_ucxdocktree.pas',
   unit_ucops in 'unit_ucops.pas' {frm_CreateNewClass},
-  unit_pkgprops in 'unit_pkgprops.pas' {frm_PackageProps};
+  unit_pkgprops in 'unit_pkgprops.pas' {frm_PackageProps},
+  unit_moveclass in 'unit_moveclass.pas' {frm_MoveClass},
+  unit_defprops in 'unit_defprops.pas' {frm_DefPropsBrowser};
 
 {$R *.res}
 

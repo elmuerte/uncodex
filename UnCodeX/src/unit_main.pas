@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.92 2004-04-04 22:02:36 elmuerte Exp $
+ $Id: unit_main.pas,v 1.93 2004-04-05 13:36:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -230,6 +230,8 @@ type
     mi_SaveToFile1: TMenuItem;
     sd_SaveLog: TSaveDialog;
     fr_Props: Tfr_Properties;
+    ac_DefProps: TAction;
+    mi_DefProps: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -334,6 +336,8 @@ type
     procedure ac_PackagePropsExecute(Sender: TObject);
     procedure mi_SaveToFile1Click(Sender: TObject);
     procedure pm_LogPopup(Sender: TObject);
+    procedure ac_MoveClassExecute(Sender: TObject);
+    procedure ac_DefPropsExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -465,7 +469,7 @@ implementation
 uses unit_settings, unit_analyse, unit_htmlout, unit_definitions,
   unit_treestate, unit_about, unit_mshtmlhelp, unit_fulltextsearch,
   unit_tags, unit_outputdefs, unit_rtfhilight, unit_utils, unit_license,
-  unit_splash, unit_ucxdocktree, unit_ucops, unit_pkgprops;
+  unit_splash, unit_ucxdocktree, unit_ucops, unit_pkgprops, unit_defprops;
 
 const
   PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
@@ -1756,7 +1760,7 @@ begin
 
   if (LoadCustomOutputModules) then LoadOutputModules;
   PackageList := TUPackageList.Create(true);
-  ClassList := TUClassList.Create(false);
+  ClassList := TUClassList.Create(true);
   UpdateSystemMenu;
   mi_MenuBar.OnClick(Sender); // has to be here or else it won't work
 end;
@@ -3118,6 +3122,16 @@ end;
 procedure Tfrm_UnCodeX.pm_LogPopup(Sender: TObject);
 begin
   mi_OpenClass1.Enabled := (lb_Log.ItemIndex > -1);
+end;
+
+procedure Tfrm_UnCodeX.ac_MoveClassExecute(Sender: TObject);
+begin
+	if (SelectedUClass <> nil) then MoveUClass(SelectedUClass);
+end;
+
+procedure Tfrm_UnCodeX.ac_DefPropsExecute(Sender: TObject);
+begin
+  if (SelectedUClass <> nil) then ShowDefaultProperties(SelectedUClass);
 end;
 
 initialization

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   main code for the commandline utility
- $Id: unit_ucxcumain.pas,v 1.8 2004-02-23 12:20:48 elmuerte Exp $
+ $Id: unit_ucxcumain.pas,v 1.9 2004-04-05 13:36:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -342,7 +342,7 @@ initialization
   packagepriority := TStringList.Create;
   ignorepackages := TStringList.Create;
   PackageList := TUPackageList.Create(true);
-  ClassList := TUClassList.Create(false);
+  ClassList := TUClassList.Create(true);
   unit_definitions.Log := Log;
   unit_definitions.LogClass := LogClass;
 finalization

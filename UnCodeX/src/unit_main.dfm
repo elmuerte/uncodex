@@ -614,6 +614,9 @@ object frm_UnCodeX: Tfrm_UnCodeX
     object mi_ShowProperties: TMenuItem
       Action = ac_Tags
     end
+    object mi_DefProps: TMenuItem
+      Action = ac_DefProps
+    end
     object mi_Properties: TMenuItem
       Action = ac_PackageProps
     end
@@ -1004,6 +1007,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     object ac_MoveClass: TAction
       Category = 'Class Tree'
       Caption = 'Move class'
+      OnExecute = ac_MoveClassExecute
     end
     object ac_RenameClass: TAction
       Category = 'Class Tree'
@@ -1014,6 +1018,11 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Caption = 'Package Properties'
       ImageIndex = 11
       OnExecute = ac_PackagePropsExecute
+    end
+    object ac_DefProps: TAction
+      Category = 'Class Tree'
+      Caption = 'Defaultproperties'
+      OnExecute = ac_DefPropsExecute
     end
   end
   object il_Small: TImageList

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   definitions for Unreal Classes
- $Id: unit_uclasses.pas,v 1.22 2004-03-30 09:46:18 elmuerte Exp $
+ $Id: unit_uclasses.pas,v 1.23 2004-04-05 13:36:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -433,7 +433,7 @@ end;
 
 constructor TUPackage.Create;
 begin
-  classes := TUClassList.Create(true);
+  classes := TUClassList.Create(false); // or else we can't move them around
 end;
 
 destructor TUPackage.Destroy;
