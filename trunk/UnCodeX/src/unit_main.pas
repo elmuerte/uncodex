@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.114 2004-07-30 11:18:51 elmuerte Exp $
+ $Id: unit_main.pas,v 1.115 2004-07-31 13:26:04 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -33,7 +33,7 @@ uses
   Forms, Dialogs, ComCtrls, Menus, StdCtrls, unit_packages, ExtCtrls,
   unit_uclasses, IniFiles, ShellApi, AppEvnts, ImgList, ActnList, StrUtils,
   Clipbrd, hh, hh_funcs, ToolWin, richedit, unit_richeditex, unit_searchform,
-  Buttons, DdeMan, unit_props;
+  Buttons, DdeMan, unit_props, uPSComponent, uPSComponent_Default;
 
 const
   // custom window messages
@@ -243,6 +243,10 @@ type
     N2: TMenuItem;
     mi_Run: TMenuItem;
     ac_Run: TAction;
+    ps_Main: TPSScript;
+    mi_ScriptTest: TMenuItem;
+    psi_Classes: TPSImport_Classes;
+    psi_DateUtils: TPSImport_DateUtils;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -353,6 +357,9 @@ type
     procedure mi_SortListClick(Sender: TObject);
     procedure mi_DonateClick(Sender: TObject);
     procedure ac_RunExecute(Sender: TObject);
+    procedure mi_ScriptTestClick(Sender: TObject);
+    procedure ps_MainLine(Sender: TObject);
+    procedure ps_MainCompile(Sender: TPSScript);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -487,7 +494,7 @@ uses unit_settings, unit_analyse, unit_htmlout, unit_definitions,
   unit_treestate, unit_about, unit_mshtmlhelp, unit_fulltextsearch,
   unit_tags, unit_outputdefs, unit_rtfhilight, unit_utils, unit_license,
   unit_splash, unit_ucxdocktree, unit_ucops, unit_pkgprops, unit_defprops,
-  unit_rungame;
+  unit_rungame, unit_pascalscript, unit_pascalscript_gui;
 
 const
   PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
@@ -3343,6 +3350,30 @@ begin
     end;
     Free;
   end;
+end;
+
+procedure Tfrm_UnCodeX.mi_ScriptTestClick(Sender: TObject);
+var
+	i: integer;
+  res: boolean;
+begin
+  res := ps_Main.Compile;
+  for i := 0 to ps_Main.CompilerMessageCount-1 do begin
+		log('PascalScript Compiler: '+ps_Main.CompilerMessages[i].MessageToString);
+  end;
+  if (res) then begin
+  	ps_Main.Execute;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.ps_MainLine(Sender: TObject);
+begin
+	Application.ProcessMessages;
+end;
+
+procedure Tfrm_UnCodeX.ps_MainCompile(Sender: TPSScript);
+begin
+  RegisterPSGui(Sender);
 end;
 
 initialization

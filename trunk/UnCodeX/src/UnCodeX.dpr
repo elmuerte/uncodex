@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
- $Id: UnCodeX.dpr,v 1.42 2004-07-21 14:24:51 elmuerte Exp $
+ $Id: UnCodeX.dpr,v 1.43 2004-07-31 13:26:04 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -70,7 +70,9 @@ uses
   unit_defprops in 'unit_defprops.pas' {frm_DefPropsBrowser},
   unit_renameclass in 'unit_renameclass.pas' {frm_RenameClass},
   unit_rungame in 'unit_rungame.pas' {frm_Run},
-  unit_multilinequery in 'unit_multilinequery.pas' {frm_MultiLineQuery};
+  unit_multilinequery in 'unit_multilinequery.pas' {frm_MultiLineQuery},
+  unit_pascalscript in 'unit_pascalscript.pas',
+  unit_pascalscript_gui in 'unit_pascalscript_gui.pas';
 
 {$R *.res}
 

@@ -1,6 +1,6 @@
 object frm_UnCodeX: Tfrm_UnCodeX
-  Left = 232
-  Top = 102
+  Left = 223
+  Top = 123
   HelpType = htKeyword
   ActiveControl = tv_Classes
   AutoScroll = False
@@ -607,8 +607,12 @@ object frm_UnCodeX: Tfrm_UnCodeX
       end
     end
     object mi_Output: TMenuItem
-      Caption = 'Output modules'
+      Caption = 'Plug-ins'
       Visible = False
+      object mi_ScriptTest: TMenuItem
+        Caption = 'mi_ScriptTest'
+        OnClick = mi_ScriptTestClick
+      end
     end
     object mi_HelpMenu: TMenuItem
       Caption = 'Help'
@@ -703,7 +707,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Action = ac_CopyName
     end
     object mi_SingleOutput: TMenuItem
-      Caption = 'Output modules'
+      Caption = 'Plug-ins'
       Visible = False
     end
     object mi_N2: TMenuItem
@@ -2378,5 +2382,36 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Title = 'Save log file'
     Left = 40
     Top = 200
+  end
+  object ps_Main: TPSScript
+    Script.Strings = (
+      'begin'
+      #9'acRun;'
+      #9'acAbout;'
+      'end.'
+      '')
+    CompilerOptions = []
+    OnLine = ps_MainLine
+    OnCompile = ps_MainCompile
+    Plugins = <
+      item
+        Plugin = psi_Classes
+      end
+      item
+        Plugin = psi_DateUtils
+      end>
+    UsePreProcessor = False
+    Left = 8
+    Top = 280
+  end
+  object psi_Classes: TPSImport_Classes
+    EnableStreams = True
+    EnableClasses = True
+    Left = 8
+    Top = 312
+  end
+  object psi_DateUtils: TPSImport_DateUtils
+    Left = 8
+    Top = 344
   end
 end

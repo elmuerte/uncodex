@@ -94,8 +94,8 @@ Item0=$(DELPHI)\Lib\Debug;VCL
 Item1=VCL
 [HistoryLists\hlUnitOutputDirectory]
 Count=7
-Item0=..\..\dcu\out_ctags
-Item1=..\DCU
+Item0=..\DCU
+Item1=..\..\dcu\out_ctags
 Item2=..\..\Dcu\out_graphviz
 Item3=..\..\DCU\out_wikifier
 Item4=..\..\Dcu\out_sample
@@ -103,6 +103,6 @@ Item5=..\..\dcu\ucxcu
 Item6=..\Dcu\out_graphviz
 [HistoryLists\hlOutputDirectorry]
 Count=3
-Item0=..\..\Bin
-Item1=..\BIN
+Item0=..\BIN
+Item1=..\..\Bin
 Item2=..\..\Bin\out_sample
