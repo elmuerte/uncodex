@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.76 2004-02-23 22:02:47 elmuerte Exp $
+ $Id: unit_main.pas,v 1.77 2004-03-02 16:05:35 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -306,6 +306,8 @@ type
     procedure splRightMoved(Sender: TObject);
     procedure re_SourceSnoopEndDock(Sender, Target: TObject; X,
       Y: Integer);
+    procedure pnlCenterUnDock(Sender: TObject; Client: TControl;
+      NewTarget: TWinControl; var Allow: Boolean);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -2889,6 +2891,8 @@ end;
 procedure Tfrm_UnCodeX.dckLeftUnDock(Sender: TObject; Client: TControl;
   NewTarget: TWinControl; var Allow: Boolean);
 begin
+	Allow := (NewTarget <> nil);
+  if (not Allow) then exit;
 	if (Sender as TPanel).VisibleDockClientCount = 1 then ShowDockPanel(Sender as TPanel, False, Client);
 end;
 
@@ -2925,6 +2929,12 @@ procedure Tfrm_UnCodeX.re_SourceSnoopEndDock(Sender, Target: TObject; X,
   Y: Integer);
 begin
 	re_SourceSnoop.UpdateWindowRect;
+end;
+
+procedure Tfrm_UnCodeX.pnlCenterUnDock(Sender: TObject; Client: TControl;
+  NewTarget: TWinControl; var Allow: Boolean);
+begin
+	Allow := (NewTarget <> nil);
 end;
 
 initialization
