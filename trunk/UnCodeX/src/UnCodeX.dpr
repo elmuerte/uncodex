@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
- $Id: UnCodeX.dpr,v 1.30 2004-01-31 14:01:37 elmuerte Exp $
+ $Id: UnCodeX.dpr,v 1.31 2004-03-13 12:07:15 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 program UnCodeX;
@@ -161,18 +161,18 @@ begin
 end;
 
 begin
-	frm_Splash := Tfrm_Splash.Create(nil);
+	if (not FindCmdLineSwitch('nosplash')) then frm_Splash := Tfrm_Splash.Create(nil);
   CmdStack := TStringList.Create;
   if (ParamCount() > 0) then ProcessCommandline;
   if (not HasPrevInst) then begin
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-  Application.CreateForm(Tfrm_About, frm_About);
-  Application.CreateForm(Tfrm_License, frm_License);
-  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+  	Application.CreateForm(Tfrm_About, frm_About);
+  	Application.CreateForm(Tfrm_License, frm_License);
+  	if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end
-  else frm_Splash.Close;
+  else if (frm_Splash <> nil) then frm_Splash.Close;
   CmdStack.Free;
 end.

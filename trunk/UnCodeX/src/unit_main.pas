@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.79 2004-03-08 20:02:24 elmuerte Exp $
+ $Id: unit_main.pas,v 1.80 2004-03-13 12:07:15 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -1087,7 +1087,9 @@ begin
   if (skipcurrent) then Inc(j);
   for i := j to tv.Items.Count-1 do begin
     if (CompareText(Copy(tv.Items[i].Text, 1, Length(inlinesearch)), inlinesearch) = 0) then begin
+    	tv.Tag := TV_ALWAYSEXPAND;
       tv.Select(tv.Items[i]);
+      tv.Tag := TV_NOEXPAND;
       exit;
     end
   end;
@@ -1106,7 +1108,9 @@ begin
   //if (skipcurrent) then Inc(j);
   for i := 0 to j do begin
     if (CompareText(Copy(tv.Items[i].Text, 1, Length(inlinesearch)), inlinesearch) = 0) then begin
+    	tv.Tag := TV_ALWAYSEXPAND;
       tv.Select(tv.Items[i]);
+      tv.Tag := TV_NOEXPAND;
       exit;
     end
   end;
@@ -2067,16 +2071,18 @@ end;
 procedure Tfrm_UnCodeX.mi_ExpandallClick(Sender: TObject);
 begin
   if (ActiveControl.ClassType = TTreeView) then begin
-    Tag := TV_ALWAYSEXPAND;
+    ActiveControl.Tag := TV_ALWAYSEXPAND;
     (ActiveControl as TTreeView).FullExpand;
+    ActiveControl.Tag := TV_NOEXPAND;
   end;
 end;
 
 procedure Tfrm_UnCodeX.mi_CollapseallClick(Sender: TObject);
 begin
   if (ActiveControl.ClassType = TTreeView) then begin
-    Tag := TV_ALWAYSEXPAND;
+    ActiveControl.Tag := TV_ALWAYSEXPAND;
     (ActiveControl as TTreeView).FullCollapse;
+    ActiveControl.Tag := TV_NOEXPAND;
   end;
 end;
 

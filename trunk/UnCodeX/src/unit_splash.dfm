@@ -39,7 +39,7 @@ object frm_Splash: Tfrm_Splash
     Transparent = True
   end
   object tmr_Show: TTimer
-    Interval = 100
+    Interval = 500
     OnTimer = tmr_ShowTimer
     Left = 8
     Top = 8
