@@ -28,7 +28,8 @@ A.small {
 }
 
 TD.header {
-	border: 3px solid #C6BEEF;
+	border-width: 3px;
+	border-style: solid;
 	font-size: 12pt;
 }
 
