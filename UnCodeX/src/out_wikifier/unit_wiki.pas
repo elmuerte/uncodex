@@ -1,10 +1,28 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_wiki
  Author:    elmuerte
- Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Copy paste window
- $Id: unit_wiki.pas,v 1.8 2004-03-30 09:46:18 elmuerte Exp $
+ $Id: unit_wiki.pas,v 1.9 2004-06-19 13:04:26 elmuerte Exp $
 -----------------------------------------------------------------------------}
+{
+    UnCodeX - UnrealScript source browser & documenter
+    Copyright (C) 2003, 2004  Michiel Hendriks
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+}
 
 unit unit_wiki;
 
@@ -20,7 +38,6 @@ type
     btn_SelectAll: TBitBtn;
     btn_Copy: TBitBtn;
     btn_Close: TBitBtn;
-    Label1: TLabel;
     procedure btn_SelectAllClick(Sender: TObject);
     procedure btn_CopyClick(Sender: TObject);
     procedure btn_CloseClick(Sender: TObject);
@@ -48,9 +65,25 @@ begin
   input := trim(input);
 end;
 
-function FixComments(comment: string): string;
+function FixComments(comment: string; fixnl: boolean = true): string;
+var
+	sl: TStringList;
+	i: integer;
 begin
-  result := StringReplace(comment, #13#10, '\\'+#13#10, [rfReplaceAll]);
+  if (fixnl) then result := StringReplace(comment, #13#10, '\\'+#13#10, [rfReplaceAll])
+  else result := comment;
+  result := StringReplace(result, #9, ' ', [rfReplaceAll]);
+  
+  sl := TStringList.Create;
+  try
+    sl.Text := result;
+		for i := 0 to sl.count-1 do begin
+			sl[i] := trim(sl[i]);
+    end;
+    result := sl.Text;
+  finally
+  	sl.Free;
+  end;
 end;
 
 procedure Tfrm_Wikifier.Wikify(uclass: TUClass);
@@ -72,7 +105,7 @@ begin
       end;
       tmp := '@@ [[... ENGINE ...]] :: '+tmp+'[['+uclass.name+']]';
       Add(tmp);
-      Add(trim(uclass.comment));
+      Add(FixComments(uclass.comment, false));
       { Constants }
       if (uclass.consts.Count > 0) then begin
         Add('');

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   GUI
- $Id: unit_selector.pas,v 1.8 2003-06-10 12:00:22 elmuerte Exp $
+ $Id: unit_selector.pas,v 1.9 2004-06-19 13:04:26 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_selector;
@@ -16,7 +16,7 @@ uses
   ComCtrls, ExtCtrls, Hashes, ImgList;
 
 const
-  DLLVERSION = '100';
+  DLLVERSION = '102';
 
 type
   Tfrm_GraphViz = class(TForm)

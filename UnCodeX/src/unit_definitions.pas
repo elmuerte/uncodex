@@ -3,11 +3,11 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   General definitions
- $Id: unit_definitions.pas,v 1.103 2004-06-15 07:34:57 elmuerte Exp $
+ $Id: unit_definitions.pas,v 1.104 2004-06-19 13:04:26 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
-    Copyright (C) 2003  Michiel Hendriks
+    Copyright (C) 2003,2004  Michiel Hendriks
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -58,7 +58,7 @@ type
 
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '205';
+  APPVERSION = '206';
   {$IFDEF MSWINDOWS}
   APPPLATFORM = 'MS Windows';
   {$ENDIF}

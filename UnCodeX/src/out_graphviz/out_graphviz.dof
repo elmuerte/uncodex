@@ -65,8 +65,8 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=1
 MinorVer=0
-Release=1
-Build=8
+Release=2
+Build=9
 Debug=0
 PreRelease=0
 Special=0
@@ -77,7 +77,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=
 FileDescription=DOT file creator
-FileVersion=1.0.1.8
+FileVersion=1.0.2.9
 InternalName=out_graphviz
 LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
 LegalTrademarks=
@@ -90,19 +90,19 @@ Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
 Count=2
-Item0=$(DELPHI)\Lib\Debug;VCL
-Item1=VCL
+Item0=VCL
+Item1=$(DELPHI)\Lib\Debug;VCL
 [HistoryLists\hlUnitOutputDirectory]
 Count=7
-Item0=..\..\dcu\out_ctags
-Item1=..\DCU
+Item0=..\..\Dcu\out_graphviz
+Item1=..\..\DCU\out_wikifier
 Item2=..\..\Dcu\out_sample
-Item3=..\..\dcu\ucxcu
-Item4=..\..\Dcu\out_graphviz
-Item5=..\..\DCU\out_wikifier
+Item3=..\DCU
+Item4=..\..\dcu\out_ctags
+Item5=..\..\dcu\ucxcu
 Item6=..\Dcu\out_graphviz
 [HistoryLists\hlOutputDirectorry]
 Count=3
 Item0=..\..\Bin
-Item1=..\BIN
-Item2=..\..\Bin\out_sample
+Item1=..\..\Bin\out_sample
+Item2=..\BIN
