@@ -13,8 +13,252 @@
 
 <div class="content">
 <h1>Pascal Script</h1>
+The UnCodeX Pascal Script is very similar to normal Pascal, most pascal language constructions work.<br />
+Creating a Pascal Script to work with the GUI is similar to creating a normal Pascal program. For example, the following program will prompt for two strings and report if the 1st string contains the text second string:
+<pre>
+<B>function</B> ContainsText(h,n: <B>string</B>): <B>boolean</B>;
+<B>begin</B>
+	h := uppercase(h);
+	n := uppercase(n);
+	result := pos(n,h) > 0;
+<B>end</B>;
 
+<B>var</B>
+	s1, s2: <B>string</B>;
+<B>begin</B>
+	s1 := InputBox('1st string', 'Enter the haystack', '');
+	s2 := InputBox('2nd string', 'Enter the needle', '');
 
+	<B>if</B> (ContainsText(s1, s2)) <B>then</B> ShowMessage('The needle was found')
+	<B>else</B> ShowMessage('The needle was not found in the haystack');
+<B>end</B>.
+</pre>
+
+<h2>Predefined types</h2>
+<ul>
+	<li><a href="ps_types_basic.html">Basic types</a>
+	<li><a href="ps_types_enum.html">Enumerations</a>
+	<!--
+	TUCommentType = (ctSource, ctExtern, ctInherited);
+	TUFunctionType = (uftFunction, uftEvent, uftOperator, uftPreOperator, uftPostOperator, uftDelegate);
+
+	TReplaceFlags_ = (rfReplaceAll, rfIgnoreCase);
+	TReplaceFlags = set of TReplaceFlags_;
+
+	Cl.AddTypeS('TComponentStateE', '(csLoading, csReading, csWriting, csDestroying, csDesigning, csAncestor, csUpdating, csFixups, csFreeNotification, csInline, csDesignInstance)');
+	cl.AddTypeS('TComponentState', 'set of TComponentStateE');
+	Cl.AddTypeS('TRect', 'record Left, Top, Right, Bottom: Integer; end;');
+
+  cl.AddConstantN('soFromBeginning', 'Longint').Value.ts32 := 0;
+  cl.AddConstantN('soFromCurrent', 'Longint').Value.ts32 := 1;
+  cl.AddConstantN('soFromEnd', 'Longint').Value.ts32 := 2;
+  cl.AddConstantN('toEOF', 'Char').Value.tchar := #0;
+  cl.AddConstantN('toSymbol', 'Char').Value.tchar := #1;
+  cl.AddConstantN('toString', 'Char').Value.tchar := #2;
+  cl.AddConstantN('toInteger', 'Char').Value.tchar := #3;
+  cl.AddConstantN('toFloat', 'Char').Value.tchar := #4;
+  cl.AddConstantN('fmCreate', 'Longint').Value.ts32 := $FFFF;
+  cl.AddConstantN('fmOpenRead', 'Longint').Value.ts32 := 0;
+  cl.AddConstantN('fmOpenWrite', 'Longint').Value.ts32 := 1;
+  cl.AddConstantN('fmOpenReadWrite', 'Longint').Value.ts32 := 2;
+  cl.AddConstantN('fmShareCompat', 'Longint').Value.ts32 := 0;
+  cl.AddConstantN('fmShareExclusive', 'Longint').Value.ts32 := $10;
+  cl.AddConstantN('fmShareDenyWrite', 'Longint').Value.ts32 := $20;
+  cl.AddConstantN('fmShareDenyRead', 'Longint').Value.ts32 := $30;
+  cl.AddConstantN('fmShareDenyNone', 'Longint').Value.ts32 := $40;
+  cl.AddConstantN('SecsPerDay', 'Longint').Value.ts32 := 86400;
+  cl.AddConstantN('MSecPerDay', 'Longint').Value.ts32 := 86400000;
+  cl.AddConstantN('DateDelta', 'Longint').Value.ts32 := 693594;
+  cl.AddTypeS('TAlignment', '(taLeftJustify, taRightJustify, taCenter)');
+  cl.AddTypeS('THelpEvent', 'function (Command: Word; Data: Longint; var CallHelp: Boolean): Boolean');
+  cl.AddTypeS('TGetStrProc', 'procedure(const S: string)');
+  cl.AddTypeS('TDuplicates', '(dupIgnore, dupAccept, dupError)');
+  cl.AddTypeS('TOperation', '(opInsert, opRemove)');
+  cl.AddTypeS('THANDLE', 'Longint');
+
+  cl.AddTypeS('TNotifyEvent', 'procedure (Sender: TObject)');
+
+  s.AddType('TDateTime', btDouble).ExportName := True;
+	-->
+	<li><a href="ps_types_record.html">Records</a>
+</ul>
+
+<h2>Classes types</h2>
+<h3>UnrealScript Classes</h3>
+These classes represent parts of the UnrealScript language as parsed by UnCodeX
+<ul>
+	<li><a href="ps_uclasses_TUObject.html">TUObject \ TUObjectList</a>
+	<li><a href="ps_uclasses_TUPackage.html">TUPackage \ TUPackageList</a>
+	<li><a href="ps_uclasses_TUClass.html">TUClass \ TUClassList</a>
+	<li><a href="ps_uclasses_TUState.html">TUState \ TUStateList</a>
+	<li><a href="ps_uclasses_TUFunction.html">TUFunction \ TUFunctionList</a>
+	<li><a href="ps_uclasses_TUStruct.html">TUStruct \ TUStructList</a>
+	<li><a href="ps_uclasses_TUEnum.html">TUEnum \ TUEnumList</a>
+	<li><a href="ps_uclasses_TUProperty.html">TUProperty \ TUPropertyList</a>
+	<li><a href="ps_uclasses_TUConst.html">TUConst \ TUConstList</a>
+</ul>
+
+<h3>Other Classes</h3>
+These are the PascalScript counterparts of the classes defined by Borland Delphi
+<ul>	
+	<li><a href="ps_classes_TObject.html">TObject</a>
+	<li><a href="ps_classes_TPersistent.html">TPersistent</a>
+	<li><a href="ps_classes_TComponent.html">TComponent</a>
+
+	<li><a href="ps_classes_TStrings.html">TStrings</a>
+	<li><a href="ps_classes_TStringList.html">TStringList</a>
+	<li><a href="ps_classes_TBits.html">TBits</a>
+	<li><a href="ps_classes_TStream.html">TStream</a>
+	<li><a href="ps_classes_THandleStream.html">THandleStream</a>
+	<li><a href="ps_classes_TMemoryStream.html">TMemoryStream</a>
+	<li><a href="ps_classes_TFileStream.html">TFileStream</a>
+	<li><a href="ps_classes_TCustomMemoryStream.html">TCustomMemoryStream</a>
+	<li><a href="ps_classes_TResourceStream.html">TResourceStream</a>
+	<li><a href="ps_classes_TParser.html">TParser</a>
+	<li><a href="ps_classes_TCollection.html">TCollection</a>
+	<li><a href="ps_classes_TCollectionItem.html">TCollectionItem</a>
+	<li><a href="ps_classes_TOwnedCollection.html">TOwnedCollection</a>
+
+	<li><a href="ps_classes_TList.html">TList</a>
+	<li><a href="ps_classes_TObjectList.html">TObjectList</a>
+	<li><a href="ps_classes_TMemIniFile.html">TMemIniFile</a>	
+</ul>
+
+<h2>Functions types</h2>
+<h3>General functions</h3>
+<ul>
+	<li><a href="ps_funcs_string.html">String</a>
+	<!--
+  ps.AddFunction(@Format, 'function Format(const Format: string; const Args: array of const): string;');
+  ps.AddFunction(@CompareStr, 'function CompareStr(const S1, S2: string): Integer;');
+  ps.AddFunction(@CompareText, 'function CompareText(const S1, S2: string): Integer;');
+  ps.AddFunction(@SameText, 'function SameText(const S1, S2: string): Boolean;');
+  ps.AddFunction(@TrimLeft, 'function TrimLeft(const S: string): string;');
+  ps.AddFunction(@TrimRight, 'function TrimRight(const S: string): string;');
+  ps.AddFunction(@QuotedStr, 'function QuotedStr(const S: string): string;');
+  ps.AddFunction(@IntToHex, 'function IntToHex(Value: Integer; Digits: Integer): string;');
+	ps.AddFunction(@StrToBool, 'function StrToBool(const S: string): Boolean;');
+	ps.AddFunction(@StrToBoolDef, 'function StrToBoolDef(const S: string; const Default: Boolean): Boolean;');
+  ps.AddFunction(@BoolToStr, 'function BoolToStr(B: Boolean; UseBoolStrs: Boolean): string;');
+  ps.AddFunction(@StringReplace, 'function StringReplace(const S, OldPattern, NewPattern: string; Flags: TReplaceFlags): string;');
+	-->
+	<li><a href="ps_funcs_DateTime.html">Date\Time</a>
+	<!-- 
+  s.AddDelphiFunction('function EncodeDate(Year, Month, Day: Word): TDateTime;');
+  s.AddDelphiFunction('function EncodeTime(Hour, Min, Sec, MSec: Word): TDateTime;');
+  s.AddDelphiFunction('function TryEncodeDate(Year, Month, Day: Word; var Date: TDateTime): Boolean;');
+  s.AddDelphiFunction('function TryEncodeTime(Hour, Min, Sec, MSec: Word; var Time: TDateTime): Boolean;');
+  s.AddDelphiFunction('procedure DecodeDate(const DateTime: TDateTime; var Year, Month, Day: Word);');
+  s.AddDelphiFunction('procedure DecodeTime(const DateTime: TDateTime; var Hour, Min, Sec, MSec: Word);');
+  s.AddDelphiFunction('function DayOfWeek(const DateTime: TDateTime): Word;');
+  s.AddDelphiFunction('function Date: TDateTime;');
+  s.AddDelphiFunction('function Time: TDateTime;');
+  s.AddDelphiFunction('function Now: TDateTime;');
+  s.AddDelphiFunction('function DateTimeToUnix(D: TDateTime): Int64;');
+  s.AddDelphiFunction('function UnixToDateTime(U: Int64): TDateTime;');
+
+  s.AddDelphiFunction('function DateToStr(D: TDateTime): string;');
+  s.AddDelphiFunction('function StrToDate(const s: string): TDateTime;');
+  s.AddDelphiFunction('function FormatDateTime(const fmt: string; D: TDateTime): string;');
+	-->
+	<li><a href="ps_funcs_fs.html">Filesystem</a>
+	<!--
+  ps.Comp.AddTypeS('TCharSet', 'set of Char');
+	ps.AddFunction(@FileAge, 'function FileAge(const FileName: string): Integer;');
+	ps.AddFunction(@FileExists, 'function FileExists(const FileName: string): Boolean;');
+	ps.AddFunction(@DirectoryExists, 'function DirectoryExists(const Directory: string): Boolean;');
+	ps.AddFunction(@ForceDirectories, 'function ForceDirectories(Dir: string): Boolean;');
+  ps.AddFunction(@FileIsReadOnly, 'function FileIsReadOnly(const FileName: string): Boolean;');
+  ps.AddFunction(@DeleteFile, 'function DeleteFile(const FileName: string): Boolean;');
+  ps.AddFunction(@RenameFile, 'function RenameFile(const OldName, NewName: string): Boolean;');
+  ps.AddFunction(@ChangeFileExt, 'function ChangeFileExt(const FileName, Extension: string): string;');
+  ps.AddFunction(@ExtractFilePath, 'function ExtractFilePath(const FileName: string): string;');
+  ps.AddFunction(@ExtractFileDir, 'function ExtractFileDir(const FileName: string): string;');
+  ps.AddFunction(@ExtractFileDrive, 'function ExtractFileDrive(const FileName: string): string;');
+  ps.AddFunction(@ExtractFileName, 'function ExtractFileName(const FileName: string): string;');
+  ps.AddFunction(@ExtractFileExt, 'function ExtractFileExt(const FileName: string): string;');
+  ps.AddFunction(@ExpandFileName, 'function ExpandFileName(const FileName: string): string;');
+  ps.AddFunction(@ExtractRelativePath, 'function ExtractRelativePath(const BaseName, DestName: string): string;');
+  ps.AddFunction(@FileSearch, 'function FileSearch(const Name, DirList: string): string;');
+  ps.AddFunction(@DiskFree, 'function DiskFree(Drive: Byte): Int64;');
+  ps.AddFunction(@DiskSize, 'function DiskSize(Drive: Byte): Int64;');
+  ps.AddFunction(@FileDateToDateTime, 'function FileDateToDateTime(FileDate: Integer): TDateTime;');
+  ps.AddFunction(@DateTimeToFileDate, 'function DateTimeToFileDate(DateTime: TDateTime): Integer;');
+  ps.AddFunction(@CreateDir, 'function CreateDir(const Dir: string): Boolean;');
+  ps.AddFunction(@RemoveDir, 'function RemoveDir(const Dir: string): Boolean;');
+  
+  ps.AddFunction(@GetFiles, 'function GetFiles(path: string; Attr: Integer; var files: TStringList): boolean;');
+  ps.AddFunction(@ExtractBaseName, 'function ExtractBaseName(filename: string): string;');
+	-->
+	<li><a href="ps_funcs_programs.html">Program</a>
+	<!--
+  ps.AddFunction(@FindCmdLineSwitch, 'function FindCmdLineSwitch(const Switch: string; const Chars: TCharSet; IgnoreCase: Boolean): Boolean;');
+  ps.AddFunction(@ParamCount, 'function ParamCount: Integer;');
+	ps.AddFunction(@ParamStr, 'function ParamStr(Index: Integer): string;');
+	-->
+	<li><a href="ps_funcs_misc.html">Miscelaneous</a>
+	<!--
+  ps.AddFunction(@Log, 'procedure Log(msg: string);');
+  ps.AddFunction(@LogClass, 'procedure LogClass(msg: string; uclass: TUClass);');
+	-->
+</ul>
+
+<h3>GUI functions</h3>
+These functions are only available for scripts executed from within the GUI
+<ul>
+	<li><a href="ps_funcs_actions.html">Actions</a>
+	<!--
+	ps.AddFunction(@acAbort, 'function acAbort: boolean;');
+  ps.AddFunction(@acAbout, 'function acAbout: boolean;');
+  ps.AddFunction(@acAnalyseAll, 'function acAnalyseAll: boolean;');
+  ps.AddFunction(@acAnalyseModified, 'function acAnalyseModified: boolean;');
+  ps.AddFunction(@acClose, 'function acClose: boolean;');
+  ps.AddFunction(@acCompileClass, 'function acCompileClass: boolean;');
+  ps.AddFunction(@acCopyName, 'function acCopyName: boolean;');
+  ps.AddFunction(@acCreateHTMLFiles, 'function acCreateHTMLFiles: boolean;');
+  ps.AddFunction(@acCreateHTMLHelp, 'function acCreateHTMLHelp: boolean;');
+  ps.AddFunction(@acCreateSubClass, 'function acCreateSubClass: boolean;');
+  ps.AddFunction(@acDeleteClass, 'function acDeleteClass: boolean;');
+  ps.AddFunction(@acFindClass, 'function acFindClass: boolean;');
+  ps.AddFunction(@acFindNext, 'function acFindNext: boolean;');
+  ps.AddFunction(@acFindOrphans, 'function acFindOrphans: boolean;');
+  ps.AddFunction(@acFullTextSearch, 'function acFullTextSearch: boolean;');
+  ps.AddFunction(@acJoinServer, 'function acJoinServer: boolean;');
+  ps.AddFunction(@acLoadState, 'function acLoadState: boolean;');
+  ps.AddFunction(@acMoveClass, 'function acMoveClass: boolean;');
+  ps.AddFunction(@acOpenClass, 'function acOpenClass: boolean;');
+  ps.AddFunction(@acOpenHTMLHelp, 'function acOpenHTMLHelp: boolean;');
+  ps.AddFunction(@acOpenOutput, 'function acOpenOutput: boolean;');
+  ps.AddFunction(@acPackageProps, 'function acPackageProps: boolean;');
+  ps.AddFunction(@acRebuildAnalyse, 'function acRebuildAnalyse: boolean;');
+  ps.AddFunction(@acRecreateTree, 'function acRecreateTree: boolean;');
+  ps.AddFunction(@acRenameClass, 'function acRenameClass: boolean;');
+  ps.AddFunction(@acRun, 'function acRun: boolean;');
+  ps.AddFunction(@acRunServer, 'function acRunServer: boolean;');
+  ps.AddFunction(@acSaveState, 'function acSaveState: boolean;');
+  ps.AddFunction(@acSettings, 'function acSettings: boolean;');
+  ps.AddFunction(@acSourceSnoop, 'function acSourceSnoop: boolean;');
+  ps.AddFunction(@acSwitchTree, 'function acSwitchTree: boolean;');
+  ps.AddFunction(@acTags, 'function acTags: boolean;');
+	-->
+	<li><a href="ps_funcs_dialogs.html">Dialogs</a>
+	<!-- 
+	  ps.AddFunction(@ShowMessage, 'procedure ShowMessage(const Msg: string);');
+  ps.AddFunction(@ShowMessageFmt, 'procedure ShowMessageFmt(const Msg: string; Params: array of const);');
+  ps.AddFunction(@MInputQuery, 'function MInputQuery(const ACaption, APrompt: string; var Value: string): Boolean;');
+  ps.AddFunction(@InputQuery, 'function InputQuery(const ACaption, APrompt: string; var Value: string): Boolean;');
+  ps.AddFunction(@InputBox, 'function InputBox(const ACaption, APrompt, ADefault: string): string;');
+	-->
+	<li><a href="ps_funcs_exec.html">Execution</a>
+	<!--
+  ps.AddFunction(@ExecuteCommandStack, 'function ExecuteCommandStack: boolean;');
+  ps.AddFunction(@IsBatching, 'function IsBatching: boolean;');
+
+  ps.AddFunction(@OpenSourceLine, 'procedure OpenSourceLine(uclass: TUClass; line, caret: integer);');
+  ps.AddFunction(@OpenSourceInline, 'procedure OpenSourceInline(uclass: TUClass; line, caret: integer);');
+  ps.AddFunction(@Sleep, 'procedure Sleep(time: cardinal);');
+	-->
+</ul>
 </div>
 </div>
 </body>
