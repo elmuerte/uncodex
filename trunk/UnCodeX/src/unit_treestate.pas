@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   loading/saving the tree state
- $Id: unit_treestate.pas,v 1.16 2003-11-09 11:01:27 elmuerte Exp $
+ $Id: unit_treestate.pas,v 1.17 2003-11-12 22:57:07 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -106,6 +106,7 @@ const
   UCXheader059 = UCXheader+'059'+UCXHTail;
   UCXheader150 = UCXheader+'150'+UCXHTail;
   UCXheader151 = UCXheader+'151'+UCXHTail;
+  UCXheader153 = UCXheader+'153'+UCXHTail;
 
 procedure TUnCodeXState.SavePackageToStream(upackage: TUPackage; stream: TStream);
 var
@@ -178,14 +179,6 @@ begin
         Writer.WriteString(uclass.structs[i].properties[j].tag);
         Writer.WriteInteger(uclass.structs[i].properties[j].srcline);
         Writer.WriteString(uclass.structs[i].properties[j].comment);
-      end;
-      // struct enums
-      Writer.WriteInteger(uclass.structs[i].enums.Count);
-      for j := 0 to uclass.structs[i].enums.Count-1 do begin
-        Writer.WriteString(uclass.structs[i].enums[j].name);
-        Writer.WriteString(uclass.structs[i].enums[j].options);
-        Writer.WriteInteger(uclass.structs[i].enums[j].srcline);
-        Writer.WriteString(uclass.structs[i].enums[j].comment);
       end;
     end;
     Writer.WriteInteger(uclass.states.Count);
@@ -298,14 +291,16 @@ begin
             ustruct.properties.Add(uprop);
           end;
           // struct enums
-          o := Reader.ReadInteger;
-          for j := 0 to o-1 do begin
-            uenum := TUEnum.Create;
-            uenum.name := Reader.ReadString;
-            uenum.options := Reader.ReadString;
-            uenum.srcline := Reader.ReadInteger;
-            uenum.comment := Reader.ReadString;
-            ustruct.enums.Add(uenum);
+          if ((version >= 150) and (version <= 151)) then begin
+            o := Reader.ReadInteger;
+            for j := 0 to o-1 do begin
+              uenum := TUEnum.Create;
+              uenum.name := Reader.ReadString;
+              uenum.options := Reader.ReadString;
+              uenum.srcline := Reader.ReadInteger;
+              uenum.comment := Reader.ReadString;
+              uclass.enums.Add(uenum);
+            end;
           end;
         end;
       end;
@@ -328,6 +323,9 @@ begin
         ufunc.modifiers := Reader.ReadString;
         ufunc.params := Reader.ReadString;
         ufunc.state := GetState(Reader.ReadString, uclass);
+        if (ufunc.state <> nil) then begin
+          ufunc.state.functions.Add(ufunc);
+        end;
         ufunc.srcline := Reader.ReadInteger;
         if (version >= 150) then ufunc.comment := Reader.ReadString;
         uclass.functions.Add(ufunc);
@@ -478,6 +476,7 @@ begin
     if (StrComp(tmp, UCXHeader059) = 0) then fversion := 59
     else if (StrComp(tmp, UCXHeader150) = 0) then fversion := 150
     else if (StrComp(tmp, UCXHeader151) = 0) then fversion := 151
+    else if (StrComp(tmp, UCXHeader153) = 0) then fversion := 153
     else begin
       Log('Unsupported file version, header: '+tmp);
       exit;
@@ -499,7 +498,7 @@ var
   c: cardinal;
 begin
   try
-    stream.WriteBuffer(UCXheader151, 9);
+    stream.WriteBuffer(UCXHeader153, 9);
     // packages
     c := FPackageList.Count;
     stream.WriteBuffer(c, 4);

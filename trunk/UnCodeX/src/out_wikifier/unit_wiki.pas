@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Copy paste window
- $Id: unit_wiki.pas,v 1.6 2003-10-26 21:30:19 elmuerte Exp $
+ $Id: unit_wiki.pas,v 1.7 2003-11-12 22:57:07 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_wiki;
@@ -133,19 +133,6 @@ begin
             end;
             uclass.structs[i].properties.Sort;
           end;
-          { struct enums }
-          if (uclass.structs[i].enums.Count > 0) then begin
-            for j := 0 to uclass.structs[i].enums.Count-1 do begin
-              Add('');
-              Add('==== '+uclass.structs[i].enums[j].name);
-              Add(FixComments(trim(uclass.structs[i].enums[j].comment)));
-              tmp := uclass.structs[i].enums[j].options;
-              while (tmp <> '') do begin
-                Add('; '+StringShift(tmp)+' :');
-              end;
-            end;
-          end;
-
         end;
       end;
       { delegates }

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.22 2003-11-11 17:58:01 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.23 2003-11-12 22:57:07 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -355,8 +355,7 @@ begin
     p.NextToken;
   end;
   p.NextToken; // = ;
-  if (UseOverWriteStruct) then OverWriteUstruct.enums.Add(result)
-    else uclass.enums.Add(result);
+  uclass.enums.Add(result);
 end;
 
 // struct <modifiers> <name> [extends <name>] { declaration };
@@ -524,6 +523,9 @@ begin
   end;
   p.NextToken; // = } or ;
   result.state := currentState;
+  if (currentState <> nil) then begin
+    currentState.functions.Add(result);
+  end;
   uclass.functions.Add(result);
 end;
 
