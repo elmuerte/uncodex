@@ -26,13 +26,16 @@ uses
   unit_selector in 'unit_selector.pas' {frm_GraphViz},
   unit_deplist in 'unit_deplist.pas';
 
+const
+  VERSION = '009 Beta';
+
 {$R *.res}
 
 // return true if succesfull
 function UCX_Details(var Info: TUCXOutputDetails): boolean; stdcall
 begin
   Info.AName := 'GraphViz';
-  Info.ADescription := 'Create a DOT file to be used with GraphViz';
+  Info.ADescription := 'Create a DOT file to be used with GraphViz (version '+VERSION+')';
   Info.ASingleClass := false;
   result := true;
 end;

@@ -30,6 +30,22 @@ type
     destructor Destroy; override;
   end;
 
+  TOrphan = class(TObject)
+  public
+    uclass:   TUClass;
+    constructor Create(inuclass: TUClass);
+  end;
+
+  TOrphanList = class(TObjectList)
+  private
+    function GetItem(Index: Integer): TOrphan;
+    procedure SetItem(Index: Integer; AObject: TOrphan);
+  public
+    procedure SortOnPackage;
+    procedure FilterPackages(plist: TUPackageList);
+    property Items[Index: Integer]: TOrphan read GetItem write SetItem; default;
+  end;
+
 implementation
 
 { TDependency }
@@ -76,6 +92,50 @@ destructor TGraphUPAckageList.Destroy;
 begin
   colors.free;
   inherited;
+end;
+
+{ TOrphan }
+
+constructor TOrphan.Create(inuclass: TUClass);
+begin
+  inherited Create;
+  uclass := inuclass;
+end;
+
+{ TOrphanList }
+
+function TOrphanList.GetItem(Index: Integer): TOrphan;
+begin
+  result := TOrphan(inherited GetItem(Index));
+end;
+
+procedure TOrphanList.SetItem(Index: Integer; AObject: TOrphan);
+begin
+  inherited SetItem(index, AObject);
+end;
+
+function TOrphanListSortOnPackage(Item1, Item2: Pointer): integer;
+begin
+  result := CompareText(TOrphan(Item1).uclass.package.name, TOrphan(Item2).uclass.package.name);
+end;
+
+procedure TOrphanList.SortOnPackage;
+begin
+  inherited Sort(TDepListSortOnPackage);
+end;
+
+procedure TOrphanList.FilterPackages(plist: TUPackageList);
+var
+  i,j: integer;
+begin
+  for i := Count-1 downto 0 do begin
+    for j := 0 to plist.Count-1 do begin
+      if (Items[i].uclass.package = plist[j]) then begin
+        Remove(Items[i]);
+        break;
+      end;
+    end;
+  end;
 end;
 
 end.

@@ -10,21 +10,24 @@ uses
 type
   Tfrm_GraphViz = class(TForm)
     sd_Save: TSaveDialog;
-    Label1: TLabel;
-    BitBtn1: TBitBtn;
-    lv_Packages: TListView;
-    cb_Color: TComboBox;
+    btn_Create: TBitBtn;
     Label2: TLabel;
     Label3: TLabel;
     cb_Vars: TCheckBox;
     cb_Funcs: TCheckBox;
-    cb_Own: TCheckBox;
-    cb_Other: TCheckBox;
     cb_PackageBorder: TCheckBox;
     cb_Legenda: TCheckBox;
+    pc_Config: TPageControl;
+    ts_Packages: TTabSheet;
+    lv_Packages: TListView;
+    cb_Color: TComboBox;
     btn_Colorize: TBitBtn;
+    btn_Deselect: TBitBtn;
+    TabSheet1: TTabSheet;
+    mm_Settings: TMemo;
+    cl_Color: TColorBox;
     procedure FormCreate(Sender: TObject);
-    procedure BitBtn1Click(Sender: TObject);
+    procedure btn_CreateClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure lv_PackagesAdvancedCustomDrawSubItem(Sender: TCustomListView;
       Item: TListItem; SubItem: Integer; State: TCustomDrawState;
@@ -33,8 +36,11 @@ type
     procedure cb_ColorExit(Sender: TObject);
     procedure cb_ColorChange(Sender: TObject);
     procedure btn_ColorizeClick(Sender: TObject);
+    procedure btn_DeselectClick(Sender: TObject);
+    procedure cl_ColorChange(Sender: TObject);
   private
     plist: TGraphUPAckageList;
+    olist: TOrphanList;
     deplist: TDepList;
     procedure CreateDeps(vars,funcs: boolean);
     procedure CreateDotFile(filename: string);
@@ -50,19 +56,32 @@ implementation
 
 {$R *.dfm}
 
+function ColorToDot(input: string): string;
+begin
+  {$IFDEF __USENAMES__}
+  result := input;
+  {$ELSE}
+  result := '#'+IntToHex(StrToIntDef(input, 0), 6);
+  {$ENDIF}
+end;
+
 procedure Tfrm_GraphViz.CreateDeps(vars,funcs: boolean);
 var
   i,j,k,m: integer;
   dep: TDependency;
+  orphan: TOrphan;
   tmp, tmp2: string;
 begin
   deplist.Clear;
+  olist.Clear;
   for i := 0 to plist.Count-1 do begin
     GInfo.AStatusReport('Calculating dependencies for: '+plist[i].name, round((i+1)/plist.Count*100));
     for j := 0 to plist[i].classes.Count-1 do begin
       if (plist[i].classes[j].parent <> nil) then begin
         dep := TDependency.Create(plist[i].classes[j], plist[i].classes[j].parent);
         deplist.Add(dep);
+        orphan := TOrphan.Create(plist[i].classes[j].parent);
+        olist.Add(orphan);
       end;
       tmp := LowerCase(plist[i].classes[j].modifiers);
       k := Pos('dependson', tmp);
@@ -92,6 +111,8 @@ begin
   end;
   GInfo.AStatusReport('Sorting dependencies');
   deplist.SortOnPackage;
+  olist.SortOnPackage;
+  olist.FilterPackages(plist);
 end;
 
 procedure Tfrm_GraphViz.CreateDotFile(filename: string);
@@ -99,25 +120,40 @@ var
   i,j: integer;
   sl: TStringList;
   tmp: string;
+  upack: TUPackage;
 begin
   GInfo.AStatusReport('Compiling dependencies list');
   sl := TStringList.Create;
   try
     sl.Add('graph PackageDep {');
     if (not cb_PackageBorder.Checked) then sl.Add('  clusterrank=none;');
-    sl.Add('  node [shape=box];');
-    sl.Add('  edge [dir=back];');
+    for i := 0 to mm_Settings.Lines.Count-1 do begin
+      sl.Add('  '+trim(mm_Settings.Lines[i]));
+    end;
 
     for i := 0 to plist.Count-1 do begin
       sl.Add('  subgraph cluster_'+plist[i].name+' {');
       sl.Add('    label="'+plist[i].name+'";');
-      sl.Add('    color='+plist.colors[i]+';');
-      sl.Add('    node [color='+plist.colors[i]+'];');
+      sl.Add('    color="'+ColorToDot(plist.colors[i])+'";');
+      sl.Add('    node [color="'+ColorToDot(plist.colors[i])+'"];');
       for j := 0 to plist[i].classes.count-1 do begin
        sl.Add('    '+plist[i].name+'_'+plist[i].classes[j].name+' [label="'+plist[i].classes[j].name+'"];');
       end;
       sl.Add('  }');
     end;
+
+    upack := nil;
+    for i := 0 to olist.Count-1 do begin
+      if (upack <> olist[i].uclass.package) then begin
+        if (upack <> nil) then sl.Add('  }');
+        sl.Add('  subgraph cluster_'+olist[i].uclass.package.name+' {');
+        sl.Add('    label="'+olist[i].uclass.package.name+'";');
+        upack := olist[i].uclass.package;
+      end;
+      sl.Add('    '+olist[i].uclass.package.name+'_'+olist[i].uclass.name+' [label="'+olist[i].uclass.name+'"];');
+    end;
+    if (upack <> nil) then sl.Add('  }');
+
     for i := 0 to deplist.Count-1 do begin
       tmp := deplist[i].depends.package.name+'_'+deplist[i].depends.name+' -- '+deplist[i].source.package.name+'_'+deplist[i].source.name;
       if (not deplist[i].isChild) then tmp := tmp+' [arrowtail=odot]';
@@ -139,7 +175,11 @@ begin
   for i := 0 to GInfo.APackageList.Count-1 do begin
     li := lv_Packages.Items.Add;
     li.Caption := GInfo.APackageList[i].name;
+    {$IFDEF __USENAMES__}
     li.SubItems.Add('black');
+    {$ELSE}
+    li.SubItems.Add(IntToStr(clBlack));
+    {$ENDIF}
     li.Data := GInfo.APackageList[i];
   end;
 end;
@@ -148,11 +188,13 @@ end;
 
 procedure Tfrm_GraphViz.FormCreate(Sender: TObject);
 begin
+  Caption := Caption+' '+VERSION;
   plist := TGraphUPAckageList.Create(false);
+  olist := TOrphanList.Create(true);
   deplist := TDepList.Create(true);
 end;
 
-procedure Tfrm_GraphViz.BitBtn1Click(Sender: TObject);
+procedure Tfrm_GraphViz.btn_CreateClick(Sender: TObject);
 var
   i: integer;
 begin
@@ -175,6 +217,7 @@ end;
 procedure Tfrm_GraphViz.FormDestroy(Sender: TObject);
 begin
   plist.Free;
+  olist.Free;
   deplist.Free;
 end;
 
@@ -182,13 +225,17 @@ procedure Tfrm_GraphViz.lv_PackagesAdvancedCustomDrawSubItem(
   Sender: TCustomListView; Item: TListItem; SubItem: Integer;
   State: TCustomDrawState; Stage: TCustomDrawStage;
   var DefaultDraw: Boolean);
-{var
-  R: TRect;}
+{$IFNDEF __USENAMES__}
+var
+  R: TRect;
+{$ENDIF}
 begin
-  {Sender.Canvas.Brush.Color := StrToIntDef(Item.SubItems[0], clBlack);
+  {$IFNDEF __USENAMES__}
+  Sender.Canvas.Brush.Color := StrToIntDef(Item.SubItems[0], clBlack);
   R := Item.DisplayRect(drBounds);
   R.Left := Sender.Column[0].Width;
-  Sender.Canvas.FillRect(R);}
+  Sender.Canvas.FillRect(R);
+  {$ENDIF}
 end;
 
 procedure Tfrm_GraphViz.lv_PackagesDblClick(Sender: TObject);
@@ -197,6 +244,7 @@ var
 begin
   if (lv_Packages.Selected = nil) then exit;
   R := lv_Packages.Selected.DisplayRect(drBounds);
+  {$IFDEF __USENAMES__}
   cb_Color.Left := lv_Packages.Left+lv_Packages.Columns[0].Width;
   cb_Color.Width := lv_Packages.Columns[1].Width+2;
   cb_Color.Top := lv_Packages.Top+R.Top;
@@ -204,11 +252,21 @@ begin
   cb_Color.ItemIndex := cb_Color.Items.IndexOf(lv_Packages.Selected.SubItems[0]);
   cb_Color.Visible := true;
   ActiveControl := cb_Color;
+  {$ELSE}
+  cl_Color.Left := lv_Packages.Left+lv_Packages.Columns[0].Width;
+  cl_Color.Width := lv_Packages.Columns[1].Width+2;
+  cl_Color.Top := lv_Packages.Top+R.Top;
+  cl_Color.Height := R.Bottom-R.Top;
+  cl_Color.Selected := StrToIntDef(lv_Packages.Selected.SubItems[0], clBlack);
+  cl_Color.Visible := true;
+  ActiveControl := cl_Color;
+  {$ENDIF}
 end;
 
 procedure Tfrm_GraphViz.cb_ColorExit(Sender: TObject);
 begin
   cb_Color.Visible := false;
+  cl_Color.Visible := false;
 end;
 
 procedure Tfrm_GraphViz.cb_ColorChange(Sender: TObject);
@@ -221,24 +279,68 @@ end;
 
 procedure Tfrm_GraphViz.btn_ColorizeClick(Sender: TObject);
 var
-  i, j, cnt, size: integer;
+  i: integer;
+  {$IFDEF __USENAMES__}
+  j, cnt, size: integer;
   tmp: string;
+  {$ELSE}
+  clr: array[0..2] of byte;
+  {$ENDIF}
 begin
+  {$IFDEF __USENAMES__}
   cnt := 0;
+  {$ENDIF}
   for i := 0 to lv_Packages.Items.Count-1 do begin
+    {$IFDEF __USENAMES__}
     if (lv_Packages.Items[i].Checked) then Inc(cnt);
+    {$ELSE}
+    lv_Packages.Items[i].SubItems[0] := '0';
+    {$ENDIF}
   end;
+  {$IFDEF __USENAMES__}
   if (cnt = 0) then exit;
+  {$ENDIF}
+  Randomize;
+  {$IFDEF __USENAMES__}
   size := cb_Color.Items.Count div cnt;
+  {$ENDIF}
   for i := 0 to lv_Packages.Items.Count-1 do begin
     if (lv_Packages.Items[i].Checked) then begin
-      j := abs(size*cnt) mod cb_Color.Items.Count;
+      {$IFDEF __USENAMES__}
+      j := abs(size*cnt+random(10)-random(10)) mod cb_Color.Items.Count;
       Dec(cnt);
       tmp := cb_Color.Items[j];
       if (tmp = '') then tmp := cb_Color.Items[j+1];
       lv_Packages.Items[i].SubItems[0] := tmp;
+      {$ELSE}
+      clr[0] := Random($FF);
+      clr[1] := Random($FF);
+      clr[2] := Random($FF);
+      while (((clr[0]+clr[1]+clr[2]) div 3) < $4f) do begin
+        clr[0] := Random($FF);
+        clr[1] := Random($FF);
+        clr[2] := Random($FF);
+      end;
+      lv_Packages.Items[i].SubItems[0] := IntToStr(clr[0]*65536+clr[1]*256+clr[2]);
+      {$ENDIF}
     end;
   end;
+end;
+
+procedure Tfrm_GraphViz.btn_DeselectClick(Sender: TObject);
+var
+  i: integer;
+begin
+  for i := 0 to lv_Packages.Items.Count-1 do begin
+    lv_Packages.Items[i].Checked := false;
+  end;
+end;
+
+procedure Tfrm_GraphViz.cl_ColorChange(Sender: TObject);
+begin
+  if (lv_Packages.Selected = nil) then exit;
+  lv_Packages.Selected.SubItems[0] := IntToStr(cl_Color.Selected);
+  cl_Color.Visible := false;
 end;
 
 end.
