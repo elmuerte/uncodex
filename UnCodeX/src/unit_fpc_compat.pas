@@ -6,7 +6,7 @@
     Purpose:
         FreePascalCompile compatibility unit
 
-    $Id: unit_fpc_compat.pas,v 1.3 2004-10-20 14:19:28 elmuerte Exp $
+    $Id: unit_fpc_compat.pas,v 1.4 2004-11-20 12:18:43 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -35,6 +35,12 @@ unit unit_fpc_compat;
 interface
     function ForceDirectories(Dir: string): Boolean;
 
+type
+    TFilenameCaseMatch = (mkNone, mkExactMatch, mkSingleMatch, mkAmbiguous);
+
+    function ExpandFileNameCase(const FileName: string; out MatchFound:  TFilenameCaseMatch): string;
+
+    
 implementation
 
 uses
@@ -51,6 +57,12 @@ begin
     if (Length(Dir) = 0) or DirectoryExists(Dir) then Exit;
     {$ENDIF}
     Result := ForceDirectories(ExtractFilePath(Dir)) and CreateDir(Dir);
+end;
+
+function ExpandFileNameCase(const FileName : string; out MatchFound:  TFilenameCaseMatch): string;
+begin
+   {$MESSAGE WARN "Implement ExpandFileNameCase"}
+   result := filename;
 end;
 
 end.

@@ -6,7 +6,7 @@
     Purpose:
         General definitions and independed utility functions
 
-    $Id: unit_definitions.pas,v 1.120 2004-11-17 08:13:51 elmuerte Exp $
+    $Id: unit_definitions.pas,v 1.121 2004-11-20 12:18:43 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -147,6 +147,9 @@ var
 implementation
 
 uses
+{$IFDEF FPC}
+   unit_fpc_compat,
+{$ENDIF}
 {$IFDEF MSWINDOWS}
     Windows,
 {$ENDIF}
