@@ -448,6 +448,10 @@ object frm_UnCodeX: Tfrm_UnCodeX
         Action = ac_JoinServer
       end
     end
+    object mi_Output: TMenuItem
+      Caption = 'Output modules'
+      Visible = False
+    end
     object mi_HelpMenu: TMenuItem
       Caption = 'Help'
       object mi_Help2: TMenuItem

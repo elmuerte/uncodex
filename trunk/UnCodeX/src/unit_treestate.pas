@@ -6,7 +6,7 @@ uses
   SysUtils, Classes, ComCtrls, ComStrs, Forms, unit_uclasses, unit_definitions;
 
 type
-  TClassTreeState = class(TStrings)
+  {TClassTreeState = class(TStrings) -- DEPRECATED
   private
     FClassTree: TTreeView;
     FClassList: TUClassList;
@@ -25,7 +25,7 @@ type
     procedure SaveTreeToStream(Stream: TStream);
   end;
 
-  TPackageState = class(TStrings)
+  TPackageState = class(TStrings) -- DEPRECATED
   private
     FPackageList: TUPackageList;
     FPackageTree: TTreeView;
@@ -37,7 +37,7 @@ type
     constructor Create(AOwner: TUPackageList; PTree: TTreeView); overload;
     procedure SaveStateToStream(Stream: TStream);
     procedure LoadStateFromStream(Stream: TStream);
-  end;
+  end; }
 
   TUnCodeXState = class(TStrings)
   private
@@ -105,7 +105,7 @@ begin
   end;
 end;
 
-constructor TClassTreeState.Create(AOwner: TTreeView);
+{constructor TClassTreeState.Create(AOwner: TTreeView);
 begin
   inherited Create;
   FClassTree := AOwner
@@ -268,11 +268,11 @@ begin
   end;
   NodeStr := EndOfText + EndOfLine;
   Stream.Write(Pointer(NodeStr)^, Length(NodeStr));
-end;
+end;}
 
 { TPackageState }
 
-constructor TPackageState.Create(AOwner: TUPackageList);
+{constructor TPackageState.Create(AOwner: TUPackageList);
 begin
   inherited Create;
   FPackageList := AOwner;
@@ -362,7 +362,7 @@ begin
     FPackageTree.Invalidate;  // force repaint on exception
     raise;
   end;
-end;
+end;}
 
 { TUnCodeXState }
 
@@ -677,6 +677,8 @@ begin
     Clear;
     LoadPackagesFromStream(stream);
     LoadClassesFromStream(stream);
+    FClassList.Sort;
+    FPackageList.Sort;
     result := true;
   end
   else Log('State file corrupt or unsupported version');

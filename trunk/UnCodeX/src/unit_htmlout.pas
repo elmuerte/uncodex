@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, SysUtils, ComCtrls, unit_uclasses, unit_definitions, StrUtils,
-  Hashes, IniFiles;
+  Hashes, IniFiles, unit_outputdefs;
 
 type
   TGlossaryItem = class(TObject)

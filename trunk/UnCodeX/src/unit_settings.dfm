@@ -41,7 +41,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_IgnorePackages
+    ActivePage = ts_ProgramOptions
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -983,7 +983,7 @@ object frm_Settings: Tfrm_Settings
           SortType = stText
           TabOrder = 2
           ViewStyle = vsReport
-          OnClick = lv_HotKeysClick
+          OnSelectItem = lv_HotKeysSelectItem
         end
         object ed_HotKey: TEdit
           Left = 8

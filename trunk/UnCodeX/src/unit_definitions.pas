@@ -7,8 +7,6 @@ uses
   Messages;
 
 type
-  TStatusReport = procedure(msg: string; progress: byte = 255) of Object;
-
   TRedirectStruct = packed record
     Find: string[64];
     OpenFind: boolean;
@@ -23,7 +21,10 @@ type
   public
     procedure ActivateHint(Rect: TRect; const AHint: string); override;
   protected
+    prevCaption: string;
     procedure Paint; override;
+    procedure WMEraseBkgnd(var msg: TMessage); message WM_ERASEBKGND;
+    procedure CMTextChanged(var Message: TMessage); message CM_TEXTCHANGED;
   published
     property Caption;
   end;
@@ -36,7 +37,7 @@ type
   
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '056 Beta';
+  APPVERSION = '057 Beta';
 
   PATHDELIM = '\';
   WILDCARD = '*.*';
@@ -230,14 +231,14 @@ begin
   Canvas.Font.Name := 'Arial';
   Canvas.Font.Style := [fsBold];
   Canvas.Font.Color := clWindowText;
-  Color := clWindow;
   Canvas.Brush.Color := Color;
 
-  Canvas.Brush.Style := bsClear;
+  //Canvas.Brush.Style := bsClear;
   R.Top := R.Top+2;
-  R.Left := R.Left+24;
+  R.Left := R.Left+22;
   DrawText(Canvas.Handle, PChar(Caption), -1, R, DT_LEFT or DT_NOPREFIX or
     DT_WORDBREAK or DrawTextBiDiModeFlagsReadingOnly or DT_VCENTER);
+  prevCaption := Caption;
 end;
 
 procedure TPropertyHintWindow.ActivateHint(Rect: TRect; const AHint: string);
@@ -250,8 +251,21 @@ begin
   Result := Rect(0, 0, MaxWidth*2, 0);
   DrawText(Canvas.Handle, PChar(AHint), -1, Result, DT_CALCRECT or DT_LEFT or
     DT_WORDBREAK or DT_NOPREFIX or DrawTextBiDiModeFlagsReadingOnly);
-  Inc(Result.Right, 6+24);
+  Inc(Result.Right, 32);
   Inc(Result.Bottom, 2);
+end;
+
+procedure TPropertyHintWindow.WMEraseBkgnd(var msg: TMessage);
+begin
+  if (prevCaption = Caption) then msg.Result := 1
+  else inherited;
+end;
+
+procedure TPropertyHintWindow.CMTextChanged(var Message: TMessage);
+begin
+  inherited;
+  Width := Canvas.TextWidth(Caption) + 32;
+  Height := Canvas.TextHeight(Caption) + 4;
 end;
 
 initialization

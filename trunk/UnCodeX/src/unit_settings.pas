@@ -162,9 +162,10 @@ type
     procedure btn_LogFontClick(Sender: TObject);
     procedure btn_LogFontColorClick(Sender: TObject);
     procedure btn_LogColorClick(Sender: TObject);
-    procedure lv_HotKeysClick(Sender: TObject);
     procedure btn_SetHotKeyClick(Sender: TObject);
     procedure btn_HelpClick(Sender: TObject);
+    procedure lv_HotKeysSelectItem(Sender: TObject; Item: TListItem;
+      Selected: Boolean);
   private
     { Private declarations }
   public
@@ -509,13 +510,6 @@ begin
   end;
 end;
 
-procedure Tfrm_Settings.lv_HotKeysClick(Sender: TObject);
-begin
-  if (lv_HotKeys.Selected = nil) then exit;
-  ed_HotKey.Text := lv_HotKeys.Selected.Caption;
-  hk_HotKey.HotKey := TextToShortCut(lv_HotKeys.Selected.SubItems[0]);
-end;
-
 procedure Tfrm_Settings.btn_SetHotKeyClick(Sender: TObject);
 begin
   if (lv_HotKeys.Selected = nil) then exit;
@@ -525,6 +519,14 @@ end;
 procedure Tfrm_Settings.btn_HelpClick(Sender: TObject);
 begin
   hh_Help.HelpTopic('window_settings.html#'+pc_Settings.ActivePage.HelpKeyword);
+end;
+
+procedure Tfrm_Settings.lv_HotKeysSelectItem(Sender: TObject;
+  Item: TListItem; Selected: Boolean);
+begin
+  if (Item = nil) then exit;
+  ed_HotKey.Text := Item.Caption;
+  hk_HotKey.HotKey := TextToShortCut(Item.SubItems[0]);
 end;
 
 end.

@@ -1,6 +1,7 @@
 object frm_Tags: Tfrm_Tags
   Left = 423
   Top = 190
+  ActiveControl = lv_Properties
   BorderIcons = [biSystemMenu]
   BorderStyle = bsNone
   Caption = 'Tags'
@@ -56,6 +57,10 @@ object frm_Tags: Tfrm_Tags
       end
       item
         Caption = 'HintText'
+        Width = 0
+      end
+      item
+        Caption = 'CopyText'
         Width = 0
       end>
     ColumnClick = False

@@ -210,7 +210,8 @@ begin
       if ((pclass.functions[i].ftype = uftFunction) or (pclass.functions[i].ftype = uftEvent)) then begin
         if (pclass.functions[i].return = '') then return := ''
           else return := pclass.functions[i].return+' = ';
-        li.SubItems.Add(return+pclass.functions[i].name+' ('+pclass.functions[i].params+' )');
+        li.SubItems.Add(return+pclass.functions[i].name+'( '+pclass.functions[i].params+' )');
+        li.SubItems.Add(pclass.functions[i].name+'('+pclass.functions[i].params+')');
       end
       else if (pclass.functions[i].ftype = uftPreOperator) then begin
         li.SubItems.Add(pclass.functions[i].return+' = '+pclass.functions[i].name+' '+ShiftString(pclass.functions[i].params, 2));
@@ -343,7 +344,8 @@ procedure Tfrm_Tags.lv_PropertiesSelectItem(Sender: TObject;
   Item: TListItem; Selected: Boolean);
 begin
   if (Item.Caption <> '-') then begin
-    Clipboard.SetTextBuf(PChar(Item.SubItems[0]));
+    if (Item.SubItems.Count > 4) then Clipboard.SetTextBuf(PChar(Item.SubItems[4]))
+    else Clipboard.SetTextBuf(PChar(Item.SubItems[0]));
   end;
 end;
 

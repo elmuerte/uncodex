@@ -3,7 +3,8 @@ unit unit_mshtmlhelp;
 interface
 
 uses
-  Windows, SysUtils, Variants, Classes, unit_definitions, ComCtrls, unit_uclasses;
+  Windows, SysUtils, Variants, Classes, unit_definitions, ComCtrls, unit_uclasses,
+  unit_outputdefs;
 
 type
   TMSHTMLHelp = class(TThread)

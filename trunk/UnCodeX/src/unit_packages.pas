@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, Controls, ComCtrls, unit_uclasses,
-  unit_definitions;
+  unit_definitions, unit_outputdefs;
 
 type
   TPackageScanner = class(TThread)
@@ -162,6 +162,7 @@ begin
       packagetree.Items.AlphaSort(true); // sorting
       CreateClassTree(classlist);
       classtree.Items.AlphaSort(true); // sorting
+      classlist.Sort;
     end;
   finally
     knownpackages.Free;
