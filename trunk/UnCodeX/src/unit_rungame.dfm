@@ -15,8 +15,10 @@ object frm_Run: Tfrm_Run
   Font.Style = []
   OldCreateOrder = False
   Position = poMainFormCenter
+  Scaled = False
   ShowHint = True
   OnCreate = FormCreate
+  OnShow = FormShow
   DesignSize = (
     575
     482)

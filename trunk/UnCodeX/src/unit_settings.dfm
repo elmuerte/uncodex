@@ -17,10 +17,12 @@ object frm_Settings: Tfrm_Settings
   KeyPreview = True
   OldCreateOrder = False
   Position = poScreenCenter
+  Scaled = False
   ShowHint = True
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyUp = FormKeyUp
+  OnShow = FormShow
   DesignSize = (
     662
     378)

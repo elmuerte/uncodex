@@ -6,7 +6,7 @@
   Purpose:
     UnCodeX Commandline Utility Client
 
-  $Id: ucxcu.dpr,v 1.17 2005-03-17 14:14:46 elmuerte Exp $
+  $Id: ucxcu.dpr,v 1.18 2005-03-18 07:43:23 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -39,9 +39,9 @@ uses
   heaptrc, // memory leak detection
   {$IFEND}
   SysUtils,
-  {$IFDEF FPC}
+  { $IFDEF FPC}
   unit_fpc_compat in '..\unit_fpc_compat.pas',
-  {$ENDIF}
+  { $ENDIF}
   unit_clpipe in '..\unit_clpipe.pas',
   unit_copyparser in '..\unit_copyparser.pas',
   unit_definitions in '..\unit_definitions.pas',

@@ -6,7 +6,7 @@
   Purpose:
     Program settings dialog
 
-  $Id: unit_settings.pas,v 1.45 2004-12-30 09:40:21 elmuerte Exp $
+  $Id: unit_settings.pas,v 1.46 2005-03-18 07:43:22 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -290,6 +290,7 @@ type
       var AllowCollapse: Boolean);
     procedure tv_SettingSelectChange(Sender: TObject; Node: TTreeNode);
     procedure mi_Resultfilename1Click(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
   public
     TagChanged: boolean;
@@ -970,6 +971,13 @@ end;
 procedure Tfrm_Settings.mi_Resultfilename1Click(Sender: TObject);
 begin
   ed_OpenResultCmd.Text := ed_OpenResultCmd.Text+' %filename%';
+end;
+
+procedure Tfrm_Settings.FormShow(Sender: TObject);
+begin
+  if (PixelsPerInch <> Screen.PixelsPerInch) then begin
+    ScaleBy(Screen.PixelsPerInch, PixelsPerInch);
+  end;
 end;
 
 end.
