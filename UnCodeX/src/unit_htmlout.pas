@@ -157,7 +157,7 @@ begin
   TypeCache.Items['name'] := '-';
   for i := 0 to ClassTree.Items.Count-1 do begin
     if (not TypeCache.Exists(LowerCase(ClassTree.Items[i].Text))) then
-      TypeCache.Items[LowerCase(ClassTree.Items[i].Text)] := TUClass(ClassTree.Items[i].data).package.name+'_'+TUClass(ClassTree.Items[i].data).name+'.html'
+      TypeCache.Items[LowerCase(ClassTree.Items[i].Text)] := ClassLink(TUClass(ClassTree.Items[i].data))
       else Log('Type already cached '+ClassTree.Items[i].Text);
   end;
 
@@ -234,6 +234,10 @@ begin
   end
   else if (CompareText(replacement, 'index_title') = 0) then begin
     replacement := ini.ReadString('titles', 'Overview', '');
+    result := true;
+  end
+  else if (CompareText(replacement, 'VERSION') = 0) then begin
+    replacement := VERSION;
     result := true;
   end
 end;
@@ -354,11 +358,14 @@ begin
 end;
 
 function THTMLOutput.replacePackagesListEntry(var replacement: string; data: TObject = nil): boolean;
+var
+  ini: TMemIniFile;
+  lst: TStringList;
 begin
   result := replaceDefault(replacement);
   if (result) then exit;
   if (CompareText(replacement, 'package_link') = 0) then begin
-    replacement := 'package_'+TUPackage(data).name+'.html';
+    replacement := LowerCase('package_'+TUPackage(data).name+'.html');
     result := true;
   end
   else if (CompareText(replacement, 'package_name') = 0) then begin
@@ -371,6 +378,21 @@ begin
   end
   else if (CompareText(replacement, 'package_path') = 0) then begin
     replacement := TUPackage(data).path;
+    result := true;
+  end
+  else if (CompareText(replacement, 'package_comment') = 0) then begin
+    if (FileExists(TUPackage(data).path+PATHDELIM+'uncodex.ini')) then begin
+      lst := TStringList.Create;
+      ini := TMemIniFile.Create(TUPackage(data).path+PATHDELIM+'uncodex.ini');
+      try
+        ini.ReadSectionValues('package_description', lst);
+        replacement := lst.Text;
+      finally
+        lst.Free;
+        ini.Free;
+      end;
+    end
+    else replacement := '';
     result := true;
   end
 end;
@@ -426,7 +448,7 @@ begin
     for i := 0 to PackageList.Count-1 do begin
       Status('Creating package_'+PackageList[i].name+'.html');
       PackageList[i].classes.Sort;
-      target := TFileStream.Create(htmloutputdir+PATHDELIM+'package_'+PackageList[i].name+'.html', fmCreate);
+      target := TFileStream.Create(htmloutputdir+PATHDELIM+LowerCase('package_'+PackageList[i].name+'.html'), fmCreate);
       try
         template.Position := 0;
         parseTemplate(template, target, replacePackageOverview, PackageList[i]);
@@ -499,7 +521,7 @@ begin
     result := result+DupeString(' ', (Level-1)*4)+'|'+#10;
     result := result+DupeString(' ', (Level-1)*4)+'+-- ';
   end;
-  result := result+'<a href="package_'+uclass.package.name+'.html">'+uclass.package.name+'</a>.<a href="'+uclass.package.name+'_'+uclass.name+'.html">'+uclass.name+'</a>'+#10;
+  result := result+'<a href="package_'+LowerCase(uclass.package.name)+'.html">'+uclass.package.name+'</a>.<a href="'+ClassLink(uclass)+'">'+uclass.name+'</a>'+#10;
   Inc(level);
 end;
 
@@ -556,8 +578,7 @@ begin
       uclass := TUClass(TUClass(data).treenode[i].Data);
       if (uclass <> nil) then begin
         if (replacement <> '') then replacement := replacement+', ';
-        replacement := replacement+'<a href="'+uclass.package.name+'_'+
-          uclass.name+'.html">'+uclass.name+'</a>'
+        replacement := replacement+'<a href="'+ClassLink(uclass)+'">'+uclass.name+'</a>'
       end;
       if (Self.Terminated) then break;
     end;

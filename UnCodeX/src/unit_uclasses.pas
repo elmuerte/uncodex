@@ -156,6 +156,7 @@ type
     priority:   integer;
     path:       string;
     treenode:   TTreeNode;
+    comment:    string;
     tagged:     boolean;
     constructor Create;
     destructor Destroy; override;
