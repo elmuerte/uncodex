@@ -1,13 +1,13 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_main
  Author:    elmuerte
- Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.74 2004-02-23 10:39:04 elmuerte Exp $
+ $Id: unit_main.pas,v 1.75 2004-02-23 12:20:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
-    Copyright (C) 2003  Michiel Hendriks
+    Copyright (C) 2003, 2004  Michiel Hendriks
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -301,8 +301,6 @@ type
       NewTarget: TWinControl; var Allow: Boolean);
     procedure ac_PropInspectorExecute(Sender: TObject);
     procedure tv_ClassesEnter(Sender: TObject);
-    procedure splLeftCanResize(Sender: TObject; var NewSize: Integer;
-      var Accept: Boolean);
     procedure splRightCanResize(Sender: TObject; var NewSize: Integer;
       var Accept: Boolean);
     procedure splRightMoved(Sender: TObject);
@@ -865,6 +863,7 @@ begin
   SelectedUPackage := nil;
   if (mi_SourceSnoop.Checked) then begin
     if (SelectedUClass <> oldsel) then ac_SourceSnoop.Execute;
+    if (line < 0) then exit;
   	re_SourceSnoop.Perform(EM_LINESCROLL, 0, -1*re_SourceSnoop.Lines.Count);
 		re_SourceSnoop.Perform(EM_LINESCROLL, 0, line);
     line := re_SourceSnoop.Perform(EM_LINEINDEX, line, 0); // get line index
@@ -897,6 +896,15 @@ begin
   else if (cmd = 'createhtml') then ac_CreateHTMLfiles.Execute
   else if (cmd = 'htmlhelp') then ac_HTMLHelp.Execute
   else if (cmd = 'close') then Close
+  else if (cmd = 'orhpanstop') then begin
+		if ClassOrphanCount > 0 then begin
+      Log('Stopped batching because of orhpan classes');
+      IsBatching := false;
+    	Caption := APPTITLE+' - version '+APPVERSION;
+    	exit;
+    end
+    else NextBatchCommand;
+  end
   else if (Pos('ext:', cmd) = 1) then begin
     Delete(cmd, 1, 4);
     CallCustomOutputModule('out_'+cmd+'.dll');
@@ -1181,10 +1189,14 @@ begin
 
   if MakeVisible then begin
 		if APanel.Align = alLeft then begin
+    	if (makeWidth > pnlCenter.Width) then makeWidth := pnlCenter.Width-splLeft.MinSize;
+      if (makeWidth < splLeft.MinSize) then makeWidth := splLeft.MinSize;
     	APanel.Width := makeWidth;
 			splLeft.Left := APanel.Width + splLeft.Width;
 		end
 		else if APanel.Align = alRight then begin
+    	if (makeWidth > pnlCenter.Width) then makeWidth := pnlCenter.Width-splRight.MinSize;
+      if (makeWidth < splRight.MinSize) then makeWidth := splRight.MinSize;
 			APanel.Width := makeWidth;
 			splRight.Left := APanel.Width - splRight.Width;
 		end
@@ -1532,14 +1544,9 @@ begin
 end;
 
 procedure Tfrm_UnCodeX.ac_FindOrphansExecute(Sender: TObject);
-var
-  i: integer;
 begin
-  for i := 0 to ClassList.Count-1 do begin
-    if (ClassList[i].treenode = nil) then begin
-      log('Orphan detected: '+ClassList[i].package.name+'.'+ClassList[i].name);
-    end;
-  end;
+  lb_Log.Items.Clear;
+	CountOrphans(ClassList);
 end;
 
 procedure Tfrm_UnCodeX.ac_AnalyseAllExecute(Sender: TObject);
@@ -2261,12 +2268,15 @@ begin
   if (TUClass(lb_Log.Items.Objects[lb_Log.ItemIndex]) <> nil) then begin
     linenr := lb_Log.Items[lb_Log.ItemIndex];
     j := Pos(FTS_LN_BEGIN, linenr);
-    k := Pos(FTS_LN_END, linenr);
-    linenr := Copy(linenr, j+Length(FTS_LN_BEGIN), k-j-Length(FTS_LN_BEGIN));
-    j := Pos(FTS_LN_SEP, linenr);
-    curpos := Copy(linenr, j+Length(FTS_LN_SEP), MaxInt);
-    Delete(linenr, j, MaxInt);
-    j := StrToIntDef(linenr, 1)-1;
+    if (j > 0) then begin
+	    k := Pos(FTS_LN_END, linenr);
+  	  linenr := Copy(linenr, j+Length(FTS_LN_BEGIN), k-j-Length(FTS_LN_BEGIN));
+	    j := Pos(FTS_LN_SEP, linenr);
+  	  curpos := Copy(linenr, j+Length(FTS_LN_SEP), MaxInt);
+    	Delete(linenr, j, MaxInt);
+	    j := StrToIntDef(linenr, 1)-1;
+    end
+    else j := -1;
     OpenSourceInline(TUClass(lb_Log.Items.Objects[lb_Log.ItemIndex]), j, 0);
   end;
 end;
@@ -2857,6 +2867,7 @@ begin
   if (runningthread <> nil) then exit;
   IsBatching := true;
 	CmdStack.Add('rebuild');
+  CmdStack.Add('orhpanstop');
   CmdStack.Add('analyse');
   NextBatchCommand;  
 end;
@@ -2894,12 +2905,6 @@ begin
   if ((SelectedUClass <> TTreeView(Sender).Selected.Data)
   	and (SelectedUPackage <> TTreeView(Sender).Selected.Data)) then
     tv_ClassesChange(Sender, TTreeView(Sender).Selected);
-end;
-
-procedure Tfrm_UnCodeX.splLeftCanResize(Sender: TObject;
-  var NewSize: Integer; var Accept: Boolean);
-begin
-  Log(IntToStr(NewSize));
 end;
 
 procedure Tfrm_UnCodeX.splRightCanResize(Sender: TObject;

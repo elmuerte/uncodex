@@ -1,13 +1,13 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_uclasses
  Author:    elmuerte
- Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   definitions for Unreal Classes
- $Id: unit_uclasses.pas,v 1.19 2003-11-22 10:45:34 elmuerte Exp $
+ $Id: unit_uclasses.pas,v 1.20 2004-02-23 12:20:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
-    Copyright (C) 2003  Michiel Hendriks
+    Copyright (C) 2003, 2004  Michiel Hendriks
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public

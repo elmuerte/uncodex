@@ -1,13 +1,13 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_tags
  Author:    elmuerte
- Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   class properties window
- $Id: unit_tags.pas,v 1.15 2004-01-29 09:02:51 elmuerte Exp $
+ $Id: unit_tags.pas,v 1.16 2004-02-23 12:20:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
-    Copyright (C) 2003  Michiel Hendriks
+    Copyright (C) 2003, 2004  Michiel Hendriks
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public

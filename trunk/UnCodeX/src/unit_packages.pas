@@ -1,13 +1,13 @@
 {-----------------------------------------------------------------------------
  Unit Name: unit_packages
  Author:    elmuerte
- Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Unreal Package scanner, searches for classes in directories
- $Id: unit_packages.pas,v 1.18 2003-12-03 19:49:31 elmuerte Exp $
+ $Id: unit_packages.pas,v 1.19 2004-02-23 12:20:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
-    Copyright (C) 2003  Michiel Hendriks
+    Copyright (C) 2003, 2004  Michiel Hendriks
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -76,10 +76,33 @@ type
     procedure Execute; override;
   end;
 
+  function CountOrphans(ClassList: TUClassList): integer;
+
+var
+	// orphan counter
+  ClassOrphanCount: integer = 0;
+
 implementation
 
 uses
   unit_parser, unit_definitions;
+
+function CountOrphans(ClassList: TUClassList): integer;
+var
+	i: integer;
+begin
+	ClassOrphanCount := 0;
+	for i := 0 to ClassList.Count-1 do begin
+ 		if ((ClassList[i].parent = nil) and (ClassList[i].parentname <> '')) then begin
+     	Inc(ClassOrphanCount);
+   		LogClass('Orphan detected: '+ClassList[i].package.name+'.'+ClassList[i].name, ClassList[i]);
+ 		end;
+	end;
+  if (ClassOrphanCount > 0) then begin
+		Log(IntToStr(ClassOrphanCount)+' orphan classes detected, check the package priority');
+  end;
+  result := ClassOrphanCount;
+end;
 
 {$IFDEF __USE_TREEVIEW}
 constructor TPackageScanner.Create(paths: TStringList; packagetree, classtree: TTreeNodes;
@@ -213,6 +236,7 @@ begin
         ti.StateIndex := ICON_PACKAGE;
         ti.SelectedIndex := ICON_PACKAGE;
       end;
+      Packagelist[i].treenode := ti;
       {$ENDIF}
       Status('Scanning package '+Packagelist[i].name, round((i+1) / Packagelist.Count * 100));
       if FindFirst(Packagelist[i].path+PATHDELIM+SOURCECARD, faAnyFile, sr) = 0 then begin
@@ -253,6 +277,15 @@ begin
       end;
     end;
     if (not Self.Terminated) then begin
+      for i := packagelist.Count-1 downto 0 do begin
+        if packagelist[i].classes.Count = 0 then begin
+          Log('Empty package: '+packagelist[i].name);
+          {$IFDEF __USE_TREEVIEW}
+          packagetree.Delete(TTreeNode(Packagelist[i].treenode));
+          {$ENDIF}
+          packagelist.Remove(Packagelist[i]);
+        end;
+      end;
       {$IFDEF __USE_TREEVIEW}
       packagetree.AlphaSort(true); // sorting
       {$ENDIF}
@@ -261,6 +294,7 @@ begin
       classtree.AlphaSort(true); // sorting
       {$ENDIF}
       classlist.Sort;
+      CountOrphans(ClassList);
     end;
   finally
     knownpackages.Free;
