@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.153 2005-03-31 11:01:13 elmuerte Exp $
+  $Id: unit_main.pas,v 1.154 2005-03-31 16:41:48 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -530,6 +530,7 @@ var
   CPPApp,
   HTMLdefaultTitle:       string;
   TabsToSpaces:           integer;
+  GZCompress:             integer;
   // HTML Help out
   HHCPath,
   HTMLHelpFile,
@@ -1757,6 +1758,7 @@ begin
     ini.WriteString('Config', 'HTMLOutputDir', HTMLOutputDir);
     ini.WriteString('Config', 'TemplateDir', TemplateDir);
     ini.WriteString('Config', 'HTMLTargetExt', HTMLTargetExt);
+    ini.WriteInteger('Config', 'GZCompress', GZCompress);
     ini.WriteInteger('Config', 'TabsToSpaces', TabsToSpaces);
     ini.WriteString('Config', 'CPP', CPPApp);
     ini.WriteString('Config', 'HTMLDefaultTitle', HTMLdefaultTitle);
@@ -2065,6 +2067,7 @@ begin
     HTMLOutputDir := ini.ReadString('Config', 'HTMLOutputDir', ExtractFilePath(ParamStr(0))+'Output');
     ac_OpenOutput.Enabled := HTMLOutputDir <> '';
     TemplateDir := ini.ReadString('Config', 'TemplateDir', ExtractFilePath(ParamStr(0))+'Templates'+PATHDELIM+DEFTEMPLATE);
+    GZCompress := ini.ReadInteger('Config', 'GZCompress', -1);    
     HTMLTargetExt := ini.ReadString('Config', 'HTMLTargetExt', '');
     TabsToSpaces := ini.ReadInteger('Config', 'TabsToSpaces', 0);
     CPPApp := ini.ReadString('Config', 'CPP', '');
@@ -2371,7 +2374,7 @@ begin
     htmlconfig.TabsToSpaces := TabsToSpaces;
     htmlconfig.CPP := CPPApp;
     htmlconfig.DefaultTitle := HTMLdefaultTitle;
-    htmlconfig.GZCompress := false; //TODO: make configurable
+    htmlconfig.GZCompress := GZCompress; //TODO: make configurable
     runningthread := THTMLoutput.Create(htmlconfig, StatusReport);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
@@ -2398,6 +2401,7 @@ begin
     ud_TabsToSpaces.Position := TabsToSpaces;
     ed_CPPApp.Text := CPPApp;
     ed_HTMLDefaultTitle.Text := HTMLdefaultTitle;
+    cb_GZCompress.ItemIndex := GZCompress+1;
     { HTML Help }
     ed_WorkshopPath.Text := HHCPath;
     ed_HTMLHelpOutput.Text := HTMLHelpFile;
@@ -2442,6 +2446,7 @@ begin
       TabsToSpaces := ud_TabsToSpaces.Position;
       CPPApp := ed_CPPApp.Text;
       HTMLdefaultTitle := ed_HTMLDefaultTitle.Text;
+      GZCompress := cb_GZCompress.ItemIndex-1;
       { HTML Help }
       HHCPath := ed_WorkshopPath.Text;
       ac_HTMLHelp.Enabled := HHCPath <> '';
