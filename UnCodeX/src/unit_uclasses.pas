@@ -6,7 +6,7 @@
     Purpose:
         Class definitions for UnrealScript elements
 
-    $Id: unit_uclasses.pas,v 1.38 2004-11-06 15:07:44 elmuerte Exp $
+    $Id: unit_uclasses.pas,v 1.39 2004-11-10 09:25:35 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -51,8 +51,17 @@ type
     TDefinitionList = class(TObject)
         fowner:     TUClass;
         defines:    TStringList;
+        curToken:   string;
+        procedure _nextToken(var line: string);
+        function _expr(var line: string): boolean;
+        function _orx(var line: string): boolean;
+        function _andx(var line: string): boolean;
+        function _unaryx(var line: string): boolean;
+        function _operand(var line: string): boolean;
+        function _lvalue(var line: string): boolean;
     public
         function IsDefined(name: string): boolean;
+        function GetDefine(name: string): string;
         function Eval(line: string): boolean;
         function define(name, value: string): boolean;
         function undefine(name: string): boolean;
@@ -635,10 +644,148 @@ begin
     end;
 end;
 
+function TDefinitionList.GetDefine(name: string): string;
+var
+    val: string;
+begin
+    result := UNDEFINED;
+    if (defines.IndexOfName(name) > -1) then begin
+        val := defines.Values[name];
+        result := val;
+    end
+    else if (fowner <> nil) then begin
+        if (fowner.parent <> nil) then result := fowner.parent.defs.GetDefine(name);
+    end;
+end;
+
+{ evaluator -- BEGIN }
+{
+    EBNF:
+
+EXPR        ::= ORX
+ORX         ::= ANDX ( '||' ORX )*
+ANDX        ::= UNARYX ( '&&' ANDX )*
+UNARYX      ::= ( '!' )? OPERAND
+OPERAND     ::= LVALUE | '(' EXPR ')'
+LVALUE      ::= integer | IDENTIFIER
+
+    supported operators:
+    && || ()
+
+    symbols will be resolved to integers (if undefined => 0)
+}
+
+procedure TDefinitionList._nextToken(var line: string);
+const
+    CHAR_IDENTIFIER = ['a' .. 'z', 'A' .. 'Z', '0' .. '9', '_'];
+
+    function isblank(c: char): boolean;
+    begin
+        result := false;
+        case c of
+            #0..#32:  result := true;
+        end;
+    end;
+
+var
+    i,j: integer;
+begin
+    if (length(line) = 0) then begin
+      curToken := '';
+      exit;
+    end;
+    i := 1;
+    while (isblank(line[i]) and (i <= length(line))) do begin
+        Inc(i);
+    end;
+    {while (not isblank(line[j]) and (j <= length(line))) do begin
+        Inc(j);
+    end;}
+    j := i;
+    case line[j] of
+        '(', ')': Inc(j);
+        '!', '&', '|':
+            while line[j] in ['!', '&', '|'] do begin
+                Inc(j);
+                if (j > length(line)) then break;
+            end;
+    else // identifier/number
+        while (not isblank(line[j]) and (line[j] in CHAR_IDENTIFIER)) do begin
+            Inc(j);
+            if (j > length(line)) then break;
+        end;
+    end;
+    curToken := Copy(line, i, j-i);
+    Delete(line, 1, j-1);
+end;
+
+function TDefinitionList._expr(var line: string): boolean;
+begin
+    _nextToken(line); // because it's not set yet
+    result := _orx(line);
+end;
+
+function TDefinitionList._orx(var line: string): boolean;
+begin
+    result := _andx(line);
+    while (curToken = '||') do begin
+        _nextToken(line);
+        result := result and  _orx(line);
+    end;
+end;
+
+function TDefinitionList._andx(var line: string): boolean;
+begin
+    result := _unaryx(line);
+    while (curToken = '&&') do begin
+        _nextToken(line);
+        result := result and  _andx(line);
+    end;
+end;
+
+function TDefinitionList._unaryx(var line: string): boolean;
+begin
+    if ( curToken = '!' ) then begin
+        _nextToken(line);
+        result := not _operand(line);
+    end
+    else result := _operand(line);
+end;
+
+function TDefinitionList._operand(var line: string): boolean;
+begin
+    if ( curToken = '(') then begin
+        //_nextToken(line); DON'T, this will be done in _expr()
+        result := _expr(line);
+        if ( curToken = ')') then _nextToken(line)
+        else raise Exception.Create('Unterminated bracket. Token = "'+curToken+'"');
+    end
+    else result := _lvalue(line);
+end;
+
+function TDefinitionList._lvalue(var line: string): boolean;
+begin
+    try
+        if (IsValidIdent(curToken)) then result := IsDefined(curToken)
+        else begin
+            try
+                result := StrToInt(curToken) <> 0;
+            except
+                result := false;
+                raise Exception.Create('Invalid literal value "'+curToken+'"');
+            end;
+        end;
+    finally
+        _nextToken(line);
+    end;
+end;
+
+{ evaluator -- END }
+
 function TDefinitionList.Eval(line: string): boolean;
 begin
-    //TODO: !!!
-    result := IsDefined(line);
+    result := _expr(line);
+    //result := IsDefined(line);
 end;
 
 // returns true when a new value was added
