@@ -3,7 +3,7 @@
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
             Based on the TCopyParser class by Borland Software Corporation
- $Id: unit_sourceparser.pas,v 1.13 2004-03-08 20:02:24 elmuerte Exp $           
+ $Id: unit_sourceparser.pas,v 1.14 2004-03-08 21:29:22 elmuerte Exp $           
 -----------------------------------------------------------------------------}
 
 { *************************************************************************** }
@@ -43,6 +43,7 @@ type
     FSaveChar: Char;
     FToken: Char;
     IsInMComment: boolean;
+    commentdepth: integer;
     procedure ReadBuffer;
     procedure SkipBlanks(DoCopy: Boolean);
     function SkipToNextToken(CopyBlanks, DoCopy: Boolean): Char;
@@ -137,12 +138,16 @@ begin
               if (P^ = '/') then begin
               	Inc(P);
           			Inc(FLinePos);
-              	IsInMComment := false;
-                Result := toMCommentEnd;
+                Dec(commentdepth);
+                if (commentdepth <= 0) then begin
+	              	IsInMComment := false;
+  	              Result := toMCommentEnd;
+                end;
               end
       			end;
       else begin
       	if Result <> toEOF then begin
+        	if ((P^ ='/') and ((P+1)^ ='*' )) then Inc(commentdepth);
         	Inc(P);
           Inc(FLinePos);
         end;
@@ -286,6 +291,7 @@ begin
             Inc(FLinePos);
             Result := toMCommentBegin;
             IsInMComment := true;
+            commentdepth := 1;
           end
           else begin
             Result := P^;

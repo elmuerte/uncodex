@@ -3,7 +3,7 @@
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
             Based on the TParser class by Borland Software Corporation
- $Id: unit_parser.pas,v 1.12 2004-03-08 20:02:24 elmuerte Exp $
+ $Id: unit_parser.pas,v 1.13 2004-03-08 21:29:22 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 { *************************************************************************** }
@@ -107,6 +107,7 @@ var
   isComment: boolean;
   CommentString: string;
   comminit: integer; // so strip of the first /**
+  commentdepth: integer;
 begin
   SkipBlanks;
   P := FSourcePtr;
@@ -211,6 +212,7 @@ begin
         else if (P^ = '*') then begin // block comment
           isComment := (P+1)^ = '*';
           comminit := 3;
+          commentdepth := 1;
           if (isComment) then begin
             GetCopyData(true); // empty buffer
             CopyInitComment := false; // /** */ is better than //
@@ -229,8 +231,10 @@ begin
               FTokenPtr := P;
             end;
             if (P^ = #10) then Inc(FSourceLine); // next line
+            if ((P^ ='/') and ((P+1)^ ='*' )) then Inc(commentdepth);
+            if ((P^ ='*') and ((P+1)^ ='/' )) then Dec(commentdepth);
           end
-          until ((P^ ='*') and ((P+1)^ ='/' ));
+          until ((P^ ='*') and ((P+1)^ ='/' ) and (commentdepth <= 0));
           if (isComment) then begin
           	while ((FTokenPtr + comminit)^ = '*') do Inc(comminit);
             PX := P;
