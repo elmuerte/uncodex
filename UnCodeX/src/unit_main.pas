@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.105 2004-06-07 08:15:37 elmuerte Exp $
+ $Id: unit_main.pas,v 1.106 2004-06-09 18:06:13 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -1763,6 +1763,9 @@ begin
     NewClassTemplate := ini.ReadString('Config', 'NewClassTemplate', ExtractFilePath(ParamStr(0))+TEMPLATEPATH+PathDelim+'NewClass.uc');
 		ac_CreateSubClass.Enabled := FileExists(NewClassTemplate);
     StateFile := ini.ReadString('Config', 'StateFile', StateFile);
+    if (StateFile = '') then begin
+      StateFile := ChangeFileExt(ExtractFilename(ConfigFile), '.ucx');
+    end;
     GPDF := ini.ReadString('Config', 'PackageDescriptionFile', ExtractFilePath(ParamStr(0))+DefaultPDF);
     AnalyseModified := ini.ReadBool('Config', 'AnalyseModified', true);
     DefaultInheritanceDepth := ini.ReadInteger('Config', 'DefaultInheritanceDepth', 0);

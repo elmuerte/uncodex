@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
- $Id: UnCodeX.dpr,v 1.39 2004-06-04 20:42:49 elmuerte Exp $
+ $Id: UnCodeX.dpr,v 1.40 2004-06-09 18:06:13 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -185,6 +185,7 @@ end;
 begin
 	if (not (FindCmdLineSwitch('nosplash') or FindCmdLineSwitch('hide'))) then frm_Splash := Tfrm_Splash.Create(nil);
   CmdStack := TStringList.Create;
+  StateFile := 'UnCodeX.ucx';
   if (ParamCount() > 0) then ProcessCommandline;
   if (not HasPrevInst) then begin
     Application.Initialize;
