@@ -119,10 +119,10 @@ type
     ac_FullTextSearch: TAction;
     tb_FindNext: TToolButton;
     tb_FullTextSearch: TToolButton;
-    ToolButton2: TToolButton;
+    tb_Sep4: TToolButton;
     tb_RunServer: TToolButton;
     tb_JoinServer: TToolButton;
-    ToolButton4: TToolButton;
+    btn_Sep5: TToolButton;
     ac_Tags: TAction;
     mi_ShowProperties: TMenuItem;
     mi_N15: TMenuItem;
