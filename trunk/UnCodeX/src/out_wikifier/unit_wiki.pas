@@ -19,6 +19,7 @@ type
     btn_SelectAll: TBitBtn;
     btn_Copy: TBitBtn;
     btn_Close: TBitBtn;
+    Label1: TLabel;
     procedure btn_SelectAllClick(Sender: TObject);
     procedure btn_CopyClick(Sender: TObject);
     procedure btn_CloseClick(Sender: TObject);

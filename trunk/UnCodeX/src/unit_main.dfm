@@ -790,7 +790,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
     object ac_SourceSnoop: TAction
       Category = 'Class Tree'
-      Caption = 'Reload'
+      Caption = 'Reload source snoop'
       OnExecute = ac_SourceSnoopExecute
     end
     object ac_VSourceSnoop: TAction

@@ -23,8 +23,7 @@ uses
   Classes,
   unit_uclasses in '..\unit_uclasses.pas',
   unit_outputdefs in '..\unit_outputdefs.pas',
-  unit_wiki in 'unit_wiki.pas' {frm_Wikifier},
-  unit_exec in '..\ucxc\unit_exec.pas';
+  unit_wiki in 'unit_wiki.pas' {frm_Wikifier};
 
 {$R *.res}
 

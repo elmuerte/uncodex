@@ -105,7 +105,7 @@ begin
   Writer := TWriter.Create(stream, 4096);
   try
     Writer.WriteString(uclass.name);
-    Writer.WriteInteger(uclass.treenode.Level); // position in the tree
+    Writer.WriteInteger(TTreeNode(uclass.treenode).Level); // position in the tree
     Writer.WriteString(uclass.package.name);
     Writer.WriteString(uclass.parentname);
     Writer.WriteString(uclass.filename);
@@ -270,21 +270,21 @@ begin
       else TreeViewErrorFmt(sInvalidLevelEx, [ALevel, uclass.name]);
       uclass.treenode := ANode;
       if (uclass.tagged) then begin
-        uclass.treenode.ImageIndex := ICON_CLASS_TAGGED;
-        uclass.treenode.StateIndex := ICON_CLASS_TAGGED;
-        uclass.treenode.SelectedIndex := ICON_CLASS_TAGGED;
+        TTreeNode(uclass.treenode).ImageIndex := ICON_CLASS_TAGGED;
+        TTreeNode(uclass.treenode).StateIndex := ICON_CLASS_TAGGED;
+        TTreeNode(uclass.treenode).SelectedIndex := ICON_CLASS_TAGGED;
       end
       else begin
-        uclass.treenode.ImageIndex := ICON_CLASS;
-        uclass.treenode.StateIndex := ICON_CLASS;
-        uclass.treenode.SelectedIndex := ICON_CLASS;
+        TTreeNode(uclass.treenode).ImageIndex := ICON_CLASS;
+        TTreeNode(uclass.treenode).StateIndex := ICON_CLASS;
+        TTreeNode(uclass.treenode).SelectedIndex := ICON_CLASS;
       end;
       FClassList.Add(uclass);
       uclass.package.classes.Add(uclass);
-      with FPackageTree.Items.AddChildObject(uclass.package.treenode, uclass.name, uclass) do begin
-        ImageIndex := uclass.treenode.ImageIndex;
-        StateIndex := uclass.treenode.StateIndex;
-        SelectedIndex := uclass.treenode.SelectedIndex;
+      with FPackageTree.Items.AddChildObject(TTreeNode(uclass.package.treenode), uclass.name, uclass) do begin
+        ImageIndex := TTreeNode(uclass.treenode).ImageIndex;
+        StateIndex := TTreeNode(uclass.treenode).StateIndex;
+        SelectedIndex := TTreeNode(uclass.treenode).SelectedIndex;
       end;
       puclass := uclass;
     end;
@@ -312,14 +312,14 @@ begin
       package.tagged := Reader.ReadBoolean;
       package.treenode := FPackageTree.Items.AddObject(nil, package.name, package);
       if (package.tagged) then begin
-        package.treenode.ImageIndex := ICON_PACKAGE_TAGGED;
-        package.treenode.StateIndex := ICON_PACKAGE_TAGGED;
-        package.treenode.SelectedIndex := ICON_PACKAGE_TAGGED;
+        TTreeNode(package.treenode).ImageIndex := ICON_PACKAGE_TAGGED;
+        TTreeNode(package.treenode).StateIndex := ICON_PACKAGE_TAGGED;
+        TTreeNode(package.treenode).SelectedIndex := ICON_PACKAGE_TAGGED;
       end
       else begin
-        package.treenode.ImageIndex := ICON_PACKAGE;
-        package.treenode.StateIndex := ICON_PACKAGE;
-        package.treenode.SelectedIndex := ICON_PACKAGE;
+        TTreeNode(package.treenode).ImageIndex := ICON_PACKAGE;
+        TTreeNode(package.treenode).StateIndex := ICON_PACKAGE;
+        TTreeNode(package.treenode).SelectedIndex := ICON_PACKAGE;
       end;
       FPackageList.Add(package);
     end;

@@ -55,7 +55,7 @@ DebugSourceDirs=
 UsePackages=0
 
 [Parameters]
-RunParams=
+RunParams=-vv
 HostApplication=
 Launcher=
 UseLauncher=0

@@ -16,8 +16,8 @@ type
   TPackageScanner = class(TThread)
   private
     paths: TStringList;
-    packagetree: TTreeView;
-    classtree: TTreeView;
+    packagetree: TTreeNodes;
+    classtree: TTreeNodes;
     status: TStatusReport;
     packagelist: TUPackageList;
     classlist: TUClassList;
@@ -27,7 +27,7 @@ type
     procedure CreateClassTree(classlist: TUClassList; parent: TUClass = nil; pnode: TTreeNode = nil);
     function GetClassName(filename: string): TUClass;
   public
-    constructor Create(paths: TStringList; packagetree, classtree: TTreeView;
+    constructor Create(paths: TStringList; packagetree, classtree: TTreeNodes;
       status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
       PackagePriority, IgnorePackages: TStringList);
     destructor Destroy; override;
@@ -39,7 +39,7 @@ implementation
 uses
   unit_parser, unit_definitions;
 
-constructor TPackageScanner.Create(paths: TStringList; packagetree, classtree: TTreeView;
+constructor TPackageScanner.Create(paths: TStringList; packagetree, classtree: TTreeNodes;
   status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
   PackagePriority, IgnorePackages: TStringList);
 begin
@@ -66,7 +66,7 @@ var
 begin
   stime := GetTickCount();
   ScanPackages();
-  Status('Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds, '+IntToStr(classtree.Items.Count)+' classes')
+  Status('Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds, '+IntToStr(classtree.Count)+' classes')
 end;
 
 procedure TPackageScanner.ScanPackages;
@@ -78,8 +78,8 @@ var
   UPackage: TUPackage;
   knownpackages: TStringList;
 begin
-  packagetree.Items.BeginUpdate;
-  classtree.Items.BeginUpdate;
+  packagetree.BeginUpdate;
+  classtree.BeginUpdate;
   knownpackages := TStringList.Create;
   uclass := nil;
   try
@@ -119,7 +119,7 @@ begin
     PackageList.Sort; // sort on priority
     // find all classes
     for i := 0 to packagelist.Count-1 do begin
-      ti := packagetree.Items.AddObject(nil, Packagelist[i].name, Packagelist[i]);
+      ti := packagetree.AddObject(nil, Packagelist[i].name, Packagelist[i]);
       if (packagelist[i].tagged) then begin
         ti.ImageIndex := ICON_PACKAGE_TAGGED;
         ti.StateIndex := ICON_PACKAGE_TAGGED;
@@ -146,7 +146,7 @@ begin
             uclass.tagged := UClass.package.tagged;
             uclass.filename := sr.Name;
             uclass.priority := PackageList[i].priority;
-            with packagetree.Items.AddChildObject(ti, uclass.name, uclass) do begin
+            with packagetree.AddChildObject(ti, uclass.name, uclass) do begin
               if (uclass.tagged) then begin
                 ImageIndex := ICON_CLASS_TAGGED;
                 StateIndex := ICON_CLASS_TAGGED;
@@ -166,15 +166,15 @@ begin
       end;
     end;
     if (not Self.Terminated) then begin
-      packagetree.Items.AlphaSort(true); // sorting
+      packagetree.AlphaSort(true); // sorting
       CreateClassTree(classlist);
-      classtree.Items.AlphaSort(true); // sorting
+      classtree.AlphaSort(true); // sorting
       classlist.Sort;
     end;
   finally
     knownpackages.Free;
-    packagetree.Items.EndUpdate;
-    classtree.Items.EndUpdate;
+    packagetree.EndUpdate;
+    classtree.EndUpdate;
   end;
 end;
 
@@ -197,18 +197,18 @@ begin
       (classlist[i].priority >= pprio)) then begin
       if (CompareText(classlist[i].parentname, tmp) = 0) then begin
         classlist[i].parent := parent;
-        classlist[i].treenode := classtree.Items.AddChildObject(pnode, classlist[i].name, classlist[i]);
+        classlist[i].treenode := classtree.AddChildObject(pnode, classlist[i].name, classlist[i]);
         if (classlist[i].tagged) then begin
-          classlist[i].treenode.ImageIndex := ICON_CLASS_TAGGED;
-          classlist[i].treenode.StateIndex := ICON_CLASS_TAGGED;
-          classlist[i].treenode.SelectedIndex := ICON_CLASS_TAGGED;
+          TTreeNode(classlist[i].treenode).ImageIndex := ICON_CLASS_TAGGED;
+          TTreeNode(classlist[i].treenode).StateIndex := ICON_CLASS_TAGGED;
+          TTreeNode(classlist[i].treenode).SelectedIndex := ICON_CLASS_TAGGED;
         end
         else begin
-          classlist[i].treenode.ImageIndex := ICON_CLASS;
-          classlist[i].treenode.StateIndex := ICON_CLASS;
-          classlist[i].treenode.SelectedIndex := ICON_CLASS;
+          TTreeNode(classlist[i].treenode).ImageIndex := ICON_CLASS;
+          TTreeNode(classlist[i].treenode).StateIndex := ICON_CLASS;
+          TTreeNode(classlist[i].treenode).SelectedIndex := ICON_CLASS;
         end;
-        CreateClassTree(classlist, classlist[i], classlist[i].treenode);
+        CreateClassTree(classlist, classlist[i], TTreeNode(classlist[i].treenode));
       end;
     end;
   end;
