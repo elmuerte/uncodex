@@ -67,6 +67,7 @@ uses unit_main, unit_definitions;
 
 function Tfrm_PSEditor.SaveFile: boolean;
 begin
+	sd_Save.DefaultExt := Copy(UCEXT, 2, MaxInt);
 	sd_Save.FileName := sb_EditorBar.Panels[2].Text;
 	result := sd_Save.Execute;
   if (result) then begin

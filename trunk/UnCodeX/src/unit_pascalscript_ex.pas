@@ -13,7 +13,6 @@ interface
 uses
    SysUtils
   ,Classes
-  ,Contnrs
   ,uPSComponent
   ,uPSRuntime
   ,uPSCompiler
@@ -34,11 +33,15 @@ type
  
 implementation
 
+uses
+   Contnrs
+  ,IniFiles
+  ;
+
 procedure Register;
 begin
   RegisterComponents('Pascal Script', [TPSImport_miscclasses]);
 end;
-
  
 { compile-time importer function }
 (*----------------------------------------------------------------------------
@@ -57,6 +60,46 @@ end;
   
   
 (* === compile-time registration functions === *)
+(*----------------------------------------------------------------------------*)
+procedure SIRegister_TMemIniFile(CL: TPSPascalCompiler);
+begin
+  //with RegClassS(CL,'TObject', 'TMemIniFile') do
+  with CL.AddClassN(CL.FindClass('TObject'),'TMemIniFile') do
+  begin
+    RegisterMethod('Constructor Create( const FileName : string)');
+    RegisterMethod('Function SectionExists( const Section : string) : Boolean');
+    RegisterMethod('Function ReadString( const Section, Ident, Default : string) : string');
+    RegisterMethod('Procedure WriteString( const Section, Ident, Value : String)');
+    RegisterMethod('Function ReadInteger( const Section, Ident : string; Default : Longint) : Longint');
+    RegisterMethod('Procedure WriteInteger( const Section, Ident : string; Value : Longint)');
+    RegisterMethod('Function ReadBool( const Section, Ident : string; Default : Boolean) : Boolean');
+    RegisterMethod('Procedure WriteBool( const Section, Ident : string; Value : Boolean)');
+    RegisterMethod('Function ReadBinaryStream( const Section, Name : string; Value : TStream) : Integer');
+    RegisterMethod('Function ReadDate( const Section, Name : string; Default : TDateTime) : TDateTime');
+    RegisterMethod('Function ReadDateTime( const Section, Name : string; Default : TDateTime) : TDateTime');
+    RegisterMethod('Function ReadFloat( const Section, Name : string; Default : Double) : Double');
+    RegisterMethod('Function ReadTime( const Section, Name : string; Default : TDateTime) : TDateTime');
+    RegisterMethod('Procedure WriteBinaryStream( const Section, Name : string; Value : TStream)');
+    RegisterMethod('Procedure WriteDate( const Section, Name : string; Value : TDateTime)');
+    RegisterMethod('Procedure WriteDateTime( const Section, Name : string; Value : TDateTime)');
+    RegisterMethod('Procedure WriteFloat( const Section, Name : string; Value : Double)');
+    RegisterMethod('Procedure WriteTime( const Section, Name : string; Value : TDateTime)');
+    RegisterMethod('Procedure ReadSection( const Section : string; Strings : TStrings)');
+    RegisterMethod('Procedure ReadSections( Strings : TStrings)');
+    RegisterMethod('Procedure ReadSectionValues( const Section : string; Strings : TStrings)');
+    RegisterMethod('Procedure EraseSection( const Section : string)');
+    RegisterMethod('Procedure DeleteKey( const Section, Ident : String)');
+    RegisterMethod('Procedure UpdateFile');
+    RegisterMethod('Function ValueExists( const Section, Ident : string) : Boolean');
+    RegisterMethod('Procedure Clear');
+    RegisterMethod('Procedure GetStrings( List : TStrings)');
+    RegisterMethod('Procedure Rename( const FileName : string; Reload : Boolean)');
+    RegisterMethod('Procedure SetStrings( List : TStrings)');
+    RegisterProperty('CaseSensitive', 'Boolean', iptrw);
+    RegisterProperty('FileName', 'string', iptr);
+  end;
+end;
+
 (*----------------------------------------------------------------------------*)
 procedure SIRegister_TObjectList(CL: TPSPascalCompiler);
 begin
@@ -109,13 +152,26 @@ begin
 end;
 
 (*----------------------------------------------------------------------------*)
-procedure SIRegister_temp(CL: TPSPascalCompiler);
+procedure SIRegister_miscclasses(CL: TPSPascalCompiler);
 begin
   SIRegister_TList(CL);
   SIRegister_TObjectList(CL);
+  SIRegister_TMemIniFile(CL);
 end;
 
 (* === run-time registration functions === *)
+(*----------------------------------------------------------------------------*)
+procedure TMemIniFileFileName_R(Self: TMemIniFile; var T: string);
+begin T := Self.FileName; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TMemIniFileCaseSensitive_W(Self: TMemIniFile; const T: Boolean);
+begin Self.CaseSensitive := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TMemIniFileCaseSensitive_R(Self: TMemIniFile; var T: Boolean);
+begin T := Self.CaseSensitive; end;
+
 (*----------------------------------------------------------------------------*)
 procedure TObjectListItems_W(Self: TObjectList; const T: TObject; const t1: Integer);
 begin Self.Items[t1] := T; end;
@@ -169,6 +225,45 @@ procedure TListCapacity_R(Self: TList; var T: Integer);
 begin T := Self.Capacity; end;
 
 (*----------------------------------------------------------------------------*)
+procedure RIRegister_TMemIniFile(CL: TPSRuntimeClassImporter);
+begin
+  with CL.Add(TMemIniFile) do
+  begin
+    RegisterConstructor(@TMemIniFile.Create, 'Create');
+    RegisterMethod(@TMemIniFile.SectionExists, 'SectionExists');
+    RegisterMethod(@TMemIniFile.ReadString, 'ReadString');
+    RegisterMethod(@TMemIniFile.WriteString, 'WriteString');
+    RegisterMethod(@TMemIniFile.ReadInteger, 'ReadInteger');
+    RegisterMethod(@TMemIniFile.WriteInteger, 'WriteInteger');
+    RegisterMethod(@TMemIniFile.ReadBool, 'ReadBool');
+    RegisterMethod(@TMemIniFile.WriteBool, 'WriteBool');
+    RegisterMethod(@TMemIniFile.ReadBinaryStream, 'ReadBinaryStream');
+    RegisterMethod(@TMemIniFile.ReadDate, 'ReadDate');
+    RegisterMethod(@TMemIniFile.ReadDateTime, 'ReadDateTime');
+    RegisterMethod(@TMemIniFile.ReadFloat, 'ReadFloat');
+    RegisterMethod(@TMemIniFile.ReadTime, 'ReadTime');
+    RegisterMethod(@TMemIniFile.WriteBinaryStream, 'WriteBinaryStream');
+    RegisterMethod(@TMemIniFile.WriteDate, 'WriteDate');
+    RegisterMethod(@TMemIniFile.WriteDateTime, 'WriteDateTime');
+    RegisterMethod(@TMemIniFile.WriteFloat, 'WriteFloat');
+    RegisterMethod(@TMemIniFile.WriteTime, 'WriteTime');
+    RegisterMethod(@TMemIniFile.ReadSection, 'ReadSection');
+    RegisterMethod(@TMemIniFile.ReadSections, 'ReadSections');
+    RegisterMethod(@TMemIniFile.ReadSectionValues, 'ReadSectionValues');
+    RegisterMethod(@TMemIniFile.EraseSection, 'EraseSection');
+    RegisterMethod(@TMemIniFile.DeleteKey, 'DeleteKey');
+    RegisterMethod(@TMemIniFile.UpdateFile, 'UpdateFile');
+    RegisterMethod(@TMemIniFile.ValueExists, 'ValueExists');
+    RegisterMethod(@TMemIniFile.Clear, 'Clear');
+    RegisterMethod(@TMemIniFile.GetStrings, 'GetStrings');
+    RegisterMethod(@TMemIniFile.Rename, 'Rename');
+    RegisterMethod(@TMemIniFile.SetStrings, 'SetStrings');
+    RegisterPropertyHelper(@TMemIniFileCaseSensitive_R,@TMemIniFileCaseSensitive_W,'CaseSensitive');
+    RegisterPropertyHelper(@TMemIniFileFileName_R,nil,'FileName');
+  end;
+end;
+
+(*----------------------------------------------------------------------------*)
 procedure RIRegister_TObjectList(CL: TPSRuntimeClassImporter);
 begin
   with CL.Add(TObjectList) do
@@ -216,12 +311,15 @@ begin
 end;
 
 (*----------------------------------------------------------------------------*)
-procedure RIRegister_temp(CL: TPSRuntimeClassImporter);
+procedure RIRegister_miscclasses(CL: TPSRuntimeClassImporter);
 begin
   RIRegister_TList(CL);
   RIRegister_TObjectList(CL);
+  RIRegister_TMemIniFile(CL);
 end;
 
+ 
+ 
 { TPSImport_miscclasses }
 (*----------------------------------------------------------------------------*)
 procedure TPSImport_miscclasses.CompOnUses(CompExec: TPSScript);
@@ -236,7 +334,7 @@ end;
 (*----------------------------------------------------------------------------*)
 procedure TPSImport_miscclasses.CompileImport1(CompExec: TPSScript);
 begin
-  SIRegister_temp(CompExec.Comp);
+  SIRegister_miscclasses(CompExec.Comp);
 end;
 (*----------------------------------------------------------------------------*)
 procedure TPSImport_miscclasses.CompileImport2(CompExec: TPSScript);
@@ -246,13 +344,13 @@ end;
 (*----------------------------------------------------------------------------*)
 procedure TPSImport_miscclasses.ExecImport1(CompExec: TPSScript; const ri: TPSRuntimeClassImporter);
 begin
-  RIRegister_temp(ri);
+  RIRegister_miscclasses(ri);
 end;
 (*----------------------------------------------------------------------------*)
 procedure TPSImport_miscclasses.ExecImport2(CompExec: TPSScript; const ri: TPSRuntimeClassImporter);
 begin
   { nothing } 
 end;
-
-end.
  
+ 
+end.
