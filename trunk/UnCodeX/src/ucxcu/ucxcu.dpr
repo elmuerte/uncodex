@@ -6,7 +6,7 @@
   Purpose:
     UnCodeX Commandline Utility Client
 
-  $Id: ucxcu.dpr,v 1.13 2004-12-08 09:25:44 elmuerte Exp $
+  $Id: ucxcu.dpr,v 1.14 2004-12-25 14:13:00 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -28,14 +28,16 @@
 }
 program ucxcu;
 
-//TODO: not correct for Kylix builds
-{$IFDEF MSWINDOWS}
-{$APPTYPE CONSOLE}
-{$ENDIF}
-
 {$I ..\defines.inc}
 
+{$IFDEF DELPHI}
+  {$APPTYPE CONSOLE}
+{$ENDIF}
+
 uses
+  {$IF Defined(FPC) and Defined(DEBUG_BUILD)}
+  heaptrc, // memory leak detection
+  {$ENDIF}
   SysUtils,
   {$IFDEF FPC}
   unit_fpc_compat in '..\unit_fpc_compat.pas',

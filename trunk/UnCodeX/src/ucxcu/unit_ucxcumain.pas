@@ -6,7 +6,7 @@
   Purpose:
     Main code for the commandline utility
 
-  $Id: unit_ucxcumain.pas,v 1.16 2004-12-19 12:34:58 elmuerte Exp $
+  $Id: unit_ucxcumain.pas,v 1.17 2004-12-25 14:13:00 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -45,8 +45,6 @@ uses
   procedure FatalError(msg: string; errorcode: integer = -1);
   procedure Warning(msg: string);
   procedure StatusReport(msg: string; progress: byte = 255);
-  procedure Log(msg: string);
-  procedure LogClass(msg: string; uclass: TUClass = nil);
 
 var
   Verbose: byte = 1;
@@ -358,14 +356,18 @@ begin
   end;
 end;
 
-procedure Log(msg: string);
-begin
-  if (Logging) then WriteLn(LogFile, msg);
-end;
 
-procedure LogClass(msg: string; uclass: TUClass = nil);
-begin
-  if (Logging) then WriteLn(LogFile, msg);
+procedure Log(msg : string; mt: TLogType = ltInfo; obj: TObject = nil);
+const
+   LogLabel: array[TLogType] of string = ('INFO', 'WARN', 'ERR', 'SRC');
+begin 
+  if (Logging) then begin
+    WriteLn(LogFile, '['+LogLabel[mt]+'] '+msg);
+    if (IsA(obj, TLogEntry)) then begin
+      if (TLogEntry(obj).filename <> '') then
+	WriteLn(LogFile, #9'File: '+TLogEntry(obj).filename+' #'+IntToStr(TLogEntry(obj).line)+','+IntToStr(TLogEntry(obj).pos));
+    end;
+  end;
 end;
 
 initialization
@@ -375,7 +377,6 @@ initialization
   PackageList := TUPackageList.Create(true);
   ClassList := TUClassList.Create(true);
   unit_definitions.Log := Log;
-  unit_definitions.LogClass := LogClass;
   unit_analyse.GetExternalComment := unit_definitions.RetExternalComment;
   {$IFDEF FPC}
   ErrOutput := stderr;
