@@ -7,7 +7,7 @@
     Parser for UnrealScript, used for analysing the unrealscript source.
     Based on TParser by Borland.
 
-  $Id: unit_parser.pas,v 1.27 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_parser.pas,v 1.28 2004-12-18 14:36:48 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -272,6 +272,7 @@ begin
                 comminit := 0;
               end;
               ReadBuffer;
+              if FSourcePtr^ = #0 then raise Exception.Create('Unterminated block comment');
               P := FSourcePtr;
               FTokenPtr := P;
             end;

@@ -6,7 +6,7 @@
   Purpose:
     Creates a syntax highlighted RTF file from an UnrealScript file
 
-  $Id: unit_rtfhilight.pas,v 1.25 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_rtfhilight.pas,v 1.26 2004-12-18 14:36:48 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -160,7 +160,7 @@ begin
         replacement := StringReplace(replacement, #10, '\par ', [rfReplaceAll]);
         replacement := rfComment+replacement;
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
-        while (p.Token <> toMCommentEnd) do begin
+        while ((p.Token <> toMCommentEnd) and (p.token <> toEOF)) do begin
           p.SkipToken(true);
           replacement := p.TokenString;
           replacement := StringReplace(replacement, '\', '\\', [rfReplaceAll]);
@@ -211,7 +211,7 @@ begin
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else p.CopyTokenToOutput;
-      p.SkipToken(true);
+      if (p.Token <> toEOF) then p.SkipToken(true);
     end;
     replacement := '}{\info'+
       '{\author '+APPTITLE+' '+APPVERSION+'}';

@@ -7,7 +7,7 @@
     UnrealScript parser. Used for syntax highlighting, not for analysing.
     Bases on the TParser by Borland.
 
-  $Id: unit_sourceparser.pas,v 1.21 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_sourceparser.pas,v 1.22 2004-12-18 14:36:48 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -156,11 +156,12 @@ begin
               end
             end;
       else begin
-        if Result <> toEOF then begin
+        if P^ <> toEOF then begin
           if ((P^ ='/') and ((P+1)^ ='*' )) then Inc(commentdepth);
           Inc(P);
           Inc(FLinePos);
-        end;
+        end
+        else Result := toEOF;
       end;
     end;
     StartPos := FSourcePtr;
