@@ -1,0 +1,145 @@
+<html>
+<head>
+	<title>UnCodeX - Program settings</title>
+	<link href="default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">settings</div>
+</div>
+
+<div class="content">
+<h1>Program settings</h1>
+<a name="sourcepaths"></a><h2>Source paths</h2>
+Here you can add all the paths to directories containing UScript packages. These paths will be scanned for possible packages. Usually you just point this to the directory of your Unreal Engine game.
+
+
+<a name="packagepriority"></a><h2>Package Priority</h2>
+This is the priority listing of the packages, the most important packages must be at the top, this is usualy "Core". You can simply import the priority listing from the game file of an Unreal Engine game using the  "..." button. <b>Warning!</b> importing from an .ini file will clear the current list.
+<br>
+New packages will automatically be added at the bottom of the list when they are found. To check if the package priority is set correctly you can use the  "Find orphans" command in the main window. If the package priority is set correctly you should have no orhpan files.
+<br>
+You can "tag" a package by checking the box before the package name. A tagged package and all it's containing classes will get a diffirent icon in the Package and Classes tree listing. This way you can distinguish the original packages and classes from your own.
+
+
+<a name="ignorepackages"></a><h2>Ignore Packages</h2>
+Here you can add names of packages that should be ignored when you rebuild the tree.
+
+
+<a name="htmloutput"></a><h2>HTML Output</h2>
+<h3>Output directory</h3>
+This is the directory where all HTML files will be saved to
+<h3>Templates directory</h3>
+This is the directory containing the HTML templates to be used when creating the HTML output.
+<h3>Target extention</h3>
+The extention of the output filenames, leave blank to use the template default.
+<h3>Tabs To Spaces</h3>
+Convert tabs to # spaces, when # is 0 the template default will be used, if # is -1 tabs won't be converted.
+<h3>Comment PreProcessor</h3>
+Path to the Comment PreProcessor to use, leave empty to use the Template default or 'none' to use none at all
+
+<a name="mshtmlhelp"></a><h2>MS HTML Help</h2>
+<h3>HTML Help Workshop</h3>
+This is the path to the directory of the HTML Help Workshop. UnCodeX searches for HHC.exe in that directory.
+<h3>Output file</h3>
+The file the HTML Help Workshop should create.
+<h3>Title</h3>
+The window title for the HTML Help file, leave blank to use the default title.
+
+
+<a name="compile"></a><h2>Compile</h2>
+Here you can define the command to execute when you select "Compile class". If the path name contains spaces you <b>must</b> use quotes around it.
+<br>
+<h4>Wrong</h4>
+<pre>c:\program files\umake\umake.exe %classpath%</pre>
+<h4>Correct</h4>
+<pre>"c:\program files\umake\umake.exe" %classpath%</pre>
+<br>
+You can use the following placeholders in the commandline:
+<table>
+<tr>
+	<td><pre>%classname%</pre></td><td>The name of the class</td>
+</tr>
+<tr>
+	<td><pre>%classfile%</pre></td><td>The filename of the class, this does not include the path</td>
+</tr>
+<tr>
+	<td><pre>%classpath%</pre></td><td>The full path to the class file, including the filename itself</td>
+</tr>
+<tr>
+	<td><pre>%packagename%</pre></td><td>The name of the package of the class</td>
+</tr>
+<tr>
+	<td><pre>%packagepath%</pre></td><td>The path of the package</td>
+</tr>
+<tr>
+	<td><pre>%searchquery%</pre></td><td>Will be replaced with the inline search query, or when that is empty the last class search query</td>
+</tr>
+<tr>
+	<td><pre>%inlinesearch%</pre></td><td>Will always be replaced with the inline search query</td>
+</tr>
+<tr>
+	<td><pre>%classsearch%</pre></td><td>Will always be replaced with the last class search query</td>
+</tr>
+</table>
+
+
+<a name="gameserver"></a><h2>Game server</h2>
+<h3>Server commandline</h3>
+The commandline to execute when you want to start a server. Just as with the Compiler commandline you have to place quotes around parts that contain spaces.
+<h3>Server priority</h3>
+Here you can set the base priority of the server process executed by the commandline. It's adviced that you set it to at least "High" when you want to join the server running on your local system. Other wise the game will appear to lag.
+<br>Note: that if you specified a batch file as commandline this will increase the priority of that batch file, not the actual server.
+<h3>Client commandline</h3>
+The command to execute when you want to join the server.
+
+<a name="fulltextsearch"></a><h2>Full Text Search</h2>
+<h3>Open result command</h3>
+The command to execute when you double click the result of a full text search, or when you double click a property in the details window.
+<br>
+You can use the same placeholders as with the compile command with these additions:
+<table>
+<tr>
+	<td><pre>%resultline%</pre></td><td>The line number of the result</td>
+</tr>
+<tr>
+	<td><pre>%resultpos%</pre></td><td>The position in the result line</td>
+</tr>
+</table>
+<h3>Default to regualr expression</h3>
+With this checked regular expressions will be used by default in full text and class body searches.
+
+<a name="layout"></a><h2>Layout</h2>
+Here you can change the color and font to be used in the tree list and the log window.
+<h3>Expand "Object" on start up</h3>
+Expand the first item of the class tree (usualy "Object") when UnCodeX starts.
+
+<a name="programoptions"></a><h2>Program Options</h2>
+<h3>State file</h3>
+The filename the current tree state will be saved to. This name is relative to the configuration file used. So it should not contain a path, just a filename.
+<h3>Analyse modified classes on startup</h3>
+This will automatically analyse classes on program startup, unless the program is started with a find or batch command
+<h3>Minimize on close</h3>
+Minimize UnCodeX when the users pressed the "x" in the window. To really close the application select "Quit" from the menu.
+<h3>Load custom output modules</h3>
+Search and load the custom output modules
+<h3>Inline search timeout</h3>
+Number of seconds before the inline search times out
+<h3>Default inheritance depth for class properties</h3>
+n/t
+<h3>Open class properties as window</h3>
+When checked the class properties window will be opened as a window that keeps alive when it loses focus
+
+<a name="programoptions"></a><h2>Hot keys</h2>
+Here you can change the default hot key settings. Select a command from the list, enter a new hot key and press "Set" to update.
+
+<a name="programoptions"></a><h2>Source snoop</h2>
+This is where you can change the colors of the syntax highlighting in the source snoop window. You can also change the font to be used. Only the font name and size can be changed.
+
+</div>
+</div>
+</body>
+</html>
