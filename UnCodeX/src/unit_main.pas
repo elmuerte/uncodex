@@ -170,6 +170,7 @@ type
     mi_SelectAll: TMenuItem;
     mi_N17: TMenuItem;
     mi_ClearHilight: TMenuItem;
+    mi_FindSelection: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -237,6 +238,7 @@ type
       X, Y: Integer);
     procedure mi_ClearHilightClick(Sender: TObject);
     procedure sb_StatusClick(Sender: TObject);
+    procedure mi_FindSelectionClick(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -1976,6 +1978,16 @@ end;
 procedure Tfrm_UnCodeX.sb_StatusClick(Sender: TObject);
 begin
   re_SourceSnoop.makeurl();
+end;
+
+procedure Tfrm_UnCodeX.mi_FindSelectionClick(Sender: TObject);
+begin
+  if (re_SourceSnoop.SelText = '') then exit;
+  searchclass := re_SourceSnoop.SelText;
+  CSprops[0] := false;
+  CSprops[1] := false;
+  tv_Classes.Selected := nil;
+  ac_FindNext.Execute;
 end;
 
 end.

@@ -1886,8 +1886,13 @@ object frm_UnCodeX: Tfrm_UnCodeX
       000000000000}
   end
   object pm_SourceSnoop: TPopupMenu
+    TrackButton = tbLeftButton
     Left = 72
     Top = 72
+    object mi_FindSelection: TMenuItem
+      Caption = 'Find selection'
+      OnClick = mi_FindSelectionClick
+    end
     object mi_CopyToCliptboard: TMenuItem
       Action = ac_CopySelection
     end
