@@ -1,0 +1,139 @@
+BODY { 
+	background-color: #BDC6CE;	
+}
+
+FONT, DIV, TD { 
+	vertical-align: top;
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;  
+	font-size: 10pt;  
+	line-height: 16pt;	
+	color: #000000;   
+}
+
+DIV.main { 
+	position: absolute;  
+	top: 0;  
+	left: 0;   
+	width: 100%;
+}
+
+DIV.head {
+	background-color: #A6CADB;
+	border-bottom: 2px groove silver;
+	width: 100%;
+	padding: 10px;
+}
+
+DIV.title {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif; 
+	font-size: 22pt;  
+	line-height: normal;
+	color: #00FCFF;
+	font-weight: bold;
+	font-style: italic;
+	position: absolute;
+	display: inline;
+}
+
+DIV.subject {
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif; 
+	font-size: 16pt;  
+	line-height: normal;
+	color: #000000;
+	font-weight: bold;
+	position: relative;
+	display: inline;
+	Left: 175px;
+	top: 5px;
+}
+
+SPAN.title {
+	position: absolute;
+}
+
+SPAN.title_high {
+	color: #E1FFFF;
+	position: absolute;	
+	left: -1px;
+	top: -1px;
+}
+
+SPAN.title_low {
+	color: #004E4F;
+	position: absolute;
+	left: 1px;
+	top: 1px;
+}
+
+DIV.content {
+	padding-left: 5px;		
+	padding-right: 5px;		
+}
+
+H1 {
+	font-size: 14pt;
+	line-height: normal;
+	border-bottom: 2px solid #396782;
+	background-color: #B4BEC6;
+}
+
+H2 {
+	font-size: 12pt;
+	line-height: normal;
+	margin: 2px;
+	margin-top: 10pt;
+	border-bottom: 2px solid #598DC3;
+	font-style: italic;
+	background-color: #ACB7C0;
+}
+
+H3 {
+	font-size: 10pt;
+	line-height: normal;
+	margin: 2px;
+	margin-top: 5pt;
+	border-bottom: 1px solid #6E9BCB;
+	background-color: #B4BEC6;
+}
+
+H4 {
+	font-size: 10pt;
+	line-height: normal;
+	margin: 2px;
+	margin-top: 5pt;
+	font-style: italic;
+	background-color: #BAC3CB;
+}
+
+PRE {
+	background-color: #BCCFDA;
+	margin: 2px;
+	padding-left: 10px;
+	padding-right: 5px;
+	border: 1px inset silver;
+}
+
+PRE.indent {
+	margin-left: 20px;
+}
+
+TH {
+	font-weight: bold;
+	font-size: 10pt;
+	line-height: normal;
+	border-bottom: 2px inset silver;
+}
+
+A { 
+	text-decoration: none;
+	color: #566085;
+	border: 1px solid #BDC6CE;
+	border-bottom: 1px solid #718495;
+	padding: 1px;
+}
+
+A:Hover { 
+	border: 1px solid #718495;
+	background-color: #99A8B3;
+	color: black;
+}
