@@ -13,7 +13,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls,
   Forms, Dialogs, ComCtrls, Menus, StdCtrls, unit_packages, ExtCtrls,
   unit_uclasses, IniFiles, ShellApi, AppEvnts, ImgList, ActnList, StrUtils,
-  Clipbrd, hh, hh_funcs, ToolWin, richedit, unit_richeditex;
+  Clipbrd, hh, hh_funcs, ToolWin, richedit, unit_richeditex, unit_searchform;
 
 const
   // custom window messages
@@ -310,8 +310,9 @@ var
   PackageList: TUPackageList;
   ClassList: TUClassList;
   // class search vars
-  searchclass: string;
-  CSprops: array[0..2] of boolean;
+  SearchConfig: TClassSearch; 
+  {searchclass: string;
+  CSprops: array[0..2] of boolean;}
   OpenFind: boolean = false; // only on startup
   OpenTags: boolean = false; // only on startup
   // batch vars
@@ -788,8 +789,9 @@ begin
     CopyMemory(@data, msg.CopyDataStruct.lpData, msg.CopyDataStruct.cbData);
     if (data.NewHandle <> 0) then StatusHandle := data.NewHandle;
     if (data.Find <> '') then begin
-      searchclass := data.Find;
-      CSprops[0] := false;
+      SearchConfig.query := data.Find;
+      SearchConfig.isBodySearch := false;
+      SearchConfig.Wrapped := true;
       OpenFind := data.OpenFind;
       OpenTags := data.OpenTags;
       ActiveControl := tv_Classes;
@@ -1369,9 +1371,12 @@ begin
   if (ActiveControl.ClassType <> TTreeView) then begin
     ActiveControl := tv_Classes;
   end;
-  CSprops[1] := FTSRegexp;
-  if (SearchQuery('Find a class', 'Enter the name of the class you want to find', searchclass, CSprops, CSHistory, ['&Search class body', '&Regular expression (only with body search)', '&Compare strict (not with body search)'])) then begin
-    (ActiveControl as TTreeView).Selected := nil;
+  SearchConfig.caption := 'Find a class';
+  SearchConfig.text := 'Enter the name of the class you want to find';
+  SearchConfig.isRegex := FTSRegexp;
+  SearchConfig.history := CSHistory;
+  if (SearchForm(SearchConfig)) then begin
+    if (SearchConfig.isFromTop) then (ActiveControl as TTreeView).Selected := nil;
     ac_FindNext.Execute;
   end;
 end;
@@ -1622,7 +1627,7 @@ var
   i,j: integer;
   res: boolean;
 begin
-  if (searchclass = '') then begin
+  if (not SearchConfig.Wrapped) then begin
     ac_FindClass.Execute;
     exit;
   end;
@@ -1630,10 +1635,10 @@ begin
     ActiveControl := tv_Classes;
   end;
   with (ActiveControl as TTreeView) do begin
-    if (CSprops[0]) then begin
+    if (SearchConfig.isBodySearch) then begin
       if (ThreadCreate) then begin
         lb_Log.Items.Clear;
-        runningthread := TSearchThread.Create((ActiveControl as TTreeView), StatusReport, searchclass, CSprops[1]);
+        runningthread := TSearchThread.Create((ActiveControl as TTreeView), StatusReport, SearchConfig.query , SearchConfig.isRegex);
         runningthread.OnTerminate := ThreadTerminate;
         runningthread.Resume;
         exit;
@@ -1643,8 +1648,8 @@ begin
       if (Selected <> nil) then j := Selected.AbsoluteIndex+1
         else j := 0;
       for i := j to Items.Count-1 do begin
-        if (CSprops[2]) then res := AnsiCompareText(items[i].Text, searchclass) = 0
-          else res := AnsiContainsText(items[i].Text, searchclass);
+        if (SearchConfig.isStrict) then res := AnsiCompareText(items[i].Text, SearchConfig.query) = 0
+          else res := AnsiContainsText(items[i].Text, SearchConfig.query);
         if (res) then begin
           Tag := TV_ALWAYSEXPAND;
           Select(items[i]);
@@ -1659,8 +1664,8 @@ begin
     end;
   end;
   OpenFind := false;
-  statustext := 'No more classes matching '''+searchclass+''' found';
-  searchclass := '';
+  statustext := 'No more classes matching '''+SearchConfig.query+''' found';
+  SearchConfig.Wrapped := false;
 end;
 
 procedure Tfrm_UnCodeX.ac_FullTextSearchExecute(Sender: TObject);
@@ -1741,8 +1746,8 @@ begin
   if (DoInit) then begin
     DoInit := false;
     LoadState;
-    if (searchclass <> '') then begin
-      CSprops[0] := false;
+    if (SearchConfig.query <> '') then begin
+      SearchConfig.isBodySearch := false;
       ActiveControl := tv_Classes;
       ac_FindNext.Execute;
     end

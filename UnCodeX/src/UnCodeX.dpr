@@ -39,7 +39,8 @@ uses
   unit_sourceparser in 'unit_sourceparser.pas',
   unit_rtfhilight in 'unit_rtfhilight.pas',
   unit_richeditex in 'unit_richeditex.pas',
-  unit_utils in 'unit_utils.pas';
+  unit_utils in 'unit_utils.pas',
+  unit_searchform in 'unit_searchform.pas' {frm_SearchForm};
 
 {$R *.res}
 
@@ -134,9 +135,9 @@ begin
       tmp := ParamStr(j);
       i := Pos('.', tmp);
       if (i > 0) then Delete(tmp, i, MaxInt);
-      searchclass := tmp;
+      SearchConfig.query := tmp;
       RedirectData.Find := tmp;
-      if (OpenFind or OpenTags) then CSprops[2] := true;
+      if (OpenFind or OpenTags) then SearchConfig.isStrict := true;
       RedirectData.OpenFind := OpenFind;
       RedirectData.OpenTags := OpenTags;
     end;
@@ -158,8 +159,8 @@ begin
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-  Application.CreateForm(Tfrm_About, frm_About);
-  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+    Application.CreateForm(Tfrm_About, frm_About);
+    if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end;
 end.
