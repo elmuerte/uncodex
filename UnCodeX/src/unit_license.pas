@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Display the LICENSE.TXT file
- $Id: unit_license.pas,v 1.1 2003-11-04 19:35:28 elmuerte Exp $
+ $Id: unit_license.pas,v 1.2 2003-12-16 11:37:58 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -53,7 +53,9 @@ implementation
 
 procedure Tfrm_License.FormShow(Sender: TObject);
 begin
-  mm_License.Lines.LoadFromFile(ExtractFilePath(ParamStr(0))+'LICENSE.TXT');
+	if (FileExists(ExtractFilePath(ParamStr(0))+'LICENSE.TXT')) then begin
+  	mm_License.Lines.LoadFromFile(ExtractFilePath(ParamStr(0))+'LICENSE.TXT');
+  end;
 end;
 
 procedure Tfrm_License.FormKeyUp(Sender: TObject; var Key: Word;

@@ -31,6 +31,15 @@ object frm_License: Tfrm_License
     Font.Height = -11
     Font.Name = 'Courier'
     Font.Style = []
+    Lines.Strings = (
+      'WARNING !'
+      ''
+      'The license file (LICENSE.TXT) could not be found.'
+      'You are using an unlicensed version of this application.'
+      
+        'Please remove it from your system and install a licensed version' +
+        ' of the '
+      'application.')
     ParentColor = True
     ParentFont = False
     ReadOnly = True

@@ -5,7 +5,7 @@ object frm_About: Tfrm_About
   BorderStyle = bsDialog
   BorderWidth = 5
   Caption = 'About ...'
-  ClientHeight = 292
+  ClientHeight = 308
   ClientWidth = 322
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,14 +18,14 @@ object frm_About: Tfrm_About
   OnCreate = FormCreate
   DesignSize = (
     322
-    292)
+    308)
   PixelsPerInch = 96
   TextHeight = 13
   object bvl_Border: TBevel
     Left = 0
     Top = 0
     Width = 49
-    Height = 292
+    Height = 308
     Align = alLeft
     Shape = bsFrame
   end
@@ -79,8 +79,8 @@ object frm_About: Tfrm_About
     Transparent = True
   end
   object lbl_Version: TLabel
-    Left = 200
-    Top = 16
+    Left = 208
+    Top = 3
     Width = 63
     Height = 13
     Caption = 'lbl_Version'
@@ -90,17 +90,18 @@ object frm_About: Tfrm_About
     Font.Name = 'MS Sans Serif'
     Font.Style = [fsBold]
     ParentFont = False
+    Transparent = True
   end
   object lbl_Author: TLabel
     Left = 56
-    Top = 40
+    Top = 48
     Width = 34
     Height = 13
     Caption = 'Author:'
   end
   object lbl_Author2: TLabel
     Left = 72
-    Top = 56
+    Top = 64
     Width = 159
     Height = 13
     Caption = 'Michiel '#39'El Muerte'#39' Hendriks'
@@ -113,15 +114,15 @@ object frm_About: Tfrm_About
   end
   object lbl_Homepage: TLabel
     Left = 56
-    Top = 96
+    Top = 104
     Width = 55
     Height = 13
     Caption = 'Homepage:'
   end
   object lbl_TimeStamp: TLabel
-    Left = 200
-    Top = 32
-    Width = 69
+    Left = 56
+    Top = 29
+    Width = 89
     Height = 13
     Caption = 'lbl_TimeStamp'
     Font.Charset = DEFAULT_CHARSET
@@ -130,13 +131,22 @@ object frm_About: Tfrm_About
     Font.Name = 'MS Sans Serif'
     Font.Style = []
     ParentFont = False
+    Transparent = True
     Visible = False
+  end
+  object lbl_Platform: TLabel
+    Left = 208
+    Top = 17
+    Width = 54
+    Height = 13
+    Caption = 'lbl_Platform'
+    Transparent = True
   end
   object mm_LegalShit: TMemo
     Left = 56
-    Top = 144
+    Top = 152
     Width = 265
-    Height = 148
+    Height = 156
     Alignment = taCenter
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelKind = bkSoft
@@ -160,7 +170,7 @@ object frm_About: Tfrm_About
   end
   object ed_Email: TEdit
     Left = 72
-    Top = 72
+    Top = 80
     Width = 249
     Height = 19
     Anchors = [akLeft, akTop, akRight]
@@ -179,7 +189,7 @@ object frm_About: Tfrm_About
   end
   object ed_Homepage: TEdit
     Left = 72
-    Top = 112
+    Top = 120
     Width = 249
     Height = 19
     Anchors = [akLeft, akTop, akRight]
