@@ -35,7 +35,7 @@ const
   PB_TODO = '.'; // 25% block
   {$ENDIF}
   PB_NONE = ' ';
-  VERSION = '008 Beta';
+  VERSION = '009 Beta';
 
 var
   lastsp: integer = -1;
