@@ -362,6 +362,7 @@ implementation
 
   {** A basic hash function. This is pretty fast, and fairly good general
       purpose, but you may want to swap in a specialised version. }
+  {$Q-}
   function HashThis(const s: string): cardinal;
   var
     h, g, i: cardinal;
@@ -377,6 +378,7 @@ implementation
     end;
     result := h;
   end;
+  {$Q+}
 
 { THash }
 

@@ -66,7 +66,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=0
 Release=4
-Build=5
+Build=6
 Debug=0
 PreRelease=0
 Special=0
@@ -77,7 +77,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Michiel 'El Muerte' Hendriks
 FileDescription=Class wikifier
-FileVersion=1.0.4.5
+FileVersion=1.0.4.6
 InternalName=out_wikifier
 LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
 LegalTrademarks=
