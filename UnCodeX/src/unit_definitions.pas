@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   General definitions
- $Id: unit_definitions.pas,v 1.61 2003-07-10 07:46:53 elmuerte Exp $
+ $Id: unit_definitions.pas,v 1.62 2003-10-26 21:30:19 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_definitions;
@@ -32,7 +32,7 @@ type
 
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '109';
+  APPVERSION = '150';
 
   PATHDELIM = '\';
   WILDCARD = '*.*';

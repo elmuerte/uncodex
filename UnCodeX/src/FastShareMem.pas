@@ -154,3 +154,4 @@ finalization
     VirtualFree( allocated, 0, MEM_RELEASE );
   end;
 end.
+

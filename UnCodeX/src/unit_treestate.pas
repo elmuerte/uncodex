@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   loading/saving the tree state
- $Id: unit_treestate.pas,v 1.12 2003-06-10 12:00:27 elmuerte Exp $
+ $Id: unit_treestate.pas,v 1.13 2003-10-26 21:30:19 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_treestate;
@@ -25,8 +25,8 @@ type
     function GetPackage(name: string): TUPackage;
     procedure SavePackageToStream(upackage: TUPackage; stream: TStream);
     procedure SaveClassToStream(uclass: TUClass; stream: TStream);
-    procedure LoadClassesFromStream(stream: TStream);
-    procedure LoadPackagesFromStream(stream: TStream);
+    procedure LoadClassesFromStream(stream: TStream; version: integer);
+    procedure LoadPackagesFromStream(stream: TStream; version: integer);
   public
     constructor Create(AOwner: TUClassList; CTree: TTreeView; PList: TUPackageList; PTree: TTreeView); overload;
     procedure Clear; override;
@@ -83,7 +83,10 @@ end;
 { TUnCodeXState }
 
 const
-  UCXheader = 'UCX059'+#13#10#0;
+  UCXHeader    = 'UCX';
+  UCXHTail     = #13#10#0;
+  UCXheader059 = UCXheader+'059'+UCXHTail;
+  UCXheader150 = UCXheader+'150'+UCXHTail;
 
 procedure TUnCodeXState.SavePackageToStream(upackage: TUPackage; stream: TStream);
 var
@@ -103,7 +106,7 @@ end;
 procedure TUnCodeXState.SaveClassToStream(uclass: TUClass; stream: TStream);
 var
   Writer: TWriter;
-  i: integer;
+  i, j: integer;
 begin
   Writer := TWriter.Create(stream, 4096);
   try
@@ -114,11 +117,13 @@ begin
     Writer.WriteString(uclass.filename);
     Writer.WriteString(uclass.modifiers);
     Writer.WriteInteger(uclass.filetime);
+    Writer.WriteString(uclass.comment);
     Writer.WriteInteger(uclass.consts.Count);
     for i := 0 to uclass.consts.Count-1 do begin
       Writer.WriteString(uclass.consts[i].name);
       Writer.WriteString(uclass.consts[i].value);
       Writer.WriteInteger(uclass.consts[i].srcline);
+      Writer.WriteString(uclass.consts[i].comment);
     end;
     Writer.WriteInteger(uclass.properties.Count);
     for i := 0 to uclass.properties.Count-1 do begin
@@ -127,12 +132,14 @@ begin
       Writer.WriteString(uclass.properties[i].modifiers);
       Writer.WriteString(uclass.properties[i].tag);
       Writer.WriteInteger(uclass.properties[i].srcline);
+      Writer.WriteString(uclass.properties[i].comment);
     end;
     Writer.WriteInteger(uclass.enums.Count);
     for i := 0 to uclass.enums.Count-1 do begin
       Writer.WriteString(uclass.enums[i].name);
       Writer.WriteString(uclass.enums[i].options);
       Writer.WriteInteger(uclass.enums[i].srcline);
+      Writer.WriteString(uclass.enums[i].comment);
     end;
     Writer.WriteInteger(uclass.structs.Count);
     for i := 0 to uclass.structs.Count-1 do begin
@@ -141,6 +148,25 @@ begin
       Writer.WriteString(uclass.structs[i].modifiers);
       Writer.WriteString(uclass.structs[i].data);
       Writer.WriteInteger(uclass.structs[i].srcline);
+      Writer.WriteString(uclass.structs[i].comment);
+      // struct vars
+      Writer.WriteInteger(uclass.structs[i].properties.Count);
+      for j := 0 to uclass.structs[i].properties.Count-1 do begin
+        Writer.WriteString(uclass.structs[i].properties[j].name);
+        Writer.WriteString(uclass.structs[i].properties[j].ptype);
+        Writer.WriteString(uclass.structs[i].properties[j].modifiers);
+        Writer.WriteString(uclass.structs[i].properties[j].tag);
+        Writer.WriteInteger(uclass.structs[i].properties[j].srcline);
+        Writer.WriteString(uclass.structs[i].properties[j].comment);
+      end;
+      // struct enums
+      Writer.WriteInteger(uclass.structs[i].enums.Count);
+      for j := 0 to uclass.structs[i].enums.Count-1 do begin
+        Writer.WriteString(uclass.structs[i].enums[j].name);
+        Writer.WriteString(uclass.structs[i].enums[j].options);
+        Writer.WriteInteger(uclass.structs[i].enums[j].srcline);
+        Writer.WriteString(uclass.structs[i].enums[j].comment);
+      end;
     end;
     Writer.WriteInteger(uclass.states.Count);
     for i := 0 to uclass.states.Count-1 do begin
@@ -148,6 +174,7 @@ begin
       Writer.WriteString(uclass.states[i].extends);
       Writer.WriteString(uclass.states[i].modifiers);
       Writer.WriteInteger(uclass.states[i].srcline);
+      Writer.WriteString(uclass.states[i].comment);
     end;
     Writer.WriteInteger(uclass.functions.Count);
     for i := 0 to uclass.functions.Count-1 do begin
@@ -159,17 +186,18 @@ begin
       if (uclass.functions[i].state = nil) then Writer.WriteString('')
         else Writer.WriteString(uclass.functions[i].state.name);
       Writer.WriteInteger(uclass.functions[i].srcline);
+      Writer.WriteString(uclass.functions[i].comment);
     end;
   finally
     Writer.Free;
   end;
 end;
 
-procedure TUnCodeXState.LoadClassesFromStream(stream: TStream);
+procedure TUnCodeXState.LoadClassesFromStream(stream: TStream; version: integer);
 var
   Reader: TReader;
   NumClasses: Cardinal;
-  ALevel, n, m, i: integer;
+  ALevel, n, m, i, o, j: integer;
   ANode, NextNode: TTreeNode;
   uclass, puclass: TUClass;
   uconst: TUConst;
@@ -195,12 +223,14 @@ begin
       uclass.filename := Reader.ReadString;
       uclass.modifiers := Reader.ReadString;
       uclass.filetime := Reader.ReadInteger;
+      if (version >= 150) then uclass.comment := Reader.ReadString;
       m := Reader.ReadInteger;
       for i := 0 to m-1 do begin
         uconst := TUconst.Create;
         uconst.name := Reader.ReadString;
         uconst.value := Reader.ReadString;
         uconst.srcline := Reader.ReadInteger;
+        if (version >= 150) then uconst.comment := Reader.ReadString;
         uclass.consts.Add(uconst)
       end;
       m := Reader.ReadInteger;
@@ -211,6 +241,7 @@ begin
         uprop.modifiers := Reader.ReadString;
         uprop.tag := Reader.ReadString;
         uprop.srcline := Reader.ReadInteger;
+        if (version >= 150) then uprop.comment := Reader.ReadString;
         uclass.properties.Add(uprop);
       end;
       m := Reader.ReadInteger;
@@ -219,6 +250,7 @@ begin
         uenum.name := Reader.ReadString;
         uenum.options := Reader.ReadString;
         uenum.srcline := Reader.ReadInteger;
+        if (version >= 150) then uenum.comment := Reader.ReadString;
         uclass.enums.Add(uenum);
       end;
       m := Reader.ReadInteger;
@@ -229,7 +261,32 @@ begin
         ustruct.modifiers := Reader.ReadString;
         ustruct.data := Reader.ReadString;
         ustruct.srcline := Reader.ReadInteger;
+        if (version >= 150) then ustruct.comment := Reader.ReadString;
         uclass.structs.Add(ustruct);
+        if (version >= 150) then begin
+          // struct properties
+          o := Reader.ReadInteger;
+          for j := 0 to o-1 do begin
+            uprop := TUProperty.Create;
+            uprop.name := Reader.ReadString;
+            uprop.ptype := Reader.ReadString;
+            uprop.modifiers := Reader.ReadString;
+            uprop.tag := Reader.ReadString;
+            uprop.srcline := Reader.ReadInteger;
+            uprop.comment := Reader.ReadString;
+            ustruct.properties.Add(uprop);
+          end;
+          // struct enums
+          o := Reader.ReadInteger;
+          for j := 0 to o-1 do begin
+            uenum := TUEnum.Create;
+            uenum.name := Reader.ReadString;
+            uenum.options := Reader.ReadString;
+            uenum.srcline := Reader.ReadInteger;
+            uenum.comment := Reader.ReadString;
+            ustruct.enums.Add(uenum);
+          end;
+        end;
       end;
       m := Reader.ReadInteger;
       for i := 0 to m-1 do begin
@@ -238,6 +295,7 @@ begin
         ustate.extends := Reader.ReadString;
         ustate.modifiers := Reader.ReadString;
         ustate.srcline := Reader.ReadInteger;
+        if (version >= 150) then ustate.comment := Reader.ReadString;
         uclass.states.Add(ustate);
       end;
       m := Reader.ReadInteger;
@@ -250,6 +308,7 @@ begin
         ufunc.params := Reader.ReadString;
         ufunc.state := GetState(Reader.ReadString, uclass);
         ufunc.srcline := Reader.ReadInteger;
+        if (version >= 150) then ufunc.comment := Reader.ReadString;
         uclass.functions.Add(ufunc);
       end;
       if ANode = nil then // root
@@ -298,7 +357,7 @@ begin
   end;
 end;
 
-procedure TUnCodeXState.LoadPackagesFromStream(stream: TStream);
+procedure TUnCodeXState.LoadPackagesFromStream(stream: TStream; version: integer);
 var
   Reader: TReader;
   NumPackages: Cardinal;
@@ -388,15 +447,22 @@ end;
 function TUnCodeXState.LoadTreeFromStream(Stream: TStream): boolean;
 var
   tmp: array[0..8] of char;
+  fversion: integer;
 begin
   Stream.Position := 0;
   Stream.Read(tmp, 9);
   result := false;
-  if (StrComp(tmp, UCXheader) = 0) then begin
+  if (StrLComp(tmp, UCXHeader, 3) = 0) then begin
+    if (StrComp(tmp, UCXHeader059) = 0) then fversion := 59
+    else if (StrComp(tmp, UCXHeader150) = 0) then fversion := 150
+    else begin
+      Log('Unsupported file version, header: '+tmp);
+      exit;
+    end;
     Clear;
-    LoadPackagesFromStream(stream);
+    LoadPackagesFromStream(stream, fversion);
     unit_rtfhilight.ClassesHash.Clear;
-    LoadClassesFromStream(stream);
+    LoadClassesFromStream(stream, fversion);
     FClassList.Sort;
     FPackageList.Sort;
     result := true;
@@ -409,18 +475,21 @@ var
   i: integer;
   c: cardinal;
 begin
-  stream.WriteBuffer(UCXheader, 9);
-  // packages
-  c := FPackageList.Count;
-  stream.WriteBuffer(c, 4);
-  for i := 0 to FPackageList.Count-1 do begin
-    SavePackageToStream(FPackageList[i] , stream);
-  end;
-  // classes
-  c := FClassTree.Items.Count;
-  stream.WriteBuffer(c, 4);
-  for i := 0 to FClassTree.Items.Count-1 do begin
-    SaveClassToStream(TUClass(FClassTree.Items[i].Data), stream);
+  try
+    stream.WriteBuffer(UCXheader150, 9);
+    // packages
+    c := FPackageList.Count;
+    stream.WriteBuffer(c, 4);
+    for i := 0 to FPackageList.Count-1 do begin
+      SavePackageToStream(FPackageList[i] , stream);
+    end;
+    // classes
+    c := FClassTree.Items.Count;
+    stream.WriteBuffer(c, 4);
+    for i := 0 to FClassTree.Items.Count-1 do begin
+      SaveClassToStream(TUClass(FClassTree.Items[i].Data), stream);
+    end;
+  except
   end;
 end;
 
