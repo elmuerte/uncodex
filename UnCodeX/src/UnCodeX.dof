@@ -66,7 +66,7 @@ AutoIncBuild=1
 MajorVer=2
 MinorVer=0
 Release=0
-Build=174
+Build=173
 Debug=1
 PreRelease=1
 Special=0
@@ -77,7 +77,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Michiel 'El Muerte' Hendriks
 FileDescription=
-FileVersion=2.0.0.174
+FileVersion=2.0.0.173
 InternalName=UnCodeX
 LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
 LegalTrademarks=

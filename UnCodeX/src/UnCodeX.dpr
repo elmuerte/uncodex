@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
- $Id: UnCodeX.dpr,v 1.34 2004-04-05 13:36:51 elmuerte Exp $
+ $Id: UnCodeX.dpr,v 1.35 2004-04-18 18:46:15 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 program UnCodeX;
@@ -50,7 +50,8 @@ uses
   unit_ucops in 'unit_ucops.pas' {frm_CreateNewClass},
   unit_pkgprops in 'unit_pkgprops.pas' {frm_PackageProps},
   unit_moveclass in 'unit_moveclass.pas' {frm_MoveClass},
-  unit_defprops in 'unit_defprops.pas' {frm_DefPropsBrowser};
+  unit_defprops in 'unit_defprops.pas' {frm_DefPropsBrowser},
+  unit_renameclass in 'unit_renameclass.pas' {frm_RenameClass};
 
 {$R *.res}
 
@@ -174,6 +175,7 @@ begin
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
   Application.CreateForm(Tfrm_About, frm_About);
   Application.CreateForm(Tfrm_License, frm_License);
+  Application.CreateForm(Tfrm_RenameClass, frm_RenameClass);
   if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.94 2004-04-13 07:01:15 elmuerte Exp $
+ $Id: unit_main.pas,v 1.95 2004-04-18 18:46:15 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -338,6 +338,7 @@ type
     procedure pm_LogPopup(Sender: TObject);
     procedure ac_MoveClassExecute(Sender: TObject);
     procedure ac_DefPropsExecute(Sender: TObject);
+    procedure ac_RenameClassExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -3133,6 +3134,11 @@ end;
 procedure Tfrm_UnCodeX.ac_DefPropsExecute(Sender: TObject);
 begin
   if (SelectedUClass <> nil) then ShowDefaultProperties(SelectedUClass);
+end;
+
+procedure Tfrm_UnCodeX.ac_RenameClassExecute(Sender: TObject);
+begin
+  if (SelectedUClass <> nil) then RenameUClass(SelectedUClass);
 end;
 
 initialization

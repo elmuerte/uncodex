@@ -116,6 +116,12 @@ object frm_MoveClass: Tfrm_MoveClass
     Width = 97
     Height = 17
     Caption = 'New package'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clGrayText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
     TabOrder = 5
     OnClick = cb_NewPackageClick
   end

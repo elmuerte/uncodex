@@ -166,6 +166,12 @@ object frm_CreateNewClass: Tfrm_CreateNewClass
     TabStop = False
     Anchors = [akLeft, akTop, akRight]
     Caption = 'Create new package'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clGrayText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
     TabOrder = 6
     OnClick = cb_NewPackageClick
   end
