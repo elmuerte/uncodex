@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
- $Id: UnCodeX.dpr,v 1.38 2004-05-14 12:16:24 elmuerte Exp $
+ $Id: UnCodeX.dpr,v 1.39 2004-06-04 20:42:49 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -144,7 +144,7 @@ begin
       Inc(j);
       ConfigFile := ParamStr(j);
       if (ExtractFilePath(ConfigFile) = '') then ConfigFile := ExtractFilePath(ParamStr(0))+ConfigFile;
-      StateFile := ExtractFilePath(ConfigFile)+ExtractFilename(ConfigFile)+'.ucx';
+      StateFile := ExtractFilePath(ConfigFile)+ChangeFileExt(ExtractFilename(ConfigFile), '.ucx');
     end
     else if (LowerCase(ParamStr(j)) = '-handle') then begin
       Inc(j);

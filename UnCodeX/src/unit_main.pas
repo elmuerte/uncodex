@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.103 2004-05-14 12:16:24 elmuerte Exp $
+ $Id: unit_main.pas,v 1.104 2004-06-04 20:42:49 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -1445,7 +1445,7 @@ begin
     ini.WriteString('Config', 'CompilerCmd', CompilerCmd);
     ini.WriteString('Config', 'OpenResultCmd', OpenResultCmd);
     ini.WriteString('Config', 'NewClassTemplate', NewClassTemplate);
-    ini.WriteString('Config', 'StateFile', StateFile);
+    ini.WriteString('Config', 'StateFile', ExtractFileName(StateFile));
     ini.WriteBool('Config', 'AnalyseModified', AnalyseModified);
     ini.WriteInteger('Config', 'DefaultInheritanceDepth', DefaultInheritanceDepth);
     ini.WriteBool('Config', 'LoadOutputModules', LoadCustomOutputModules);
@@ -1842,7 +1842,6 @@ begin
   else Caption := Caption+' ['+ExtractFileName(ConfigFile)+']';
   Caption := Caption+' - version '+APPVERSION;
   Application.Title := Caption;
-  if (StateFile = '') then StateFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ucx';
   InitialStartup := not FileExists(ConfigFile);
   { StringLists }
   PackagePriority := TStringList.Create;
@@ -1854,6 +1853,7 @@ begin
   { StringLists -- END }
 
   LoadSettings;
+  if (StateFile = '') then StateFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ucx';
 
   if (LoadCustomOutputModules) then LoadOutputModules;
   PackageList := TUPackageList.Create(true);

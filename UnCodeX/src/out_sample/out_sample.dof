@@ -66,7 +66,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=0
 Release=0
-Build=17
+Build=18
 Debug=0
 PreRelease=0
 Special=0
@@ -77,7 +77,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Michiel 'El Muerte' Hendriks
 FileDescription=sample output module
-FileVersion=1.0.0.17
+FileVersion=1.0.0.18
 InternalName=out_sample
 LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
 LegalTrademarks=
@@ -90,13 +90,13 @@ Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
 Count=2
-Item0=VCL
-Item1=$(DELPHI)\Lib\Debug;VCL
+Item0=$(DELPHI)\Lib\Debug;VCL
+Item1=VCL
 [HistoryLists\hlUnitOutputDirectory]
 Count=7
 Item0=..\..\dcu\out_ctags
-Item1=..\..\Dcu\out_sample
-Item2=..\DCU
+Item1=..\DCU
+Item2=..\..\Dcu\out_sample
 Item3=..\..\dcu\ucxcu
 Item4=..\..\Dcu\out_graphviz
 Item5=..\..\DCU\out_wikifier
@@ -104,5 +104,5 @@ Item6=..\Dcu\out_graphviz
 [HistoryLists\hlOutputDirectorry]
 Count=3
 Item0=..\..\Bin
-Item1=..\..\Bin\out_sample
-Item2=..\BIN
+Item1=..\BIN
+Item2=..\..\Bin\out_sample
