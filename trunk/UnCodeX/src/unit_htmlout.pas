@@ -79,6 +79,7 @@ type
     procedure htmlGlossary;
     function replaceGlossary(var replacement: string; data: TObject = nil): boolean;
     procedure CopyFiles;
+    function ProcComment(input: string): string;
   public
     constructor Create(config: THTMLoutConfig; status: TStatusReport);
     destructor Destroy; override;
@@ -592,7 +593,8 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'class_comment') = 0) then begin
-    replacement := TUClass(data).comment;
+    if (Copy(TUClass(data).comment, 1, 2) = '//') then replacement := ProcComment(TUClass(data).comment)
+    else replacement := TUClass(data).comment;
     result := true;
   end
   else if (CompareText(replacement, 'class_children') = 0) then begin
@@ -1332,6 +1334,30 @@ begin
     end;
     result := true;
   end
+end;
+
+function THTMLOutput.ProcComment(input: string): string;
+var
+  sl: TStringList;
+  tmp: string;
+  i: integer;
+begin
+  sl := TStringList.Create;
+  try
+    sl.Text := input;
+    for i := sl.Count-1 downto 0 do begin
+      tmp := sl[i];
+      // possible HRs: // -- ==
+      Delete(tmp, 1, 2);
+      tmp := trim(tmp);
+      if (tmp = '') then sl[i] := '<br>'
+      else if (ReverseString(tmp) = tmp) then sl.Delete(i)
+      else sl[i] := tmp+'<br>';
+    end;
+    result := sl.Text;
+  finally
+    sl.Free;
+  end;
 end;
 
 { THTMLOutput -- END }

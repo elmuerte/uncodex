@@ -99,8 +99,8 @@ Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 
 [HistoryLists\hlUnitOutputDirectory]
 Count=3
-Item0=E:\Program Files\Borland\Projects\UnCodeX\DCU\out_wikifier
-Item1=E:\Program Files\Borland\Projects\UnCodeX\DCU
+Item0=E:\Program Files\Borland\Projects\UnCodeX\DCU
+Item1=E:\Program Files\Borland\Projects\UnCodeX\DCU\out_wikifier
 Item2=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_sample
 
 [HistoryLists\hlOutputDirectorry]

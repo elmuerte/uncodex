@@ -474,7 +474,6 @@ var
 begin
   bHadClass := false;
   while ((p.token <> toEOF) and (not Self.Terminated)) do begin
-    // TODO: accept initial comments ?
     // first check class
     // class <classname> extends [<package>].<classname> <modifiers>;
     if (p.TokenSymbolIs('class') and not bHadClass) then begin

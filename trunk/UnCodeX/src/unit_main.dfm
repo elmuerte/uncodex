@@ -70,7 +70,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Indent = 19
     PopupMenu = pm_ClassTree
     ReadOnly = True
-    RightClickSelect = True
     RowSelect = True
     SortType = stText
     TabOrder = 2
@@ -93,7 +92,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Indent = 19
     PopupMenu = pm_ClassTree
     ReadOnly = True
-    RightClickSelect = True
     RowSelect = True
     SortType = stText
     TabOrder = 1

@@ -29,6 +29,7 @@ type
     FSaveChar: Char;
     FToken: Char;
     FFloatType: Char;
+    CopyInitComment: boolean;
     procedure ReadBuffer;
     procedure SkipBlanks;
   public
@@ -104,6 +105,7 @@ constructor TUCParser.Create(Stream: TStream);
 begin
   FStream := Stream;
   FullCopy := false;
+  CopyInitComment := true;
   FCopyStream := TStringStream.Create('');
   GetMem(FBuffer, ParseBufSize);
   FBuffer[0] := #0;
@@ -114,6 +116,7 @@ begin
   FTokenPtr := FBuffer;
   FSourceLine := 1;
   NextToken;
+  CopyInitComment := false;
 end;
 
 destructor TUCParser.Destroy;
@@ -279,12 +282,17 @@ begin
             Inc(P);
             Inc(FSourceLine); // next line
             Result := toComment; // not realy a comment but we just ignore it
+            if (CopyInitComment) then begin
+              SetString(CommentString, FTokenPtr, P - FTokenPtr);
+              FCopyStream.WriteString(CommentString);
+            end;
           end;
         end
         else if (P^ = '*') then begin // block comment
           isComment := (P+1)^ = '*';
           if (isComment) then begin
             GetCopyData(true); // empty buffer
+            CopyInitComment := false; // /** */ is better than //
           end;
           repeat begin
             Inc(P);

@@ -18,8 +18,8 @@ M=0
 N=1
 O=1
 P=1
-Q=1
-R=1
+Q=0
+R=0
 S=0
 T=0
 U=0
@@ -72,7 +72,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=0
 Release=0
-Build=59
+Build=60
 Debug=0
 PreRelease=0
 Special=0
@@ -84,7 +84,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Michiel 'El Muerte' Hendriks
 FileDescription=
-FileVersion=1.0.0.59
+FileVersion=1.0.0.60
 InternalName=UnCodeX
 LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
 LegalTrademarks=
@@ -99,8 +99,8 @@ Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 
 [HistoryLists\hlUnitOutputDirectory]
 Count=3
-Item0=E:\Program Files\Borland\Projects\UnCodeX\DCU\out_wikifier
-Item1=E:\Program Files\Borland\Projects\UnCodeX\DCU
+Item0=E:\Program Files\Borland\Projects\UnCodeX\DCU
+Item1=E:\Program Files\Borland\Projects\UnCodeX\DCU\out_wikifier
 Item2=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_sample
 
 [HistoryLists\hlOutputDirectorry]
