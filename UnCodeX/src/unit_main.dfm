@@ -55,7 +55,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
     AutoSnap = False
     MinSize = 50
     ResizeStyle = rsUpdate
-    Visible = False
   end
   object tv_Classes: TTreeView
     Left = 285
@@ -286,10 +285,19 @@ object frm_UnCodeX: Tfrm_UnCodeX
     HelpKeyword = 'sourcesnoop'
     Align = alRight
     Color = clMoneyGreen
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Courier New'
+    Font.Style = []
     Lines.Strings = (
-      'Place holder')
+      'Place '
+      'holder')
+    ParentFont = False
+    ReadOnly = True
+    ScrollBars = ssBoth
     TabOrder = 3
-    Visible = False
+    WordWrap = False
   end
   object mm_Main: TMainMenu
     Images = il_Small
@@ -515,6 +523,9 @@ object frm_UnCodeX: Tfrm_UnCodeX
     object mi_Collapseall: TMenuItem
       Caption = 'Collapse all'
       OnClick = mi_CollapseallClick
+    end
+    object mi_Test: TMenuItem
+      Action = ac_SourceSnoop
     end
   end
   object ae_AppEvent: TApplicationEvents
@@ -774,6 +785,11 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Caption = 'Left'
       ShortCut = 40997
       OnExecute = ac_VTLeftExecute
+    end
+    object ac_SourceSnoop: TAction
+      Category = 'Class Tree'
+      Caption = 'View source'
+      OnExecute = ac_SourceSnoopExecute
     end
   end
   object il_Small: TImageList

@@ -303,6 +303,11 @@ end;
 function TUFunctionListCompare(Item1, Item2: Pointer): integer;
 begin
   result := CompareText(TUFunction(Item1).name, TUFunction(Item2).name);
+  {if (result = 0) then begin  //stack overflow ?!
+    if (TUFunction(Item1).state = nil) then result := -1
+    else if (TUFunction(Item2).state = nil) then result := 1
+      else result := CompareText(TUFunction(Item1).state.name, TUFunction(Item2).state.name);
+  end;}
 end;
 
 procedure TUFunctionList.Sort;
