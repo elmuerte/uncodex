@@ -157,6 +157,8 @@ type
     btn_AnalyseModified: TToolButton;
     mi_Output: TMenuItem;
     mi_SingleOutput: TMenuItem;
+    ac_SourceSnoop: TAction;
+    mi_Test: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -214,6 +216,7 @@ type
       Shift: TShiftState);
     procedure tv_ClassesMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure ac_SourceSnoopExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -329,7 +332,7 @@ implementation
 
 uses unit_settings, unit_analyse, unit_htmlout, unit_definitions,
   unit_treestate, unit_about, unit_mshtmlhelp, unit_fulltextsearch,
-  unit_tags, unit_outputdefs;
+  unit_tags, unit_outputdefs, unit_rtfhilight;
 
 const
   PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
@@ -1843,6 +1846,36 @@ procedure Tfrm_UnCodeX.tv_ClassesMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 begin
   (Sender as TComponent).Tag := TV_NOEXPAND;
+end;
+
+procedure Tfrm_UnCodeX.ac_SourceSnoopExecute(Sender: TObject);
+var
+  ms: TMemoryStream;
+  fs: TFileStream;
+  filename: string;
+begin
+  if (ActiveControl.ClassType = TTreeView) then begin
+    with (ActiveControl as TTreeView) do begin
+      if (Selected <> nil) then begin
+        if (TObject(Selected.Data).ClassType <> TUClass) then exit;
+        filename := TUClass(Selected.Data).package.path+PATHDELIM+CLASSDIR+PATHDELIM+TUClass(Selected.Data).filename;
+        if (not FileExists(filename)) then exit;
+        fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
+        ms := TMemoryStream.Create;
+        try
+          RTFHilightUScript(fs, ms);
+          re_SourceSnoop.Lines.Clear;
+          //re_SourceSnoop.PlainText := false;
+          re_SourceSnoop.Lines.LoadFromStream(ms);
+          //ms.SaveToFile('e:\test.rtf');
+          //re_SourceSnoop.Lines.LoadFromFile('e:\test.rtf');
+        finally
+          ms.Free;
+          fs.Free;
+        end;
+      end;
+    end;
+  end;
 end;
 
 end.

@@ -1116,7 +1116,8 @@ end;
 function THTMLOutput.replaceClassFunction(var replacement: string; data: TObject = nil): boolean;
 var
   tmp, tmp2, tmp3: string;
-  i: integer;
+  i, j: integer;
+  pclass: TUClass;
 begin
   result := replaceDefault(replacement);
   if (result) then exit;
@@ -1170,8 +1171,24 @@ begin
     replacement := TUFunction(data).comment;
     result := true;
   end
+  else if (CompareText(replacement, 'function_init') = 0) then begin
+    replacement := '';
+    pclass := currentClass.parent;
+    while (pclass <> nil) do begin
+      for i := 0 to pclass.functions.Count-1 do begin
+        j := CompareText(pclass.functions[i].name, TUFunction(data).name);
+        if (j = 0) then begin
+          replacement := '<a href="'+ClassLink(pclass)+'#'+TUFunction(data).name+'">'+ini.ReadString('titles', 'FunctionInit', 'i')+'</a>';
+          break;
+        end;
+        if (j > 0) then break; // current function is greater than the compare one, break
+      end;
+      pclass := pclass.parent;
+    end;
+    result := true;
+  end
   else if (CompareText(replacement, 'has_comment_?') = 0) then begin
-    if (TUFunction(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '')
+    if (TUFunction(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '?')
     else replacement := '';
     result := true;
   end

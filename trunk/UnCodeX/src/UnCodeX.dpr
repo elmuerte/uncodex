@@ -34,7 +34,8 @@ uses
   hh_funcs in 'hh_funcs.pas',
   hh in 'hh.pas',
   unit_outputdefs in 'unit_outputdefs.pas',
-  unit_sourceparser in 'unit_sourceparser.pas';
+  unit_sourceparser in 'unit_sourceparser.pas',
+  unit_rtfhilight in 'unit_rtfhilight.pas';
 
 {$R *.res}
 
