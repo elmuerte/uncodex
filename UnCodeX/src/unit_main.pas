@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.81 2004-03-20 20:56:08 elmuerte Exp $
+ $Id: unit_main.pas,v 1.82 2004-03-23 16:25:45 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -215,6 +215,17 @@ type
     mi_FTS2: TMenuItem;
     mi_SwitchTree: TMenuItem;
     ac_SwitchTree: TAction;
+    ac_CreateSubClass: TAction;
+    mi_CreateSubClass: TMenuItem;
+    ac_DeleteClass: TAction;
+    mi_DeleteClass: TMenuItem;
+    N1: TMenuItem;
+    mi_MoveClass: TMenuItem;
+    mi_RenameClass: TMenuItem;
+    ac_MoveClass: TAction;
+    ac_RenameClass: TAction;
+    ac_PackageProps: TAction;
+    mi_Properties: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -314,6 +325,9 @@ type
     procedure pnlCenterDockDrop(Sender: TObject; Source: TDragDockObject;
       X, Y: Integer);
     procedure ac_SwitchTreeExecute(Sender: TObject);
+    procedure ac_CreateSubClassExecute(Sender: TObject);
+    procedure ac_DeleteClassExecute(Sender: TObject);
+    procedure ac_PackagePropsExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -358,6 +372,8 @@ type
     procedure InlineSearchComplete;
     procedure ShowDockPanel(DockHost: TControl; MakeVisible: Boolean; Client: TControl);
     procedure OnDockVisChange(client: TControl; visible: boolean; var CanChange: boolean);
+    // other
+    procedure DeleteClass(uclass: TUClass; recurse: boolean = false);
   public
     statustext : string; // current status text
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
@@ -430,6 +446,7 @@ var
   ServerPrio: integer;
   // Commandlines
   CompilerCmd, OpenResultCmd: string;
+  NewClassTemplate: string;
   // class properties
   DefaultInheritanceDepth: integer = 0;
 
@@ -438,7 +455,7 @@ implementation
 uses unit_settings, unit_analyse, unit_htmlout, unit_definitions,
   unit_treestate, unit_about, unit_mshtmlhelp, unit_fulltextsearch,
   unit_tags, unit_outputdefs, unit_rtfhilight, unit_utils, unit_license,
-  unit_splash, unit_ucxdocktree;
+  unit_splash, unit_ucxdocktree, unit_ucops, unit_pkgprops;
 
 const
   PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
@@ -1261,6 +1278,35 @@ begin
   end;
 end;
 
+{ Other stuff }
+procedure Tfrm_UnCodeX.DeleteClass(uclass: TUClass; recurse: boolean = false);
+var
+	i: integer;
+  fos: TSHFileOpStruct;
+begin
+	if (recurse) then begin
+		for i := 0 to uclass.children.Count-1 do begin
+  	  DeleteClass(uclass.children[i], recurse);
+	  end;
+  end;
+  Log('Deleting class to recycle bin: '+uclass.name);
+  FillChar(fos, sizeof(fos), 0);
+  fos.wFunc := FO_DELETE;
+  fos.pFrom := PChar(uclass.package.path+PATHDELIM+uclass.filename);
+  fos.fFlags := FOF_ALLOWUNDO or FOF_NOCONFIRMATION;
+  ShFileOperation(fos);
+  for i := 0 to TTreeNode(uclass.package.treenode).Count-1 do begin
+		if (TTreeNode(uclass.package.treenode).Item[i].Data = uclass) then begin
+			TTreeNode(uclass.package.treenode).Item[i].Delete;
+      break;
+    end;
+  end;
+  uclass.package.classes.Remove(uclass);
+  TTreeNode(uclass.treenode).Delete;
+  ClassList.Remove(uclass);
+  TreeUpdated := true;
+end;
+
 { Custom methods -- END}
 { Auto generated methods }
 
@@ -1326,19 +1372,9 @@ begin
     mi_Toolbar.OnClick(Sender);
 
     ac_VPackageTree.Checked := ini.ReadBool('Layout', 'PackageTree', true);
-    //tv_Packages.Width := ini.ReadInteger('Layout', 'PackageTreeWidth', tv_Packages.Width);
-    //if (spl_Main1.MinSize > tv_Packages.Width) then tv_Packages.Width := spl_Main1.MinSize;
-    //mi_PackageTree.OnClick(Sender);
-    //ac_ClassTree.Checked := ini.ReadBool('Layout', 'ClassTree', true);
-    //mi_ClassTree.OnClick(Sender);
-    //lb_Log.Height := ini.ReadInteger('Layout', 'LogHeight', lb_Log.Height);
     ac_VLog.Checked := ini.ReadBool('Layout', 'Log', true);
-    //mi_Log.OnClick(Sender);
     ac_VSourceSnoop.Checked := ini.ReadBool('Layout', 'SourceSnoop', false);
     re_SourceSnoop.Visible := ac_VSourceSnoop.Checked;
-    //re_SourceSnoop.Width := ini.ReadInteger('Layout', 'SourceSnoopWidth', re_SourceSnoop.Width);
-    //if (spl_Main3.MinSize > re_SourceSnoop.Width) then re_SourceSnoop.Width := spl_Main3.MinSize;
-    //mi_SourceSnoop.OnClick(Sender);
     ac_PropInspector.Checked := ini.ReadBool('Layout', 'PropertyInspector', false);
     fr_Props.Visible := ac_PropInspector.Checked;
 
@@ -1454,7 +1490,8 @@ begin
     ac_CompileClass.Enabled := CompilerCmd <> '';
     OpenResultCmd := ini.ReadString('Config', 'OpenResultCmd', '');
     ac_OpenClass.Enabled := OpenResultCmd <> '';
-    DefaultSC.isRegex := ini.ReadBool('Config', 'FullTextSearchRegExp', false);
+    NewClassTemplate := ini.ReadString('Config', 'NewClassTemplate', ExtractFilePath(ParamStr(0))+TEMPLATEPATH+PathDelim+'NewClass.uc');
+		ac_CreateSubClass.Enabled := FileExists(NewClassTemplate);
     StateFile := ini.ReadString('Config', 'StateFile', StateFile);
     GPDF := ini.ReadString('Config', 'PackageDescriptionFile', ExtractFilePath(ParamStr(0))+DefaultPDF);
     AnalyseModified := ini.ReadBool('Config', 'AnalyseModified', true);
@@ -1506,18 +1543,7 @@ begin
     end;
     { Source paths -- END }
     { Search history }
-    ini.ReadSectionValues('FullTextSearch', sl);
-    for i := 0 to sl.Count-1 do begin
-      tmp := sl[i];
-      Delete(tmp, 1, Pos('=', tmp));
-      DefaultSC.ftshistory.Add(tmp);
-    end;
-    ini.ReadSectionValues('ClassSearch', sl);
-    for i := 0 to sl.Count-1 do begin
-      tmp := sl[i];
-      Delete(tmp, 1, Pos('=', tmp));
-      DefaultSC.history.Add(tmp);
-    end;
+    LoadSearchConfig(ini, 'search', DefaultSC);
     { Search history -- END }
   finally
     ini.Free;
@@ -1640,8 +1666,6 @@ begin
     { Commandlines }
     ed_CompilerCommandline.Text := CompilerCmd;
     ed_OpenResultCmd.Text := OpenResultCmd;
-    { Search settings }
-    cb_FTSRegExp.Checked := DefaultSC.isRegex;
     { Layout settings }
     lb_LogLayout.Color := lb_Log.Color;
     cb_LogColor.Selected := lb_Log.Color;
@@ -1689,8 +1713,6 @@ begin
       ac_CompileClass.Enabled := CompilerCmd <> '';
       OpenResultCmd := ed_OpenResultCmd.Text;
       ac_OpenClass.Enabled := OpenResultCmd <> '';
-      { Search settings }
-      DefaultSC.isRegex := cb_FTSRegExp.Checked;
       { Program options }
       StateFile := ed_StateFilename.Text;
       AnalyseModified := cb_ModifiedOnStartup.Checked;
@@ -1969,7 +1991,6 @@ procedure Tfrm_UnCodeX.FormClose(Sender: TObject;
   var Action: TCloseAction);
 var
   ini: TMemIniFile;
-  i: integer;
   dockData: TMemoryStream;
 begin
   if (MinimizeOnClose) then begin
@@ -2018,12 +2039,8 @@ begin
       ini.WriteBool('Layout', 'MenuBar', mi_MenuBar.Checked);
       ini.WriteBool('Layout', 'Toolbar', mi_Toolbar.Checked);
       ini.WriteBool('Layout', 'PackageTree', mi_PackageTree.Checked);
-      //ini.WriteInteger('Layout', 'PackageTreeWidth', tv_Packages.Width);
-      //ini.WriteBool('Layout', 'ClassTree', mi_ClassTree.Checked);
       ini.WriteBool('Layout', 'Log', mi_Log.Checked);
-      //ini.WriteInteger('Layout', 'LogHeight', lb_Log.Height);
       ini.WriteBool('Layout', 'SourceSnoop', mi_SourceSnoop.Checked);
-      //ini.WriteInteger('Layout', 'SourceSnoopWidth', re_SourceSnoop.Width);
       ini.WriteBool('Layout', 'PropertyInspector', mi_PropInspector.Checked);
       ini.WriteBool('Layout', 'StayOnTop', mi_StayOnTop.Checked);
       ini.WriteBool('Layout', 'SavePosition', mi_Saveposition.Checked);
@@ -2056,12 +2073,7 @@ begin
       ini.WriteBool('Layout', 'AutoHide', mi_AutoHide.Checked);
       ini.WriteBool('Layout', 'ABRight', mi_Right.Checked);
       ini.WriteBool('Layout', 'ABLeft', mi_Left.Checked);
-      for i := 0 to DefaultSC.ftshistory.Count-1 do begin
-        ini.WriteString('FullTextSearch', IntToStr(i), DefaultSC.ftshistory[i]);
-      end;
-      for i := 0 to DefaultSC.History.Count-1 do begin
-        ini.WriteString('ClassSearch', IntToStr(i), DefaultSC.History[i]);
-      end;
+      SaveSearchConfig(ini, 'search', DefaultSC);
       ini.UpdateFile;
     finally
       ini.Free;
@@ -2867,6 +2879,10 @@ begin
       mi_Analyseclass.Visible := false;
       mi_ShowProperties.Visible := false;
       mi_Compile.Visible := false;
+      mi_DeleteClass.Visible := false;
+      mi_MoveClass.Visible := false;
+      mi_RenameClass.Visible := false;
+      mi_PropInspector.Visible := false;
     end
     else if (TObject(Selected.Data).ClassType = TUClass) then begin
       mi_ClassName.Visible := true;
@@ -2875,6 +2891,10 @@ begin
       mi_Analyseclass.Visible := true;
       mi_ShowProperties.Visible := true;
       mi_Compile.Visible := true;
+      mi_DeleteClass.Visible := true;
+      mi_MoveClass.Visible := true;
+      mi_RenameClass.Visible := true;
+      mi_PropInspector.Visible := false;
     end
     else if (TObject(Selected.Data).ClassType = TUPackage) then begin
       mi_ClassName.Visible := false;
@@ -2882,6 +2902,10 @@ begin
       mi_Analyseclass.Visible := false;
       mi_ShowProperties.Visible := false;
       mi_Compile.Visible := false;
+      mi_DeleteClass.Visible := false;
+      mi_MoveClass.Visible := false;
+      mi_RenameClass.Visible := false;
+      mi_PropInspector.Visible := true;
     end;
     mi_SwitchTree.Visible := tv_Packages.Visible;
   end;
@@ -3005,6 +3029,32 @@ begin
       exit;
     end;
   end;
+end;
+
+procedure Tfrm_UnCodeX.ac_CreateSubClassExecute(Sender: TObject);
+begin
+	if (SelectedUClass <> nil) then CreateSubUClass(SelectedUClass)
+  else CreateSubUClass(SelectedUPackage);
+end;
+
+procedure Tfrm_UnCodeX.ac_DeleteClassExecute(Sender: TObject);
+var
+  i: integer;
+begin
+	if (SelectedUClass = nil) then exit;
+	if (MessageDlg('Are you sure you want to delete the class '''+SelectedUClass.name+''' ?', mtConfirmation, [mbYes,mbNo], 0) = mrYes) then begin
+  	i := 0;
+    if (SelectedUClass.children.Count > 0) then begin
+      i := MessageDlg('Do you also want to delete all subclasses ?', mtConfirmation, [mbYes,mbNo,mbCancel], 0);
+      if (i = mrCancel) then exit;
+    end;
+    DeleteClass(SelectedUClass, i = mrYes);
+  end;
+end;
+
+procedure Tfrm_UnCodeX.ac_PackagePropsExecute(Sender: TObject);
+begin
+  ShowPackageProps(SelectedUPackage);
 end;
 
 initialization

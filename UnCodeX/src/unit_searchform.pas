@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Search form, much better than the previous version
- $Id: unit_searchform.pas,v 1.5 2004-03-20 20:56:08 elmuerte Exp $
+ $Id: unit_searchform.pas,v 1.6 2004-03-23 16:25:45 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -30,7 +30,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons, ExtCtrls, unit_uclasses, ComCtrls;
+  Dialogs, StdCtrls, Buttons, ExtCtrls, unit_uclasses, ComCtrls, IniFiles;
 
 type
   TClassSearch = record
@@ -77,6 +77,9 @@ type
 
   function SearchForm(var cs: TClassSearch): boolean;
 
+  procedure LoadSearchConfig(ini: TCustomIniFile; section: string; var searchconfig: TClassSearch);
+  procedure SaveSearchConfig(ini: TCustomIniFile; section: string; searchconfig: TClassSearch);
+
 var
   frm_SearchForm: Tfrm_SearchForm;
 
@@ -111,6 +114,46 @@ begin
     Free;
   end;
 end;
+
+procedure LoadSearchConfig(ini: TCustomIniFile; section: string; var searchconfig: TClassSearch);
+var
+	i: integer;
+begin
+  searchconfig.isFromTop := ini.ReadBool(section, 'isFromTop', false);
+  searchconfig.isStrict := ini.ReadBool(section, 'isStrict', false);
+  searchconfig.isRegex := ini.ReadBool(section, 'isRegex', false);
+  searchconfig.isFindFirst := ini.ReadBool(section, 'isFindFirst', false);
+  searchconfig.Scope := ini.ReadInteger(section, 'Scope', 0);
+  searchconfig.history.Clear;
+  for i := 0 to ini.ReadInteger(section, 'history', 0)-1 do begin
+		searchconfig.history.Add(ini.ReadString(section, 'history:'+IntToStr(i), ''));
+  end;
+  searchconfig.ftshistory.Clear;
+  for i := 0 to ini.ReadInteger(section, 'ftshistory', 0)-1 do begin
+		searchconfig.ftshistory.Add(ini.ReadString(section, 'ftshistory:'+IntToStr(i), ''));
+  end;
+end;
+
+procedure SaveSearchConfig(ini: TCustomIniFile; section: string; searchconfig: TClassSearch);
+var
+	i: integer;
+begin
+  ini.WriteBool(section, 'isFromTop', searchconfig.isFromTop);
+  ini.WriteBool(section, 'isStrict', searchconfig.isStrict);
+  ini.WriteBool(section, 'isRegex', searchconfig.isRegex);
+  ini.WriteBool(section, 'isFindFirst', searchconfig.isFindFirst);
+  ini.WriteInteger(section, 'Scope', searchconfig.Scope);
+  ini.WriteInteger(section, 'history', searchconfig.history.Count);
+  for i := 0 to searchconfig.history.Count-1 do begin
+    ini.WriteString(section, 'history:'+IntToStr(i), searchconfig.history[i]);
+  end;
+  ini.WriteInteger(section, 'ftshistory', searchconfig.history.Count);
+  for i := 0 to searchconfig.ftshistory.Count-1 do begin
+    ini.WriteString(section, 'ftshistory:'+IntToStr(i), searchconfig.ftshistory[i]);
+  end;
+end;
+
+{ Tfrm_SearchForm }
 
 constructor Tfrm_SearchForm.CreateSearch(AOwner: TComponent; var searchconfig: TClassSearch);
 begin

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   program settings window
- $Id: unit_settings.pas,v 1.32 2004-03-07 13:57:29 elmuerte Exp $
+ $Id: unit_settings.pas,v 1.33 2004-03-23 16:25:46 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -76,7 +76,7 @@ type
     ed_HTMLHelpOutput: TEdit;
     btn_HTMLHelpOutput: TBitBtn;
     lb_Settings: TListBox;
-    ts_Compile: TTabSheet;
+    ts_Command: TTabSheet;
     gb_Compile: TGroupBox;
     lbl_CompilerCommandline: TLabel;
     ed_CompilerCommandline: TEdit;
@@ -105,12 +105,6 @@ type
     lb_IgnorePackages: TListBox;
     btn_AddIgnore: TBitBtn;
     btn_DelIgnore: TBitBtn;
-    ts_FullTextSearch: TTabSheet;
-    gb_FullTextSearch: TGroupBox;
-    lbl_OpenResult: TLabel;
-    btn_OpenResultPlaceHolder: TBitBtn;
-    ed_OpenResultCmd: TEdit;
-    btn_OpenResultCmd: TBitBtn;
     pm_OpenResultPlaceHolders: TPopupMenu;
     mi_ClassName2: TMenuItem;
     mi_ClassFile2: TMenuItem;
@@ -121,7 +115,6 @@ type
     mi_N3: TMenuItem;
     mi_Resultline1: TMenuItem;
     mi_Resultposition1: TMenuItem;
-    cb_FTSRegExp: TCheckBox;
     btn_Import: TBitBtn;
     od_BrowseIni: TOpenDialog;
     ts_Layout: TTabSheet;
@@ -207,6 +200,15 @@ type
     ed_gpdf: TEdit;
     lbl_gpdf: TLabel;
     btn_BrowseGPDF: TBitBtn;
+    lbl_OpenResult: TLabel;
+    ed_OpenResultCmd: TEdit;
+    btn_OpenResultPlaceHolder: TBitBtn;
+    btn_OpenResultCmd: TBitBtn;
+    bvl_Create: TBevel;
+    lbl_Create: TLabel;
+    ed_NewClassTemplate: TEdit;
+    btn_BrowseTemplate: TBitBtn;
+    od_BrowseUC: TOpenDialog;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -278,6 +280,7 @@ type
     procedure cb_fboldClick(Sender: TObject);
     procedure cb_SelColorChange(Sender: TObject);
     procedure btn_BrowseGPDFClick(Sender: TObject);
+    procedure btn_BrowseTemplateClick(Sender: TObject);
   private
   public
     TagChanged: boolean;
@@ -884,6 +887,12 @@ procedure Tfrm_Settings.btn_BrowseGPDFClick(Sender: TObject);
 begin
   od_BrowseIni.FileName := ed_gpdf.Text;
   if (od_BrowseIni.Execute) then ed_gpdf.Text := od_BrowseIni.FileName;
+end;
+
+procedure Tfrm_Settings.btn_BrowseTemplateClick(Sender: TObject);
+begin
+	od_BrowseUC.FileName := ed_NewClassTemplate.Text;
+  if (od_BrowseUC.Execute) then ed_NewClassTemplate.Text := od_BrowseUC.FileName;
 end;
 
 end.
