@@ -6,7 +6,7 @@
     Purpose:
         Main window for the GUI
 
-    $Id: unit_main.pas,v 1.131 2004-11-27 10:47:39 elmuerte Exp $
+    $Id: unit_main.pas,v 1.132 2004-12-01 06:40:11 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -440,8 +440,8 @@ type
         statustext : string; // current status text
         procedure NextBatchCommand;
         procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
-        procedure OpenSourceLine(uclass: TUClass; line, caret: integer);
-        procedure OpenSourceInline(uclass: TUClass; line, caret: integer);      
+        procedure OpenSourceLine(uclass: TUClass; line, caret: integer; exfile: string = '');
+        procedure OpenSourceInline(uclass: TUClass; line, caret: integer; exfile: string = '');      
     end;
 
     // status redirecting
@@ -950,15 +950,29 @@ begin
     end;
 end;
 
+function ResolveFilename(uclass: TUClass; exfile: string): string;
+begin
+    if (exfile = '') then result := uclass.FullFileName
+    else begin
+        result := iFindFile(ExpandFileName(uclass.package.PackageDir+exfile));
+    end;
+end;
+
 // Open a source file at a specific line
-procedure Tfrm_UnCodeX.OpenSourceLine(uclass: TUClass; line, caret: integer);
+procedure Tfrm_UnCodeX.OpenSourceLine(uclass: TUClass; line, caret: integer; exfile: string = '');
 var
     lst:    TStringList;
     i:      integer;
     exe:    string;
 begin
+    exfile := ResolveFilename(uclass, exfile);
+    if (not fileExists(exfile)) then begin
+        Log('Could not open file '+exfile);
+        exit;
+    end;
+
     if (OpenResultCmd = '') then begin
-        ExecuteProgram(uclass.package.path+PATHDELIM+uclass.filename);
+        ExecuteProgram(exfile);
         exit;
     end;
 
@@ -976,7 +990,7 @@ begin
             end;
             lst[i] := AnsiReplaceStr(lst[i], '%classname%', uclass.name);
             lst[i] := AnsiReplaceStr(lst[i], '%classfile%', uclass.filename);
-            lst[i] := AnsiReplaceStr(lst[i], '%classpath%', uclass.package.path+PATHDELIM+uclass.filename);
+            lst[i] := AnsiReplaceStr(lst[i], '%classpath%', exfile);
             lst[i] := AnsiReplaceStr(lst[i], '%packagename%', uclass.package.name);
             lst[i] := AnsiReplaceStr(lst[i], '%packagepath%', uclass.package.path);
             lst[i] := AnsiReplaceStr(lst[i], '%classsearch%', SearchConfig.query);
@@ -990,11 +1004,18 @@ begin
     end;
 end;
 
-procedure Tfrm_UnCodeX.OpenSourceInline(uclass: TUClass; line, caret: integer);
+//TODO: open include files where required
+procedure Tfrm_UnCodeX.OpenSourceInline(uclass: TUClass; line, caret: integer; exfile: string = '');
 var
     oldsel: TUClass;
     tmp2:   array[0..255] of char;
 begin
+    exfile := ResolveFilename(uclass, exfile);
+    if (not fileExists(exfile)) then begin
+        Log('Could not open file '+exfile);
+        exit;
+    end;
+
     oldsel := SelectedUClass;
     SelectedUClass := uclass;
     SelectedUPackage := nil;
