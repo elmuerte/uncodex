@@ -6,7 +6,7 @@
     Purpose:
         UnrealScript class analyser
 
-    $Id: unit_analyse.pas,v 1.47 2004-10-20 14:19:27 elmuerte Exp $
+    $Id: unit_analyse.pas,v 1.48 2004-11-06 15:07:44 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -24,7 +24,7 @@
 
     You should have received a copy of the GNU Lesser General Public
     License along with this library; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307    USA
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
 
 unit unit_analyse;
@@ -51,6 +51,7 @@ type
         p: TUCParser;
         status: TStatusReport;
         ClassHash: TObjectHash;
+        macroIfCnt: integer;
         procedure AnalyseClass();
         function pConst: TUConst;
         function pVar: TUProperty;
@@ -90,6 +91,7 @@ uses
 
 const
     KEYWORD_Class               = 'class';
+    KEYWORD_Interface           = 'interface';
     KEYWORD_Extends             = 'extends';
     KEYWORD_Expands             = 'expands';
     KEYWORD_Const               = 'const';
@@ -125,6 +127,20 @@ function UnQuoteString(input: string): string;
 begin
     result := Copy(input, 2, length(input)-2);
     result := StringReplace(result, '\"', '"', [rfReplaceAll]);
+end;
+
+// removes leading # and comments from a macro line
+function TrimMacro(input: string): string;
+var
+    i: integer;
+begin
+    if (Length(input) < 1) then exit;
+    if (input[1] = '#') then Delete(input, 1, 1);
+    i := pos('//', input);
+    if (i > 0) then Delete(input, i, Length(input));
+    i := pos('/*', input);
+    if (i > 0) then Delete(input, i, Length(input));
+    result := trim(input);
 end;
 
 // Create for a class list
@@ -187,7 +203,7 @@ begin
     Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds');
 end;
 
-procedure TClassAnalyser.ExecuteList;
+{procedure TClassAnalyser.ExecuteList;
 var
     i, j: integer;
 begin
@@ -218,6 +234,53 @@ begin
             end;
         end;
         if (Self.Terminated) then break;
+    end;
+end;}
+
+procedure TClassAnalyser.ExecuteList;
+var
+    i, n: integer;
+
+    procedure ExecClass(myclass: TUClass);
+    var
+        j: integer;
+    begin
+        Status('Analysing class '+myclass.name+' ...', round(i/(classes.count-1)*100));
+        try
+            uclass := myclass;
+            case ExecuteSingle of
+                RES_SUCCESS, RES_ERROR: Inc(i);
+            end;
+        except
+            on E: EOFException do begin
+                Inc(i);
+                LogClass('End of file reached while parsing '+myclass.filename+': '+E.Message, myclass);
+                LogClass('History:', myclass);
+                for j := 0 to GuardStack.Count-1 do begin
+                    LogClass('    '+GuardStack[j], myclass);
+                end;
+            end;
+            on E: Exception do begin
+                Inc(i);
+                LogClass('Unhandled exception in class '+myclass.name+': '+E.Message, myclass);
+                LogClass('History:', myclass);
+                for j := 0 to GuardStack.Count-1 do begin
+                    LogClass('    '+GuardStack[j], myclass);
+                end;
+            end;
+        end;
+        for j := 0 to myclass.children.Count-1 do begin
+            ExecClass(myclass.children[j]);
+            if (Self.Terminated) then exit;
+        end;
+    end;
+
+begin
+    i := 0;
+    for n := 0 to classes.Count-1 do begin
+        if (classes[n].parent = nil) then begin
+            ExecClass(classes[n]);
+        end;
     end;
 end;
 
@@ -782,8 +845,61 @@ begin
 end;
 
 procedure TClassAnalyser.pMacro(Sender: TUCParser);
+var
+    macro, args: string;
+    i: integer;
 begin
-    log('Got macro: '+trim(Sender.TokenString));
+    macro := TrimMacro(Sender.TokenString);
+    // TODO: this sucks
+    i := Pos(' ', macro);
+    if (i > 0) then begin
+        args := Copy(macro, i+1, Length(macro));
+        Delete(macro, i, Length(macro));
+    end;
+    macro := UpperCase(macro);
+    if (macro = 'DEFINE') then begin
+        i := Pos(' ', args);
+        if (i > 0) then begin
+            macro := Copy(args, 1, i-1);
+            Delete(args, 1, i);
+        end;
+        uclass.defs.define(macro, args);
+        //log(macro+'='+args);
+    end
+    else if (macro = 'IF') then begin
+        if (macroIfCnt > 0) then Inc(macroIfCnt)
+        else begin
+            log('eval: '+args);
+            if (not uclass.defs.Eval(args)) then begin
+                log(' = false');
+                macroIfCnt := 1;
+                while (macroIfCnt > 0) do begin
+                    p.SkipToken;
+                end;
+            end;
+        end; // do eval
+    end
+    else if (macro = 'ELSE') then begin
+        // the else part of something we want
+        if (macroIfCnt = 1) then Dec(macroIfCnt)
+        // last IF was true, so ignore
+        else if (macroIfCnt = 0) then begin
+            macroIfCnt := 1;
+            while (macroIfCnt > 0) do begin
+                p.SkipToken;
+            end;
+        end;
+        // else we don't care
+    end
+    else if (macro = 'ENDIF') then begin
+        //
+        if (macroIfCnt > 0) then begin
+            Dec(macroIfCnt);
+        end;
+    end
+    else begin
+        log('Unsupported macro: '+macro);
+    end;
 end;
 
 procedure TClassAnalyser.AnalyseClass;
@@ -822,6 +938,26 @@ begin
             end;
             continue;
         end;
+
+        // tribes:v interface
+        if (p.TokenSymbolIs(KEYWORD_Interface) and not bHadClass) then begin
+            bHadClass := true;
+            p.NextToken;
+            uclass.name := p.TokenString;
+            uclass.CommentType := ctSource;
+            uclass.comment := trim(p.GetCopyData);
+            if (uclass.comment = '') then begin
+                uclass.comment := GetSecondaryComment(uclass.FullName);
+                uclass.CommentType := ctExtern;
+            end;
+            uclass.modifiers := '';
+            while (p.Token <> ';') do begin
+                uclass.modifiers := uclass.modifiers+p.TokenString+' ';
+                p.NextToken;
+            end;
+            continue;
+        end;
+
         if (not bHadClass) then begin
             p.NextToken;
             continue;

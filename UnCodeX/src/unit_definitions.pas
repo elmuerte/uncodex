@@ -6,7 +6,7 @@
     Purpose:
         General definitions and independed utility functions
 
-    $Id: unit_definitions.pas,v 1.118 2004-10-20 14:19:28 elmuerte Exp $
+    $Id: unit_definitions.pas,v 1.119 2004-11-06 15:07:44 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -71,7 +71,7 @@ type
 
 const
     APPTITLE        = 'UnCodeX';
-    APPVERSION      = '212';
+    APPVERSION      = '213';
     {$IFDEF MSWINDOWS}
     APPPLATFORM     = 'MS Windows';
     {$ENDIF}

@@ -7,7 +7,7 @@
         Parser for UnrealScript, used for analysing the unrealscript source.
         Based on TParser by Borland.
 
-    $Id: unit_parser.pas,v 1.23 2004-10-20 14:19:29 elmuerte Exp $
+    $Id: unit_parser.pas,v 1.24 2004-11-06 15:07:44 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -67,6 +67,7 @@ type
         constructor Create(Stream: TStream);
         destructor Destroy; override;
         function NextToken: Char;
+        function SkipToken: Char;
         function SourcePos: Longint;
         function TokenString: string;
         function TokenSymbolIs(const S: string): Boolean;
@@ -121,9 +122,20 @@ begin
         result := NextTokenTmp;
         if (result = toMacro) then begin
             if (assigned(FProcessMacro)) then FProcessMacro(self);
-            result := toComment;    // macro processed, get the real next token
+            // macro processed, get the real next token, unless the token already changed
+            if (FToken = toMacro) then result := toComment;
         end;
     until ((result <> toComment) or (result = toEOF));
+end;
+
+function TUCParser.SkipToken: Char;
+var
+    pfc: boolean;
+begin
+    pfc := FullCopy;
+    FullCopy := false;
+    result := NextToken;
+    FullCopy := pfc;
 end;
 
 function TUCParser.NextTokenTmp: Char;
@@ -285,7 +297,7 @@ begin
     FSourcePtr := P;
     FToken := Result;
     if (FullCopy) then begin
-        if ((not FCIgnoreComments) or ((Result <> toComment) or (Result <> toMacro))) then FCopyStream.WriteString(TokenString);
+        if ((not FCIgnoreComments) or ((Result <> toComment) and (Result <> toMacro))) then FCopyStream.WriteString(TokenString);
     end;
 end;
 

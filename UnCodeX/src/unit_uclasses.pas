@@ -6,7 +6,7 @@
     Purpose:
         Class definitions for UnrealScript elements
 
-    $Id: unit_uclasses.pas,v 1.37 2004-10-20 14:19:29 elmuerte Exp $
+    $Id: unit_uclasses.pas,v 1.38 2004-11-06 15:07:44 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -43,14 +43,29 @@ const
 type
     TUCommentType = (ctSource, ctExtern, ctInherited);
 
+    TUClass = class;
     TUPackage = class;
     TUFunctionList = class;
 
+    
+    TDefinitionList = class(TObject)
+        fowner:     TUClass;
+        defines:    TStringList;
+    public
+        function IsDefined(name: string): boolean;
+        function Eval(line: string): boolean;
+        function define(name, value: string): boolean;
+        function undefine(name: string): boolean;
+        constructor Create(owner: TUClass);
+        destructor Destroy; override;
+        property Definitions: TStringList read defines;
+    end;
+
     // general Unreal Object
     TUObject = class(TObject)
-        name:               string;
-        srcline:            integer;
-        comment:            string;
+        name:       string;
+        srcline:    integer;
+        comment:    string;
         CommentType:    TUCommentType;
     end;
 
@@ -61,7 +76,7 @@ type
     end;
 
     TUConst = class(TUObject)
-        value:          string;
+        value:  string;
     end;
 
     TUConstList = class(TUObjectList)
@@ -75,9 +90,9 @@ type
     end;
 
     TUProperty = class(TUObject)
-        ptype:          string;
+        ptype:      string;
         modifiers:  string;
-        tag:                string;
+        tag:        string;
     end;
 
     TUPropertyList = class(TUObjectList)
@@ -92,7 +107,7 @@ type
     end;
 
     TUEnum = class(TUObject)
-        options:        string;
+        options:    string;
     end;
 
     TUEnumList = class(TUObjectList)
@@ -106,7 +121,7 @@ type
     end;
 
     TUStruct = class(TUObject)
-        parent:      string;
+        parent:     string;
         modifiers:  string;
         properties: TUPropertyList;
         constructor Create;
@@ -124,7 +139,7 @@ type
     end;
 
     TUState = class(TUObject)
-        extends:        string;
+        extends:    string;
         modifiers:  string;
         functions:  TUFunctionList;
         constructor Create;
@@ -144,13 +159,13 @@ type
     TUFunctionType = (uftFunction, uftEvent, uftOperator, uftPreOperator, uftPostOperator, uftDelegate);
 
     TUFunction = class(TUObject)
-        ftype:          TUFunctionType;
-        return:      string;
+        ftype:      TUFunctionType;
+        return:     string;
         modifiers:  string;
-        params:      string;
-        state:          TUState;
-        args:               TUPropertyList; // parsed argument list (NOT USED)
-        locals:         TUPropertyList; // local variable delcrations (NOT USED)
+        params:     string;
+        state:      TUState;
+        args:       TUPropertyList; // parsed argument list (NOT USED)
+        locals:     TUPropertyList; // local variable delcrations (NOT USED)
         constructor Create;
         destructor Destroy; override;
     end;
@@ -167,31 +182,33 @@ type
 
     TUClassList = class;
 
+    TUCInterfaceType = (itNone, itTribesV);
+
     TUClass = class(TUObject)
     public
-        filename:                   string;
-        package:                        TUPackage;
-        parent:                     TUClass;
-        parentname:                 string;
-        modifiers:                  string;
-        // TODO:
-        isInterface:                boolean; // true if not a class but interface
-        //implements:                TUClassList; // implements these interfaces
-        priority:                   integer;
-        consts:                     TUConstList;
-        properties:                 TUPropertyList;
-        enums:                          TUEnumList;
-        structs:                        TUStructList;
-        states:                     TUstateList;
-        functions:                  TUFunctionList;
-        delegates:                  TUFunctionList;
-        treenode:                   TObject; // class tree node
-        treenode2:                  TObject; // the second tree node (PackageTree)
-        filetime:                   integer; // used for checking for changed files
-        defaultproperties:  string; // AS IS
-        tagged:                     boolean;
-        children:                   TUClassList; // not owned, don't free, don't save
-        deps:                               TUClassList; // dependency list, not owned, don't free (NOT USED)
+        parent:                 TUClass;
+        filename:               string;
+        package:                TUPackage;
+        parentname:             string;
+        modifiers:              string;
+        InterfaceType:          TUCInterfaceType;
+        //implements:           TUClassList; // implements these interfaces
+        priority:               integer;
+        consts:                 TUConstList;
+        properties:             TUPropertyList;
+        enums:                  TUEnumList;
+        structs:                TUStructList;
+        states:                 TUstateList;
+        functions:              TUFunctionList;
+        delegates:              TUFunctionList;
+        treenode:               TObject; // class tree node
+        treenode2:              TObject; // the second tree node (PackageTree)
+        filetime:               integer; // used for checking for changed files
+        defaultproperties:      string; // AS IS
+        tagged:                 boolean;
+        children:               TUClassList; // not owned, don't free, don't save
+        deps:                   TUClassList; // dependency list, not owned, don't free (NOT USED)
+        defs:                   TDefinitionList;
         constructor Create;
         destructor Destroy; override;
         function FullName: string;
@@ -209,11 +226,11 @@ type
     end;
 
     TUPackage = class(TUObject)
-        classes:        TUClassList;
-        priority:    integer;
-        path:            string;
-        treenode:    TObject;
-        tagged:      boolean;
+        classes:    TUClassList;
+        priority:   integer;
+        path:       string;
+        treenode:   TObject;
+        tagged:     boolean;
         constructor Create;
         destructor Destroy; override;
     end;
@@ -485,6 +502,7 @@ begin
     delegates := TUFunctionList.Create(true);
     children := TUClassList.Create(false);
     deps := TUClassList.Create(false);
+    defs := TDefinitionList.Create(self);
 end;
 
 destructor TUClass.Destroy;
@@ -498,6 +516,7 @@ begin
     delegates.Free;
     children.Free;
     deps.Free;
+    defs.Free;
 end;
 
 function TUClass.FullName: string;
@@ -583,6 +602,67 @@ end;
 procedure TUPackageList.SetItem(Index: Integer; AObject: TUPackage);
 begin
     inherited SetItem(index, AObject);
+end;
+
+{ TDefinitionList }
+
+const
+    UNDEFINED = #1#9#1#2;
+
+constructor TDefinitionList.Create(owner: TUClass);
+begin
+  fowner := owner;
+  defines := TStringList.Create;
+end;
+
+destructor TDefinitionList.Destroy;
+begin
+  fowner := nil;
+  defines.Free;
+end;
+
+function TDefinitionList.IsDefined(name: string): boolean;
+var
+    val: string;
+begin
+    result := false;
+    if (defines.IndexOfName(name) > -1) then begin
+        val := defines.Values[name];
+        result := (val <> '0') and (val <> UNDEFINED);
+    end
+    else if (fowner <> nil) then begin
+        if (fowner.parent <> nil) then result := fowner.parent.defs.IsDefined(name);
+    end;
+end;
+
+function TDefinitionList.Eval(line: string): boolean;
+begin
+    //TODO: !!!
+    result := IsDefined(line);
+end;
+
+// returns true when a new value was added
+function TDefinitionList.define(name, value: string): boolean;
+begin
+    result := defines.IndexOfName(name) = -1;
+    defines.Values[name] := value;
+end;
+
+// returns true when definition was deletes
+// if false it was UNDEFINED
+function TDefinitionList.undefine(name: string): boolean;
+var
+    i: integer;
+begin
+    i := defines.IndexOfName(name);
+    result := false;
+    if (i <> -1) then begin
+        result := true;
+        defines.Delete(i);
+    end
+    else begin
+        defines.Values[name] := UNDEFINED;
+    end;
 end;
 
 end.
