@@ -158,6 +158,8 @@ type
     ud_TabSize: TUpDown;
     ed_TabSize: TEdit;
     cb_CPAsWindow: TCheckBox;
+    lbl_HTMLTargetExt: TLabel;
+    ed_HTMLTargetExt: TEdit;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);

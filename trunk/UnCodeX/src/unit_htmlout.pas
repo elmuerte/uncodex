@@ -30,6 +30,7 @@ type
     ClassTree: TTreeView;
     outputdir, TemplateDir: string;
     CreateSource: boolean;
+    TargetExtention: string;
   end;
 
   // General replace function
@@ -66,6 +67,8 @@ type
     function replacePackagesListEntry(var replacement: string; data: TObject = nil): boolean;
     procedure htmlClassesList; // creates classes.html
     function replaceClassesList(var replacement: string; data: TObject = nil): boolean;
+    procedure htmlPackageClasses; // creates PackageClasses.html
+    function replacePackageClassesList(var replacement: string; data: TObject = nil): boolean;
     procedure htmlPackageOverview; // creates <packagename>.html
     function replacePackageOverview(var replacement: string; data: TObject = nil): boolean;
     procedure htmlClassOverview; // creates <packagename>_<classname>.html
@@ -96,11 +99,11 @@ type
 
 const
   default_title = 'UnCodeX';
-  packages_list_filename = 'packages.html';
-  classes_list_filename = 'classes.html';
-  overview_filename = 'overview.html';
-  classtree_filename = 'classtree.html';
-  glossary_filename = 'glossary_A.html';
+  packages_list_filename = 'packages.';
+  classes_list_filename = 'classes.';
+  overview_filename = 'overview.';
+  classtree_filename = 'classtree.';
+  glossary_filename = 'glossary_A.';
   SOURCEPRE = 'Source_';
 
 implementation
@@ -110,10 +113,11 @@ uses unit_copyparser, unit_main, unit_sourceparser;
 var
   currentClass: TUClass;
   curPos, maxPos: integer;
+  TargetExtention: string;
 
 function ClassLink(uclass: TUClass): string;
 begin
-  result := LowerCase(uclass.package.name+'_'+uclass.name+'.html');
+  result := LowerCase(uclass.package.name+'_'+uclass.name+'.'+TargetExtention);
 end;
 
 // convert to HTML chars
@@ -135,6 +139,7 @@ begin
   Self.HTMLOutputDir := Config.outputdir;
   Self.TemplateDir := Config.TemplateDir+PATHDELIM;
   Self.CreateSource := config.CreateSource;
+  TargetExtention := config.TargetExtention;
   TypeCache := Hashes.TStringHash.Create;
   ConstCache := Hashes.TStringHash.Create;
   VarCache := Hashes.TStringHash.Create;
@@ -144,6 +149,7 @@ begin
   Keywords := Hashes.TStringHash.Create;
   ini := TMemIniFile.Create(TemplateDir+'template.ini');
   MaxInherit := ini.ReadInteger('Settings', 'MaxInherit', MaxInt);
+  if (TargetExtention = '') then TargetExtention := ini.ReadString('Settings', 'TargetExt', 'html');
   if (MaxInherit <= 0) then MaxInherit := MaxInt;
   inherited Create(true);
 end;
@@ -167,7 +173,7 @@ var
   i: integer;
 begin
   curPos := 0;
-  maxPos := PackageList.Count+ClassList.Count;
+  maxPos := (PackageList.Count*2)+ClassList.Count;
   if (ini.ReadBool('Settings', 'CreateClassTree', true)) then maxPos := maxPos+1;
   if (ini.ReadBool('Settings', 'CreateGlossary', true)) then maxPos := maxPos+26;
   if (ini.ReadBool('Settings', 'SourceCode', true)) then maxPos := maxPos+ClassList.Count;
@@ -193,6 +199,7 @@ begin
   if (not Self.Terminated) then htmlOverview;
   if (not Self.Terminated) then htmlPackagesList;
   if (not Self.Terminated) then htmlClassesList;
+  if (not Self.Terminated) then htmlPackageClasses;
   if (not Self.Terminated) then htmlPackageOverview;
   if (not Self.Terminated) then htmlClassOverview;
   if (ini.ReadBool('Settings', 'CreateClassTree', true) and (not Self.Terminated)) then htmlTree; // create class tree
@@ -246,7 +253,7 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'glossary_link') = 0) then begin
-    replacement := glossary_filename;
+    replacement := glossary_filename+TargetExtention;
     result := true;
   end
   else if (CompareText(replacement, 'glossary_title') = 0) then begin
@@ -254,7 +261,7 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'classtree_link') = 0) then begin
-    replacement := classtree_filename;
+    replacement := classtree_filename+TargetExtention;
     result := true;
   end
   else if (CompareText(replacement, 'classtree_title') = 0) then begin
@@ -262,7 +269,7 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'index_link') = 0) then begin
-    replacement := overview_filename;
+    replacement := overview_filename+TargetExtention;
     result := true;
   end
   else if (CompareText(replacement, 'index_title') = 0) then begin
@@ -277,15 +284,27 @@ begin
     replacement := APPTITLE;
     result := true;
   end
+  else if (CompareText(replacement, 'packages_list_link') = 0) then begin
+    replacement := packages_list_filename+TargetExtention;
+    result := true;
+  end
+  else if (CompareText(replacement, 'classes_list_link') = 0) then begin
+    replacement := classes_list_filename+TargetExtention;
+    result := true;
+  end
+  else if (CompareText(replacement, 'overview_link') = 0) then begin
+    replacement := overview_filename+TargetExtention;
+    result := true;
+  end
 end;
 
 procedure THTMLOutput.htmlIndex;
 var
   template, target: TFileStream;
 begin
-  Status('Creating index.html');
+  Status('Creating index.'+TargetExtention);
   template := TFileStream.Create(templatedir+'index.html', fmOpenRead or fmShareDenyWrite);
-  target := TFileStream.Create(htmloutputdir+PATHDELIM+'index.html', fmCreate);
+  target := TFileStream.Create(htmloutputdir+PATHDELIM+'index.'+TargetExtention, fmCreate);
   try
     parseTemplate(template, target, replaceIndex);
   finally
@@ -297,28 +316,15 @@ end;
 function THTMLOutput.replaceIndex(var replacement: string; data: TObject = nil): boolean;
 begin
   result := replaceDefault(replacement);
-  if (result) then exit;
-  if (CompareText(replacement, 'packages_list') = 0) then begin
-    replacement := packages_list_filename;
-    result := true;
-  end
-  else if (CompareText(replacement, 'classes_list') = 0) then begin
-    replacement := classes_list_filename;
-    result := true;
-  end
-  else if (CompareText(replacement, 'overview') = 0) then begin
-    replacement := overview_filename;
-    result := true;
-  end
 end;
 
 procedure THTMLOutput.htmlOverview;
 var
   template, target: TFileStream;
 begin
-  Status('Creating '+overview_filename);
+  Status('Creating '+overview_filename+TargetExtention);
   template := TFileStream.Create(templatedir+'overview.html', fmOpenRead or fmShareDenyWrite);
-  target := TFileStream.Create(htmloutputdir+PATHDELIM+overview_filename, fmCreate);
+  target := TFileStream.Create(htmloutputdir+PATHDELIM+overview_filename+TargetExtention, fmCreate);
   try
     parseTemplate(template, target, replaceOverview);
   finally
@@ -357,9 +363,9 @@ procedure THTMLOutput.htmlPackagesList;
 var
   template, target: TFileStream;
 begin
-  Status('Creating '+packages_list_filename);
+  Status('Creating '+packages_list_filename+TargetExtention);
   template := TFileStream.Create(templatedir+'packages_list.html', fmOpenRead or fmShareDenyWrite);
-  target := TFileStream.Create(htmloutputdir+PATHDELIM+packages_list_filename, fmCreate);
+  target := TFileStream.Create(htmloutputdir+PATHDELIM+packages_list_filename+TargetExtention, fmCreate);
   try
     parseTemplate(template, target, replacePackagesList);
   finally
@@ -402,7 +408,11 @@ begin
   result := replaceDefault(replacement);
   if (result) then exit;
   if (CompareText(replacement, 'package_link') = 0) then begin
-    replacement := LowerCase('package_'+TUPackage(data).name+'.html');
+    replacement := LowerCase('package_'+TUPackage(data).name+'.'+TargetExtention);
+    result := true;
+  end
+  else if (CompareText(replacement, 'package_classes_link') = 0) then begin
+    replacement := LowerCase('packagelist_'+TUPackage(data).name+'.'+TargetExtention);
     result := true;
   end
   else if (CompareText(replacement, 'package_name') = 0) then begin
@@ -438,14 +448,40 @@ procedure THTMLOutput.htmlClassesList;
 var
   template, target: TFileStream;
 begin
-  Status('Creating '+classes_list_filename);
+  Status('Creating '+classes_list_filename+TargetExtention);
   template := TFileStream.Create(templatedir+'classes_list.html', fmOpenRead or fmShareDenyWrite);
-  target := TFileStream.Create(htmloutputdir+PATHDELIM+classes_list_filename, fmCreate);
+  target := TFileStream.Create(htmloutputdir+PATHDELIM+classes_list_filename+TargetExtention, fmCreate);
   try
     parseTemplate(template, target, replaceClassesList);
   finally
     template.Free;
     target.Free;
+  end;
+end;
+
+procedure THTMLOutput.htmlPackageClasses;
+var
+  template, target: TFileStream;
+  i: integer;
+begin
+  template := TFileStream.Create(templatedir+'packageclasses_list.html', fmOpenRead or fmShareDenyWrite);
+  Status('Creating '+classes_list_filename+TargetExtention);
+  try
+    for i := 0 to PackageList.Count-1 do begin
+      Status('Creating packagelist_'+PackageList[i].name+'.'+TargetExtention, round(curPos/maxPos*100));
+      curPos := curPos+1;
+      PackageList[i].classes.Sort;
+      target := TFileStream.Create(htmloutputdir+PATHDELIM+LowerCase('packagelist_'+PackageList[i].name+'.'+TargetExtention), fmCreate);
+      try
+        template.Position := 0;
+        parseTemplate(template, target, replacePackageClassesList, PackageList[i]);
+      finally
+        target.Free;
+      end;
+      if (Self.Terminated) then break;
+    end;
+  finally
+    template.Free;
   end;
 end;
 
@@ -475,6 +511,32 @@ begin
   end
 end;
 
+function THTMLOutput.replacePackageClassesList(var replacement: string; data: TObject = nil): boolean;
+var
+  template: TFileStream;
+  target: TStringStream;
+  i: integer;
+begin
+  result := replaceDefault(replacement, data) or replacePackagesListEntry(replacement, data);
+  if (result) then exit;
+  if (CompareText(replacement, 'classes_list') = 0) then begin
+    template := TFileStream.Create(templatedir+'packageclasses_list_entry.html', fmOpenRead);
+    target := TStringStream.Create('');
+    try
+      for i := 0 to (data as TUPackage).classes.Count-1 do begin
+        template.Position := 0;
+        parseTemplate(template, target, replaceClass, (data as TUPackage).classes[i]);
+        if (Self.Terminated) then break;
+      end;
+      replacement := target.DataString;
+      result := true;
+    finally
+      template.Free;
+      target.Free;
+    end;
+  end
+end;
+
 procedure THTMLOutput.htmlPackageOverview;
 var
   template, target: TFileStream;
@@ -483,10 +545,10 @@ begin
   template := TFileStream.Create(templatedir+'package_overview.html', fmOpenRead or fmShareDenyWrite);
   try
     for i := 0 to PackageList.Count-1 do begin
-      Status('Creating package_'+PackageList[i].name+'.html', round(curPos/maxPos*100));
+      Status('Creating package_'+PackageList[i].name+'.'+TargetExtention, round(curPos/maxPos*100));
       curPos := curPos+1;
       PackageList[i].classes.Sort;
-      target := TFileStream.Create(htmloutputdir+PATHDELIM+LowerCase('package_'+PackageList[i].name+'.html'), fmCreate);
+      target := TFileStream.Create(htmloutputdir+PATHDELIM+LowerCase('package_'+PackageList[i].name+'.'+TargetExtention), fmCreate);
       try
         template.Position := 0;
         parseTemplate(template, target, replacePackageOverview, PackageList[i]);
@@ -560,7 +622,7 @@ begin
     result := result+DupeString(' ', (Level-1)*4)+'|'+#10;
     result := result+DupeString(' ', (Level-1)*4)+'+-- ';
   end;
-  result := result+'<a href="package_'+LowerCase(uclass.package.name)+'.html">'+uclass.package.name+'</a>.<a href="'+ClassLink(uclass)+'">'+uclass.name+'</a>'+#10;
+  result := result+'<a href="package_'+LowerCase(uclass.package.name)+'.'+TargetExtention+'">'+uclass.package.name+'</a>.<a href="'+ClassLink(uclass)+'">'+uclass.name+'</a>'+#10;
   Inc(level);
 end;
 
@@ -1304,9 +1366,9 @@ procedure THTMLOutput.htmlTree;
 var
   template, target: TFileStream;
 begin
-  Status('Creating '+classtree_filename);
-  template := TFileStream.Create(templatedir+classtree_filename, fmOpenRead or fmShareDenyWrite);
-  target := TFileStream.Create(htmloutputdir+PATHDELIM+classtree_filename, fmCreate);
+  Status('Creating '+classtree_filename+TargetExtention);
+  template := TFileStream.Create(templatedir+'classtree.html', fmOpenRead or fmShareDenyWrite);
+  target := TFileStream.Create(htmloutputdir+PATHDELIM+classtree_filename+TargetExtention, fmCreate);
   try
     parseTemplate(template, target, replaceClasstree);
   finally
@@ -1413,10 +1475,10 @@ begin
     for i := Low(glossaryitems) to high(glossaryitems) do begin
       if (Self.Terminated) then break;
       gli.item := glossaryitems[i];
-      Status('Creating glossary_'+glossaryitems[i]+'.html', round(curPos/maxPos*100));
+      Status('Creating glossary_'+glossaryitems[i]+'.'+TargetExtention, round(curPos/maxPos*100));
       curPos := curPos+1;
       template.Position := 0;
-      target := TFileStream.Create(htmloutputdir+PATHDELIM+'glossary_'+glossaryitems[i]+'.html', fmCreate);
+      target := TFileStream.Create(htmloutputdir+PATHDELIM+'glossary_'+glossaryitems[i]+'.'+TargetExtention, fmCreate);
       try
         parseTemplate(template, target, replaceGlossary, gli);
       finally
@@ -1633,6 +1695,22 @@ begin
         replacement := StringReplace(replacement, '>', '&gt;', [rfReplaceAll]);
         replacement := '<font class="source_comment">'+replacement+'</font>';
         replacement := replacement+'<a name="'+IntToStr(p.SourceLine)+'"></a>';
+        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+      end
+      else if (p.Token = toMCommentBegin) then begin
+        replacement := p.TokenString;
+        replacement := StringReplace(replacement, '<', '&lt;', [rfReplaceAll]);
+        replacement := StringReplace(replacement, '>', '&gt;', [rfReplaceAll]);
+        replacement := '<font class="source_comment">'+replacement; // cf2 = comment
+        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+        while (p.Token <> toMCommentEnd) do begin
+          p.SkipToken(true);
+          replacement := p.TokenString;
+          replacement := StringReplace(replacement, '<', '&lt;', [rfReplaceAll]);
+          replacement := StringReplace(replacement, '>', '&gt;', [rfReplaceAll]);
+          p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+        end;
+        replacement := '</font>'; // close it
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toInteger) then begin

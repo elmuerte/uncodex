@@ -192,6 +192,7 @@ var
   P: PChar;
   isComment: boolean;
   CommentString: string;
+  comminit: integer; // so strip of the first /**
 begin
   SkipBlanks;
   P := FSourcePtr;
@@ -296,6 +297,7 @@ begin
         end
         else if (P^ = '*') then begin // block comment
           isComment := (P+1)^ = '*';
+          comminit := 3;
           if (isComment) then begin
             GetCopyData(true); // empty buffer
             CopyInitComment := false; // /** */ is better than //
@@ -305,8 +307,9 @@ begin
             if ((P^ = #0) or (P^ = #0)) then begin
               FSourcePtr := P;
               if (isComment) then begin
-                SetString(CommentString, FTokenPtr+3, FSourcePtr - FTokenPtr - 3);
+                SetString(CommentString, FTokenPtr + comminit, FSourcePtr - FTokenPtr - comminit);
                 FCopyStream.WriteString(CommentString);
+                comminit := 0;
               end;
               ReadBuffer;
               P := FSourcePtr;
@@ -316,7 +319,7 @@ begin
           end
           until ((P^ ='*') and ((P+1)^ ='/' ));
           if (isComment) then begin
-            SetString(CommentString, FTokenPtr+3, P - FTokenPtr - 3); // 3 to strip /**
+            SetString(CommentString, FTokenPtr + comminit, P - FTokenPtr - comminit); // 3 to strip /**
             FCopyStream.WriteString(CommentString);
           end;
           Inc(P, 2);

@@ -104,6 +104,16 @@
 				</OBJECT>
 		</UL>
 		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="packageclasses_list.html">
+			<param name="Local" value="templates_packageclasses_list.html">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="packageclasses_list_entry.html">
+				<param name="Local" value="templates_packageclasses_list_entry.html">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="overview.html">
 			<param name="Local" value="templates_overview.html">
 			</OBJECT>

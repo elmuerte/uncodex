@@ -73,11 +73,31 @@ begin
       end
       else if (p.Token = toComment) then begin
         replacement := p.TokenString;
+        replacement := StringReplace(replacement, '\', '\\', [rfReplaceAll]);
         replacement := StringReplace(replacement, '{', '\{', [rfReplaceAll]);
         replacement := StringReplace(replacement, '}', '\}', [rfReplaceAll]);
-        replacement := StringReplace(replacement, '\', '\\', [rfReplaceAll]);
         replacement := StringReplace(replacement, #10, '\par ', [rfReplaceAll]);
         replacement := '{\cf2 '+replacement+'}'; // cf2 = comment
+        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+      end
+      else if (p.Token = toMCommentBegin) then begin
+        replacement := p.TokenString;
+        replacement := StringReplace(replacement, '\', '\\', [rfReplaceAll]);
+        replacement := StringReplace(replacement, '{', '\{', [rfReplaceAll]);
+        replacement := StringReplace(replacement, '}', '\}', [rfReplaceAll]);
+        replacement := StringReplace(replacement, #10, '\par ', [rfReplaceAll]);
+        replacement := '{\cf2 '+replacement; // cf2 = comment
+        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+        while (p.Token <> toMCommentEnd) do begin
+          p.SkipToken(true);
+          replacement := p.TokenString;
+          replacement := StringReplace(replacement, '\', '\\', [rfReplaceAll]);
+          replacement := StringReplace(replacement, '{', '\{', [rfReplaceAll]);
+          replacement := StringReplace(replacement, '}', '\}', [rfReplaceAll]);
+          replacement := StringReplace(replacement, #10, '\par ', [rfReplaceAll]);
+          p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+        end;
+        replacement := '}'; // close it
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toInteger) then begin
@@ -94,9 +114,9 @@ begin
       end
       else if (p.Token = toMacro) then begin
         replacement := p.TokenString;
+        replacement := StringReplace(replacement, '\', '\\', [rfReplaceAll]);
         replacement := StringReplace(replacement, '{', '\{', [rfReplaceAll]);
         replacement := StringReplace(replacement, '}', '\}', [rfReplaceAll]);
-        replacement := StringReplace(replacement, '\', '\\', [rfReplaceAll]);
         replacement := '{\cf3 '+replacement+'}\par '; // cf3 = macro
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
