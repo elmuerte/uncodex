@@ -3,6 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class properties window
+ $Id: unit_tags.pas,v 1.12 2003-06-10 12:00:27 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_tags;

@@ -1,3 +1,11 @@
+{-----------------------------------------------------------------------------
+ Unit Name: unit_deplist
+ Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Purpose:   Dependency list
+ $Id: unit_deplist.pas,v 1.7 2003-06-10 12:00:22 elmuerte Exp $
+-----------------------------------------------------------------------------}
+
 unit unit_deplist;
 
 interface

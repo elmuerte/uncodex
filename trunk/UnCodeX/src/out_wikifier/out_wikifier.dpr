@@ -3,6 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Converts the UScript class info to UnrealWiki format
+ $Id: out_wikifier.dpr,v 1.5 2003-06-10 12:00:18 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 library out_wikifier;

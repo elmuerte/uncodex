@@ -3,6 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Search form, much better than the previous version
+ $Id: unit_searchform.pas,v 1.2 2003-06-10 12:00:27 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_searchform;

@@ -3,6 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Definitions used from custom output modules
+ $Id: unit_outputdefs.pas,v 1.6 2003-06-10 12:00:22 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_outputdefs;

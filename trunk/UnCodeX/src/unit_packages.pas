@@ -3,6 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Unreal Package scanner, searches for classes in directories
+ $Id: unit_packages.pas,v 1.11 2003-06-10 12:00:22 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_packages;

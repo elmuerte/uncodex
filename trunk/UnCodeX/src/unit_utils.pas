@@ -3,6 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   General function/utils that require Forms
+ $Id: unit_utils.pas,v 1.3 2003-06-10 12:00:28 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_utils;

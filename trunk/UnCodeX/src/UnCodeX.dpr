@@ -3,6 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
+ $Id: UnCodeX.dpr,v 1.23 2003-06-10 12:00:18 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 program UnCodeX;

@@ -3,6 +3,7 @@
  Author:    elmuerte
  Purpose:   parser class based on CopyParser.pas used for processing the HTML
             templates
+ $Id: unit_copyparser.pas,v 1.5 2003-06-10 12:00:18 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 { *************************************************************************** }

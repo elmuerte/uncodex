@@ -3,6 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
+ $Id: unit_main.pas,v 1.52 2003-06-10 12:00:22 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_main;

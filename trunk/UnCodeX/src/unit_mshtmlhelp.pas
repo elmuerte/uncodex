@@ -3,6 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   creates the HTML Help project file and runs the compiler
+ $Id: unit_mshtmlhelp.pas,v 1.8 2003-06-10 12:00:22 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_mshtmlhelp;
