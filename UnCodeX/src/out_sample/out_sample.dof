@@ -66,7 +66,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=0
 Release=0
-Build=9
+Build=10
 Debug=0
 PreRelease=0
 Special=0
@@ -77,7 +77,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Michiel 'El Muerte' Hendriks
 FileDescription=sample output module
-FileVersion=1.0.0.9
+FileVersion=1.0.0.10
 InternalName=out_sample
 LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
 LegalTrademarks=
@@ -88,3 +88,12 @@ Comments=http://wiki.beyondunreal.com/wiki/UnCodeX
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
+[HistoryLists\hlUnitOutputDirectory]
+Count=3
+Item0=..\DCU
+Item1=..\..\Dcu\out_graphviz
+Item2=..\Dcu\out_graphviz
+[HistoryLists\hlOutputDirectorry]
+Count=2
+Item0=..\BIN
+Item1=..\..\Bin
