@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   about UnCodeX dialog
- $Id: unit_about.pas,v 1.12 2004-02-23 12:20:47 elmuerte Exp $
+ $Id: unit_about.pas,v 1.13 2004-05-05 08:14:08 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -30,7 +30,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ExtCtrls;
+  Dialogs, StdCtrls, ExtCtrls, Buttons;
 
 type
   Tfrm_About = class(TForm)
@@ -48,7 +48,11 @@ type
     lbl_TimeStamp: TLabel;
     lbl_Platform: TLabel;
     img_Logo: TImage;
+    btn_EmailGo: TBitBtn;
+    btn_HPGo: TBitBtn;
     procedure FormCreate(Sender: TObject);
+    procedure btn_EmailGoClick(Sender: TObject);
+    procedure btn_HPGoClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -60,7 +64,7 @@ var
 
 implementation
 
-uses unit_definitions {$IFDEF MSWINDOWS}, ImageHlp{$ENDIF};
+uses unit_definitions {$IFDEF MSWINDOWS}, ImageHlp, unit_main{$ENDIF};
 
 {$R *.dfm}
 
@@ -88,6 +92,16 @@ begin
   lbl_TimeStamp.Visible := lbl_TimeStamp.Caption <> '';
   lbl_Version.Caption := 'version '+APPVERSION;
   lbl_Platform.Caption := APPPLATFORM;
+end;
+
+procedure Tfrm_About.btn_EmailGoClick(Sender: TObject);
+begin
+  frm_UnCodeX.ExecuteProgram('mailto:'+ed_Email.Text);
+end;
+
+procedure Tfrm_About.btn_HPGoClick(Sender: TObject);
+begin
+	frm_UnCodeX.ExecuteProgram(ed_Homepage.Text);
 end;
 
 end.
