@@ -1,10 +1,12 @@
 object frm_PackageProps: Tfrm_PackageProps
   Left = 323
   Top = 143
-  Width = 297
-  Height = 278
+  Width = 298
+  Height = 277
   BorderIcons = []
   Color = clBtnFace
+  Constraints.MinHeight = 200
+  Constraints.MinWidth = 298
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -13,14 +15,14 @@ object frm_PackageProps: Tfrm_PackageProps
   OldCreateOrder = False
   Position = poMainFormCenter
   DesignSize = (
-    289
-    251)
+    290
+    250)
   PixelsPerInch = 96
   TextHeight = 13
   object gb_Flags: TGroupBox
     Left = 0
     Top = 0
-    Width = 289
+    Width = 290
     Height = 57
     Align = alTop
     Caption = 'Flags'
@@ -63,8 +65,8 @@ object frm_PackageProps: Tfrm_PackageProps
   object gb_Description: TGroupBox
     Left = 0
     Top = 57
-    Width = 289
-    Height = 160
+    Width = 290
+    Height = 159
     Align = alTop
     Anchors = [akLeft, akTop, akRight, akBottom]
     Caption = 'Description'
@@ -72,16 +74,16 @@ object frm_PackageProps: Tfrm_PackageProps
     object mm_Desc: TMemo
       Left = 2
       Top = 15
-      Width = 285
-      Height = 143
+      Width = 286
+      Height = 142
       Align = alClient
       ScrollBars = ssVertical
       TabOrder = 0
     end
   end
   object btn_Ok: TBitBtn
-    Left = 214
-    Top = 224
+    Left = 215
+    Top = 223
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]
@@ -89,8 +91,8 @@ object frm_PackageProps: Tfrm_PackageProps
     Kind = bkOK
   end
   object btn_Cancel: TBitBtn
-    Left = 134
-    Top = 224
+    Left = 135
+    Top = 223
     Width = 75
     Height = 25
     Anchors = [akRight, akBottom]

@@ -191,6 +191,19 @@ begin
     ft.Free;
   end;
   frm_UnCodeX.ExecuteProgram(seldir+PathDelim+ed_NewClass.Text+UCEXT);
+
+  if ((uclass <> nil) and (upackage = nil)) then begin // new package
+    upackage := TUPackage.Create;
+    upackage.name := cb_Package.Text;
+    upackage.priority := PackageList.Count;
+    upackage.path := seldir;
+    upackage.treenode := frm_UnCodeX.tv_Packages.Items.AddObject(nil, upackage.name, upackage);
+    PackageList.Add(upackage);
+    PackagePriority.Add(upackage.name);
+    frm_UnCodeX.tv_Packages.AlphaSort();
+    Log('Adding new package '''+upackage.name+''' to priority list, check the package priority list');
+  end;
+
   if ((upackage <> nil) and (uclass <> nil)) then begin
   	newclass := TUClass.Create;
   	newclass.name := ed_NewClass.Text;
@@ -209,12 +222,14 @@ begin
     else TTreeNode(newclass.treenode).ImageIndex := ICON_CLASS;
     TTreeNode(newclass.treenode).SelectedIndex := TTreeNode(newclass.treenode).ImageIndex;
     TTreeNode(newclass.treenode).StateIndex := TTreeNode(newclass.treenode).ImageIndex;
+    TTreeNode(newclass.treenode).Parent.AlphaSort();
 
     newclass.treenode := frm_UnCodeX.tv_Classes.Items.AddChildObject(TTreeNode(uclass.treenode), newclass.name, newclass);
     if (newclass.tagged) then TTreeNode(newclass.treenode).ImageIndex := ICON_CLASS_TAGGED
     else TTreeNode(newclass.treenode).ImageIndex := ICON_CLASS;
     TTreeNode(newclass.treenode).SelectedIndex := TTreeNode(newclass.treenode).ImageIndex;
     TTreeNode(newclass.treenode).StateIndex := TTreeNode(newclass.treenode).ImageIndex;
+    TTreeNode(newclass.treenode).Parent.AlphaSort();
 
     ClassesHash.Items[newclass.name] := '-';
     

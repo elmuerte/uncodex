@@ -88,6 +88,7 @@ object frm_CreateNewClass: Tfrm_CreateNewClass
     AutoDropDown = True
     Anchors = [akLeft, akTop, akRight]
     ItemHeight = 13
+    Sorted = True
     TabOrder = 0
     OnChange = ed_NewClassChange
     OnKeyPress = ed_NewClassKeyPress
@@ -100,6 +101,7 @@ object frm_CreateNewClass: Tfrm_CreateNewClass
     AutoDropDown = True
     Anchors = [akLeft, akTop, akRight]
     ItemHeight = 13
+    Sorted = True
     TabOrder = 1
     OnKeyPress = ed_NewClassKeyPress
   end
