@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class operations (implements subclassing, moving, ...)
 
-  $Id: unit_ucops.pas,v 1.17 2005-04-04 21:31:59 elmuerte Exp $
+  $Id: unit_ucops.pas,v 1.18 2005-04-05 07:58:08 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -217,12 +217,12 @@ begin
       TTreeNode(upkg.treenode).AlphaSort();
       TreeUpdated := true;
       if MessageDlg('Do you want to search all classes for references to the old '+#13+#10+'location of this class?'+#13+#10+'e.g.: '+opkg.name+'.'+uclass.name, mtConfirmation, [mbYes,mbNo], 0) = mrYes then begin
-        SearchConfig.query := opkg.name+'.'+uclass.name;
-        SearchConfig.Wrapped := true;
-        SearchConfig.isFTS := true;
-        SearchConfig.isRegex := false;
-        SearchConfig.Scope := 0;
-        SearchConfig.searchtree := frm_UnCodeX.tv_Classes;
+        frm_UnCodeX.SearchConfig.query := opkg.name+'.'+uclass.name;
+        frm_UnCodeX.SearchConfig.Wrapped := true;
+        frm_UnCodeX.SearchConfig.isFTS := true;
+        frm_UnCodeX.SearchConfig.isRegex := false;
+        frm_UnCodeX.SearchConfig.Scope := 0;
+        frm_UnCodeX.SearchConfig.searchtree := frm_UnCodeX.tv_Classes;
         frm_UnCodeX.ac_FindNext.Execute;
       end;
     end;
@@ -272,12 +272,12 @@ begin
         end;
 
         if MessageDlg('Do you want to search all classes for references to the old name of this class?'+#13+#10+'e.g.: '+ed_Class.Text, mtConfirmation, [mbYes,mbNo], 0) = mrYes then begin
-          SearchConfig.query := ed_Class.Text;
-          SearchConfig.Wrapped := true;
-          SearchConfig.isFTS := true;
-          SearchConfig.isRegex := false;
-          SearchConfig.Scope := 0;
-          SearchConfig.searchtree := frm_UnCodeX.tv_Classes;
+          frm_UnCodeX.SearchConfig.query := ed_Class.Text;
+          frm_UnCodeX.SearchConfig.Wrapped := true;
+          frm_UnCodeX.SearchConfig.isFTS := true;
+          frm_UnCodeX.SearchConfig.isRegex := false;
+          frm_UnCodeX.SearchConfig.Scope := 0;
+          frm_UnCodeX.SearchConfig.searchtree := frm_UnCodeX.tv_Classes;
           frm_UnCodeX.ac_FindNext.Execute;
         end;
       finally
@@ -351,11 +351,11 @@ begin
     MessageDlg('File already exists:'+#13+#10+seldir+PathDelim+ed_NewClass.Text+UCEXT, mtError, [mbOK], 0);
     exit;
   end;
-  if (not FileExists(NewClassTemplate)) then begin
-    MessageDlg('New class template does not exist'+#13+#10+NewClassTemplate, mtError, [mbOK], 0);
+  if (not FileExists(config.NewClassTemplate)) then begin
+    MessageDlg('New class template does not exist'+#13+#10+config.NewClassTemplate, mtError, [mbOK], 0);
     exit;
   end;
-  fs := TFileStream.Create(NewClassTemplate, fmOpenRead or fmShareDenyWrite);
+  fs := TFileStream.Create(config.NewClassTemplate, fmOpenRead or fmShareDenyWrite);
   ft := TFileStream.Create(seldir+PathDelim+ed_NewClass.Text+UCEXT, fmCreate or fmShareExclusive);
   p := TCopyParser.Create(fs, ft);
   try

@@ -6,7 +6,7 @@
   Purpose:
     Full text search thread. Includes support for regular expressions.
 
-  $Id: unit_fulltextsearch.pas,v 1.21 2005-03-30 11:43:02 elmuerte Exp $
+  $Id: unit_fulltextsearch.pas,v 1.22 2005-04-05 07:58:07 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -48,13 +48,13 @@ type
     Total: integer;
     Matches: integer;
     RealExpr: string;
-    config: TClassSearch;
+    config: TSearchConfig;
     curpos1: integer;
     curclass: TUClass;
     function SearchFile(uclass: TUClass): boolean;
     function GetNextClass(): TUClass;
   public
-    constructor Create(var sc: TClassSearch; Status: TStatusReport); overload;
+    constructor Create(var sc: TSearchConfig; Status: TStatusReport); overload;
     destructor Destroy; override;
     procedure Execute; override;
   end;
@@ -75,7 +75,7 @@ var
 const
   BUFFSIZE = 4096;
 
-constructor TSearchThread.Create(var sc: TClassSearch; Status: TStatusReport);
+constructor TSearchThread.Create(var sc: TSearchConfig; Status: TStatusReport);
 begin
   Self.Tree := sc.searchtree;
   Self.Status := Status;

@@ -6,7 +6,7 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.62 2005-04-04 21:31:34 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.63 2005-04-05 07:58:06 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -207,11 +207,14 @@ begin
       tmp := ParamStr(j);
       i := Pos('.', tmp);
       if (i > 0) then Delete(tmp, i, MaxInt);
+      //TODO: fix this
+      {
       SearchConfig.query := tmp;
       SearchConfig.isFTS := false;
       SearchConfig.Wrapped := true;
-      RedirectData.Find := tmp;
       if (OpenFind or OpenTags) then SearchConfig.isStrict := true;
+      }
+      RedirectData.Find := tmp;
       RedirectData.OpenFind := OpenFind;
       RedirectData.OpenTags := OpenTags;
     end;

@@ -7,9 +7,11 @@
   Purpose:
     Modified IniFile classes which are better than the standard Delphi
     classes. The code is mostly based on the FreePascalCompiler implementation.
-    Most of changes for UCX have been put in the subclass TUCXIniFile
+    Most of changes for UCX have been put in the subclass TUCXIniFile.
+    Changes to the original code include:
+    - configurable delayed file update
 
-  $Id: unit_ucxinifiles.pas,v 1.2 2005-04-04 21:31:59 elmuerte Exp $
+  $Id: unit_ucxinifiles.pas,v 1.3 2005-04-05 07:58:08 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -82,6 +84,7 @@ type
     FFileName: string;
     FSectionList: TIniFileSectionList;
     FEscapeLineFeeds: boolean;
+    FDelayedUpdate: boolean;
   public
     constructor Create(const AFileName: string);
     destructor Destroy; override;
@@ -109,6 +112,7 @@ type
     function ValueExists(const Section, Ident: string): Boolean; virtual;
     property FileName: string read FFileName;
     property EscapeLineFeeds: boolean read FEscapeLineFeeds write FEscapeLineFeeds;
+    property DelayedUpdate: boolean read FDelayedUpdate write FDelayedUpdate;
   end;
 
   TIniFile = class(TCustomIniFile)
@@ -506,6 +510,7 @@ begin
         // comment at the beginning of the ini file
         oSection := TIniFileSection.Create(sLine);
         FSectionList.Add(oSection);
+        continue;
       end;
       if (Copy(sLine, 1, 1) = Brackets[0]) and (Copy(sLine, length(sLine), 1) = Brackets[1]) then begin
         // regular section
@@ -575,9 +580,10 @@ begin
       oKey := oSection.KeyList.KeyByName(Ident);
       if oKey <> nil then begin
         oSection.KeyList.Remove(oKey);
+        oKey.Free;
       end;
     end;
-    UpdateFile;
+    if (not FDelayedUpdate) then UpdateFile;
   end;
 end;
 
@@ -664,11 +670,11 @@ var
 begin
   oSection := FSectionList.SectionByName(Section);
   if oSection <> nil then begin
-    oSection.Free;
     { It is needed so UpdateFile doesn't find a defunct section }
     { and cause the program to crash }
-    FSectionList.Delete(FSectionList.IndexOf(oSection));
-    UpdateFile;
+    FSectionList.Remove(oSection);
+    oSection.Free;
+    if (not FDelayedUpdate) then UpdateFile;
   end;
 end;
 
@@ -681,8 +687,9 @@ begin
   if oSection <> nil then begin
     oKey := oSection.KeyList.KeyByName(Ident);
     if oKey <> nil then begin
+      oSection.KeyList.Remove(oKey);
       oKey.Free;
-      UpdateFile;
+      if (not FDelayedUpdate) then UpdateFile;
     end;
   end;
 end;
@@ -799,6 +806,7 @@ begin
     oKey := TIniFileKey.Create(Strings.Names[i], Strings.Values[Strings.Names[i]]);
     oSection.KeyList.Add(oKey);
   end;
+  if (not FDelayedUpdate) then UpdateFile;
 end;
 
 procedure TUCXIniFile.DeleteKey(const Section, Ident: String);
@@ -810,10 +818,13 @@ begin
   if oSection <> nil then begin
     repeat
       oKey := oSection.KeyList.KeyByName(Ident);
-      if oKey <> nil then oKey.Free;
+      if oKey <> nil then begin
+        oSection.KeyList.Remove(oKey);
+        oKey.Free;
+      end;
     until (oKey = nil);
-    UpdateFile;
   end;
+  if (not FDelayedUpdate) then UpdateFile;
 end;
 
 procedure TUCXIniFile.ReadStringArray(const section, ident: string; output: TStrings; append: boolean = false);
@@ -858,6 +869,7 @@ begin
     oKey := TIniFileKey.Create(ident, input[i]);
     oSection.KeyList.Add(oKey);
   end;
+  if (not FDelayedUpdate) then UpdateFile;
 end;
 
 procedure TUCXIniFile.AddToStringArray(const section, ident: string; entry: string);
@@ -870,6 +882,7 @@ begin
   if (oSection = nil) then exit;
   oKey := TIniFileKey.Create(ident, entry);
   oSection.KeyList.Add(oKey);
+  if (not FDelayedUpdate) then UpdateFile;
 end;
 
 function TUCXIniFile.RemoveFromStringArray(const section, ident: string; entry: string): boolean;
@@ -884,6 +897,7 @@ begin
     if (SameText(oSection.KeyList[i].Ident, ident) and (oSection.KeyList[i].Value = entry)) then begin
       oSection.KeyList[i].Free;
       result := true;
+      if (not FDelayedUpdate) then UpdateFile;
       exit;
     end;
   end;

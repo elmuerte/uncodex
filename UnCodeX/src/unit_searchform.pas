@@ -6,7 +6,7 @@
   Purpose:
     Search dialog
 
-  $Id: unit_searchform.pas,v 1.13 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_searchform.pas,v 1.14 2005-04-05 07:58:08 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -38,7 +38,7 @@ uses
   Dialogs, StdCtrls, Buttons, ExtCtrls, unit_uclasses, ComCtrls, IniFiles;
 
 type
-  TClassSearch = record
+  TSearchConfig = record
     query:        string;
     history:      TStrings;
     ftshistory:   TStrings;
@@ -75,17 +75,17 @@ type
     procedure rb_ClassSearchClick(Sender: TObject);
     procedure FormKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
-  private
-    config: TClassSearch;
+  protected
+    cfg: TSearchConfig;
     ahistory: TStrings;
   public
-    constructor CreateSearch(AOwner: TComponent; var searchconfig: TClassSearch);
+    constructor CreateSearch(AOwner: TComponent; var searchconfig: TSearchConfig);
   end;
 
-  function SearchForm(var cs: TClassSearch): boolean;
+  function SearchForm(var cs: TSearchConfig): boolean;
 
-  procedure LoadSearchConfig(ini: TCustomIniFile; section: string; var searchconfig: TClassSearch);
-  procedure SaveSearchConfig(ini: TCustomIniFile; section: string; searchconfig: TClassSearch);
+  procedure LoadSearchConfig(ini: TCustomIniFile; section: string; var searchconfig: TSearchConfig);
+  procedure SaveSearchConfig(ini: TCustomIniFile; section: string; searchconfig: TSearchConfig);
 
 var
   frm_SearchForm: Tfrm_SearchForm;
@@ -96,7 +96,7 @@ uses unit_main;
 
 {$R *.dfm}
 
-function SearchForm(var cs: TClassSearch): boolean;
+function SearchForm(var cs: TSearchConfig): boolean;
 begin
   with (Tfrm_SearchForm.CreateSearch(nil, cs)) do begin
     result := ShowModal = mrOk;
@@ -115,14 +115,14 @@ begin
       end
       else ahistory.Move(ahistory.IndexOf(cs.query), 0);
       if (cb_Default.Checked) then begin
-        DefaultSC := cs;
+        config.SearchConfig := cs;
       end;
     end;
     Free;
   end;
 end;
 
-procedure LoadSearchConfig(ini: TCustomIniFile; section: string; var searchconfig: TClassSearch);
+procedure LoadSearchConfig(ini: TCustomIniFile; section: string; var searchconfig: TSearchConfig);
 var
   i: integer;
 begin
@@ -141,7 +141,7 @@ begin
   end;
 end;
 
-procedure SaveSearchConfig(ini: TCustomIniFile; section: string; searchconfig: TClassSearch);
+procedure SaveSearchConfig(ini: TCustomIniFile; section: string; searchconfig: TSearchConfig);
 var
   i: integer;
 begin
@@ -162,18 +162,18 @@ end;
 
 { Tfrm_SearchForm }
 
-constructor Tfrm_SearchForm.CreateSearch(AOwner: TComponent; var searchconfig: TClassSearch);
+constructor Tfrm_SearchForm.CreateSearch(AOwner: TComponent; var searchconfig: TSearchConfig);
 begin
   inherited Create(AOwner);
-  config := searchconfig;
+  cfg := searchconfig;
   cb_History.Text := searchconfig.query;
   cb_History.SelectAll;
-  rb_FTS.Checked := config.isFTS;
-  cb_RegularExpression.Checked := config.isRegex;
-  cb_CompareStrict.Checked := config.isStrict;
-  cb_SearchFromTheTop.Checked := config.isFromTop;
-  cb_FindFirst.Checked := config.isFindFirst;
-  rg_Scope.ItemIndex := config.Scope;
+  rb_FTS.Checked := cfg.isFTS;
+  cb_RegularExpression.Checked := cfg.isRegex;
+  cb_CompareStrict.Checked := cfg.isStrict;
+  cb_SearchFromTheTop.Checked := cfg.isFromTop;
+  cb_FindFirst.Checked := cfg.isFindFirst;
+  rg_Scope.ItemIndex := cfg.Scope;
   rb_ClassSearchClick(nil);
   if (cb_History.Text = '') then begin
     if (ahistory.Count > 0) then cb_History.Text := ahistory[0];
@@ -195,8 +195,8 @@ begin
   cb_RegularExpression.Enabled := rb_FTS.Checked;
   rg_Scope.Enabled := rb_FTS.Checked;
 
-  if (rb_ClassSearch.Checked) then ahistory := config.history
-  else ahistory := config.ftshistory;
+  if (rb_ClassSearch.Checked) then ahistory := cfg.history
+  else ahistory := cfg.ftshistory;
   cb_History.Items.Assign(ahistory);
 end;
 
