@@ -31,8 +31,13 @@ begin
     if (Verbose > 0) then PrintBanner;
     if (HasCmdOption('h')) then PrintHelp
     else begin
-      ConfigFile := iFindFile('UnCodeX.ini', ExtractFilePath(ParamStr(0)));
+    	HTMLOutputDir := ExtractFilePath(ParamStr(0))+'Output';
+    	TemplateDir := ExtractFilePath(ParamStr(0))+TEMPLATEPATH+PATHDELIM+DEFTEMPLATE;
+    	HTMLHelpFile := ExtractFilePath(ParamStr(0))+'UnCodeX.chm';
+
+      ConfigFile := ExtractFilePath(ParamStr(0)) + 'UnCodeX.ini';
       CmdOption('c', ConfigFile);
+      ConfigFile := iFindFile(ConfigFile);
       if (not HasCmdOption('nc')) then LoadConfig();
       ProcessCommandline();
       Main();

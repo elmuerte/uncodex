@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   General definitions
- $Id: unit_definitions.pas,v 1.71 2003-12-03 19:49:31 elmuerte Exp $
+ $Id: unit_definitions.pas,v 1.72 2003-12-07 10:55:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -47,7 +47,7 @@ type
 
   // repeat a string
   function StrRepeat(line: string; count: integer): string;
-  function iFindFile(filename, dirname: string): string;
+  function iFindFile(filename: string): string;
   function iFindDir(dirname: string; var output: string): boolean;
   function CopyFile(filename, target: string): boolean;
   procedure ReloadKeywords;
@@ -130,26 +130,22 @@ begin
   end;
 end;
 
-function iFindFile(filename, dirname: string): string;
-var
-  sr: TSearchRec;
+function iFindFile(filename: string): string;
+{$IFDEF MSWINDOWS}
 begin
-  if (FileExists(dirname+filename)) then result := dirname+filename
-  else begin
-    if (not DirectoryExists(dirname)) then exit;
-    if (FindFirst(dirname+WILDCARD, faAnyFile, sr) = 0) then begin
-      repeat
-        if (CompareText(filename, sr.Name) = 0) then begin
-          result := dirname+sr.Name;
-        end;
-      until (FindNext(sr) <> 0) and (result = '');
-      FindClose(sr);
-    end;
-  end;
-  {$IFDEF MSWINDOWS}
-  result := LowerCase(result);
-  {$ENDIF}
+  result := LowerCase(ExpandFileName(filename));
 end;
+{$ENDIF}
+{$IFDEF LINUX}
+var
+	fcm: TFilenameCaseMatch;
+begin
+  result := ExpandFileNameCase(filename, fcm);
+  if (fcm = mkAmbiguous) then begin
+    Log('Warning: two or more matches for '+filename);
+  end;
+end;
+{$ENDIF}
 
 function iFindDir(dirname: string; var output: string): boolean;
 {$IFDEF MSWINDOWS}

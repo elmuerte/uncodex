@@ -50,13 +50,13 @@ begin
   ini := TMemIniFile.Create(ConfigFile);
   sl := TStringList.Create;
   try
-    HTMLOutputDir := ini.ReadString('Config', 'HTMLOutputDir', ExtractFilePath(ParamStr(0))+'Output');
-    TemplateDir := ini.ReadString('Config', 'TemplateDir', ExtractFilePath(ParamStr(0))+'Templates'+PATHDELIM+'UnrealWiki');
+    HTMLOutputDir := ini.ReadString('Config', 'HTMLOutputDir', HTMLOutputDir);
+    TemplateDir := ini.ReadString('Config', 'TemplateDir', TemplateDir);
     HTMLTargetExt := ini.ReadString('Config', 'HTMLTargetExt', '');
     TabsToSpaces := ini.ReadInteger('Config', 'TabsToSpaces', 0);
     CPPApp := ini.ReadString('Config', 'CPP', '');
     HHCPath := ini.ReadString('Config', 'HHCPath', '');
-    HTMLHelpFile := ini.ReadString('Config', 'HTMLHelpFile', ExtractFilePath(ParamStr(0))+'UnCodeX.chm');
+    HTMLHelpFile := ini.ReadString('Config', 'HTMLHelpFile', HTMLHelpFile);
     HHTitle := ini.ReadString('Config', 'HHTitle', '');
 
     { Unreal Packages }
@@ -104,22 +104,44 @@ end;
 
 procedure ProcessCommandline;
 var
-	tmp: string;
+	tmp, tmp2: string;
   lst: TStringList;
   i: integer;
+  ini: TMemIniFile;
 begin
   if (CmdOption('l', tmp)) then begin
     if (DirectoryExists(ExtractFilePath(tmp)) or (ExtractFilePath(tmp) = '')) then begin
       Assign(LogFile, tmp);
       if (FileExists(tmp)) then Append(LogFile)
       else Rewrite(LogFile);
-      WriteLn(LogFile, 'Log started on: '+DateTimeToStr(Now()));
+      WriteLn(LogFile, #13#10);
+      WriteLn(LogFile, '--- Log started on: '+DateTimeToStr(Now()));
       Flush(LogFile);
       Logging := true;
     end;
   end;
 	if (CmdOption('uc', tmp)) then begin
-
+    tmp := ExpandFileName(tmp);
+    if (FileExists(tmp)) then begin
+      ini := TMemIniFile.Create(tmp);
+      lst := TStringList.Create;
+      try
+      	ini.ReadSectionValues('Editor.EditorEngine', lst);
+		    for i := 0 to lst.Count-1 do begin
+    		  tmp := lst[i];
+		      tmp2 := Copy(tmp, 1, Pos('=', tmp));
+    		  Delete(tmp, 1, Pos('=', tmp));
+		      if (LowerCase(tmp2) = 'editpackages=') then begin
+    		    Log('Unreal Config: EditPackages = '+tmp);
+		        PackagePriority.Add(LowerCase(tmp));
+    		  end;
+		    end;
+      finally
+				ini.Free;
+        lst.Free;
+      end;
+    end
+    else Warning('Unreal System Config file does not exist: '+tmp);
   end;
   CmdOption('o', HTMLOutputDir);
 	if (CmdOption('p', tmp)) then begin
@@ -147,7 +169,8 @@ begin
   end;
   i := 0;
   while (CmdOption('s', tmp, i)) do begin
-    sourcepaths.Add(tmp);
+    sourcepaths.Add(ExpandFileName(tmp));
+    i := i+1;
   end;
   CmdOption('t', TemplateDir);
 
@@ -179,7 +202,7 @@ begin
   finally
     ps.Free;
   end;
-  writeln('');
+  if (Verbose > 0) then writeln('');
 
   if (ClassList.Count <= 0) then begin
     FatalError('No classes found');
@@ -194,7 +217,7 @@ begin
   finally
     ca.Free;
   end;
-  writeln('');
+  if (Verbose > 0) then writeln('');
 
   PhaseLabel := format(StatusFormat, [3, 'Creating HTML files']);
   hoc.PackageList := PackageList;
@@ -213,7 +236,14 @@ begin
   finally
     ho.Free;
   end;
-  writeln('');
+  if (Verbose > 0) then writeln('');
+
+
+
+  if (HasCmdOption('me')) then begin
+  	PhaseLabel := format(StatusFormat, [5, 'Clean up HTML files']);
+    RecurseDelete(HTMLOutputDir);
+  end;
 end;
 
 procedure FatalError(msg: string; errorcode: integer = -1);
@@ -270,7 +300,7 @@ finalization
   PackageList.Free;
   if (Logging) then begin
     Flush(LogFile);
-    WriteLn(LogFile, 'Log closed on: '+DateTimeToStr(Now()));
+    WriteLn(LogFile, '--- Log closed on: '+DateTimeToStr(Now()));
     CloseFile(logfile);
   end;
 end.

@@ -13,6 +13,8 @@ uses
   function HasCmdOption(opt: string): boolean;
   function CmdOption(opt: string; var output: string; offset: integer = 0): boolean;
 
+  procedure RecurseDelete(dirname: string);
+
 implementation
 
 uses unit_definitions;
@@ -20,11 +22,20 @@ uses unit_definitions;
 const
   PB_BEGIN = '[';
   PB_END = ']';
+  {$IFDEF MSWINDOWS}
+  PB_RESET = #13;
   PB_DONE = #219; // full bock
   PB_HALF = #178; // 50% block
   PB_TODO = #176; // 25% block
+  {$ENDIF}
+  {$IFDEF LINUX}
+  PB_RESET = #27'''0';
+  PB_DONE = '='; // full bock
+  PB_HALF = '-'; // 50% block
+  PB_TODO = '.'; // 25% block
+  {$ENDIF}
   PB_NONE = ' ';
-  VERSION = '007 Beta';
+  VERSION = '008 Beta';
 
 var
   lastsp: integer = -1;
@@ -42,7 +53,7 @@ begin
   if ((sp = lastsp) and (half = lasthalf)) then exit;
   lastsp := sp;
   lasthalf := half;
-  write(#13+text);
+  write(PB_RESET+text);
   write(PB_BEGIN);
   write(StrRepeat(PB_DONE, sp));
   if (half > 0) then write(PB_HALF);
@@ -122,6 +133,30 @@ begin
     Inc(i);
   end;
   result := false;
+end;
+
+procedure RecurseDelete(dirname: string);
+var
+	sr: TSearchRec;
+begin
+	dirname := ExcludeTrailingPathDelimiter(dirname);
+  if (not DirectoryExists(dirname)) then exit;
+  if (FindFirst(dirname+PathDelim+WILDCARD, faAnyFile, sr) = 0) then begin
+		repeat
+      if (sr.Attr and faDirectory <> 0) then begin
+        if ((sr.Name <> '.') and (sr.Name <> '..')) then begin
+          RecurseDelete(dirname+PathDelim+sr.Name);
+        end;
+      end
+      else begin
+        Log('Deleting file: '+dirname+PathDelim+sr.Name);
+        DeleteFile(dirname+PathDelim+sr.Name)
+      end;
+    until (FindNext(sr) <> 0);
+    FindClose(sr);
+  end;
+  Log('Deleting dir: '+dirname);
+  RemoveDir(dirname);
 end;
 
 end.
