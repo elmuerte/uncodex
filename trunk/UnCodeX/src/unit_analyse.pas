@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.56 2004-12-18 23:52:00 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.57 2004-12-20 22:22:30 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -192,11 +192,11 @@ begin
       ExecuteSingle;
     except
       on E: EOFException do begin
-        LogClass('End of file reached while parsing '+uclass.filename+': '+E.Message, uclass);
+        Log('End of file reached while parsing '+uclass.filename+': '+E.Message, ltError, CreateLogentry(uclass));
         printguard(uclass);
       end;
       on E: Exception do begin
-        LogClass('Unhandled exception in class '+uclass.name+': '+E.Message, uclass);
+        Log('Unhandled exception in class '+uclass.name+': '+E.Message, ltError, CreateLogentry(uclass));
         printguard(uclass);
       end;
     end;
@@ -258,12 +258,12 @@ var
     except
       on E: EOFException do begin
         Inc(i);
-        LogClass('End of file reached while parsing '+myclass.filename+': '+E.Message, myclass);
+        Log('End of file reached while parsing '+myclass.filename+': '+E.Message, ltError, CreateLogentry(myclass));
         printguard(myclass);
       end;
       on E: Exception do begin
         Inc(i);
-        LogClass('Unhandled exception in class '+myclass.name+': '+E.Message, myclass);
+        Log('Unhandled exception in class '+myclass.name+': '+E.Message, ltError, CreateLogentry(myclass));
         printguard(myclass);
       end;
     end;
@@ -307,7 +307,7 @@ begin
   end;
   currenttime := FileAge(filename);
   if (onlynew and (currenttime <= uclass.filetime)) then exit;
-  if (onlynew) then LogClass('Class changed since last time: '+uclass.name, uclass);
+  if (onlynew) then Log('Class changed since last time: '+uclass.name, ltInfo, CreateLogentry(uclass));
   TreeUpdated := true;
   UseOverWriteStruct := false;
   uclass.filetime := currenttime;
@@ -554,7 +554,8 @@ begin
       // variable description
       if (p.Token = toString) then begin
         if (result.comment <> '') then begin
-          logclass(uclass.FullName+' '+Result.name+': ignoring variable description', uclass);
+          //TODO: use definedIn
+          Log(uclass.FullName+' '+Result.name+': ignoring variable description', ltInfo, CreateLogEntry('', p.SourceLine , 0, uclass));
         end
         else begin
           result.comment := UnQuoteString(p.TokenString);
@@ -911,12 +912,14 @@ begin
       Delete(args, 1, i);
     end;
     uclass.defs.define(macro, args);
-    if (DEBUG_MACRO_EVAL) then LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': define '+macro+' = '+args, uclass);
+    //TODO: used defined in
+    if (DEBUG_MACRO_EVAL) then Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': define '+macro+' = '+args, ltInfo, CreateLogEntry(uclass));
   end
   else if (macro = 'IF') then begin
     if (macroIfCnt > 0) then Inc(macroIfCnt)
     else begin
-      if (DEBUG_MACRO_EVAL) then LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': eval: '+args, uclass);
+      //TODO: use defined in
+      if (DEBUG_MACRO_EVAL) then Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': eval: '+args, ltInfo, CreateLogEntry(uclass));
       try
         if (not uclass.defs.Eval(args)) then begin
           if (DEBUG_MACRO_EVAL) then log(' = false');
@@ -926,14 +929,16 @@ begin
           end;
         end;
       except
-        on e:Exception do LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" : '+e.Message, uclass);
+        //TODO: use defined in
+        on e:Exception do Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" : '+e.Message, ltError, CreateLogEntry(uclass));
       end;
     end; // do eval
   end
   else if (macro = 'IFDEF') then begin
     if (macroIfCnt > 0) then Inc(macroIfCnt)
     else begin
-      if (DEBUG_MACRO_EVAL) then LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': if defined: '+args, uclass);
+      //TODO: use defined in
+      if (DEBUG_MACRO_EVAL) then Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': if defined: '+args, ltInfo, CreateLogEntry(uclass));
       if (not uclass.defs.IsDefined(args)) then begin
         if (DEBUG_MACRO_EVAL) then log(' = false');
         macroIfCnt := 1;
@@ -965,12 +970,12 @@ begin
   	// ignore, exec macro calls certain commandlets for importing sounds/textures/etc.
   end
   else if (macro = 'INCLUDE') then begin
-    if (DEBUG_MACRO_EVAL) then LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Include file '+trim(args), uclass);
+    if (DEBUG_MACRO_EVAL) then Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Include file '+trim(args), ltInfo, CreateLogEntry(uclass));
     uclass.includes.Values[IntToStr(p.SourceLine-1)] := trim(args);
     pInclude(args);
   end
   else begin
-    LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Unsupported macro '+macro, uclass);
+    Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Unsupported macro '+macro, ltWarn, CreateLogEntry(uclass));
   end;
 end;
 
@@ -983,7 +988,8 @@ begin
 
   filename := iFindFile(ExpandFileName(ExtractFilePath(uclass.package.path)+relfilename));
   if (not FileExists(filename)) then begin
-    LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Invalid include file: '+relfilename, uclass);
+    //TODO: use defined in
+    Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Invalid include file: '+relfilename, ltError, CreateLogEntry(uclass));
     exit;
   end;
 

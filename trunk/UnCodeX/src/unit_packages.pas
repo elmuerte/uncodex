@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript package scanner, search for UnrealScript classes
 
-  $Id: unit_packages.pas,v 1.41 2004-12-19 12:34:56 elmuerte Exp $
+  $Id: unit_packages.pas,v 1.42 2004-12-20 22:22:31 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -115,12 +115,12 @@ begin
   ClassOrphanCount := 0;
   for i := 0 to ClassList.Count-1 do begin
     if ((ClassList[i].parent = nil) and (ClassList[i].parentname <> '')) then begin
-      Inc(ClassOrphanCount);
-      LogClass('Orphan detected: '+ClassList[i].package.name+'.'+ClassList[i].name, ClassList[i]);
+      Inc(ClassOrphanCount);                             
+      Log('Orphan detected: '+ClassList[i].package.name+'.'+ClassList[i].name, ltWarn, CreateLogEntry(ClassList[i]));
     end;
   end;
   if (ClassOrphanCount > 0) then begin
-    Log(IntToStr(ClassOrphanCount)+' orphan classes detected, check the package priority');
+    Log(IntToStr(ClassOrphanCount)+' orphan classes detected, check the package priority', ltWarn);
   end;
   result := ClassOrphanCount;
 end;
@@ -198,7 +198,7 @@ begin
   try
     if (FileExists(rec.PDFile)) then Self.PDF := TMemIniFile.Create(rec.PDFile);
   except
-    log('Failed loading PackageDescriptionFile: '+rec.PDFile);
+    log('Failed loading PackageDescriptionFile: '+rec.PDFile, ltError);
     Self.PDF := nil;
   end;
   DuplicateHash := TStringHash.Create;
@@ -222,7 +222,7 @@ begin
     ScanPackages();
   except
     on E: Exception do begin
-      Log('Unhandled exception: '+E.Message);
+      Log('Unhandled exception: '+E.Message, ltError);
       printguard;
     end;
   end;
@@ -269,7 +269,7 @@ begin
                   UPackage.path := tmp;
                   UPackage.priority := PackagePriority.IndexOf(LowerCase(UPackage.name));
                   if (UPackage.priority = -1) then begin
-                    log('Scanner: (Warning) Unprioritised package: '+sr.Name);
+                    log('Scanner: Unprioritised package: '+sr.Name, ltWarn);
                     UPackage.priority := PackagePriority.Count;
                     PackagePriority.Add(LowerCase(sr.Name));
                   end
@@ -326,7 +326,7 @@ begin
                 end;
               end
               else begin
-                log('Scanner: (Error) Package collision: '+paths[i]+PATHDELIM+sr.Name);
+                log('Scanner: Package collision: '+paths[i]+PATHDELIM+sr.Name, ltError);
               end;
             end;
           end;
@@ -337,7 +337,7 @@ begin
         if (Self.Terminated) then break;
       end;
       if (pathpkgcount = 0) then begin
-        log('Scanner: no packages found in '+paths[i]);
+        log('Scanner: no packages found in '+paths[i], ltInfo);
       end;
     end;
     PackageList.Sort; // sort on priority
@@ -372,7 +372,7 @@ begin
             uclass := GetUClassName(Packagelist[i].path+PATHDELIM+lst[j]);
           except
             on E: Exception do begin
-              log('Parser: error: '+E.Message);
+              log('Parser: error: '+E.Message, ltError);
               continue;
             end;
           end;
@@ -400,13 +400,13 @@ begin
             {$ENDIF}
             if (ClassHash <> nil) then begin
               if (ClassHash.Exists(LowerCase(uclass.name))) then begin
-                LogClass('Scanner: (Warning) duplicate class name: '+uclass.FullName, uclass);
+                Log('Scanner: duplicate class name: '+uclass.FullName, ltWarn, CreateLogEntry(uclass));
                 DuplicateHash[LowerCase(uclass.name)] := '-'
               end
               else ClassHash.Items[LowerCase(uclass.name)] := uclass;
             end;
           end
-          else log('Scanner: No class found in this file: '+sr.Name);
+          else log('Scanner: No class found in this file: '+sr.Name, ltWarn);
         end;
         if (Self.Terminated) then break;
       finally
@@ -417,7 +417,7 @@ begin
     if (not Self.Terminated) then begin
       for i := packagelist.Count-1 downto 0 do begin
         if packagelist[i].classes.Count = 0 then begin
-          Log('Empty package: '+packagelist[i].name);
+          Log('Empty package: '+packagelist[i].name, ltInfo);
           {$IFDEF USE_TREEVIEW}
           packagetree.Delete(TTreeNode(Packagelist[i].treenode));
           {$ENDIF}
@@ -433,8 +433,8 @@ begin
       CountOrphans(ClassList);
     end;
     if (DuplicateHash.ItemCount > 0) then begin
-      Log('(Warning) One or more duplicate class names detected. The class tree might be incorrect.');
-      Log('(Warning) You should always use unique class names to avoid confusion.');
+      Log('(Warning) One or more duplicate class names detected. The class tree might be incorrect.', ltWarn);
+      Log('(Warning) You should always use unique class names to avoid confusion.', ltWarn);
     end;
   finally
     knownpackages.Free;
@@ -493,7 +493,7 @@ begin
         // check for a local (in this package) parent and use that
         if ((packn = '') and (parent <> nil) and DuplicateHash.Exists(LowerCase(parent.name))) then begin
           if (classlist[i].package.classes.Find(parent.name) <> parent) then begin
-            logclass('Scanner: (Info) Found local parent class for '+classlist[i].FullName, classlist[i]);
+            log('Scanner: Found local parent class for '+classlist[i].FullName, ltInfo, CreateLogEntry(classlist[i]));
             continue;
           end;
         end;
@@ -549,7 +549,7 @@ begin
   try
     FindNew();
   except
-    on E: Exception do Log('Unhandled exception: '+E.Message);
+    on E: Exception do Log('Unhandled exception: '+E.Message, ltError);
   end;
   Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds, '+IntToStr(classlist.Count)+' classes');
 end;
@@ -592,7 +592,7 @@ begin
           try
             uclass := GetUClassName(sl[j]);
           except
-            on E: Exception do log('Parser: error: '+E.Message);
+            on E: Exception do log('Parser: error: '+E.Message, ltError);
           end;
           if (not Assigned(uclass)) then continue;
 
@@ -621,12 +621,12 @@ begin
           {$ENDIF}
           if (ClassHash <> nil) then begin
             if (ClassHash.Exists(LowerCase(uclass.name))) then begin
-              LogClass('Scanner: (Warning) duplicate class name: '+uclass.FullName, uclass);
+              Log('Scanner: duplicate class name: '+uclass.FullName, ltWarn, CreateLogEntry(uclass));
               //DuplicateHash[LowerCase(uclass.name)] := '-'
             end
             else ClassHash.Items[LowerCase(uclass.name)] := uclass;
           end;
-          logclass('New class found: '+uclass.FullName, uclass);
+          log('New class found: '+uclass.FullName, ltInfo, CreateLogEntry(uclass));
         end;
       end;
     end;
