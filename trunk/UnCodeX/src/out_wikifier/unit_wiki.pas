@@ -44,33 +44,101 @@ procedure Tfrm_Wikifier.Wikify(uclass: TUClass);
 var
   tmp: string;
   i: integer;
+  pclass: TUClass;
+  hist: TStringList;
 begin
-  Caption := Caption+' - '+uclass.name;
-  with (re_WikiCode.Lines) do begin
-    { header }
-    tmp := '@@ [[UT2003]] :: ';
-    if (uclass.parent <> nil) then begin
-      if (uclass.parent.parent <> nil) then tmp := tmp+'... >> ';
-      tmp := tmp+'[['+uclass.parent.name+']] >> ';
-    end;
-    tmp := tmp+'[['+uclass.name+']]';
-    Add(tmp);
-    { properties }
-    Add('');
-    Add('== Properties ==');
-    for i := 0 to uclass.properties.Count-1 do begin
-      Add('; '+uclass.properties[i].ptype+' '+uclass.properties[i].name+' : ');
-    end;
-    Add('');
-    Add('== Enums ==');
-    for i := 0 to uclass.enums.Count-1 do begin
-      Add('');
-      Add('=== '+uclass.enums[i].name+' ===');
-      tmp := uclass.enums[i].options;
-      while (tmp <> '') do begin
-        Add('; '+StringShift(tmp)+' :');
+  hist := TStringList.Create;
+  try
+    Caption := Caption+' - '+uclass.name;
+    with (re_WikiCode.Lines) do begin
+      { header }
+      pclass := uclass.parent;
+      while (pclass <> nil) do begin
+        tmp := '[['+pclass.name+']] >> '+tmp;
+        pclass := pclass.parent;
+      end;
+      tmp := '@@ [[UT2003]] :: '+tmp+'[['+uclass.name+']]';
+      Add(tmp);
+      Add(trim(uclass.comment));
+      { Constants }
+      if (uclass.consts.Count > 0) then begin
+        Add('');
+        Add('== Constants ==');
+        for i := 0 to uclass.consts.Count-1 do begin
+          Add('; '+uclass.consts[i].name+' = '+uclass.consts[i].value+' : '+trim(uclass.consts[i].comment));
+        end;
+      end;
+      { properties }
+      if (uclass.properties.Count > 0) then begin
+        uclass.properties.SortOnTag;
+        Add('');
+        Add('== Properties ==');
+        tmp := '';
+        for i := 0 to uclass.properties.Count-1 do begin
+          if (tmp <> uclass.properties[i].tag) then begin
+            Add('=== '+uclass.properties[i].tag+' ===');
+            tmp := uclass.properties[i].tag;
+          end;
+          Add('; '+uclass.properties[i].ptype+' '+uclass.properties[i].name+' : '+trim(uclass.properties[i].comment));
+        end;
+        uclass.properties.Sort;
+      end;
+      { enums }
+      if (uclass.enums.Count > 0) then begin
+        Add('');
+        Add('== Enums ==');
+        for i := 0 to uclass.enums.Count-1 do begin
+          Add('');
+          Add('=== '+uclass.enums[i].name+' ===');
+          Add(trim(uclass.enums[i].comment));
+          tmp := uclass.enums[i].options;
+          while (tmp <> '') do begin
+            Add('; '+StringShift(tmp)+' :');
+          end;
+        end;
+      end;
+      { structs }
+      if (uclass.structs.Count > 0) then begin
+        Add('');
+        Add('== Structures ==');
+        for i := 0 to uclass.structs.Count-1 do begin
+          Add('');
+          Add('=== '+uclass.structs[i].name+' ===');
+          Add('<uscript>'+uclass.structs[i].data+'</uscript>');
+          Add(trim(uclass.structs[i].comment));
+        end;
+      end;
+      { functions }
+      if (uclass.functions.Count > 0) then begin
+        Add('');
+        Add('== Functions ==');
+        hist.Clear;
+        for i := 0 to uclass.functions.Count-1 do begin
+          if (uclass.functions[i].ftype = uftFunction) then begin
+            if (hist.IndexOf(LowerCase(uclass.functions[i].name)) = -1) then begin
+              Add('; '+uclass.functions[i].return+' '+uclass.functions[i].name+'('+uclass.functions[i].params+' ): '+trim(uclass.functions[i].comment));
+              hist.Add(LowerCase(uclass.functions[i].name));
+            end;
+          end;
+        end;
+      end;
+      { events }
+      if (uclass.functions.Count > 0) then begin
+        Add('');
+        Add('== Events ==');
+        hist.Clear;
+        for i := 0 to uclass.functions.Count-1 do begin
+          if (uclass.functions[i].ftype = uftEvent) then begin
+            if (hist.IndexOf(LowerCase(uclass.functions[i].name)) = -1) then begin
+              Add('; '+uclass.functions[i].return+' '+uclass.functions[i].name+'('+uclass.functions[i].params+' ): '+trim(uclass.functions[i].comment));
+              hist.Add(LowerCase(uclass.functions[i].name));
+            end;
+          end;
+        end;
       end;
     end;
+  finally
+    hist.Free;
   end;
 end;
 

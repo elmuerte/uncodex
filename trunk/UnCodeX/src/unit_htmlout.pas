@@ -672,6 +672,7 @@ begin
   else if (CompareText(replacement, 'class_variables') = 0) then begin
     template := TFileStream.Create(templatedir+'class_var_entry.html', fmOpenRead);
     target := TStringStream.Create('');
+    TUClass(data).properties.Sort;
     try
       for i := 0 to TUClass(data).properties.Count-1 do begin
         template.Position := 0;
@@ -697,6 +698,7 @@ begin
         if (up.properties.Count > 0) then begin
           tmp := LowerCase(up.package.name+'.'+up.name);
           if (not VarCache.Exists(tmp)) then begin
+            up.properties.Sort;
             parseTemplate(template, target, replaceClass, up);
             for i := 0 to up.properties.Count-1 do begin
               if (i > 0) then target.WriteString(', ');

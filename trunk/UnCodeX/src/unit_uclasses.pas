@@ -35,6 +35,7 @@ type
     name:       string;
     ptype:      string;
     modifiers:  string;
+    tag:        string;
     srcline:    integer;
     comment:    string;
   end;
@@ -45,6 +46,7 @@ type
     procedure SetItem(Index: Integer; AObject: TUProperty);
   public
     procedure Sort;
+    procedure SortOnTag;
     property Items[Index: Integer]: TUProperty read GetItem write SetItem; default;
   end;
 
@@ -232,6 +234,17 @@ end;
 procedure TUPropertyList.Sort;
 begin
   inherited Sort(TUPropertyListCompare);
+end;
+
+function TUPropertyListCompareTag(Item1, Item2: Pointer): integer;
+begin
+  result := CompareText(TUProperty(Item1).tag, TUProperty(Item2).tag);
+  if (result = 0) then result := TUPropertyListCompare(Item1, Item2);
+end;
+
+procedure TUPropertyList.SortOnTag;
+begin
+  inherited Sort(TUPropertyListCompareTag);
 end;
 
 function TUPropertyList.GetItem(Index: Integer): TUProperty;

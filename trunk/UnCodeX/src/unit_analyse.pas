@@ -31,7 +31,7 @@ type
     function pStruct: TUStruct;
     function pFunc: TUFunction;
     function pState(modifiers: string): TUState;
-    function pBrackets: string;
+    function pBrackets(exclude: boolean = false): string;
     function pSquareBrackets: string;
     function pAngleBrackets: string;
     function pCurlyBrackets: string;
@@ -140,7 +140,7 @@ begin
 end;
 
 // Process (...)
-function TClassAnalyser.pBrackets: string;
+function TClassAnalyser.pBrackets(exclude: boolean = false): string;
 begin
   result := '';
   if (p.Token = '(') then begin
@@ -151,7 +151,7 @@ begin
       p.NextToken;
     end;
     p.NextToken;
-    result := '('+result+')';
+    if (not exclude) then result := '('+result+')';
   end;
   if (p.Token = toEOF) then result := '';
 end;
@@ -233,16 +233,16 @@ begin
   uclass.consts.Add(result);
 end;
 
-// var() <modifiers> <type> <name>,<name>;
-// var() <modifiers> enum <name> {...} <name>,<name>;
+// var(tag) <modifiers> <type> <name>,<name>;
+// var(tag) <modifiers> enum <name> {...} <name>,<name>;
 function TClassAnalyser.pVar: TUProperty;
 var
   last, prev: string;
   nprop: TUProperty;
   i: integer;
 begin
-  pBrackets;
   result := TUProperty.Create;
+  result.tag := pBrackets(true);
   result.comment := p.GetCopyData;
   result.srcline := p.SourceLine;
   while (p.Token <> ';') do begin
