@@ -92,6 +92,9 @@ begin
                   log('Scanner: (Warning) Unprioritised package: '+sr.Name);
                   UPackage.priority := PackagePriority.Count;
                   PackagePriority.Add(LowerCase(sr.Name));
+                end
+                else begin
+                  UPackage.tagged := PackagePriority.Objects[UPackage.priority] <> nil;
                 end;
                 PackageList.Add(UPackage);
                 knownpackages.Add(LowerCase(sr.Name));
@@ -110,8 +113,16 @@ begin
     // find all classes
     for i := 0 to packagelist.Count-1 do begin
       ti := packagetree.Items.AddObject(nil, Packagelist[i].name, Packagelist[i]);
-      ti.ImageIndex := 0;
-      ti.StateIndex := 0;
+      if (packagelist[i].tagged) then begin
+        ti.ImageIndex := ICON_PACKAGE_TAGGED;
+        ti.StateIndex := ICON_PACKAGE_TAGGED;
+        ti.SelectedIndex := ICON_PACKAGE_TAGGED;
+      end
+      else begin
+        ti.ImageIndex := ICON_PACKAGE;
+        ti.StateIndex := ICON_PACKAGE;
+        ti.SelectedIndex := ICON_PACKAGE;
+      end;
       Status('Scanning package '+Packagelist[i].name, round((i+1) / Packagelist.Count * 100));
       if FindFirst(Packagelist[i].path+PATHDELIM+CLASSDIR+PATHDELIM+SOURCECARD, faAnyFile, sr) = 0 then begin
         repeat
@@ -125,12 +136,20 @@ begin
             classlist.Add(uclass);
             packagelist[i].classes.Add(uclass);
             uclass.package := PackageList[i];
+            uclass.tagged := UClass.package.tagged;
             uclass.filename := sr.Name;
             uclass.priority := PackageList[i].priority;
             with packagetree.Items.AddChildObject(ti, uclass.name, uclass) do begin
-              ImageIndex := 1;
-              StateIndex := 1;
-              SelectedIndex := 1;
+              if (uclass.tagged) then begin
+                ImageIndex := ICON_CLASS_TAGGED;
+                StateIndex := ICON_CLASS_TAGGED;
+                SelectedIndex := ICON_CLASS_TAGGED;
+              end
+              else begin
+                ImageIndex := ICON_CLASS;
+                StateIndex := ICON_CLASS;
+                SelectedIndex := ICON_CLASS;
+              end;
             end;
           end
           else log('Scanner: No class found in this file: '+sr.Name);
@@ -171,9 +190,16 @@ begin
       if (CompareText(classlist[i].parentname, tmp) = 0) then begin
         classlist[i].parent := parent;
         classlist[i].treenode := classtree.Items.AddChildObject(pnode, classlist[i].name, classlist[i]);
-        classlist[i].treenode.ImageIndex := 1;
-        classlist[i].treenode.StateIndex := 1;
-        classlist[i].treenode.SelectedIndex := 1;
+        if (classlist[i].tagged) then begin
+          classlist[i].treenode.ImageIndex := ICON_CLASS_TAGGED;
+          classlist[i].treenode.StateIndex := ICON_CLASS_TAGGED;
+          classlist[i].treenode.SelectedIndex := ICON_CLASS_TAGGED;
+        end
+        else begin
+          classlist[i].treenode.ImageIndex := ICON_CLASS;
+          classlist[i].treenode.StateIndex := ICON_CLASS;
+          classlist[i].treenode.SelectedIndex := ICON_CLASS;
+        end;
         CreateClassTree(classlist, classlist[i], classlist[i].treenode);
       end;
     end;

@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, Menus, StdCtrls, unit_packages, ExtCtrls, unit_uclasses,
-  IniFiles, ShellApi, AppEvnts, ImgList, ActnList, ToolWin, StrUtils;
+  IniFiles, ShellApi, AppEvnts, ImgList, ActnList, ToolWin, StrUtils, Clipbrd;
 
 const
   WM_APPBAR                      = WM_USER+$100;
@@ -123,6 +123,13 @@ type
     tb_RunServer: TToolButton;
     tb_JoinServer: TToolButton;
     ToolButton4: TToolButton;
+    ac_Tags: TAction;
+    mi_ShowProperties: TMenuItem;
+    mi_N15: TMenuItem;
+    mi_Copyname: TMenuItem;
+    ac_CopyName: TAction;
+    mi_Help2: TMenuItem;
+    ac_Help: TAction;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_OpenClassClick(Sender: TObject);
@@ -169,6 +176,8 @@ type
     procedure tv_ClassesExpanding(Sender: TObject; Node: TTreeNode;
       var AllowExpansion: Boolean);
     procedure tv_ClassesDblClick(Sender: TObject);
+    procedure ac_TagsExecute(Sender: TObject);
+    procedure ac_CopyNameExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -202,6 +211,7 @@ type
     statustext : string;
     procedure StatusReport(msg: string; progress: byte = 255);
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
+    procedure OpenSourceLine(uclass: TUClass; line, caret: integer);    
   end;
 
   TCodeXStatusType = (cxstLog, cxstStatus);
@@ -251,7 +261,8 @@ var
 implementation
 
 uses unit_settings, unit_analyse, unit_htmlout, unit_definitions,
-  unit_treestate, unit_about, unit_mshtmlhelp, unit_fulltextsearch;
+  unit_treestate, unit_about, unit_mshtmlhelp, unit_fulltextsearch,
+  unit_tags;
 
 const
   PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
@@ -594,14 +605,55 @@ begin
   if (msg.CopyDataStruct.cbData = SizeOf(data)) then begin
     CopyMemory(@data, msg.CopyDataStruct.lpData, msg.CopyDataStruct.cbData);
     StatusHandle := data.NewHandle;
-    searchclass := data.Find;
-    CSprops[0] := false;
-    ActiveControl := tv_Classes;
-    tv_Classes.Selected := nil;
-    ac_FindNext.Execute;
+    if (data.Find <> '') then begin
+      searchclass := data.Find;
+      CSprops[0] := false;
+      OpenFind := data.OpenFind;
+      ActiveControl := tv_Classes;
+      tv_Classes.Selected := nil;
+      ac_FindNext.Execute;
+    end;
     // data.Batch;
 
     Msg.Result := ord(true);
+  end;
+end;
+
+procedure Tfrm_UnCodeX.OpenSourceLine(uclass: TUClass; line, caret: integer);
+var
+  lst: TStringList;
+  i: integer;
+  exe: string;
+begin
+  if (OpenResultCmd = '') then begin
+    ExecuteProgram(uclass.package.path+PATHDELIM+CLASSDIR+PATHDELIM+uclass.filename);
+    exit;
+  end;
+
+  lst := TStringList.Create;
+  try
+    lst.Delimiter := ' ';
+    lst.QuoteChar := '"';
+    lst.DelimitedText := OpenResultCmd;
+    exe := lst[0];
+    lst.Delete(0);
+    for i := 0 to lst.Count-1 do begin
+      if (CompareText(lst[i], '%classname%') = 0) then
+        lst[i] := uclass.name
+      else if (CompareText(lst[i], '%classfile%') = 0) then
+        lst[i] := uclass.filename
+      else if (CompareText(lst[i], '%classpath%') = 0) then
+        lst[i] := uclass.package.path+PATHDELIM+CLASSDIR+PATHDELIM+uclass.filename
+      else if (CompareText(lst[i], '%packagename%') = 0) then
+        lst[i] := uclass.package.name
+      else if (CompareText(lst[i], '%packagepath%') = 0) then
+        lst[i] := uclass.package.path;
+      lst[i] := AnsiReplaceStr(lst[i], '%resultline%', IntToStr(line));
+      lst[i] := AnsiReplaceStr(lst[i], '%resultpos%', IntToStr(caret));
+    end;
+    ExecuteProgram(exe, lst);
+  finally
+    lst.Free;
   end;
 end;
 
@@ -616,7 +668,7 @@ end;
 procedure Tfrm_UnCodeX.FormCreate(Sender: TObject);
 var
   ini: TMemIniFile;
-  tmp: string;
+  tmp, tmp2: string;
   sl: TStringList;
   i: integer;
 begin
@@ -695,9 +747,22 @@ begin
     ini.ReadSectionValues('PackagePriority', sl);
     for i := 0 to sl.Count-1 do begin
       tmp := sl[i];
+      tmp2 := Copy(tmp, 1, Pos('=', tmp));
       Delete(tmp, 1, Pos('=', tmp));
-      Log('Config: Package = '+tmp);
-      PackagePriority.Add(LowerCase(tmp));
+      if (LowerCase(tmp2) = 'packages=') then begin
+        Log('Config: Package = '+tmp);
+        PackagePriority.Add(LowerCase(tmp));
+      end;
+    end;
+    // must be after Package= listing
+    for i := 0 to sl.Count-1 do begin
+      tmp := sl[i];
+      tmp2 := Copy(tmp, 1, Pos('=', tmp));
+      Delete(tmp, 1, Pos('=', tmp));
+      if (LowerCase(tmp2) = 'tag=') then begin
+        Log('Config: Tagged package = '+tmp);
+        PackagePriority.Objects[PackagePriority.IndexOf(LowerCase(tmp))] := PackagePriority; 
+      end;
     end;
     ini.ReadSectionValues('SourcePaths', sl);
     for i := 0 to sl.Count-1 do begin
@@ -834,7 +899,10 @@ var
 begin
   with Tfrm_Settings.Create(nil) do begin
     lb_Paths.Items := SourcePaths;
-    lb_PackagePriority.Items := PackagePriority;
+    clb_PackagePriority.Items := PackagePriority;
+    for i := 0 to PackagePriority.Count-1 do begin
+      clb_PackagePriority.Checked[i] := PackagePriority.Objects[i] <> nil;
+    end;
     ed_HTMLOutputDir.Text := HTMLOutputDir;
     ed_TemplateDir.Text := TemplateDir;
     ed_WorkshopPath.Text := HHCPath;
@@ -865,7 +933,12 @@ begin
       SourcePaths.Clear;
       SourcePaths.AddStrings(lb_Paths.Items);
       PackagePriority.Clear;
-      PackagePriority.AddStrings(lb_PackagePriority.Items);
+      PackagePriority.AddStrings(clb_PackagePriority.Items);
+      for i := 0 to clb_PackagePriority.Items.Count-1 do begin
+        if (clb_PackagePriority.Checked[i]) then
+          PackagePriority.Objects[i] := PackagePriority
+          else PackagePriority.Objects[i] := nil;
+      end;
       IgnorePackages.Clear;
       IgnorePackages.AddStrings(lb_IgnorePackages.Items);
       lb_Log.Color := lb_LogLayout.Color;
@@ -905,6 +978,10 @@ begin
         for i := 0 to SourcePaths.Count-1 do data.Add('Path='+SourcePaths[i]);
         data.Add('[PackagePriority]');
         for i := 0 to PackagePriority.Count-1 do data.Add('Packages='+PackagePriority[i]);
+        for i := 0 to PackagePriority.Count-1 do begin
+          if (PackagePriority.Objects[i] <> nil) then
+            data.Add('Tag='+PackagePriority[i]);
+        end;
         data.Add('[IgnorePackages]');
         for i := 0 to IgnorePackages.Count-1 do data.Add('Package='+IgnorePackages[i]);
         ini.SetStrings(data);
@@ -1274,11 +1351,14 @@ begin
         if (res) then begin
           Select(items[i]);
           if (OpenFind) then ac_OpenClass.Execute;
+          OpenFind := false;
+          statustext := '';
           exit;
         end;
       end;
     end;
   end;
+  OpenFind := false;
   statustext := 'No more classes matching '''+searchclass+''' found';
   searchclass := '';
 end;
@@ -1305,52 +1385,21 @@ end;
 procedure Tfrm_UnCodeX.lb_LogDblClick(Sender: TObject);
 var
   i, j: integer;
-  linenr, curpos, exe: string;
-  lst: TStringList;
+  linenr, curpos: string;
 begin
   if (lb_Log.ItemIndex = -1) then exit;
   if (lb_Log.Items.Objects[lb_Log.ItemIndex] = nil) then exit;
   if (TObject(lb_Log.Items.Objects[lb_Log.ItemIndex]).ClassType <> TUClass) then exit;
-  with (TObject(lb_Log.Items.Objects[lb_Log.ItemIndex]) as TUClass) do begin
-    linenr := lb_Log.Items[lb_Log.ItemIndex];
-    i := Pos(FTS_LN_BEGIN, linenr);
-    j := Pos(FTS_LN_END, linenr);
-    linenr := Copy(linenr, i+Length(FTS_LN_BEGIN), j-i-Length(FTS_LN_BEGIN));
-    i := Pos(FTS_LN_SEP, linenr);
-    curpos := Copy(linenr, i+Length(FTS_LN_SEP), MaxInt);
-    Delete(linenr, i, MaxInt);
 
-    if (OpenResultCmd = '') then begin
-      ExecuteProgram(package.path+PATHDELIM+CLASSDIR+PATHDELIM+filename);
-      exit;
-    end;
+  linenr := lb_Log.Items[lb_Log.ItemIndex];
+  i := Pos(FTS_LN_BEGIN, linenr);
+  j := Pos(FTS_LN_END, linenr);
+  linenr := Copy(linenr, i+Length(FTS_LN_BEGIN), j-i-Length(FTS_LN_BEGIN));
+  i := Pos(FTS_LN_SEP, linenr);
+  curpos := Copy(linenr, i+Length(FTS_LN_SEP), MaxInt);
+  Delete(linenr, i, MaxInt);
 
-    lst := TStringList.Create;
-    try
-      lst.Delimiter := ' ';
-      lst.QuoteChar := '"';
-      lst.DelimitedText := OpenResultCmd;
-      exe := lst[0];
-      lst.Delete(0);
-      for i := 0 to lst.Count-1 do begin
-        if (CompareText(lst[i], '%classname%') = 0) then
-          lst[i] := name
-        else if (CompareText(lst[i], '%classfile%') = 0) then
-          lst[i] := filename
-        else if (CompareText(lst[i], '%classpath%') = 0) then
-          lst[i] := package.path+PATHDELIM+CLASSDIR+PATHDELIM+filename
-        else if (CompareText(lst[i], '%packagename%') = 0) then
-          lst[i] := package.name
-        else if (CompareText(lst[i], '%packagepath%') = 0) then
-          lst[i] := package.path;
-        lst[i] := AnsiReplaceStr(lst[i], '%resultline%', linenr);
-        lst[i] := AnsiReplaceStr(lst[i], '%resultpos%', curpos);
-      end;
-      ExecuteProgram(exe, lst);
-    finally
-      lst.Free;
-    end;
-  end;
+  OpenSourceLine(TUClass(lb_Log.Items.Objects[lb_Log.ItemIndex]), StrToIntDef(linenr, 0), StrToIntDef(curpos, 0));
 end;
 
 procedure Tfrm_UnCodeX.lb_LogClick(Sender: TObject);
@@ -1412,6 +1461,40 @@ begin
     ht := GetHitTestInfoAt(Pt.X, Pt.y);
     if (htOnItem in ht) or (htNowhere in ht) then begin
       ac_OpenClass.Execute;
+    end;
+    if (Selected.Expanded) then Selected.Collapse(false)
+      else Selected.Expand(false)
+  end;
+end;
+
+procedure Tfrm_UnCodeX.ac_TagsExecute(Sender: TObject);
+var
+  selclass: TUclass;
+begin
+  if (ActiveControl.ClassType = TTreeView) then begin
+    with (ActiveControl as TTreeView) do begin
+      if (Selected <> nil) then begin
+        if (TObject(Selected.Data).ClassType <> TUClass) then exit;
+        selclass := TUclass(Selected.Data);
+        with Tfrm_Tags.Create(nil) do begin
+          uclass := selclass;
+          if LoadClass then begin
+            Show;
+            // workaround of the auto size column
+            lv_Properties.Columns[1].Width := lv_Properties.ClientWidth-lv_Properties.Columns[0].Width;
+          end;
+        end;
+      end;
+    end;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.ac_CopyNameExecute(Sender: TObject);
+begin
+  if (ActiveControl.ClassType = TTreeView) then begin
+    with (ActiveControl as TTreeView) do begin
+      if (Selected <> nil) then
+        Clipboard.SetTextBuf(PChar(Selected.Text));
     end;
   end;
 end;

@@ -6,7 +6,7 @@ uses
   SysUtils,
   Forms,
   Dialogs,
-  Classes, 
+  Classes,
   unit_main in 'unit_main.pas' {frm_UnCodeX},
   unit_packages in 'unit_packages.pas',
   unit_parser in 'unit_parser.pas',
@@ -21,7 +21,8 @@ uses
   unit_about in 'unit_about.pas' {frm_About},
   unit_mshtmlhelp in 'unit_mshtmlhelp.pas',
   unit_fulltextsearch in 'unit_fulltextsearch.pas',
-  RegExpr in 'RegExpr.pas';
+  RegExpr in 'RegExpr.pas',
+  unit_tags in 'unit_tags.pas' {frm_Tags};
 
 {$R *.res}
 
@@ -76,20 +77,7 @@ begin
   reuse := false;
   while (j <= ParamCount) do begin
     if (LowerCase(ParamStr(j)) = '-help') then begin
-      MessageDlg('Commandline options:'+#13+#10+
-                 '-help'#9#9#9'display this message'+#13+#10+
-                 '-hide'#9#9#9'hides UnCodeX'+#13+#10+
-                 '-config'#9#9#9'loads a diffirent config file (next argument)'+#13+#10+
-                 '-batch'#9#9#9'start UnCodeX in batch processing mode, the next'+#13+#10+
-                 #9#9#9'arguments must contain the batch order, '+#13+#10+
-                 #9#9#9'which can be on of the following:'+#13+#10+
-                 #9'rebuild'#9#9'rebuild class tree'+#13+#10+
-                 #9'analyse'#9#9'analyse all classes'+#13+#10+
-                 #9'createhtml'#9'create HTML output'+#13+#10+
-                 #9'htmlhelp'#9#9'create MS HTML Help file'+#13+#10+
-                 #9'close'#9#9'close UnCodeX'+#13+#10+
-                 #9'--'#9#9'end of batch commands'
-                 , mtInformation, [mbOK], 0);
+      MessageDlg(CMD_HELP, mtInformation, [mbOK], 0);
     end
     else if (LowerCase(ParamStr(j)) = '-batch') then begin
       IsBatching := true;
@@ -149,7 +137,7 @@ begin
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-    Application.CreateForm(Tfrm_About, frm_About);
-    Application.Run;
+  Application.CreateForm(Tfrm_About, frm_About);
+  Application.Run;
   end;
 end.

@@ -136,6 +136,7 @@ type
     filetime:   integer;
     defaultproperties: string;
     comment:    string;
+    tagged:     boolean;
     constructor Create;
     destructor Destroy; override;
   end;
@@ -155,6 +156,7 @@ type
     priority:   integer;
     path:       string;
     treenode:   TTreeNode;
+    tagged:     boolean;
     constructor Create;
     destructor Destroy; override;
   end;

@@ -41,7 +41,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_ProgramOptions
+    ActivePage = ts_PackagePriority
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -80,6 +80,15 @@ object frm_Settings: Tfrm_Settings
           Caption = 'Add'
           TabOrder = 0
           OnClick = btn_SAddClick
+          Glyph.Data = {
+            F6000000424DF600000000000000760000002800000010000000100000000100
+            040000000000800000000000000000000000100000000000000000000000C0C0
+            C000FF00FF0080808000FFFFFF0000FFFF000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000222222222222
+            2222223333333333333320000000000000032045454545004503205454545401
+            0403204545454505100320545454540000034043545455454503355345354454
+            5403234353545545450333343454545454034535433330000002235353522222
+            2222352342352222222252235223222222222223422222222222}
         end
         object btn_SRemove: TBitBtn
           Left = 88
@@ -89,6 +98,15 @@ object frm_Settings: Tfrm_Settings
           Caption = 'Remove'
           TabOrder = 1
           OnClick = btn_SRemoveClick
+          Glyph.Data = {
+            F6000000424DF600000000000000760000002800000010000000100000000100
+            0400000000008000000000000000000000001000000000000000000000000000
+            8000C0C0C000FF00FF0080808000FFFFFF0000FFFF0000000000000000000000
+            0000000000000000000000000000000000000000000000000000333333333333
+            3333334444444444444430000000000000043056565656005604406565656502
+            0504105656565606200411656541650000044146541456565604311461156565
+            6504341111565656560434111565656565044111140000000003114311433333
+            3333333331143333333333333311433333333333333333333333}
         end
         object btn_SUp: TBitBtn
           Left = 366
@@ -96,7 +114,6 @@ object frm_Settings: Tfrm_Settings
           Width = 27
           Height = 25
           Anchors = [akTop, akRight]
-          Caption = '5'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -105,6 +122,15 @@ object frm_Settings: Tfrm_Settings
           ParentFont = False
           TabOrder = 2
           OnClick = btn_SUpClick
+          Glyph.Data = {
+            F6000000424DF600000000000000760000002800000010000000100000000100
+            040000000000800000000000000000000000100000000000000004020400CCCA
+            0400FC02FC006D820000F808700091C15F000C7644001E0000009C3474001931
+            0E0003D0000000810000674C0100162200009C7D000019820000222222222222
+            2222222222222222222222222222222222222222222222222222222220000022
+            2222222220111022222222222011102222222222201110222222220000111000
+            0222222011111110222222220111110222222222201110222222222222010222
+            2222222222202222222222222222222222222222222222222222}
         end
         object btn_SDown: TBitBtn
           Left = 398
@@ -112,7 +138,6 @@ object frm_Settings: Tfrm_Settings
           Width = 27
           Height = 25
           Anchors = [akTop, akRight]
-          Caption = '6'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -121,6 +146,15 @@ object frm_Settings: Tfrm_Settings
           ParentFont = False
           TabOrder = 3
           OnClick = btn_SDownClick
+          Glyph.Data = {
+            F6000000424DF600000000000000760000002800000010000000100000000100
+            04000000000080000000C40E0000C40E0000100000000000000004020400CCCA
+            0400FC02FC0086820000F808700091C15F000C7644001E0000009C3488001931
+            0A0003D0000000810000674C0100162200009C7D000019820000222222222222
+            2222222222222222222222222222222222222222222222222222222222202222
+            2222222222010222222222222011102222222222011111022222222011111110
+            2222220000111000022222222011102222222222201110222222222220111022
+            2222222220000022222222222222222222222222222222222222}
         end
       end
     end
@@ -139,33 +173,29 @@ object frm_Settings: Tfrm_Settings
         DesignSize = (
           433
           368)
-        object lb_PackagePriority: TListBox
-          Left = 8
-          Top = 16
-          Width = 385
-          Height = 343
-          Anchors = [akLeft, akTop, akRight, akBottom]
-          BevelKind = bkSoft
-          BorderStyle = bsNone
-          ExtendedSelect = False
-          ItemHeight = 13
-          TabOrder = 0
-        end
         object btn_PUp: TBitBtn
           Left = 400
           Top = 16
           Width = 27
           Height = 25
           Anchors = [akTop, akRight]
-          Caption = '5'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
           Font.Name = 'Marlett'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 1
+          TabOrder = 0
           OnClick = btn_PUpClick
+          Glyph.Data = {
+            F6000000424DF600000000000000760000002800000010000000100000000100
+            040000000000800000000000000000000000100000000000000004020400CCCA
+            0400FC02FC006D820000F808700091C15F000C7644001E0000009C3474001931
+            0E0003D0000000810000674C0100162200009C7D000019820000222222222222
+            2222222222222222222222222222222222222222222222222222222220000022
+            2222222220111022222222222011102222222222201110222222220000111000
+            0222222011111110222222220111110222222222201110222222222222010222
+            2222222222202222222222222222222222222222222222222222}
         end
         object btn_PDown: TBitBtn
           Left = 400
@@ -173,15 +203,23 @@ object frm_Settings: Tfrm_Settings
           Width = 27
           Height = 25
           Anchors = [akTop, akRight]
-          Caption = '6'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
           Font.Name = 'Marlett'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 2
+          TabOrder = 1
           OnClick = btn_PDownClick
+          Glyph.Data = {
+            F6000000424DF600000000000000760000002800000010000000100000000100
+            04000000000080000000C40E0000C40E0000100000000000000004020400CCCA
+            0400FC02FC0086820000F808700091C15F000C7644001E0000009C3488001931
+            0A0003D0000000810000674C0100162200009C7D000019820000222222222222
+            2222222222222222222222222222222222222222222222222222222222202222
+            2222222222010222222222222011102222222222011111022222222011111110
+            2222220000111000022222222011102222222222201110222222222220111022
+            2222222220000022222222222222222222222222222222222222}
         end
         object btn_AddPackage: TBitBtn
           Left = 400
@@ -189,15 +227,23 @@ object frm_Settings: Tfrm_Settings
           Width = 27
           Height = 25
           Anchors = [akRight, akBottom]
-          Caption = '+'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
           Font.Name = 'MS Sans Serif'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 3
+          TabOrder = 2
           OnClick = btn_AddPackageClick
+          Glyph.Data = {
+            F6000000424DF600000000000000760000002800000010000000100000000100
+            040000000000800000000000000000000000100000000000000000000000C0C0
+            C000FF00FF0080808000FFFFFF0000FFFF000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000222222222222
+            2222223333333333333320000000000000032045454545004503205454545401
+            0403204545454505100320545454540000034043545455454503355345354454
+            5403234353545545450333343454545454034535433330000002235353522222
+            2222352342352222222252235223222222222223422222222222}
         end
         object btn_DelPackage: TBitBtn
           Left = 400
@@ -205,15 +251,23 @@ object frm_Settings: Tfrm_Settings
           Width = 27
           Height = 25
           Anchors = [akRight, akBottom]
-          Caption = '-'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
           Font.Name = 'MS Sans Serif'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 4
+          TabOrder = 3
           OnClick = btn_DelPackageClick
+          Glyph.Data = {
+            F6000000424DF600000000000000760000002800000010000000100000000100
+            0400000000008000000000000000000000001000000000000000000000000000
+            8000C0C0C000FF00FF0080808000FFFFFF0000FFFF0000000000000000000000
+            0000000000000000000000000000000000000000000000000000333333333333
+            3333334444444444444430000000000000043056565656005604406565656502
+            0504105656565606200411656541650000044146541456565604311461156565
+            6504341111565656560434111565656565044111140000000003114311433333
+            3333333331143333333333333311433333333333333333333333}
         end
         object btn_Import: TBitBtn
           Left = 400
@@ -231,8 +285,19 @@ object frm_Settings: Tfrm_Settings
           ParentFont = False
           ParentShowHint = False
           ShowHint = True
-          TabOrder = 5
+          TabOrder = 4
           OnClick = btn_ImportClick
+        end
+        object clb_PackagePriority: TCheckListBox
+          Left = 8
+          Top = 16
+          Width = 385
+          Height = 343
+          Anchors = [akLeft, akTop, akRight, akBottom]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          ItemHeight = 13
+          TabOrder = 5
         end
       end
     end
@@ -270,7 +335,6 @@ object frm_Settings: Tfrm_Settings
           Width = 27
           Height = 25
           Anchors = [akRight, akBottom]
-          Caption = '+'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -279,6 +343,15 @@ object frm_Settings: Tfrm_Settings
           ParentFont = False
           TabOrder = 1
           OnClick = btn_AddIgnoreClick
+          Glyph.Data = {
+            F6000000424DF600000000000000760000002800000010000000100000000100
+            040000000000800000000000000000000000100000000000000000000000C0C0
+            C000FF00FF0080808000FFFFFF0000FFFF000000000000000000000000000000
+            0000000000000000000000000000000000000000000000000000222222222222
+            2222223333333333333320000000000000032045454545004503205454545401
+            0403204545454505100320545454540000034043545455454503355345354454
+            5403234353545545450333343454545454034535433330000002235353522222
+            2222352342352222222252235223222222222223422222222222}
         end
         object btn_DelIgnore: TBitBtn
           Left = 400
@@ -286,7 +359,6 @@ object frm_Settings: Tfrm_Settings
           Width = 27
           Height = 25
           Anchors = [akRight, akBottom]
-          Caption = '-'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -295,6 +367,15 @@ object frm_Settings: Tfrm_Settings
           ParentFont = False
           TabOrder = 2
           OnClick = btn_DelIgnoreClick
+          Glyph.Data = {
+            F6000000424DF600000000000000760000002800000010000000100000000100
+            0400000000008000000000000000000000001000000000000000000000000000
+            8000C0C0C000FF00FF0080808000FFFFFF0000FFFF0000000000000000000000
+            0000000000000000000000000000000000000000000000000000333333333333
+            3333334444444444444430000000000000043056565656005604406565656502
+            0504105656565606200411656541650000044146541456565604311461156565
+            6504341111565656560434111565656565044111140000000003114311433333
+            3333333331143333333333333311433333333333333333333333}
         end
       end
     end

@@ -24,7 +24,7 @@ type
   
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '044 Beta';
+  APPVERSION = '046 Beta';
 
   PATHDELIM = '\';
   WILDCARD = '*.*';
@@ -35,6 +35,29 @@ const
   FTS_LN_BEGIN = ' #';
   FTS_LN_END = ': ';
   FTS_LN_SEP = ',';
+
+  ICON_PACKAGE = 0;
+  ICON_PACKAGE_TAGGED = 1;
+  ICON_CLASS = 2;
+  ICON_CLASS_TAGGED = 3;
+
+  CMD_HELP =  'Commandline options:'+#13+#10+
+              '-config'#9#9#9'loads a diffirent config file (next argument)'+#13+#10+
+              '-batch'#9#9#9'start UnCodeX in batch processing mode, the next'+#13+#10+
+              #9#9#9'arguments must contain the batch order, '+#13+#10+
+              #9#9#9'which can be on of the following:'+#13+#10+
+              #9'rebuild'#9#9'rebuild class tree'+#13+#10+
+              #9'analyse'#9#9'analyse all classes'+#13+#10+
+              #9'createhtml'#9'create HTML output'+#13+#10+
+              #9'htmlhelp'#9#9'create MS HTML Help file'+#13+#10+
+              #9'close'#9#9'close UnCodeX'+#13+#10+
+              #9'--'#9#9'end of batch commands'+#13+#10+
+              '-find'#9#9#9'find a class'+#13+#10+
+              '-help'#9#9#9'display this message'+#13+#10+
+              '-hide'#9#9#9'hides UnCodeX'+#13+#10+
+              '-handle'#9#9#9'Window handle'+#13+#10+
+              '-open'#9#9#9'find and open a class'+#13+#10+
+              '-reuse'#9#9#9'reuse a previous window';
 
 implementation
 
