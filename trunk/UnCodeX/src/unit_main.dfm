@@ -1,5 +1,5 @@
 object frm_UnCodeX: Tfrm_UnCodeX
-  Left = 222
+  Left = 313
   Top = 114
   Width = 666
   Height = 616
@@ -86,6 +86,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
         Width = 50
       end>
     SimplePanel = False
+    SizeGrip = False
   end
   object pb_Scan: TProgressBar
     Left = 0
@@ -318,6 +319,12 @@ object frm_UnCodeX: Tfrm_UnCodeX
           Caption = 'Right'
           GroupIndex = 1
           OnClick = mi_RightClick
+        end
+        object mi_Left: TMenuItem
+          AutoCheck = True
+          Caption = 'Left'
+          GroupIndex = 1
+          OnClick = mi_LeftClick
         end
       end
     end

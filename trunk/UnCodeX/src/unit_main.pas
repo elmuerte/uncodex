@@ -104,6 +104,7 @@ type
     ac_JoinServer: TAction;
     mi_Autohide: TMenuItem;
     mi_N13: TMenuItem;
+    mi_Left: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_OpenClassClick(Sender: TObject);
@@ -142,6 +143,7 @@ type
     procedure ac_CompileClassExecute(Sender: TObject);
     procedure mi_AutohideClick(Sender: TObject);
     procedure mi_MenubarClick(Sender: TObject);
+    procedure mi_LeftClick(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -151,6 +153,7 @@ type
     ABAutoHide: boolean;
     abd: APPBARDATA;
     WorkArea: TRect;
+    ABWidth: integer;
     // AppBar vars -- end;
     function ThreadCreate: boolean;
     procedure ThreadTerminate(Sender: TObject);
@@ -159,6 +162,7 @@ type
     procedure UpdateSystemMenu;
     procedure WMSysCommand (var Msg : TMessage); message WM_SysCommand;
     procedure WMAppBar(var Msg : TMessage); message WM_AppBar;
+    procedure WMNCLBUTTONDOWN(var Msg: TWMNCLBUTTONDOWN); message WM_NCLBUTTONDOWN;
     procedure WMNCHitTest(var Msg: TWMNCHitTest); message WM_NCHITTEST;
     procedure CMMouseLeave(var msg: TMessage); message CM_MOUSELEAVE;
     procedure RegisterAppBar;
@@ -307,22 +311,36 @@ begin
   log(IntToStr(Msg.WParam));
 end;
 
+procedure Tfrm_UnCodeX.WMNCLBUTTONDOWN(var Msg: TWMNCLBUTTONDOWN); 
+begin
+  // prevent moving
+  if ((Msg.HitTest = HTCAPTION) and IsAppBar) then begin
+    BringToFront;
+    Msg.HitTest := Windows.HTNOWHERE;
+  end;
+  inherited;
+end;
+
 procedure Tfrm_UnCodeX.WMNCHitTest(var Msg: TWMNCHitTest);
 begin
   inherited;
   if (IsAppBar) then begin
-    // prevent mocing
-    if (Msg.Result = HTCAPTION) then begin
-      frm_UnCodeX.BringToFront;
-      Msg.Result := Windows.HTNOWHERE;
-    end
     // show bar
-    else if ((Msg.Result = HTLEFT) and ABAutoHide) then begin
+    if ((Msg.Result = HTLEFT) and ABAutoHide and (abd.uEdge = ABE_RIGHT)) then begin
       Left := abd.rc.Right-Width;
     end
+    else if ((Msg.Result = HTRIGHT) and ABAutoHide and (abd.uEdge = ABE_LEFT)) then begin
+      Left := abd.rc.Left;
+    end
     // prevent resizing
-    else if (Msg.Result in [HTRIGHT, HTBOTTOM, HTTOP, HTGROWBOX, HTBOTTOMLEFT,
-      HTBOTTOMRIGHT, HTTOPLEFT, HTTOPRIGHT, HTSIZE]) then begin
+    else if (Msg.Result in [HTBOTTOM, HTTOP, HTGROWBOX, HTSIZE, HTBOTTOMLEFT,
+      HTBOTTOMRIGHT, HTTOPLEFT, HTTOPRIGHT]) then begin
+      Msg.Result := Windows.HTNOWHERE;
+    end
+    else if ((Msg.Result in [HTRIGHT]) and (abd.uEdge = ABE_RIGHT)) then begin
+      Msg.Result := Windows.HTNOWHERE;
+    end
+    else if ((Msg.Result in [HTLEFT]) and (abd.uEdge = ABE_LEFT)) then begin
       Msg.Result := Windows.HTNOWHERE;
     end
   end;
@@ -334,7 +352,8 @@ var
 begin
   inherited;
   if (IsAppBar and ABAutoHide and GetCursorPos(pt)) then begin
-    if ((pt.X < Left) or (pt.Y > abd.rc.Bottom)) then Left := abd.rc.Left;
+    if ((pt.X < Left) or (pt.Y > abd.rc.Bottom) and (abd.uEdge = ABE_RIGHT)) then Left := abd.rc.Left
+    else if ((pt.X > Left+Width) or (pt.Y > abd.rc.Bottom) and (abd.uEdge = ABE_LEFT)) then Left := AUTOHIDEEXPOSURE-ABWidth;
   end;
 end;
 
@@ -344,7 +363,7 @@ begin
   OldStyleEx := GetWindowLong(Handle, GWL_EXSTYLE);
   OldStyle := GetWindowLong(Handle, GWL_STYLE);
   SetWindowLong(Handle, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
-  //SetWindowLong(Handle, GWL_Style, WS_VISIBLE or WS_DLGFRAME or ws_thickframe);
+  SetWindowLong(Handle, GWL_STYLE, OldStyle);
   OldSize.Left := Left;
   OldSize.Top := Top;
   OldSize.Right := Width;
@@ -356,43 +375,53 @@ begin
   abd.uCallbackMessage := WM_APPBAR;
   SHAppBarMessage(ABM_NEW, abd);
 
-  abd.uEdge := ABE_RIGHT;
-  abd.rc.Left := WorkArea.Right-150;
+  if (abd.uEdge = ABE_RIGHT) then begin
+    abd.rc.Left := WorkArea.Right-ABWidth;
+    abd.rc.Right := WorkArea.Right;
+  end
+  else if (abd.uEdge = ABE_Left) then begin
+    abd.rc.Left := WorkArea.Left;
+    abd.rc.Right := WorkArea.Left+ABWidth;
+  end;
   abd.rc.Top := WorkArea.Top;
   abd.rc.Bottom := WorkArea.Bottom;
-  abd.rc.Right := WorkArea.Right;
-  Left := abd.rc.Left;
   Top := abd.rc.Top;
-  Width := abd.rc.Right-abd.rc.Left;
+  Left := abd.rc.Left;
   Height := abd.rc.Bottom-abd.rc.Top;
+  Width := ABWidth;
   if (not ABAutoHide) then shAppBarMessage(ABM_setPos, abd);
   if (ABAutoHide) then RegisterABAutoHide;
   abd.lParam := 1;
   shAppBarMessage(ABM_ACTIVATE, abd);
   IsAppBar := true;
-  sb_Status.SizeGrip := not IsAppBar;
 end;
 
 procedure Tfrm_UnCodeX.UnregisterAppBar;
 begin
   if (IsAppBar) then begin
+    Hide;
+    SetWindowLong(Handle, GWL_STYLE, OldStyle);
+    SetWindowLong(Handle, GWL_EXSTYLE, OldStyleEx);
     SHAppBarMessage(ABM_REMOVE, abd);
     IsAppBar := false;
-    SetWindowLong(Handle, GWL_EXSTYLE, OldStyleEx);
-    SetWindowLong(Handle, GWL_Style, OldStyle);
     Left := OldSize.Left;
     Top := OldSize.Top;
     Width := OldSize.Right;
     Height := OldSize.Bottom;
+    Show;
   end;
-  sb_Status.SizeGrip := not IsAppBar;
 end;
 
 procedure Tfrm_UnCodeX.RegisterABAutoHide;
 begin
   abd.lParam := 1;
   if (shAppBarMessage(ABM_SETAUTOHIDEBAR, abd) <> 0) then begin
-    abd.rc.Left := abd.rc.Right-AUTOHIDEEXPOSURE;
+    if (abd.uEdge = ABE_RIGHT) then begin
+      abd.rc.Left := abd.rc.Right-AUTOHIDEEXPOSURE
+    end
+    else if (abd.uEdge = ABE_LEFT) then begin
+      abd.rc.Right := AUTOHIDEEXPOSURE;
+    end;
     shAppBarMessage(ABM_setPos, abd);
     Left := abd.rc.Left;
   end;
@@ -402,7 +431,12 @@ procedure Tfrm_UnCodeX.UnregisterABAutoHide;
 begin
   abd.lParam := 0;
   if (shAppBarMessage(ABM_SETAUTOHIDEBAR, abd) <> 0) then begin
-    abd.rc.Left := WorkArea.Right-Width;
+    if (abd.uEdge = ABE_RIGHT) then begin
+      abd.rc.Left := WorkArea.Right-ABWidth;
+    end
+    else if (abd.uEdge = ABE_LEFT) then begin
+      abd.rc.Right := WorkArea.Left+ABWidth;
+    end;
     shAppBarMessage(ABM_setPos, abd);
     Left := abd.rc.Left;
   end;
@@ -410,8 +444,14 @@ end;
 
 procedure Tfrm_UnCodeX.ABResize;
 begin
+  if (IsAppBar) then ABWidth := Width;
   if (IsAppBar and not ABAutoHide) then begin
-    abd.rc.Left := abd.rc.Right-Width;
+    if (abd.uEdge = ABE_RIGHT) then begin
+      abd.rc.Left := WorkArea.Right-ABWidth;
+    end
+    else if (abd.uEdge = ABE_LEFT) then begin
+      abd.rc.Right := WorkArea.Left+ABWidth;
+    end;
     SHAppBarMessage(ABM_setPos, abd);
   end;
 end;
@@ -477,16 +517,21 @@ begin
     mi_Saveposition.Checked := ini.ReadBool('Layout', 'SavePosition', false);
     mi_Savesize.Checked := ini.ReadBool('Layout', 'SaveSize', false);
     if (mi_Saveposition.Checked) then begin
-      frm_UnCodeX.Position := poDesigned;
-      frm_UnCodeX.Top := ini.ReadInteger('Layout', 'Top', frm_UnCodeX.Top);
-      frm_UnCodeX.Left := ini.ReadInteger('Layout', 'Left', frm_UnCodeX.Left);
+      Position := poDesigned;
+      Top := ini.ReadInteger('Layout', 'Top', Top);
+      Left := ini.ReadInteger('Layout', 'Left', Left);
     end;
     if (mi_Savesize.Checked) then begin
-      frm_UnCodeX.Width := ini.ReadInteger('Layout', 'Width', frm_UnCodeX.Width);
-      frm_UnCodeX.Height := ini.ReadInteger('Layout', 'Height', frm_UnCodeX.Height);
+      Width := ini.ReadInteger('Layout', 'Width', Width);
+      Height := ini.ReadInteger('Layout', 'Height', Height);
     end;
+    ABWidth := ini.ReadInteger('Layout', 'ABWidth', 150);
     mi_AutoHide.Checked := ini.ReadBool('Layout', 'AutoHide', false);
     mi_AutoHide.OnClick(Sender);
+    mi_Right.Checked := ini.ReadBool('Layout', 'ABRight', false);
+    if (mi_Right.Checked) then mi_Right.OnClick(Sender);
+    mi_Left.Checked := ini.ReadBool('Layout', 'ABLeft', false);
+    if (mi_Left.Checked) then mi_Left.OnClick(Sender);
 
     HTMLOutputDir := ini.ReadString('Config', 'HTMLOutputDir', ExtractFilePath(ParamStr(0))+'Output');
     TemplateDir := ini.ReadString('Config', 'TemplateDir', ExtractFilePath(ParamStr(0))+'Templates\UnrealWiki');
@@ -782,7 +827,10 @@ begin
         ini.WriteInteger('Layout', 'Height', Height);
       end;
     end;
+    ini.WriteInteger('Layout', 'ABWidth', ABWidth);
     ini.WriteBool('Layout', 'AutoHide', mi_AutoHide.Checked);
+    ini.WriteBool('Layout', 'ABRight', mi_Right.Checked);
+    ini.WriteBool('Layout', 'ABLeft', mi_Left.Checked);
     ini.UpdateFile;
   finally
     ini.Free;
@@ -880,8 +928,13 @@ end;
 
 procedure Tfrm_UnCodeX.mi_RightClick(Sender: TObject);
 begin
-  if (mi_Right.Checked) then RegisterAppBar
-    else UnregisterAppBar;
+  if (mi_Right.Checked) then begin
+    mi_Left.Checked := false;
+    mi_Left.OnClick(Sender);
+    abd.uEdge := ABE_RIGHT;
+    RegisterAppBar
+  end
+  else UnregisterAppBar;
 end;
 
 procedure Tfrm_UnCodeX.ac_RunServerExecute(Sender: TObject);
@@ -977,6 +1030,17 @@ begin
     Windows.SetMenu(Handle, 0);
     mm_Main.WindowHandle := 0;
   end;
+end;
+
+procedure Tfrm_UnCodeX.mi_LeftClick(Sender: TObject);
+begin
+  if (mi_Left.Checked) then begin
+    mi_Right.Checked := false;
+    mi_Right.OnClick(Sender);
+    abd.uEdge := ABE_LEFT;
+    RegisterAppBar
+  end
+  else UnregisterAppBar;
 end;
 
 end.
