@@ -6,7 +6,7 @@
     Purpose:
         TRichEdit control that uses version 2
 
-    $Id: unit_richeditex.pas,v 1.20 2004-12-03 15:17:19 elmuerte Exp $
+    $Id: unit_richeditex.pas,v 1.21 2004-12-04 21:32:50 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -34,7 +34,8 @@ unit unit_richeditex;
 interface
 
 uses
-    Windows, Controls, Classes, RichEdit, ComCtrls, Graphics, Messages, SysUtils;
+    Windows, Controls, Classes, RichEdit, ComCtrls, Graphics, Messages, SysUtils,
+    unit_uclasses;
 
 type
     TRichEditEx = class(TRichEdit)
@@ -45,7 +46,11 @@ type
     protected
         procedure CreateParams(var Params: TCreateParams); override;
         procedure WMPaint( var Msg : TWMPaint ); message WM_PAINT;
+        procedure WMSetFocus(var Msg: TMessage); message WM_SetFocus;
+        procedure WMNCHitTest(var Msg: TMessage); message WM_NCHitTest;
     public
+        uclass: TUClass;
+        udecl: TUDeclaration;
         constructor Create(AOwner: TComponent); override;
         destructor Destroy; override;
         procedure CreateWnd(); override;
@@ -76,7 +81,7 @@ end;
 
 function EditWordBreak(lpch: LPWSTR; index: integer; cch: integer; code: integer): integer; stdcall;
 const
-    SPACE = [' ', #9, #10, #13];
+    SPACE = [' ', #0 .. #31];
     DELIM = ['@', '$', '.', '-', '+', '/', '=', ';', '*', '(', ')', '|', ',', '{', '}', '[', ']', '<', '>', ':', '''', '"'];
     ADELIM = SPACE+DELIM;
 var
@@ -125,7 +130,19 @@ begin
     UpdateWindowRect;
     OldWordBreakProc := Perform(EM_GETWORDBREAKPROC, 0, 0);
     Perform(EM_SETWORDBREAKPROC, 0, LPARAM(@EditWordBreak));
-    Perform(EM_EXLIMITTEXT, 0, 512000); // set max text limit to 500kb
+    Perform(EM_EXLIMITTEXT, 0, $7FFFFFF0); // set max text limit to 500kb
+end;
+
+procedure TRichEditEx.WMSetFocus;
+begin
+  inherited;
+  HideCaret(Handle);
+end;
+
+procedure TRichEditEx.WMNCHitTest;
+begin
+  inherited;
+  HideCaret(Handle);
 end;
 
 procedure TRichEditEx.CreateParams(var Params: TCreateParams);
@@ -201,16 +218,50 @@ var
     r:          TRect;
     pt, pt2:    TPoint;
     l:          string;
+    //rng:        TFORMATRANGE;
 begin
+    HideCaret(Handle);
+
     inherited;
+
+    // draw highlighted lines
+	(*with xCanvas do begin
+        Brush.Color := Color;
+        Pen.Color := Color;
+        Rectangle(FGutterWidth, 0, FGutterWidth+4, Height);
+
+        Perform(EM_POSFROMCHAR, Integer(@pt), Perform(EM_LINEINDEX, 4, 0));
+        Perform(EM_POSFROMCHAR, Integer(@pt2), Perform(EM_LINEINDEX, 5, 0));
+        if ((pt2.y > 0) and (pt.y < width)) then begin
+            Brush.Color := clYellow;
+            r := Rect(GutterWidth, pt.y, Width, pt2.y);
+            FillRect(r);
+
+            {rng.hdc := Handle;
+            rng.hdcTarget := Handle;
+
+            r := Rect(FGutterWidth + FGutterWidth,
+                  r.Top*1440 div 25,
+                  r.Right*1440 div 25,
+                  r.Bottom*1440 div 25);
+
+            rng.rcPage := r;
+            rng.rc := r;
+            rng.chrg.cpMin := 0;
+            rng.chrg.cpMax := -1;
+            Perform(EM_FORMATRANGE, 1, integer(@rng));
+            Perform(EM_FORMATRANGE, 0, 0);}
+        end;
+    end; *)
+
     with xCanvas do begin
         Brush.Color := clBtnFace;
         Pen.Color := clBtnFace;
         Rectangle(FGutterWidth-10, 0, FGutterWidth, Height);
         Pen.Width := 1;
-        Pen.Color := cl3DLight;
-        MoveTo(FGutterWidth-3, 0);
-        LineTo(FGutterWidth-3, Height);
+        Pen.Color := clBtnHighlight;
+        MoveTo(FGutterWidth-2, 0);
+        LineTo(FGutterWidth-2, Height);
         Pen.Color := clBtnShadow;
         MoveTo(FGutterWidth-1, 0);
         LineTo(FGutterWidth-1, Height);
