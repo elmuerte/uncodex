@@ -126,6 +126,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     ItemHeight = 14
     ParentFont = False
     TabOrder = 4
+    OnClick = lb_LogClick
     OnDblClick = lb_LogDblClick
   end
   object tb_Tools: TToolBar
