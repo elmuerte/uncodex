@@ -116,7 +116,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Height = 19
     Panels = <
       item
-        Width = 50
+        Width = 23
       end>
     SimplePanel = False
     SizeGrip = False

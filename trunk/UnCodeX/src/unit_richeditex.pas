@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   we need RichEdit control version 2
- $Id: unit_richeditex.pas,v 1.9 2003-06-10 12:00:27 elmuerte Exp $
+ $Id: unit_richeditex.pas,v 1.10 2003-06-11 18:56:22 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_richeditex;
@@ -126,7 +126,7 @@ begin
   with Format do begin
     cbSize := SizeOf(Format);
     dwMask := CFM_BACKCOLOR or CFM_ANIMATION;
-    crBackColor := color;
+    crBackColor := ColorToRGB(color);
     bAnimation := 1;
     Perform(EM_SETCHARFORMAT, SCF_SELECTION, Longint(@Format));
   end;

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Full Text Search (+ regular expressions) thread
- $Id: unit_fulltextsearch.pas,v 1.7 2003-06-10 12:00:22 elmuerte Exp $
+ $Id: unit_fulltextsearch.pas,v 1.8 2003-06-11 18:56:22 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_fulltextsearch;
@@ -49,6 +49,7 @@ begin
   Self.Total := Total;
   re := TRegExpr.Create;
   re.Expression := expr;
+  RealExpr := expr;
   if (not IsRegEx) then re.Expression := UpperCase(re.Expression);
   re.ModifierI := true;
   Matches := 0;
