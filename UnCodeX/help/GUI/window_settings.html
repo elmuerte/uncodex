@@ -13,11 +13,11 @@
 
 <div class="content">
 <h1>Program settings</h1>
-<a name="sourcepaths"><h2>Source paths</h2>
+<a name="sourcepaths"></a><h2>Source paths</h2>
 Here you can add all the paths to directories containing UScript packages. These paths will be scanned for possible packages. Usually you just point this to the directory of your Unreal Engine game.
 
 
-<a name="packagepriority"><h2>Package Priority</h2>
+<a name="packagepriority"></a><h2>Package Priority</h2>
 This is the priority listing of the packages, the most important packages must be at the top, this is usualy "Core". You can simply import the priority listing from the game file of an Unreal Engine game using the  "..." button. <b>Warning!</b> importing from an .ini file will clear the current list.
 <br>
 New packages will automatically be added at the bottom of the list when they are found. To check if the package priority is set correctly you can use the  "Find orphans" command in the main window. If the package priority is set correctly you should have no orhpan files.
@@ -25,25 +25,27 @@ New packages will automatically be added at the bottom of the list when they are
 You can "tag" a package by checking the box before the package name. A tagged package and all it's containing classes will get a diffirent icon in the Package and Classes tree listing. This way you can distinguish the original packages and classes from your own.
 
 
-<a name="ignorepackages"><h2>Ignore Packages</h2>
+<a name="ignorepackages"></a><h2>Ignore Packages</h2>
 Here you can add names of packages that should be ignored when you rebuild the tree.
 
 
-<a name="htmloutput"><h2>HTML Output</h2>
+<a name="htmloutput"></a><h2>HTML Output</h2>
 <h3>Output directory</h3>
 This is the directory where all HTML files will be saved to
 <h3>Templates directory</h3>
 This is the directory containing the HTML templates to be used when creating the HTML output.
 
 
-<a name="mshtmlhelp"><h2>MS HTML Help</h2>
+<a name="mshtmlhelp"></a><h2>MS HTML Help</h2>
 <h3>HTML Help Workshop</h3>
 This is the path to the directory of the HTML Help Workshop. UnCodeX searches for HHC.exe in that directory.
 <h3>Output file</h3>
 The file the HTML Help Workshop should create.
+<h3>Title</h3>
+The window title for the HTML Help file, leave blank to use the default title.
 
 
-<a name="compile"><h2>Compile</h2>
+<a name="compile"></a><h2>Compile</h2>
 Here you can define the command to execute when you select "Compile class". If the path name contains spaces you <b>must</b> use quotes around it.
 <br>
 <h4>Wrong</h4>
@@ -71,7 +73,7 @@ You can use the following placeholders in the commandline:
 </table>
 
 
-<a name="gameserver"><h2>Game server</h2>
+<a name="gameserver"></a><h2>Game server</h2>
 <h3>Server commandline</h3>
 The commandline to execute when you want to start a server. Just as with the Compiler commandline you have to place quotes around parts that contain spaces.
 <h3>Server priority</h3>
@@ -80,7 +82,7 @@ Here you can set the base priority of the server process executed by the command
 <h3>Client commandline</h3>
 The command to execute when you want to join the server.
 
-<a name="fulltextsearch"><h2>Full Text Search</h2>
+<a name="fulltextsearch"></a><h2>Full Text Search</h2>
 <h3>Open result command</h3>
 The command to execute when you double click the result of a full text search, or when you double click a property in the details window.
 <br>
@@ -96,19 +98,24 @@ You can use the same placeholders as with the compile command with these additio
 <h3>Default to regualr expression</h3>
 With this checked regular expressions will be used by default in full text and class body searches.
 
-<a name="layout"><h2>Layout</h2>
+<a name="layout"></a><h2>Layout</h2>
 Here you can change the color and font to be used in the tree list and the log window.
 <h3>Expand "Object" on start up</h3>
 Expand the first item of the class tree (usualy "Object") when UnCodeX starts.
 
-<a name="programoptions"><h2>Program Options</h2>
+<a name="programoptions"></a><h2>Program Options</h2>
 <h3>State file</h3>
 The filename the current tree state will be saved to. This name is relative to the configuration file used. So it should not contain a path, just a filename.
 <h3>Analyse modified classes on startup</h3>
 This will automatically analyse classes on program startup, unless the program is started with a find or batch command
 <h3>Minimize on close</h3>
 Minimize UnCodeX when the users pressed the "x" in the window. To really close the application select "Quit" from the menu.
-<h3>Hot keys</h3>
+<h3>Load custom output modules</h3>
+Search and load the custom output modules
+<h3>Default inheritance depth for class properties</h3>
+n/t
+
+<a name="programoptions"></a><h2>Hot keys</h2>
 Here you can change the default hot key settings. Select a command from the list, enter a new hot key and press "Set" to update.
 
 

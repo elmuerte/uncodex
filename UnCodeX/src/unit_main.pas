@@ -156,6 +156,7 @@ type
     ac_AnalyseModified: TAction;
     btn_AnalyseModified: TToolButton;
     mi_Output: TMenuItem;
+    mi_SingleOutput: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -805,13 +806,21 @@ begin
           if (@dfunc <> nil) then begin
             if dfunc(info) then begin
               Log('Output module: '+rec.Name+' '+info.AName);
-              mi_Output.Visible := true;
-              mi := TMenuItem.Create(mi_Output);
-              mi.Tag := OutputModules.Add(rec.Name); // add to list
+              if (info.ASingleClass) then begin
+                mi_SingleOutput.Visible := true;
+                mi := TMenuItem.Create(mi_SingleOutput);
+              end
+              else begin
+                mi_Output.Visible := true;
+                mi := TMenuItem.Create(mi_Output);
+              end;
+              mi.Tag := OutputModules.Add(rec.Name+'='); // add to list
+              OutputModules.Values[rec.Name] := BoolToStr(info.ASingleClass);
               mi.Caption := info.AName;
               mi.Hint := info.ADescription;
               mi.OnClick := miCustomOutputClick;
-              mi_Output.Add(mi);
+              if (info.ASingleClass) then mi_SingleOutput.Add(mi)
+              else mi_Output.Add(mi);
             end;
           end;
         finally
@@ -828,8 +837,17 @@ var
   omod: THandle;
   dfunc: TUCX_Output;
   info: TUCXOutputInfo;
+  selected: TTreeNode;
 begin
-  omod := LoadLibrary(PChar(OutputModules[(Sender as TMenuItem).Tag]));
+  selected := nil;
+  if (OutputModules.Values[OutputModules.Names[(Sender as TMenuItem).Tag]] = BoolToStr(true)) then begin
+    if (ActiveControl.ClassType <> TTreeView) then exit;
+    selected := (ActiveControl as TTreeview).Selected;
+    if (Selected = nil) then exit;
+    if (TObject(Selected.Data).ClassType <> TUClass) then exit;
+  end;
+
+  omod := LoadLibrary(PChar(OutputModules.Names[(Sender as TMenuItem).Tag]));
   if (omod <> 0) then begin
     try
       @dfunc := nil;
@@ -840,6 +858,7 @@ begin
         info.AStatusReport := StatusReport;
         info.AThreadTerminated := ThreadTerminate;
         info.WaitForTerminate := false;
+        info.ASelectedClass := TUClass(Selected.Data);
         info.AThread := nil;
         if dfunc(info) then begin
           if (info.WaitForTerminate) then begin

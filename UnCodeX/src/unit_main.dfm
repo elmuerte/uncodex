@@ -494,6 +494,10 @@ object frm_UnCodeX: Tfrm_UnCodeX
     object mi_Copyname: TMenuItem
       Action = ac_CopyName
     end
+    object mi_SingleOutput: TMenuItem
+      Caption = 'Output modules'
+      Visible = False
+    end
     object mi_N2: TMenuItem
       Caption = '-'
     end
