@@ -1,3 +1,11 @@
+{-----------------------------------------------------------------------------
+ Unit Name: unit_copyparser
+ Author:    elmuerte
+ Purpose:   parser class based on CopyParser.pas used for processing the HTML
+            templates
+ History:
+-----------------------------------------------------------------------------}
+
 { *************************************************************************** }
 {                                                                             }
 { Kylix and Delphi Cross-Platform Visual Component Library                    }

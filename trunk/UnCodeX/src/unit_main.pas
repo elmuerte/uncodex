@@ -1,3 +1,10 @@
+{-----------------------------------------------------------------------------
+ Unit Name: unit_main
+ Author:    elmuerte
+ Purpose:   Main windows
+ History:
+-----------------------------------------------------------------------------}
+
 unit unit_main;
 
 interface
@@ -9,9 +16,11 @@ uses
   Clipbrd, hh, hh_funcs, ToolWin;
 
 const
+  // custom window messages
   WM_APPBAR                      = WM_USER+$100;
   UM_APP_ID_CHECK                = WM_APP + 101;
   UM_RESTORE_APPLICATION         = WM_APP + 102;
+  // misc constants
   TV_ALWAYSEXPAND                = 0;
   TV_NOEXPAND                    = 1;
 
@@ -149,7 +158,6 @@ type
     mi_Output: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
-    procedure mi_OpenClassClick(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
     procedure ae_AppEventHint(Sender: TObject);
     procedure ac_RecreateTreeExecute(Sender: TObject);
@@ -222,6 +230,7 @@ type
     procedure LoadState;
     procedure UpdateSystemMenu;
     procedure WMSysCommand (var Msg : TMessage); message WM_SysCommand;
+    // AppBar methods
     procedure WMAppBar(var Msg : TMessage); message WM_AppBar;
     procedure WMNCLBUTTONDOWN(var Msg: TWMNCLBUTTONDOWN); message WM_NCLBUTTONDOWN;
     procedure WMNCHitTest(var Msg: TWMNCHitTest); message WM_NCHITTEST;
@@ -231,19 +240,23 @@ type
     procedure RegisterABAutoHide;
     procedure UnregisterABAutoHide;
     procedure ABResize;
+    // AppBar methods -- end
     procedure NextBatchCommand;
+    // -reuse methods
     procedure UMAppIDCheck(var Message : TMessage); message UM_APP_ID_CHECK;
     procedure WMCopyData(var msg: TWMCopyData); message WM_COPYDATA;
     procedure UMRestoreApplication(var msg: TMessage); message UM_RESTORE_APPLICATION;
+    // Custom output modules
     procedure LoadOutputModules;
-    procedure miCustomOurputClick(sender: TObject);
+    procedure miCustomOutputClick(sender: TObject);
   public
-    statustext : string;
+    statustext : string; // current status text
     procedure StatusReport(msg: string; progress: byte = 255);
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
     procedure OpenSourceLine(uclass: TUClass; line, caret: integer);    
   end;
 
+  // status redirecting
   TCodeXStatusType = (cxstLog, cxstStatus);
 
   TCodeXStatus = packed record
@@ -252,50 +265,64 @@ type
     Progress: byte;
   end;
 
+  // logging
   procedure Log(msg: string);
   procedure LogClass(msg: string; uclass: TUClass = nil);
 
 var
   frm_UnCodeX: Tfrm_UnCodeX;
+  DoInit: boolean = true; // perform initialization on startup
   runningthread: TThread = nil;
-  DoInit: boolean = true;
+  InitActivateFix: Boolean = true; // fix initial form activation
+  ConfigFile: string; // current config file
+  InitialStartup: boolean; // is first run
+  TreeUpdated: boolean = false; // prevent useless saving
+  hh_Help: THookHelpSystem; // help system
+  OutputModules: TStringList; // custom output modules
+  // UScript data
   PackageList: TUPackageList;
   ClassList: TUClassList;
-  InitActivateFix: Boolean = true;
   // class search vars
   searchclass: string;
   CSprops: array[0..2] of boolean;
   OpenFind: boolean = false; // only on startup
   OpenTags: boolean = false; // only on startup
-
-  IsBatching: boolean = false;
-  CmdStack: TStringList;
-  ConfigFile: string;
-  InitialStartup: boolean;
+  // batch vars
+  IsBatching: boolean = false; // is batch executing
+  CmdStack: TStringList; // command stack
+  // -handle argument
   StatusHandle: integer = -1;
-  TreeUpdated: boolean = false; // prevent useless saving
   // used for -reuse
   PrevInst, RestoreHandle: HWND;
   AppInstanceId: integer = 0;
-  // help system
-  hh_Help: THookHelpSystem;
-  // output modules
-  OutputModules: TStringList;
 
 // config vars
 var
-  HTMLOutputDir, TemplateDir, HHCPath, HTMLHelpFile, ServerCmd, CompilerCmd,
-    ClientCmd, OpenResultCmd, StateFile: string;
-  ServerPrio: integer;
+  // general
+  StateFile: string;
   SourcePaths: TStringList;
   PackagePriority: TStringList;
   IgnorePackages: TStringList;
+  MinimizeOnClose: boolean = false;
+  // startup
+  ExpandObject: boolean;
+  AnalyseModified: boolean;
+  LoadCustomOutputModules: boolean = true;
+  // HTML out
+  HTMLOutputDir, TemplateDir: string;
+  // HTML Help out
+  HHCPath, HTMLHelpFile, HHTitle: string;
+  // Start server
+  ServerCmd, ClientCmd: string;
+  ServerPrio: integer;
+  // Commandlines
+  CompilerCmd, OpenResultCmd: string;
+  // Search
   FTSRegexp: boolean;
   FTSHistory: TStringList;
   CSHistory: TStringList;
-  ExpandObject: boolean;
-  MinimizeOnClose: boolean = false;
-  AnalyseModified: boolean;
+  // class properties
+  DefaultInheritanceDepth: integer = 0;
 
 implementation
 
@@ -309,6 +336,8 @@ const
   AUTOHIDEEXPOSURE = 4; // number of pixel to show of the app bar
 
 {$R *.dfm}
+
+{ Status redirecting }
 
 procedure SendStatusMsg(msg: string; mType: TCodeXStatusType; Progress: byte = 0);
 var
@@ -324,6 +353,9 @@ begin
   CopyData.lpData := @Data;
   SendMessage(StatusHandle, WM_COPYDATA, frm_UnCodeX.Handle, Integer(@CopyData));
 end;
+
+{ Status redirecting -- END }
+{ Logging }
 
 procedure Log(msg: string);
 begin
@@ -341,16 +373,20 @@ begin
    if (StatusHandle <> -1) then SendStatusMsg(msg, cxstLog);
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-// Custom methods
+{ Logging -- END }
+{ Tfrm_UnCodeX }
+{ Custom methods }
 
+// update status
 procedure Tfrm_UnCodeX.StatusReport(msg: string; progress: byte = 255);
 begin
   statustext := msg;
   if (progress <> 255) then pb_Scan.Position := progress;
-   if (StatusHandle <> -1) then SendStatusMsg(msg, cxstStatus, progress);
+  // redirect status if set
+  if (StatusHandle <> -1) then SendStatusMsg(msg, cxstStatus, progress);
 end;
 
+// Can create a new thread
 function Tfrm_UnCodeX.ThreadCreate: boolean;
 begin
   if (runningthread <> nil) then Result := false
@@ -360,12 +396,15 @@ begin
   end;
 end;
 
+// Running thread terminated, clean up
 procedure Tfrm_UnCodeX.ThreadTerminate(Sender: TObject);
 begin
   runningthread := nil;
   ac_Abort.Enabled := false;
   if (IsBatching) then NextBatchCommand;
 end;
+
+{ Package\Class Tree state }
 
 procedure Tfrm_UnCodeX.SaveState;
 var
@@ -422,6 +461,9 @@ begin
   end;
 end;
 
+{ Package\Class Tree state -- END }
+{ System menu modification }
+
 procedure Tfrm_UnCodeX.UpdateSystemMenu;
 var
   SysMenu : HMenu;
@@ -441,18 +483,21 @@ begin
   InsertMenuItem(Sysmenu, 0, false, Minfo);
 end;
 
+// redirect system menu commands to main menu
 procedure Tfrm_UnCodeX.WMSysCommand (var Msg : TMessage);
 begin
   if mm_Main.DispatchCommand(Msg.WParam) then Exit;
   Inherited;
 end;
 
+{ Application bar\Tool window methods }
+
 procedure Tfrm_UnCodeX.WMAppBar(var Msg : TMessage);
 begin
   log(IntToStr(Msg.WParam));
 end;
 
-procedure Tfrm_UnCodeX.WMNCLBUTTONDOWN(var Msg: TWMNCLBUTTONDOWN); 
+procedure Tfrm_UnCodeX.WMNCLBUTTONDOWN(var Msg: TWMNCLBUTTONDOWN);
 begin
   // prevent moving
   if ((Msg.HitTest = HTCAPTION) and IsAppBar) then begin
@@ -487,6 +532,7 @@ begin
   end;
 end;
 
+// Auto hide when the mouse leaves
 procedure Tfrm_UnCodeX.CMMouseLeave(var msg: TMessage);
 var
   pt: TPoint;
@@ -498,9 +544,11 @@ begin
   end;
 end;
 
+// Register the Tool window
 procedure Tfrm_UnCodeX.RegisterAppBar;
 begin
   if (IsAppBar) then exit;
+  // Change window look
   OldStyleEx := GetWindowLong(Handle, GWL_EXSTYLE);
   OldStyle := GetWindowLong(Handle, GWL_STYLE);
   SetWindowLong(Handle, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
@@ -511,6 +559,7 @@ begin
   OldSize.Bottom := Height;
   SystemParametersInfo(SPI_GETWORKAREA, 0, @WorkArea, 0);
 
+  // Register bar
   abd.cbSize := SizeOf(APPBARDATA);
   abd.hWnd := Handle;
   abd.uCallbackMessage := WM_APPBAR;
@@ -537,6 +586,7 @@ begin
   IsAppBar := true;
 end;
 
+// Remove the tool window
 procedure Tfrm_UnCodeX.UnregisterAppBar;
 begin
   if (IsAppBar) then begin
@@ -597,6 +647,10 @@ begin
   end;
 end;
 
+{ Application bar\Tool window methods --  END }
+{ Program execution }
+
+// run a program
 procedure Tfrm_UnCodeX.ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
 var
   se: SHELLEXECUTEINFO;
@@ -620,70 +674,7 @@ begin
   end;
 end;
 
-procedure Tfrm_UnCodeX.NextBatchCommand;
-var
-  cmd: string;
-begin
-  if (not IsBatching) then exit;
-  if (CmdStack.Count = 0) then begin
-    IsBatching := false;
-    Caption := APPTITLE+' - '+APPVERSION;
-    exit;
-  end;
-  cmd := CmdStack[0];
-  Caption := APPTITLE+' - '+APPVERSION+' - Batch process: '+cmd;
-  CmdStack.Delete(0);
-  if (cmd = 'rebuild') then ac_RecreateTree.Execute
-  else if (cmd = 'analyse') then ac_AnalyseAll.Execute
-  else if (cmd = 'createhtml') then ac_CreateHTMLfiles.Execute
-  else if (cmd = 'htmlhelp') then ac_HTMLHelp.Execute
-  else if (cmd = 'close') then Close;
-end;
-
-procedure Tfrm_UnCodeX.UMAppIDCheck(var Message: TMessage);
-begin
-  Message.Result := AppInstanceId;
-end;
-
-procedure Tfrm_UnCodeX.WMCopyData(var msg: TWMCopyData);
-var
-  data: TRedirectStruct;
-  lst: TStringList;
-  i: integer;
-begin
-  if (msg.CopyDataStruct.cbData = SizeOf(data)) then begin
-    RestoreHandle := Handle;
-    CopyMemory(@data, msg.CopyDataStruct.lpData, msg.CopyDataStruct.cbData);
-    if (data.NewHandle <> 0) then StatusHandle := data.NewHandle;
-    if (data.Find <> '') then begin
-      searchclass := data.Find;
-      CSprops[0] := false;
-      OpenFind := data.OpenFind;
-      OpenTags := data.OpenTags;
-      ActiveControl := tv_Classes;
-      tv_Classes.Selected := nil;
-      ac_FindNext.Execute;
-    end;
-    if (data.Batch <> '') then begin
-      lst := TStringList.Create;
-      try
-        lst.DelimitedText := data.Batch;
-        CmdStack.Clear;
-        for i := 0 to lst.Count-1 do CmdStack.Add(lst[i]);
-        NextBatchCommand;
-      finally
-        lst.Free;
-      end;
-    end;
-    Msg.Result := ord(true);
-  end;
-end;
-
-procedure Tfrm_UnCodeX.UMRestoreApplication(var msg: TMessage);
-begin
-  msg.Result := RestoreHandle;
-end;
-
+// Open a source file at a specific line
 procedure Tfrm_UnCodeX.OpenSourceLine(uclass: TUClass; line, caret: integer);
 var
   lst: TStringList;
@@ -722,6 +713,80 @@ begin
   end;
 end;
 
+{ Program execution -- END }
+
+// Execute next batch command
+procedure Tfrm_UnCodeX.NextBatchCommand;
+var
+  cmd: string;
+begin
+  if (not IsBatching) then exit;
+  if (CmdStack.Count = 0) then begin
+    IsBatching := false;
+    Caption := APPTITLE+' - '+APPVERSION;
+    exit;
+  end;
+  cmd := CmdStack[0];
+  Caption := APPTITLE+' - '+APPVERSION+' - Batch process: '+cmd;
+  CmdStack.Delete(0);
+  if (cmd = 'rebuild') then ac_RecreateTree.Execute
+  else if (cmd = 'analyse') then ac_AnalyseAll.Execute
+  else if (cmd = 'createhtml') then ac_CreateHTMLfiles.Execute
+  else if (cmd = 'htmlhelp') then ac_HTMLHelp.Execute
+  else if (cmd = 'close') then Close;
+end;
+
+// Check application for the same ID (config hash)
+procedure Tfrm_UnCodeX.UMAppIDCheck(var Message: TMessage);
+begin
+  Message.Result := AppInstanceId;
+end;
+
+// WM_COPYDATA
+// used for -reuse command passing
+procedure Tfrm_UnCodeX.WMCopyData(var msg: TWMCopyData);
+var
+  data: TRedirectStruct;
+  lst: TStringList;
+  i: integer;
+begin
+  if (msg.CopyDataStruct.cbData = SizeOf(data)) then begin
+    RestoreHandle := Handle;
+    CopyMemory(@data, msg.CopyDataStruct.lpData, msg.CopyDataStruct.cbData);
+    if (data.NewHandle <> 0) then StatusHandle := data.NewHandle;
+    if (data.Find <> '') then begin
+      searchclass := data.Find;
+      CSprops[0] := false;
+      OpenFind := data.OpenFind;
+      OpenTags := data.OpenTags;
+      ActiveControl := tv_Classes;
+      tv_Classes.Selected := nil;
+      ac_FindNext.Execute;
+    end;
+    if (data.Batch <> '') then begin
+      lst := TStringList.Create;
+      try
+        lst.DelimitedText := data.Batch;
+        CmdStack.Clear;
+        for i := 0 to lst.Count-1 do CmdStack.Add(lst[i]);
+        NextBatchCommand;
+      finally
+        lst.Free;
+      end;
+    end;
+    Msg.Result := ord(true);
+  end;
+end;
+
+// Bring to front this window, used for -reuse
+procedure Tfrm_UnCodeX.UMRestoreApplication(var msg: TMessage);
+begin
+  msg.Result := RestoreHandle;
+end;
+
+{ Custom output modules }
+
+// Search and load custom output modules
 procedure Tfrm_UnCodeX.LoadOutputModules;
 var
   rec: TSearchRec;
@@ -745,7 +810,7 @@ begin
               mi.Tag := OutputModules.Add(rec.Name); // add to list
               mi.Caption := info.AName;
               mi.Hint := info.ADescription;
-              mi.OnClick := miCustomOurputClick;
+              mi.OnClick := miCustomOutputClick;
               mi_Output.Add(mi);
             end;
           end;
@@ -758,7 +823,7 @@ begin
   end;
 end;
 
-procedure Tfrm_UnCodeX.miCustomOurputClick(sender: TObject);
+procedure Tfrm_UnCodeX.miCustomOutputClick(sender: TObject);
 var
   omod: THandle;
   dfunc: TUCX_Output;
@@ -790,14 +855,17 @@ begin
   end;
 end;
 
-////////////////////////////////////////////////////////////////////////////////
-// Auto generated methods
+{ Custom output modules -- END }
+{ Custom methods -- END}
+{ Auto generated methods }
 
+// Update the status message on timer
 procedure Tfrm_UnCodeX.tmr_StatusTextTimer(Sender: TObject);
 begin
   sb_Status.Panels[0].Text := statustext;
 end;
 
+// Create form and init
 procedure Tfrm_UnCodeX.FormCreate(Sender: TObject);
 var
   ini: TMemIniFile;
@@ -813,13 +881,16 @@ begin
   InitialStartup := not FileExists(ConfigFile);
   ini := TMemIniFile.Create(ConfigFile);
   sl := TStringList.Create;
+  { StringLists }
   PackagePriority := TStringList.Create;
   SourcePaths := TStringList.Create;
   IgnorePackages := TStringList.Create;
   FTSHistory := TStringList.Create;
   CSHistory := TStringList.Create;
   OutputModules := TStringList.Create;
+  { StringLists -- END }
   try
+    { Load layout }
     mi_MenuBar.Checked := ini.ReadBool('Layout', 'MenuBar', true);
     mi_Toolbar.Checked := ini.ReadBool('Layout', 'Toolbar', true);
     mi_Toolbar.OnClick(Sender);
@@ -851,7 +922,7 @@ begin
     if (mi_Right.Checked) then mi_Right.OnClick(Sender);
     mi_Left.Checked := ini.ReadBool('Layout', 'ABLeft', false);
     if (mi_Left.Checked) then mi_Left.OnClick(Sender);
-
+    { Color and fonts }
     lb_Log.Font.Name := ini.ReadString('Layout', 'Log.Font.Name', lb_Log.Font.Name);
     lb_Log.Font.Color := ini.ReadInteger('Layout', 'Log.Font.Color', lb_Log.Font.Color);
     lb_Log.Font.Size := ini.ReadInteger('Layout', 'Log.Font.Size', lb_Log.Font.Size);
@@ -866,11 +937,14 @@ begin
     tv_Packages.Color := ini.ReadInteger('Layout', 'Tree.Color', tv_Packages.Color);
     ExpandObject := ini.ReadBool('Layout', 'ExpandObject', true);
     MinimizeOnClose := ini.ReadBool('Layout', 'MinimizeOnClose', MinimizeOnClose);
-
+    { Color and fonts -- END }
+    { Load layout -- END }
+    { Program configuration }
     HTMLOutputDir := ini.ReadString('Config', 'HTMLOutputDir', ExtractFilePath(ParamStr(0))+'Output');
     TemplateDir := ini.ReadString('Config', 'TemplateDir', ExtractFilePath(ParamStr(0))+'Templates'+PATHDELIM+'UnrealWiki');
     HHCPath := ini.ReadString('Config', 'HHCPath', '');
     HTMLHelpFile := ini.ReadString('Config', 'HTMLHelpFile', ExtractFilePath(ParamStr(0))+'UnCodeX.chm');
+    HHTitle := ini.ReadString('Config', 'HHTitle', '');
     ServerCmd := ini.ReadString('Config', 'ServerCmd', '');
     ServerPrio := ini.ReadInteger('Config', 'ServerPrio', 1);
     ClientCmd := ini.ReadString('Config', 'ClientCmd', '');
@@ -879,12 +953,14 @@ begin
     FTSRegexp := ini.ReadBool('Config', 'FullTextSearchRegExp', false);
     StateFile := ini.ReadString('Config', 'StateFile', StateFile);
     AnalyseModified := ini.ReadBool('Config', 'AnalyseModified', true);
+    DefaultInheritanceDepth := ini.ReadInteger('Config', 'DefaultInheritanceDepth', 0);
     if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ConfigFile)+StateFile;
-
+    LoadCustomOutputModules := ini.ReadBool('[config]', 'LoadOutputModules', LoadCustomOutputModules);
+    { Program configuration -- END }
     for i := 0 to al_Main.ActionCount-1 do begin
       TAction(al_Main.Actions[i]).ShortCut := TextToShortCut(ini.ReadString('HotKeys', TAction(al_Main.Actions[i]).Caption, ShortCutToText(TAction(al_Main.Actions[i]).ShortCut)));
     end;
-
+    { Unreal Packages }
     ini.ReadSectionValues('PackagePriority', sl);
     for i := 0 to sl.Count-1 do begin
       tmp := sl[i];
@@ -905,13 +981,6 @@ begin
         PackagePriority.Objects[PackagePriority.IndexOf(LowerCase(tmp))] := PackagePriority; 
       end;
     end;
-    ini.ReadSectionValues('SourcePaths', sl);
-    for i := 0 to sl.Count-1 do begin
-      tmp := sl[i];
-      Delete(tmp, 1, Pos('=', tmp));
-      Log('Config: Path = '+tmp);
-      SourcePaths.Add(LowerCase(tmp));
-    end;
     ini.ReadSectionValues('IgnorePackages', sl);
     for i := 0 to sl.Count-1 do begin
       tmp := sl[i];
@@ -919,6 +988,17 @@ begin
       Log('Config: Ignore = '+tmp);
       IgnorePackages.Add(LowerCase(tmp));
     end;
+    { Unreal Packages -- END }
+    { Source paths }
+    ini.ReadSectionValues('SourcePaths', sl);
+    for i := 0 to sl.Count-1 do begin
+      tmp := sl[i];
+      Delete(tmp, 1, Pos('=', tmp));
+      Log('Config: Path = '+tmp);
+      SourcePaths.Add(LowerCase(tmp));
+    end;
+    { Source paths -- END }
+    { Search history }
     ini.ReadSectionValues('FullTextSearch', sl);
     for i := 0 to sl.Count-1 do begin
       tmp := sl[i];
@@ -931,35 +1011,19 @@ begin
       Delete(tmp, 1, Pos('=', tmp));
       CSHistory.Add(tmp);
     end;
-    if (ini.ReadBool('[config]', 'LoadOutputModules', true)) then LoadOutputModules;
+    { Search history -- END }
   finally
     ini.Free;
     sl.Free;
   end;
+  if (LoadCustomOutputModules) then LoadOutputModules;
   PackageList := TUPackageList.Create(true);
   ClassList := TUClassList.Create(false);
   UpdateSystemMenu;
   mi_MenuBar.OnClick(Sender); // has to be here or else it won't work
 end;
 
-procedure Tfrm_UnCodeX.mi_OpenClassClick(Sender: TObject);
-var
-  filename: string;
-begin
-  if (ActiveControl.ClassType = TTreeView) then begin
-    with (ActiveControl as TTreeView) do begin
-      if (Selected <> nil) then begin
-        filename := TUClass(Selected.Data).package.path+PATHDELIM+CLASSDIR+PATHDELIM+TUClass(Selected.Data).filename;
-        case (ShellExecute(0, nil, PChar(filename), nil, nil, 0)) of
-          ERROR_FILE_NOT_FOUND: statustext := 'File not found: '+filename;
-          ERROR_PATH_NOT_FOUND: statustext := 'Path not found: '+filename;
-          SE_ERR_ACCESSDENIED : statustext := 'Access denied: '+filename;
-        end;
-      end;
-    end;
-  end;
-end;
-
+// Analyse a signgle class, why is this not an action ?
 procedure Tfrm_UnCodeX.mi_AnalyseclassClick(Sender: TObject);
 begin
   if (ActiveControl.ClassType = TTreeView) then begin
@@ -974,6 +1038,7 @@ begin
   end;
 end;
 
+// Show hint message when there is one
 procedure Tfrm_UnCodeX.ae_AppEventHint(Sender: TObject);
 begin
   sb_Status.SimpleText := GetLongHint(Application.Hint);
@@ -1042,45 +1107,69 @@ var
 begin
   with Tfrm_Settings.Create(nil) do begin
     lb_Paths.Items := SourcePaths;
+    { Packages }
     clb_PackagePriority.Items := PackagePriority;
     for i := 0 to PackagePriority.Count-1 do begin
       clb_PackagePriority.Checked[i] := PackagePriority.Objects[i] <> nil;
     end;
+    lb_IgnorePackages.Items := IgnorePackages;
+    { HTML output }
     ed_HTMLOutputDir.Text := HTMLOutputDir;
     ed_TemplateDir.Text := TemplateDir;
+    { HTML Help }
     ed_WorkshopPath.Text := HHCPath;
     ed_HTMLHelpOutput.Text := HTMLHelpFile;
+    ed_HHTitle.Text := HHTitle;
+    { Run server }
     ed_ServerCommandline.Text := ServerCmd;
     cb_ServerPriority.ItemIndex := ServerPrio;
     ed_ClientCommandline.Text := ClientCmd;
+    { Commandlines }
     ed_CompilerCommandline.Text := CompilerCmd;
-    lb_IgnorePackages.Items := IgnorePackages;
     ed_OpenResultCmd.Text := OpenResultCmd;
+    { Search settings }
     cb_FTSRegExp.Checked := FTSRegexp;
+    { Layout settings }
     lb_LogLayout.Color := lb_Log.Color;
     lb_LogLayout.Font := lb_Log.Font;
     tv_TreeLayout.Color := tv_Classes.Color;
     tv_TreeLayout.Font := tv_Classes.Font;
     cb_ExpandObject.Checked := ExpandObject;
+    { Program options }
     ed_StateFilename.Text := ExtractFilename(StateFile);
     cb_MinimzeOnClose.Checked := MinimizeOnClose;
     cb_ModifiedOnStartup.Checked := AnalyseModified;
+    ud_DefInheritDepth.Position := DefaultInheritanceDepth;
+    cb_LoadCustomModules.Checked := LoadCustomOutputModules;
     if (ShowModal = mrOk) then begin
+      { HTML output }
       HTMLOutputDir := ed_HTMLOutputDir.Text;
       TemplateDir := ed_TemplateDir.Text;
+      { HTML Help }
       HHCPath := ed_WorkshopPath.Text;
       HTMLHelpFile := ed_HTMLHelpOutput.Text;
+      HHTitle := ed_HHTitle.Text;
+      { Run server }
       ServerCmd := ed_ServerCommandline.Text;
       ServerPrio := cb_ServerPriority.ItemIndex;
       ClientCmd := ed_ClientCommandline.Text;
+      { Commandlines }
       CompilerCmd := ed_CompilerCommandline.Text;
       OpenResultCmd := ed_OpenResultCmd.Text;
+      { Search settings }
       FTSRegexp := cb_FTSRegExp.Checked;
+      { Program options }
       StateFile := ed_StateFilename.Text;
       AnalyseModified := cb_ModifiedOnStartup.Checked;
       if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ConfigFile)+StateFile;
+      ExpandObject := cb_ExpandObject.Checked;
+      MinimizeOnClose := cb_MinimzeOnClose.Checked;
+      DefaultInheritanceDepth := ud_DefInheritDepth.Position;
+      LoadCustomOutputModules := cb_LoadCustomModules.Checked;
+      { Source paths }
       SourcePaths.Clear;
       SourcePaths.AddStrings(lb_Paths.Items);
+      { Packages }
       PackagePriority.Clear;
       PackagePriority.AddStrings(clb_PackagePriority.Items);
       for i := 0 to clb_PackagePriority.Items.Count-1 do begin
@@ -1090,14 +1179,14 @@ begin
       end;
       IgnorePackages.Clear;
       IgnorePackages.AddStrings(lb_IgnorePackages.Items);
+      { Layout settings }
       lb_Log.Color := lb_LogLayout.Color;
       lb_Log.Font := lb_LogLayout.Font;
       tv_Classes.Color := tv_TreeLayout.Color;
       tv_Classes.Font := tv_TreeLayout.Font;
       tv_Packages.Color := tv_TreeLayout.Color;
       tv_Packages.Font := tv_TreeLayout.Font;
-      ExpandObject := cb_ExpandObject.Checked;
-      MinimizeOnClose := cb_MinimzeOnClose.Checked;
+
       ini := TMemIniFile.Create(ConfigFile);
       data := TStringList.Create;
       try
@@ -1106,6 +1195,7 @@ begin
         data.Add('TemplateDir='+TemplateDir);
         data.Add('HHCPath='+HHCPath);
         data.Add('HTMLHelpFile='+HTMLHelpFile);
+        data.Add('HHTitle='+HHTitle);
         data.Add('ServerCmd='+ServerCmd);
         data.Add('ServerPrio='+IntToStr(ServerPrio));
         data.Add('ClientCmd='+ClientCmd);
@@ -1114,6 +1204,8 @@ begin
         data.Add('FullTextSearchRegExp='+IntToStr(Ord(FTSRegexp)));
         data.Add('StateFile='+ed_StateFilename.Text);
         data.Add('AnalyseModified='+IntToStr(Ord(AnalyseModified)));
+        data.Add('DefaultInheritanceDepth='+IntToStr(DefaultInheritanceDepth));
+        data.Add('LoadOutputModules='+IntToStr(Ord(LoadCustomOutputModules)));
 
         data.Add('[Layout]');
         data.Add('Log.Font.Name='+lb_Log.Font.Name);
@@ -1156,7 +1248,7 @@ end;
 procedure Tfrm_UnCodeX.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
 begin
-  CanClose := (runningthread = nil);
+  CanClose := (runningthread = nil); // can not close while a thread is running
 end;
 
 procedure Tfrm_UnCodeX.ac_AbortExecute(Sender: TObject);
@@ -1307,7 +1399,7 @@ begin
   end;
   if (ThreadCreate) then begin
     lb_Log.Items.Clear;
-    runningthread := TMSHTMLHelp.Create(HHCPath, HTMLOutputDir, HTMLHelpFile, PackageList, tv_Classes, StatusReport);
+    runningthread := TMSHTMLHelp.Create(HHCPath, HTMLOutputDir, HTMLHelpFile, HHTitle, PackageList, tv_Classes, StatusReport);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
   end;
@@ -1566,6 +1658,7 @@ begin
         with Tfrm_Tags.Create(nil) do begin
           RestoreHandle := Handle;
           uclass := selclass;
+          ud_InheritanceLevel.Position := DefaultInheritanceDepth;
           if LoadClass then begin
             Show;
           end;

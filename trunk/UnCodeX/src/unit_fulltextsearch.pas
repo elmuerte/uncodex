@@ -1,3 +1,10 @@
+{-----------------------------------------------------------------------------
+ Unit Name: unit_fulltextsearch
+ Author:    elmuerte
+ Purpose:   Full Text Search (+ regular expressions) thread
+ History:
+-----------------------------------------------------------------------------}
+
 unit unit_fulltextsearch;
 
 interface

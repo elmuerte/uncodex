@@ -1,4 +1,10 @@
-// Based on the TParser class by Borland Software Corporation
+{-----------------------------------------------------------------------------
+ Unit Name: unit_parser
+ Author:    elmuerte
+ Purpose:   Tokeniser for Unreal Script
+            Based on the TParser class by Borland Software Corporation
+ History:
+-----------------------------------------------------------------------------}
 
 unit unit_parser;
 

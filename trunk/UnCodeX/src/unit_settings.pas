@@ -1,3 +1,10 @@
+{-----------------------------------------------------------------------------
+ Unit Name: unit_settings
+ Author:    elmuerte
+ Purpose:   program settings window
+ History:
+-----------------------------------------------------------------------------}
+
 unit unit_settings;
 
 interface
@@ -114,13 +121,20 @@ type
     lbl_StateFile: TLabel;
     cb_MinimzeOnClose: TCheckBox;
     clb_PackagePriority: TCheckListBox;
-    lv_HotKeys: TListView;
-    lbl_HotKeys: TLabel;
-    ed_HotKey: TEdit;
-    btn_SetHotKey: TBitBtn;
-    hk_HotKey: THotKey;
     btn_Help: TBitBtn;
     cb_ModifiedOnStartup: TCheckBox;
+    ts_HotKeys: TTabSheet;
+    gb_HotKeys: TGroupBox;
+    ed_HotKey: TEdit;
+    hk_HotKey: THotKey;
+    btn_SetHotKey: TBitBtn;
+    lv_HotKeys: TListView;
+    lbl_HTMLTitle: TLabel;
+    ed_HHTitle: TEdit;
+    Label1: TLabel;
+    ed_DefInheritanceDepth: TEdit;
+    ud_DefInheritDepth: TUpDown;
+    cb_LoadCustomModules: TCheckBox;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);

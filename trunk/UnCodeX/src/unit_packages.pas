@@ -1,3 +1,10 @@
+{-----------------------------------------------------------------------------
+ Unit Name: unit_packages
+ Author:    elmuerte
+ Purpose:   Unreal Package scanner, searches for classes in directories
+ History:
+-----------------------------------------------------------------------------}
+
 unit unit_packages;
 
 interface
