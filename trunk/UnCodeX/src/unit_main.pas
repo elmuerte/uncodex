@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.99 2004-05-10 14:36:58 elmuerte Exp $
+ $Id: unit_main.pas,v 1.100 2004-05-10 20:41:35 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -1809,6 +1809,8 @@ begin
     tv_Classes.Items.Clear;
     PackageList.Clear;
     ClassList.Clear;
+    SelectedUClass := nil;
+    SelectedUPackage := nil;
     runningthread := TPackageScanner.Create(SourcePaths, tv_Packages.Items,
           tv_Classes.items, statusReport, PackageList, ClassList,
           PackagePriority, IgnorePackages, unit_rtfhilight.ClassesHash, GPDF);
@@ -2743,7 +2745,8 @@ begin
       exit;
     end
     else begin
-			if (SelectedUClass <> nil) then re_SourceSnoop.Hint := SelectedUClass.FullFileName;
+			if (SelectedUClass <> nil) then re_SourceSnoop.Hint := SelectedUClass.FullFileName
+    	else re_SourceSnoop.Hint := '';
     end;
   end;
   re_SourceSnoop.Cursor := crDefault;
