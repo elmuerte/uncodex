@@ -24,10 +24,8 @@ uses
   unit_uclasses in '..\unit_uclasses.pas',
   unit_outputdefs in '..\unit_outputdefs.pas',
   unit_selector in 'unit_selector.pas' {frm_GraphViz},
-  unit_deplist in 'unit_deplist.pas';
-
-const
-  VERSION = '009 Beta';
+  unit_deplist in 'unit_deplist.pas',
+  Hashes in '..\Hashes.pas';
 
 {$R *.res}
 
@@ -35,7 +33,7 @@ const
 function UCX_Details(var Info: TUCXOutputDetails): boolean; stdcall
 begin
   Info.AName := 'GraphViz';
-  Info.ADescription := 'Create a DOT file to be used with GraphViz (version '+VERSION+')';
+  Info.ADescription := 'Create a DOT file to be used with GraphViz (version '+DLLVERSION+')';
   Info.ASingleClass := false;
   result := true;
 end;

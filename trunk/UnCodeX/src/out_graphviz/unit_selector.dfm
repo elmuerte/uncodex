@@ -46,7 +46,6 @@ object frm_GraphViz: Tfrm_GraphViz
     Width = 65
     Height = 17
     Caption = 'Variables'
-    Enabled = False
     TabOrder = 1
   end
   object cb_Funcs: TCheckBox
