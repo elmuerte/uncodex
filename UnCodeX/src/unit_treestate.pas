@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   loading/saving the tree state
- $Id: unit_treestate.pas,v 1.15 2003-11-04 19:35:28 elmuerte Exp $
+ $Id: unit_treestate.pas,v 1.16 2003-11-09 11:01:27 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -353,6 +353,7 @@ begin
       end
       else TreeViewErrorFmt(sInvalidLevelEx, [ALevel, uclass.name]);
       uclass.treenode := ANode;
+      if (uclass.parent <> nil) then uclass.parent.children.Add(uclass);
       if (uclass.tagged) then begin
         TTreeNode(uclass.treenode).ImageIndex := ICON_CLASS_TAGGED;
         TTreeNode(uclass.treenode).StateIndex := ICON_CLASS_TAGGED;
