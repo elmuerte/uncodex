@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.89 2004-04-02 10:33:26 elmuerte Exp $
+ $Id: unit_main.pas,v 1.90 2004-04-02 20:15:10 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -946,9 +946,11 @@ begin
   else if (cmd = 'createhtml') then ac_CreateHTMLfiles.Execute
   else if (cmd = 'htmlhelp') then ac_HTMLHelp.Execute
   else if (cmd = 'close') then Close
-  else if (cmd = 'orhpanstop') then begin
+  else if (cmd = 'orphanstop') then begin
 		if ClassOrphanCount > 0 then begin
       Log('Stopped batching because of orhpan classes');
+      Log(IntToStr(ClassOrphanCount)+' orphans found');
+      MessageDlg(IntToStr(ClassOrphanCount)+' orphan classes found.'+#13+#10+'Check the log for more information.', mtWarning, [mbOK], 0);
       IsBatching := false;
     	Caption := APPTITLE+' - version '+APPVERSION;
     	exit;
@@ -1802,6 +1804,12 @@ procedure Tfrm_UnCodeX.ac_FindOrphansExecute(Sender: TObject);
 begin
   lb_Log.Items.Clear;
 	CountOrphans(ClassList);
+  if ClassOrphanCount > 0 then begin
+    Log('Stopped batching because of orhpan classes');
+    Log(IntToStr(ClassOrphanCount)+' orphans found');
+    MessageDlg(IntToStr(ClassOrphanCount)+' orphan classes found.'+#13+#10+'Check the log for more information.', mtWarning, [mbOK], 0);
+  end
+  else MessageDlg('No orphan classes detected.', mtInformation, [mbOK], 0);
 end;
 
 procedure Tfrm_UnCodeX.ac_AnalyseAllExecute(Sender: TObject);
@@ -2979,7 +2987,7 @@ begin
   if (runningthread <> nil) then exit;
   IsBatching := true;
 	CmdStack.Add('rebuild');
-  CmdStack.Add('orhpanstop');
+  CmdStack.Add('orphanstop');
   CmdStack.Add('analyse');
   NextBatchCommand;  
 end;
