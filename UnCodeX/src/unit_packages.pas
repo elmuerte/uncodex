@@ -6,7 +6,7 @@
     Purpose:
         UnrealScript package scanner, search for UnrealScript classes
 
-    $Id: unit_packages.pas,v 1.34 2004-11-06 15:07:44 elmuerte Exp $
+    $Id: unit_packages.pas,v 1.35 2004-11-17 08:13:52 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -155,7 +155,8 @@ begin
                     result := TUClass.Create;
                     result.name := p.TokenString;
                     result.InterfaceType := itTribesV;
-                    logclass('Found interface class: '+result.name, result);
+                    //logclass('Found interface class: '+result.name, result);
+                    break;
                 end;
             end;
             token := p.NextToken;
@@ -218,7 +219,7 @@ end;
 procedure TPackageScanner.ScanPackages;
 var
     sr:             TSearchRec;
-    i:              integer;
+    i, j:           integer;
     {$IFDEF USE_TREEVIEW}
     ti:             TTreeNode;
     {$ENDIF}
@@ -336,11 +337,15 @@ begin
             Packagelist[i].treenode := ti;
             {$ENDIF}
             Status('Scanning package '+Packagelist[i].name, round((i+1) / Packagelist.Count * 100));
-            if FindFirst(Packagelist[i].path+PATHDELIM+SOURCECARD, faAnyFile, sr) = 0 then begin
-                repeat
-                    Status('Parsing file '+Packagelist[i].path+PATHDELIM+sr.Name);
+            lst := TStringList.Create;
+            try
+                FindFiles(Packagelist[i].path, '', SOURCECARD, faAnyFile, lst);
+                for j := 0 to lst.Count-1 do begin
+            //if FindFirst(Packagelist[i].path+PATHDELIM+SOURCECARD, faAnyFile, sr) = 0 then begin
+            //    repeat
+                    Status('Parsing file '+Packagelist[i].path+PATHDELIM+lst[j]);
                     try
-                        uclass := GetUClassName(Packagelist[i].path+PATHDELIM+sr.Name);
+                        uclass := GetUClassName(Packagelist[i].path+PATHDELIM+lst[j]);
                     except
                         on E: Exception do log('Parser: error: '+E.Message);
                     end;
@@ -349,7 +354,7 @@ begin
                         packagelist[i].classes.Add(uclass);
                         uclass.package := PackageList[i];
                         uclass.tagged := UClass.package.tagged;
-                        uclass.filename := sr.Name;
+                        uclass.filename := lst[j];
                         uclass.priority := PackageList[i].priority;
                         {$IFDEF USE_TREEVIEW}
                         uclass.treenode2 := packagetree.AddChildObject(ti, uclass.name, uclass);
@@ -375,10 +380,14 @@ begin
                         end;
                     end
                     else log('Scanner: No class found in this file: '+sr.Name);
-                until (FindNext(sr) <> 0) or (Self.Terminated);
-                FindClose(sr);
+                //until (FindNext(sr) <> 0) or (Self.Terminated);
+                //FindClose(sr);
+                end;
                 if (Self.Terminated) then break;
+            finally
+                lst.Free;
             end;
+            if (Self.Terminated) then break;
         end;
         if (not Self.Terminated) then begin
             for i := packagelist.Count-1 downto 0 do begin

@@ -6,7 +6,7 @@
     Purpose:
         General definitions and independed utility functions
 
-    $Id: unit_definitions.pas,v 1.119 2004-11-06 15:07:44 elmuerte Exp $
+    $Id: unit_definitions.pas,v 1.120 2004-11-17 08:13:51 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -58,6 +58,7 @@ type
     function iFindDir(dirname: string; var output: string): boolean;
     function CopyFile(filename, target: string): boolean;
     function GetFiles(path: string; Attr: Integer; var files: TStringList): boolean;
+    function FindFiles(base, path, mask: string; Attr: Integer; var files: TStringList): boolean;
     function ExtractBaseName(filename: string): string;
 
     procedure ReloadKeywords;
@@ -318,6 +319,30 @@ begin
         repeat
             if ((sr.Name = '.') or (sr.Name = '..')) then continue;
             Files.Add(dir+sr.Name);
+        until FindNext(sr) <> 0;
+        FindClose(sr);
+    end;
+    result := files.count > 0;
+end;
+
+function FindFiles(base, path, mask: string; Attr: Integer; var files: TStringList): boolean;
+var
+    sr: TSearchRec;
+begin
+    if (path = '') then files.Clear;
+    // pass #1 - sub dirs
+    if (FindFirst(base+PathDelim+path+WILDCARD, faDirectory, sr) = 0) then begin
+        repeat
+            if ((sr.Name = '.') or (sr.Name = '..')) then continue;
+            FindFiles(base, path+sr.Name+PathDelim, mask, Attr, files);
+        until FindNext(sr) <> 0;
+        FindClose(sr);
+    end;
+    // pass #2 - files
+    if (FindFirst(base+PathDelim+path+mask, Attr, sr) = 0) then begin
+        repeat
+            if ((sr.Name = '.') or (sr.Name = '..')) then continue;
+            Files.Add(path+sr.Name);
         until FindNext(sr) <> 0;
         FindClose(sr);
     end;
