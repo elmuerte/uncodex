@@ -6,12 +6,12 @@
   Purpose:
     MultiLine input query dialog box
 
-  $Id: unit_multilinequery.pas,v 1.6 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_multilinequery.pas,v 1.7 2005-04-02 11:42:11 elmuerte Exp $
 *******************************************************************************}
 
 {
   UnCodeX - UnrealScript source browser & documenter
-  Copyright (C) 2003, 2004  Michiel Hendriks
+  Copyright (C) 2003-2005  Michiel Hendriks
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -42,12 +42,8 @@ type
   Tfrm_MultiLineQuery = class(TForm)
     lbl_Prompt: TLabel;
     mm_Input: TMemo;
-    BitBtn1: TBitBtn;
-    BitBtn2: TBitBtn;
-  private
-    { Private declarations }
-  public
-    { Public declarations }
+    btn_Ok: TBitBtn;
+    btn_Cancel: TBitBtn;
   end;
 
 var

@@ -6,7 +6,7 @@
   Purpose:
     Utility functions that have a GUI dependency
 
-  $Id: unit_utils.pas,v 1.18 2005-03-30 11:43:03 elmuerte Exp $
+  $Id: unit_utils.pas,v 1.19 2005-04-02 11:42:11 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -38,21 +38,6 @@ uses
   OleCtrls, SHDocVw;
 
 type
-  // New hint window
-  TPropertyHintWindow = class(THintWindow)
-    constructor Create(AOwner: TComponent); override;
-    function CalcHintRect(MaxWidth: Integer; const AHint: string; AData: Pointer): TRect; override;
-  public
-    procedure ActivateHint(Rect: TRect; const AHint: string); override;
-  protected
-    prevCaption: string;
-    procedure Paint; override;
-    procedure WMEraseBkgnd(var msg: TMessage); message WM_ERASEBKGND;
-    procedure CMTextChanged(var Message: TMessage); message CM_TEXTCHANGED;
-  published
-    property Caption;
-  end;
-
   // Newest hint window
   THTMLHintWindow = class(THintWindow)
   private
@@ -77,88 +62,7 @@ implementation
 uses
   unit_multilinequery, Variants, ActiveX, SysUtils;
 
-{ SearchQuery }
-
-function GetAveCharSize(Canvas: TCanvas): TPoint;
-var
-  I: Integer;
-  Buffer: array[0..51] of Char;
-begin
-  for I := 0 to 25 do Buffer[I] := Chr(I + Ord('A'));
-  for I := 0 to 25 do Buffer[I + 26] := Chr(I + Ord('a'));
-  GetTextExtentPoint(Canvas.Handle, Buffer, 52, TSize(Result));
-  Result.X := Result.X div 52;
-end;
 { SearchQuery -- END }
-{ TPropertyHintWindow }
-
-constructor TPropertyHintWindow.Create(AOwner: TComponent);
-begin
-  inherited Create(AOwner);
-  Color := clWindow;
-  Canvas.Brush.Color := Color;
-end;
-
-procedure TPropertyHintWindow.Paint;
-var
-  R, R2: TRect;
-  TmpCaption: String;
-begin
-  Canvas.Font.Name := 'Arial';
-
-  R := ClientRect;
-  with Canvas do begin
-    Brush.Style := bsSolid;
-    Brush.Color := clBtnFace;
-    Pen.Color  := clBtnShadow;
-    Pen.Width  := 1;
-    Rectangle(R.Top, R.Left, R.Left+18, R.Bottom);
-    //Canvas.Font.Name := 'Marlett';
-    Canvas.Font.Style := [fsBold];
-    Canvas.Font.Color := clWindowText;
-    R2 := Rect(R.Left+1, R.Top+2, R.Left+18, R.Bottom-2);
-    TmpCaption := '?';
-    DrawText(Canvas.Handle, PChar(TmpCaption), 1, R2, DT_LEFT or DT_NOPREFIX or DT_VCENTER or DT_CENTER or DrawTextBiDiModeFlagsReadingOnly);
-  end;
-
-  Canvas.Font.Style := [fsBold];
-  Canvas.Font.Color := clWindowText;
-  Canvas.Brush.Color := Color;
-
-  //Canvas.Brush.Style := bsClear;
-  R.Top := R.Top+2;
-  R.Left := R.Left+22;
-  DrawText(Canvas.Handle, PChar(Caption), -1, R, DT_LEFT or DT_NOPREFIX or
-    DT_WORDBREAK or DrawTextBiDiModeFlagsReadingOnly or DT_VCENTER);
-  prevCaption := Caption;
-end;
-
-procedure TPropertyHintWindow.ActivateHint(Rect: TRect; const AHint: string);
-begin
-  inherited;
-end;
-
-function TPropertyHintWindow.CalcHintRect(MaxWidth: Integer; const AHint: string; AData: Pointer): TRect;
-begin
-  Result := Rect(0, 0, MaxWidth*2, 0);
-  DrawText(Canvas.Handle, PChar(AHint), -1, Result, DT_CALCRECT or DT_LEFT or
-    DT_WORDBREAK or DT_NOPREFIX or DrawTextBiDiModeFlagsReadingOnly);
-  Inc(Result.Right, 32);
-  Inc(Result.Bottom, 2);
-end;
-
-procedure TPropertyHintWindow.WMEraseBkgnd(var msg: TMessage);
-begin
-  {if (prevCaption = Caption) then msg.Result := 1
-  else} inherited;
-end;
-
-procedure TPropertyHintWindow.CMTextChanged(var Message: TMessage);
-begin
-  inherited;
-  Width := Canvas.TextWidth(Caption) + 32;
-  Height := Canvas.TextHeight(Caption) + 4;
-end;
 
 constructor THTMLHintWindow.Create(AOwner: TComponent);
 begin
@@ -287,6 +191,5 @@ end;
 
 initialization
   Application.HintColor := clWindow;
-  //HintWindowClass := TPropertyHintWindow;
   HintWindowClass := THTMLHintWindow;
 end.

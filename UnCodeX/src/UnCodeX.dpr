@@ -6,7 +6,7 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.59 2005-03-30 11:43:02 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.60 2005-04-02 11:42:10 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -34,9 +34,7 @@ program UnCodeX;
 
 uses
   FastShareMem in 'FastShareMem.pas',
-  {$IFDEF DETECT_MEM_LEAK}
   MemCheck in 'MemCheck.pas',
-  {$ENDIF}
   Windows,
   Messages,
   SysUtils,
@@ -83,7 +81,8 @@ uses
   unit_pascalscript_gui in 'unit_pascalscript_gui.pas',
   unit_pseditor in 'unit_pseditor.pas' {frm_PSEditor},
   unit_pascalscript_ex in 'unit_pascalscript_ex.pas',
-  IFSI_unit_uclasses in 'IFSI_unit_uclasses.pas';
+  IFSI_unit_uclasses in 'IFSI_unit_uclasses.pas',
+  unit_config in 'unit_config.pas';
 
 {$R *.res}
 
@@ -240,9 +239,9 @@ begin
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-    Application.CreateForm(Tfrm_About, frm_About);
-    Application.CreateForm(Tfrm_License, frm_License);
-    if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+  Application.CreateForm(Tfrm_About, frm_About);
+  Application.CreateForm(Tfrm_License, frm_License);
+  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end
   else if (frm_Splash <> nil) then frm_Splash.Close;

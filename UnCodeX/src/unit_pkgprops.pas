@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Package properties viewer\editor
 
-  $Id: unit_pkgprops.pas,v 1.8 2005-03-18 07:43:22 elmuerte Exp $
+  $Id: unit_pkgprops.pas,v 1.9 2005-04-02 11:42:11 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -47,8 +47,9 @@ type
     cb_Official: TCheckBox;
     btn_Ok: TBitBtn;
     btn_Cancel: TBitBtn;
+    cb_ExternalDescription: TCheckBox;
     procedure FormShow(Sender: TObject);
-  private
+  protected
     UPackage: TUPackage;
     ini: TMemIniFile;
   public
@@ -78,27 +79,39 @@ begin
       cb_ClientOptional.Checked := StrToBool(ini.ReadString('Flags', 'ClientOptional', BoolToStr(cb_ClientOptional.Checked)));
       cb_Official.Checked := StrToBool(ini.ReadString('Flags', 'Official', BoolToStr(cb_Official.Checked)));
       ini.ReadSectionValues('Package_Description', mm_Desc.Lines);
+      if (mm_Desc.Lines.Count = 0) then begin
+        mm_Desc.Lines.Text := pkg.comment;
+        cb_ExternalDescription.Checked := true;
+      end;
       Caption := pkg.name+' - '+pkg.name+PKGCFG;
       if (ShowModal = mrOk) then begin
+        UPackage.comment := mm_Desc.Text;
+        TreeUpdated := true;
+
         ini.WriteString('Flags', 'AllowDownload', BoolToStr(cb_AllowDownload.Checked, true));
         ini.WriteString('Flags', 'ServerSideOnly', BoolToStr(cb_ServerSideOnly.Checked, true));
         ini.WriteString('Flags', 'ClientOptional', BoolToStr(cb_ClientOptional.Checked, true));
         ini.WriteString('Flags', 'Official', BoolToStr(cb_Official.Checked, true));
-        if (mm_Desc.Lines.Count > 0) then begin
-          ini.EraseSection('Package_Description');
-          sl := TStringList.Create;
-          try
-            ini.GetStrings(sl);
-            sl.Add('[Package_Description]');
-            sl.AddStrings(mm_Desc.Lines);
-            UPackage.comment := mm_Desc.Text;
-            ini.SetStrings(sl);
-            TreeUpdated := true;
-          finally
-            sl.Free;
+        if (not cb_ExternalDescription.Checked) then begin
+          if (mm_Desc.Lines.Count > 0) then begin
+            ini.EraseSection('Package_Description');
+            sl := TStringList.Create;
+            try
+              ini.GetStrings(sl);
+              sl.Add('[Package_Description]');
+              sl.AddStrings(mm_Desc.Lines);
+              ini.SetStrings(sl);
+            finally
+              sl.Free;
+            end;
           end;
         end;
         ini.UpdateFile;
+
+        if (cb_ExternalDescription.Checked) then begin
+          //TODO: save external comment
+        end;
+
       end;
     finally
       ini.Free;
