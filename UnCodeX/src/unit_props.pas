@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Class property inpector frame
 
-  $Id: unit_props.pas,v 1.26 2004-12-24 11:05:10 elmuerte Exp $
+  $Id: unit_props.pas,v 1.27 2005-03-25 19:12:34 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -54,20 +54,40 @@ type
     btn_ShowBar: TBitBtn;
     mi_N1: TMenuItem;
     mi_Editexternalcomment1: TMenuItem;
+    mi_N2: TMenuItem;
+    mi_Constants1: TMenuItem;
+    mi_Variables1: TMenuItem;
+    mi_Enumerations1: TMenuItem;
+    mi_Structures1: TMenuItem;
+    mi_Functions1: TMenuItem;
+    mi_States1: TMenuItem;
+    mi_Delegates1: TMenuItem;
     procedure lv_PropertiesInfoTip(Sender: TObject; Item: TListItem;
       var InfoTip: String);
     procedure lv_PropertiesClick(Sender: TObject);
     procedure mi_OpenLocationClick(Sender: TObject);
-    procedure lv_PropertiesCustomDrawSubItem(Sender: TCustomListView;
-      Item: TListItem; SubItem: Integer; State: TCustomDrawState;
-      var DefaultDraw: Boolean);
     procedure btn_RefreshClick(Sender: TObject);
     procedure lv_PropertiesResize(Sender: TObject);
     procedure btn_ShotBarClick(Sender: TObject);
     procedure mi_Editexternalcomment1Click(Sender: TObject);
     procedure mi_CopyToClipboardClick(Sender: TObject);
+    procedure mi_Constants1Click(Sender: TObject);
+    procedure mi_Variables1Click(Sender: TObject);
+    procedure mi_Enumerations1Click(Sender: TObject);
+    procedure mi_Structures1Click(Sender: TObject);
+    procedure mi_Delegates1Click(Sender: TObject);
+    procedure mi_Functions1Click(Sender: TObject);
+    procedure mi_States1Click(Sender: TObject);
+    procedure lv_PropertiesCustomDrawItem(Sender: TCustomListView;
+      Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
   private
-    { Private declarations }
+    liConst: TListItem;
+    liVar: TListItem;
+    liEnum: TListItem;
+    liStruct: TListItem;
+    liDelegate: TListItem;
+    liFunction: TListItem;
+    liState: TListItem;
   public
     uclass: TUClass;
     function LoadClass: boolean;
@@ -121,6 +141,15 @@ var
 begin
   result := false;
   lv_Properties.Items.BeginUpdate;
+
+  liConst:= nil;
+  liVar:= nil;
+  liEnum:= nil;
+  liStruct:= nil;
+  liDelegate:= nil;
+  liFunction:= nil;
+  liState:= nil;
+
   lv_Properties.Items.Clear;
 
   if (uclass = nil) then begin
@@ -133,6 +162,7 @@ begin
   lib := lv_Properties.Items.Add;
   lib.Caption := '-';
   lib.SubItems.Add('Constants');
+  lib.ImageIndex := -1;
   cnt := 0;
   j := 0;
   pclass := uclass;
@@ -140,14 +170,17 @@ begin
     if ((j > 0) and (pclass.consts.Count > 0)) then begin
       lic := lv_Properties.Items.Add;
       lic.Caption := '=';
+      lic.ImageIndex := -1;
       lic.SubItems.Add(pclass.name);
       lic.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
     end;
     for i := 0 to pclass.consts.Count-1 do begin
       Inc(cnt);
       li := lv_Properties.Items.Add;
-      li.Caption := 'const';
-      li.SubItems.AddObject(pclass.consts[i].name, pclass.consts[i]);
+      {li.Caption := 'const';
+      li.SubItems.AddObject(pclass.consts[i].name, pclass.consts[i]);}
+      li.Caption := pclass.consts[i].name;
+      li.SubItems.AddObject('const', pclass.consts[i]);
 
       li.SubItems.Add(IntToStr(pclass.consts[i].srcline));
       li.SubItems.Add(IntToStr(j));
@@ -159,11 +192,13 @@ begin
     pclass := pclass.parent;
     Inc(j);
   end;
-  if (cnt = 0) then lib.Delete;
+  if (cnt = 0) then lib.Delete
+  else liConst := lib;
 
   lib := lv_Properties.Items.Add;
   lib.Caption := '-';
   lib.SubItems.Add('Variables');
+  lib.ImageIndex := -1;
   cnt := 0;
   j := 0;
   pclass := uclass;
@@ -173,6 +208,7 @@ begin
     if ((j > 0) and (pclass.properties.Count > 0)) then begin
       lic := lv_Properties.Items.Add;
       lic.Caption := '=';
+      lic.ImageIndex := -1;
       lic.SubItems.Add(pclass.name);
       lic.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
       pclass.properties.SortOnTag;
@@ -182,13 +218,17 @@ begin
       if (CompareText(lasttag, pclass.properties[i].tag) <> 0) then begin
         li := lv_Properties.Items.Add;
         li.Caption := '+';
+        li.ImageIndex := -1;
         li.SubItems.Add(pclass.properties[i].tag);
         lasttag := pclass.properties[i].tag;
       end;
       Inc(cnt);
       li := lv_Properties.Items.Add;
-      li.Caption := 'var';
-      li.SubItems.AddObject(pclass.properties[i].name, pclass.properties[i]);
+      {li.Caption := 'var';
+      li.SubItems.AddObject(pclass.properties[i].name, pclass.properties[i]);}
+      li.Caption := pclass.properties[i].name;
+      li.SubItems.AddObject('var', pclass.properties[i]);
+
       li.SubItems.Add(IntToStr(pclass.properties[i].srcline));
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(MakeHint(pclass.properties[i].ptype+' '+pclass.properties[i].name));
@@ -199,11 +239,13 @@ begin
     pclass := pclass.parent;
     Inc(j);
   end;
-  if (cnt = 0) then lib.Delete;
+  if (cnt = 0) then lib.Delete
+  else liVar := lib;
 
   lib := lv_Properties.Items.Add;
   lib.Caption := '-';
   lib.SubItems.Add('Enumerations');
+  lib.ImageIndex := -1;
   cnt := 0;
   j := 0;
   pclass := uclass;
@@ -211,14 +253,18 @@ begin
     if ((j > 0) and (pclass.enums.Count > 0)) then begin
       lic := lv_Properties.Items.Add;
       lic.Caption := '=';
+      lic.ImageIndex := -1;
       lic.SubItems.Add(pclass.name);
       lic.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
     end;
     for i := 0 to pclass.enums.Count-1 do begin
       Inc(cnt);
       li := lv_Properties.Items.Add;
-      li.Caption := 'enum';
-      li.SubItems.AddObject(pclass.enums[i].name, pclass.enums[i]);
+      {li.Caption := 'enum';
+      li.SubItems.AddObject(pclass.enums[i].name, pclass.enums[i]);}
+      li.Caption := pclass.enums[i].name;
+      li.SubItems.AddObject('enum', pclass.enums[i]);
+
       li.SubItems.Add(IntToStr(pclass.enums[i].srcline));
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(MakeHint(pclass.enums[i].name+' = '+StringReplace(pclass.enums[i].options, ',', ', ', [rfReplaceAll])));
@@ -229,11 +275,13 @@ begin
     pclass := pclass.parent;
     Inc(j);
   end;
-  if (cnt = 0) then lib.Delete;
+  if (cnt = 0) then lib.Delete
+  else liEnum := lib;
 
   lib := lv_Properties.Items.Add;
   lib.Caption := '-';
   lib.SubItems.Add('Structs');
+  lib.ImageIndex := -1;
   cnt := 0;
   j := 0;
   pclass := uclass;
@@ -241,14 +289,18 @@ begin
     if ((j > 0) and (pclass.structs.Count > 0)) then begin
       lic := lv_Properties.Items.Add;
       lic.Caption := '=';
+      lic.ImageIndex := -1;
       lic.SubItems.Add(pclass.name);
       lic.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
     end;
     for i := 0 to pclass.structs.Count-1 do begin
       Inc(cnt);
       li := lv_Properties.Items.Add;
-      li.Caption := 'struct';
-      li.SubItems.AddObject(pclass.structs[i].name, pclass.structs[i]);
+      {li.Caption := 'struct';
+      li.SubItems.AddObject(pclass.structs[i].name, pclass.structs[i]);}
+      li.Caption := pclass.structs[i].name;
+      li.SubItems.AddObject('struct', pclass.structs[i]);
+
       li.SubItems.Add(IntToStr(pclass.structs[i].srcline));
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(MakeHint(pclass.structs[i].name));
@@ -259,11 +311,13 @@ begin
     pclass := pclass.parent;
     Inc(j);
   end;
-  if (cnt = 0) then lib.Delete;
+  if (cnt = 0) then lib.Delete
+  else liStruct := lib;
 
   lib := lv_Properties.Items.Add;
   lib.Caption := '-';
   lib.SubItems.Add('Delegates');
+  lib.ImageIndex := -1;
   cnt := 0;
   j := 0;
   pclass := uclass;
@@ -271,14 +325,18 @@ begin
     if ((j > 0) and (pclass.delegates.Count > 0)) then begin
       lic := lv_Properties.Items.Add;
       lic.Caption := '=';
+      lic.ImageIndex := -1;
       lic.SubItems.Add(pclass.name);
       lic.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
     end;
     for i := 0 to pclass.delegates.Count-1 do begin
       Inc(cnt);
       li := lv_Properties.Items.Add;
-      li.Caption := 'delegate';
-      li.SubItems.AddObject(pclass.delegates[i].name, pclass.delegates[i]);
+      {li.Caption := 'delegate';
+      li.SubItems.AddObject(pclass.delegates[i].name, pclass.delegates[i]);}
+      li.Caption := pclass.delegates[i].name;
+      li.SubItems.AddObject('delegate', pclass.delegates[i]);
+
       li.SubItems.Add(IntToStr(pclass.delegates[i].srcline));
       li.SubItems.Add(IntToStr(j));
       if (pclass.delegates[i].return = '') then return := ''
@@ -291,11 +349,13 @@ begin
     pclass := pclass.parent;
     Inc(j);
   end;
-  if (cnt = 0) then lib.Delete;
+  if (cnt = 0) then lib.Delete
+  else liDelegate := lib;
 
   lib := lv_Properties.Items.Add;
   lib.Caption := '-';
   lib.SubItems.Add('Functions');
+  lib.ImageIndex := -1;
   cnt := 0;
   j := 0;
   pclass := uclass;
@@ -303,18 +363,21 @@ begin
     if ((j > 0) and (pclass.functions.Count > 0)) then begin
       lic := lv_Properties.Items.Add;
       lic.Caption := '=';
+      lic.ImageIndex := -1;
       lic.SubItems.Add(pclass.name);
       lic.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
     end;
     for i := 0 to pclass.functions.Count-1 do begin
       Inc(cnt);
       li := lv_Properties.Items.Add;
-      li.Caption := 'function';
       lasttag := pclass.functions[i].name;
       if (pclass.functions[i].state <> nil) then begin
         lasttag := lasttag+' (state:'+pclass.functions[i].state.name+')';
       end;
-      li.SubItems.AddObject(lasttag, pclass.functions[i]);
+      {li.Caption := 'function';
+      li.SubItems.AddObject(lasttag, pclass.functions[i]);}
+      li.Caption := lasttag;
+      li.SubItems.AddObject('function', pclass.functions[i]);
       li.SubItems.Add(IntToStr(pclass.functions[i].srcline));
       li.SubItems.Add(IntToStr(j));
       if ((pclass.functions[i].ftype = uftFunction) or (pclass.functions[i].ftype = uftEvent) or (pclass.functions[i].ftype = uftDelegate)) then begin
@@ -342,11 +405,13 @@ begin
     pclass := pclass.parent;
     Inc(j);
   end;
-  if (cnt = 0) then lib.Delete;
+  if (cnt = 0) then lib.Delete
+  else liFunction := lib;
 
   lib := lv_Properties.Items.Add;
   lib.Caption := '-';
   lib.SubItems.Add('States');
+  lib.ImageIndex := -1;
   cnt := 0;
   j := 0;
   pclass := uclass;
@@ -354,26 +419,38 @@ begin
     if ((j > 0) and (pclass.states.Count > 0)) then begin
       lic := lv_Properties.Items.Add;
       lic.Caption := '=';
+      lic.ImageIndex := -1;
       lic.SubItems.Add(pclass.name);
       lic.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
     end;
     for i := 0 to pclass.states.Count-1 do begin
       Inc(cnt);
       li := lv_Properties.Items.Add;
-      li.Caption := 'state';
+      {li.Caption := 'state';
       lasttag := pclass.states[i].name;
-      li.SubItems.AddObject(lasttag, pclass.states[i]);
+      li.SubItems.AddObject(lasttag, pclass.states[i]);}
+      li.Caption := pclass.states[i].name;
+      li.SubItems.AddObject('state', pclass.states[i]);
       li.SubItems.Add(IntToStr(pclass.states[i].srcline));
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(MakeHint(pclass.states[i].declaration));
       li.SubItems.Add(pclass.states[i].comment);
       li.Data := pclass;
-      //li.ImageIndex := 6;
+      li.ImageIndex := 8;
     end;
     pclass := pclass.parent;
     Inc(j);
   end;
-  if (cnt = 0) then lib.Delete;
+  if (cnt = 0) then lib.Delete
+  else liState := lib;
+
+  mi_Constants1.Visible := liConst <> nil;
+  mi_Variables1.Visible := liVar <> nil;
+  mi_Enumerations1.Visible := liEnum <> nil;
+  mi_Structures1.Visible := liStruct <> nil;
+  mi_Delegates1.Visible := liDelegate <> nil;
+  mi_Functions1.Visible := liFunction <> nil;
+  mi_States1.Visible := liState <> nil;
 
   lv_Properties.Items.EndUpdate;
   result := true;
@@ -382,8 +459,10 @@ end;
 procedure Tfr_Properties.lv_PropertiesInfoTip(Sender: TObject;
   Item: TListItem; var InfoTip: String);
 begin
-  if ((Item.Caption = '-') or (Item.Caption = '+')) then InfoTip := '';
-  if (Item.Caption = '=') then InfoTip := Item.SubItems[1];
+  if (Item.ImageIndex = -1) then begin
+    if ((Item.Caption = '-') or (Item.Caption = '+')) then InfoTip := '';
+    if (Item.Caption = '=') then InfoTip := Item.SubItems[1];
+  end;
   if (Item.SubItems.Count < 5) then exit;
   InfoTip := '<div style="padding-left: 20px; text-indent: -18px; margin-left: -2px"><code>'+Item.SubItems[3]+'</code></div>';
   if (Item.SubItems[4] <> '') then InfoTip :=
@@ -409,56 +488,6 @@ begin
       StrToIntDef(lv_Properties.Selected.SubItems[1], 0), 0, TUClass(lv_Properties.Selected.Data));
 end;
 
-procedure Tfr_Properties.lv_PropertiesCustomDrawSubItem(
-  Sender: TCustomListView; Item: TListItem; SubItem: Integer;
-  State: TCustomDrawState; var DefaultDraw: Boolean);
-var
-  Rect: TRect;
-  oldMode: integer;
-begin
-  if (Item.Caption = '-') then begin
-    DefaultDraw := false;
-    Rect := Item.DisplayRect(drBounds);
-    Rect.Left := Rect.Left+1;
-    DrawButtonFace(Sender.Canvas, Rect, 1, bsNew, false, false, false);
-    Sender.Canvas.Font := Self.Font;
-    oldMode := GetBkMode(Sender.Canvas.Handle);
-    SetBkMode(Sender.Canvas.Handle, TRANSPARENT);
-    DrawText(Sender.Canvas.Handle, PChar(Item.SubItems[0]), Length(Item.SubItems[0]), Rect, DT_CENTER or DT_VCENTER or DT_NOCLIP or DT_SINGLELINE   );
-    SetBkMode(Sender.Canvas.Handle, oldMode);
-  end
-  else if (Item.Caption = '=') then begin
-    DefaultDraw := false;
-    Rect := Item.DisplayRect(drBounds);
-    Rect.Left := Rect.Left+1;
-    //DrawButtonFace(Sender.Canvas, Rect, 1, bsNew, false, false, false);
-    Sender.Canvas.Brush.Color := clWindow;
-    Sender.Canvas.FillRect(Rect);
-    Sender.Canvas.Font := Self.Font;
-    Sender.Canvas.Font.Color := clInfoText;
-    DrawButtonFace(Sender.Canvas, Rect, 1, bsWin31, false, false, false);
-    oldMode := GetBkMode(Sender.Canvas.Handle);
-    SetBkMode(Sender.Canvas.Handle, TRANSPARENT);
-    DrawText(Sender.Canvas.Handle, PChar(Item.SubItems[0]), Length(Item.SubItems[0]), Rect, DT_CENTER or DT_VCENTER or DT_NOCLIP or DT_SINGLELINE   );
-    SetBkMode(Sender.Canvas.Handle, oldMode);
-  end
-  else if (Item.Caption = '+') then begin
-    DefaultDraw := false;
-    Rect := Item.DisplayRect(drBounds);
-    Rect.Left := Rect.Left+1;
-    //DrawButtonFace(Sender.Canvas, Rect, 1, bsNew, false, false, false);
-    Sender.Canvas.Brush.Color := clInfoBk;
-    Sender.Canvas.FillRect(Rect);
-    Sender.Canvas.Font := Self.Font;
-    Sender.Canvas.Font.Color := clInfoText;
-    oldMode := GetBkMode(Sender.Canvas.Handle);
-    SetBkMode(Sender.Canvas.Handle, TRANSPARENT);
-    DrawText(Sender.Canvas.Handle, PChar(Item.SubItems[0]), Length(Item.SubItems[0]), Rect, DT_CENTER or DT_VCENTER or DT_NOCLIP or DT_SINGLELINE   );
-    SetBkMode(Sender.Canvas.Handle, oldMode);
-  end
-  else DefaultDraw := true;
-end;
-
 procedure Tfr_Properties.btn_RefreshClick(Sender: TObject);
 begin
   if (uclass <> nil) then LoadClass;
@@ -467,7 +496,7 @@ end;
 procedure Tfr_Properties.lv_PropertiesResize(Sender: TObject);
 begin
   try
-    lv_Properties.Columns[1].Width := abs(lv_Properties.ClientWidth-lv_Properties.Columns[0].Width);
+    lv_Properties.Columns[0].Width := abs(lv_Properties.ClientWidth);
   except;
   end;
 end;
@@ -537,6 +566,93 @@ begin
     if (lv_Properties.Selected.SubItems.Count > 4) then Clipboard.SetTextBuf(PChar(lv_Properties.Selected.SubItems[4]))
     else Clipboard.SetTextBuf(PChar(lv_Properties.Selected.SubItems[0]));
   end;
+end;
+
+procedure Tfr_Properties.mi_Constants1Click(Sender: TObject);
+begin
+  if (liConst <> nil) then liConst.MakeVisible(false);
+end;
+
+procedure Tfr_Properties.mi_Variables1Click(Sender: TObject);
+begin
+  if (liVar <> nil) then liVar.MakeVisible(false);
+end;
+
+procedure Tfr_Properties.mi_Enumerations1Click(Sender: TObject);
+begin
+  if (liEnum <> nil) then liEnum.MakeVisible(false);
+end;
+
+procedure Tfr_Properties.mi_Structures1Click(Sender: TObject);
+begin
+  if (liStruct <> nil) then liStruct.MakeVisible(false);
+end;
+
+procedure Tfr_Properties.mi_Delegates1Click(Sender: TObject);
+begin
+  if (liDelegate <> nil) then liDelegate.MakeVisible(false);
+end;
+
+procedure Tfr_Properties.mi_Functions1Click(Sender: TObject);
+begin
+  if (liFunction <> nil) then liFunction.MakeVisible(false);
+end;
+
+procedure Tfr_Properties.mi_States1Click(Sender: TObject);
+begin
+  if (liState <> nil) then liState.MakeVisible(false);
+end;
+
+procedure Tfr_Properties.lv_PropertiesCustomDrawItem(
+  Sender: TCustomListView; Item: TListItem; State: TCustomDrawState;
+  var DefaultDraw: Boolean);
+var
+  Rect: TRect;
+  oldMode: integer;
+begin
+  if (Item.ImageIndex = -1) then begin
+    if (Item.Caption = '-') then begin
+      DefaultDraw := false;
+      Rect := Item.DisplayRect(drBounds);
+      Rect.Left := Rect.Left+1;
+      DrawButtonFace(Sender.Canvas, Rect, 1, bsNew, false, false, false);
+      Sender.Canvas.Font := Self.Font;
+      oldMode := GetBkMode(Sender.Canvas.Handle);
+      SetBkMode(Sender.Canvas.Handle, TRANSPARENT);
+      DrawText(Sender.Canvas.Handle, PChar(Item.SubItems[0]), Length(Item.SubItems[0]), Rect, DT_CENTER or DT_VCENTER or DT_NOCLIP or DT_SINGLELINE   );
+      SetBkMode(Sender.Canvas.Handle, oldMode);
+    end
+    else if (Item.Caption = '=') then begin
+      DefaultDraw := false;
+      Rect := Item.DisplayRect(drBounds);
+      Rect.Left := Rect.Left+1;
+      //DrawButtonFace(Sender.Canvas, Rect, 1, bsNew, false, false, false);
+      Sender.Canvas.Brush.Color := clWindow;
+      Sender.Canvas.FillRect(Rect);
+      Sender.Canvas.Font := Self.Font;
+      Sender.Canvas.Font.Color := clInfoText;
+      DrawButtonFace(Sender.Canvas, Rect, 1, bsWin31, false, false, false);
+      oldMode := GetBkMode(Sender.Canvas.Handle);
+      SetBkMode(Sender.Canvas.Handle, TRANSPARENT);
+      DrawText(Sender.Canvas.Handle, PChar(Item.SubItems[0]), Length(Item.SubItems[0]), Rect, DT_CENTER or DT_VCENTER or DT_NOCLIP or DT_SINGLELINE   );
+      SetBkMode(Sender.Canvas.Handle, oldMode);
+    end
+    else if (Item.Caption = '+') then begin
+      DefaultDraw := false;
+      Rect := Item.DisplayRect(drBounds);
+      Rect.Left := Rect.Left+1;
+      //DrawButtonFace(Sender.Canvas, Rect, 1, bsNew, false, false, false);
+      Sender.Canvas.Brush.Color := clInfoBk;
+      Sender.Canvas.FillRect(Rect);
+      Sender.Canvas.Font := Self.Font;
+      Sender.Canvas.Font.Color := clInfoText;
+      oldMode := GetBkMode(Sender.Canvas.Handle);
+      SetBkMode(Sender.Canvas.Handle, TRANSPARENT);
+      DrawText(Sender.Canvas.Handle, PChar(Item.SubItems[0]), Length(Item.SubItems[0]), Rect, DT_CENTER or DT_VCENTER or DT_NOCLIP or DT_SINGLELINE   );
+      SetBkMode(Sender.Canvas.Handle, oldMode);
+    end;
+  end
+  else DefaultDraw := true;
 end;
 
 end.
