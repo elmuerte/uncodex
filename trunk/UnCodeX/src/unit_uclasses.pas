@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   definitions for Unreal Classes
- $Id: unit_uclasses.pas,v 1.18 2003-11-12 22:57:07 elmuerte Exp $
+ $Id: unit_uclasses.pas,v 1.19 2003-11-22 10:45:34 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -166,6 +166,7 @@ type
     structs:    TUStructList;
     states:     TUstateList;
     functions:  TUFunctionList;
+    delegates:  TUFunctionList;
     treenode:   TObject;
     filetime:   integer;
     defaultproperties: string;
@@ -385,6 +386,7 @@ begin
   structs := TUStructList.Create(true);
   states := TUStateList.Create(true);
   functions := TUFunctionList.Create(true);
+  delegates := TUFunctionList.Create(true);
   children := TUClassList.Create(false);
 end;
 
@@ -396,6 +398,7 @@ begin
   structs.Free;
   states.Free;
   functions.Free;
+  delegates.Free;
   children.Free;
 end;
 

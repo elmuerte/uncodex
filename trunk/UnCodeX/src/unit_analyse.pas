@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.23 2003-11-12 22:57:07 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.24 2003-11-22 10:45:34 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -71,6 +71,25 @@ implementation
 
 uses
   unit_definitions;
+
+const
+  KEYWORD_Class = 'class';
+  KEYWORD_Extends = 'extends';
+  KEYWORD_Expands = 'expands';
+  KEYWORD_Const = 'const';
+  KEYWORD_Var = 'var';
+  KEYWORD_Enum = 'enum';
+  KEYWORD_Struct = 'struct';
+  KEYWORD_Function = 'function';
+  KEYWORD_Event = 'event';
+  KEYWORD_Operator = 'operator';
+  KEYWORD_PreOperator = 'preoperator';
+  KEYWORD_PostOperator = 'postoperator';
+  KEYWORD_Delegate = 'delegate';
+  KEYWORD_State = 'state';
+  KEYWORD_Defaultproperties = 'defaultproperties';
+  KEYWORD_Cpptext = 'cpptext';
+  KEYWORD_Replication = 'replication';
 
 // Create for a class list
 constructor TClassAnalyser.Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false);
@@ -148,6 +167,7 @@ begin
     uclass.enums.Clear;
     uclass.structs.Clear;
     uclass.functions.Clear;
+    uclass.delegates.Clear;
     uclass.states.Clear;
     AnalyseClass();
     if (not Self.Terminated) then begin
@@ -156,6 +176,7 @@ begin
       uclass.enums.Sort;
       uclass.structs.Sort;
       uclass.functions.Sort;
+      uclass.delegates.Sort;
       uclass.states.Sort;
     end;
   finally
@@ -293,7 +314,7 @@ begin
       last := last+pSquareBrackets;
     end;
     // inline enum
-    if (CompareText(last, 'enum') = 0) then begin
+    if (CompareText(last, KEYWORD_enum) = 0) then begin
       prev := pEnum.name;
       last := p.TokenString;
       p.NextToken;
@@ -307,7 +328,7 @@ begin
       break;
     end;
     // inline struct
-    if (CompareText(last, 'struct') = 0) then begin
+    if (CompareText(last, KEYWORD_struct) = 0) then begin
       prev := pStruct.name;
       last := p.TokenString;
       p.NextToken;
@@ -373,7 +394,7 @@ begin
     prev := last;
     last := p.TokenString;
     p.NextToken;
-    if (p.TokenSymbolIs('extends') or p.TokenSymbolIs('expands')) then begin
+    if (p.TokenSymbolIs(KEYWORD_extends) or p.TokenSymbolIs(KEYWORD_expands)) then begin
       p.NextToken;
       result.parent := p.TokenString;
       p.NextToken;
@@ -401,7 +422,7 @@ begin
   UseOverWriteStruct := true;
   p.NextToken; // = {
   while ((p.Token <> '}') and (p.token <> toEOF) and (not Self.Terminated)) do begin
-    if (p.TokenSymbolIs('var')) then begin
+    if (p.TokenSymbolIs(KEYWORD_var)) then begin
       p.NextToken;
       pVar();
       continue;
@@ -426,10 +447,10 @@ begin
   bcount := 0;
   result := TUFunction.Create;
   result.srcline := p.SourceLine;
-  while not (p.TokenSymbolIs('function') or p.TokenSymbolIs('event') or
-    p.TokenSymbolIs('operator') or p.TokenSymbolIs('preoperator') or
-    p.TokenSymbolIs('postoperator') or p.TokenSymbolIs('delegate') or
-    p.TokenSymbolIs('state') or (p.token = toEOF)) do begin
+  while not (p.TokenSymbolIs(KEYWORD_function) or p.TokenSymbolIs(KEYWORD_event) or
+    p.TokenSymbolIs(KEYWORD_operator) or p.TokenSymbolIs(KEYWORD_preoperator) or
+    p.TokenSymbolIs(KEYWORD_postoperator) or p.TokenSymbolIs(KEYWORD_delegate) or
+    p.TokenSymbolIs(KEYWORD_state) or (p.token = toEOF)) do begin
     if (instate) then begin
       if (p.Token = ':') then begin // state labels
         bcount := 1;
@@ -460,16 +481,16 @@ begin
   end;
   if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
   result.modifiers := result.modifiers+last;
-  if (p.TokenSymbolIs('state')) then begin
+  if (p.TokenSymbolIs(KEYWORD_state)) then begin
     pState(result.modifiers);
     result.Free;
     exit;
   end
-  else if (p.TokenSymbolIs('event')) then result.ftype := uftEvent
-  else if (p.TokenSymbolIs('operator')) then result.ftype := uftOperator
-  else if (p.TokenSymbolIs('preoperator')) then result.ftype := uftPreoperator
-  else if (p.TokenSymbolIs('postoperator')) then result.ftype := uftPostoperator
-  else if (p.TokenSymbolIs('delegate')) then result.ftype := uftDelegate
+  else if (p.TokenSymbolIs(KEYWORD_event)) then result.ftype := uftEvent
+  else if (p.TokenSymbolIs(KEYWORD_operator)) then result.ftype := uftOperator
+  else if (p.TokenSymbolIs(KEYWORD_preoperator)) then result.ftype := uftPreoperator
+  else if (p.TokenSymbolIs(KEYWORD_postoperator)) then result.ftype := uftPostoperator
+  else if (p.TokenSymbolIs(KEYWORD_delegate)) then result.ftype := uftDelegate
   else result.ftype := uftFunction;
   result.comment := trim(p.GetCopyData);
   p.NextToken;
@@ -484,7 +505,7 @@ begin
   end;
   // check if return is array<> or class<>
   if ((CompareText(result.return, 'array') = 0) or
-      (CompareText(result.return, 'class') = 0)) then result.return := result.return+pAngleBrackets;
+      (CompareText(result.return, KEYWORD_class) = 0)) then result.return := result.return+pAngleBrackets;
   if (p.Token = '(') then begin
     result.name := result.return;
     result.return := '';
@@ -526,7 +547,8 @@ begin
   if (currentState <> nil) then begin
     currentState.functions.Add(result);
   end;
-  uclass.functions.Add(result);
+  if (result.ftype = uftDelegate) then uclass.delegates.Add(result)
+  else uclass.functions.Add(result);
 end;
 
 // [modifiers] state <name> [extends <name>] { .. }
@@ -540,7 +562,7 @@ begin
   pBrackets;
   result.name := p.TokenString;
   p.NextToken;
-  if (p.TokenSymbolIs('extends') or p.TokenSymbolIs('expands')) then begin
+  if (p.TokenSymbolIs(KEYWORD_extends) or p.TokenSymbolIs(KEYWORD_expands)) then begin
     p.NextToken; // extends
     result.extends := p.TokenString;
     p.NextToken;
@@ -564,13 +586,13 @@ begin
   while ((p.token <> toEOF) and (not Self.Terminated)) do begin
     // first check class
     // class <classname> extends [<package>].<classname> <modifiers>;
-    if (p.TokenSymbolIs('class') and not bHadClass) then begin
+    if (p.TokenSymbolIs(KEYWORD_Class) and not bHadClass) then begin
       bHadClass := true;
       p.NextToken;
       uclass.name := p.TokenString;
       uclass.comment := trim(p.GetCopyData);
       p.NextToken;
-      if (p.TokenSymbolIs('extends') or p.TokenSymbolIs('expands')) then begin
+      if (p.TokenSymbolIs(KEYWORD_extends) or p.TokenSymbolIs(KEYWORD_expands)) then begin
         p.NextToken;
         uclass.parentname := p.TokenString;
         if (p.NextToken = '.') then begin // package.class
@@ -590,27 +612,27 @@ begin
       continue;
     end;
     
-    if (p.TokenSymbolIs('var')) then begin
+    if (p.TokenSymbolIs(KEYWORD_var)) then begin
       p.NextToken;
       pVar();
       continue;
     end;
-    if (p.TokenSymbolIs('const')) then begin
+    if (p.TokenSymbolIs(KEYWORD_const)) then begin
       p.NextToken;
       pConst();
       continue;
     end;
-    if (p.TokenSymbolIs('enum')) then begin
+    if (p.TokenSymbolIs(KEYWORD_enum)) then begin
       p.NextToken;
       pEnum();
       continue;
     end;
-    if (p.TokenSymbolIs('struct')) then begin
+    if (p.TokenSymbolIs(KEYWORD_struct)) then begin
       p.NextToken;
       pStruct();
       continue;
     end;
-    if (p.TokenSymbolIs('defaultproperties')) then begin
+    if (p.TokenSymbolIs(KEYWORD_defaultproperties)) then begin
       p.GetCopyData(true);// preflush
       p.NextToken;
       uclass.defaultproperties := p.TokenString;
@@ -620,12 +642,12 @@ begin
       uclass.defaultproperties := uclass.defaultproperties+p.GetCopyData(true);
       continue;
     end;
-    if (p.TokenSymbolIs('replication')) then begin
+    if (p.TokenSymbolIs(KEYWORD_replication)) then begin
       p.NextToken;
       pCurlyBrackets();
       continue;
     end;
-    if (p.TokenSymbolIs('cpptext')) then begin
+    if (p.TokenSymbolIs(KEYWORD_cpptext)) then begin
       p.NextToken;
       pCurlyBrackets();
       continue;

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   program settings window
- $Id: unit_settings.pas,v 1.27 2003-11-04 19:35:27 elmuerte Exp $
+ $Id: unit_settings.pas,v 1.28 2003-11-22 10:45:34 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -194,6 +194,22 @@ type
     mi_SearchQuery: TMenuItem;
     mi_Inlinesearchquery: TMenuItem;
     mi_Classsearchquery: TMenuItem;
+    ListBox1: TListBox;
+    bvl_Font: TBevel;
+    CheckBox1: TCheckBox;
+    CheckBox2: TCheckBox;
+    CheckBox3: TCheckBox;
+    ColorBox1: TColorBox;
+    CheckBox4: TCheckBox;
+    ts_Keywords: TTabSheet;
+    gb_Keywordlists: TGroupBox;
+    bvl_Keys: TBevel;
+    lb_PrimKey: TListBox;
+    lb_SecKey: TListBox;
+    ed_AddPrimKey: TEdit;
+    ed_AddSecKey: TEdit;
+    lbl_PrimKey: TLabel;
+    lbl_SecondKey: TLabel;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -256,6 +272,16 @@ type
     procedure mi_SearchQueryClick(Sender: TObject);
     procedure mi_InlinesearchqueryClick(Sender: TObject);
     procedure mi_ClasssearchqueryClick(Sender: TObject);
+    procedure ed_AddPrimKeyKeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure ed_AddSecKeyKeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure lb_PrimKeyKeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure lb_SecKeyClick(Sender: TObject);
+    procedure lb_PrimKeyClick(Sender: TObject);
+    procedure lb_SecKeyKeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
   public
     TagChanged: boolean;
@@ -443,6 +469,10 @@ begin
   cb_cf5.Selected := unit_rtfhilight.cf5;
   ud_TabSize.Position := unit_rtfhilight.tabs;
   ReloadPreview;
+  if (FileExists(ExtractFilePath(ParamStr(0))+'keywords1.list')) then
+    lb_PrimKey.Items.LoadFromFile(ExtractFilePath(ParamStr(0))+'keywords1.list');
+  if (FileExists(ExtractFilePath(ParamStr(0))+'keywords2.list')) then
+    lb_SecKey.Items.LoadFromFile(ExtractFilePath(ParamStr(0))+'keywords2.list');
 end;
 
 procedure Tfrm_Settings.lb_SettingsClick(Sender: TObject);
@@ -765,6 +795,54 @@ end;
 procedure Tfrm_Settings.mi_ClasssearchqueryClick(Sender: TObject);
 begin
   ed_OpenResultCmd.Text := ed_OpenResultCmd.Text+' %classsearch%';
+end;
+
+procedure Tfrm_Settings.ed_AddPrimKeyKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_RETURN) and (ed_AddPrimKey.Text <> '')) then begin
+    if (lb_PrimKey.Items.IndexOf(ed_AddPrimKey.text) = -1) then
+      lb_PrimKey.Items.Add(ed_AddPrimKey.text);
+    ed_AddPrimKey.Text := '';
+  end;
+end;
+
+procedure Tfrm_Settings.ed_AddSecKeyKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_RETURN) and (ed_AddSecKey.Text <> '')) then begin
+    if (lb_SecKey.Items.IndexOf(ed_AddSecKey.text) = -1) then
+      lb_SecKey.Items.Add(ed_AddSecKey.text);
+    ed_AddSecKey.Text := '';
+  end;
+end;
+
+procedure Tfrm_Settings.lb_PrimKeyKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (lb_PrimKey.ItemIndex <> -1)) then begin
+    lb_PrimKey.Items.Delete(lb_PrimKey.ItemIndex);
+  end;
+end;
+
+procedure Tfrm_Settings.lb_SecKeyClick(Sender: TObject);
+begin
+  if (lb_PrimKey.ItemIndex <> -1) then
+    ed_AddSecKey.Text := lb_SecKey.Items[lb_SecKey.ItemIndex];
+end;
+
+procedure Tfrm_Settings.lb_PrimKeyClick(Sender: TObject);
+begin
+  if (lb_PrimKey.ItemIndex <> -1) then
+    ed_AddPrimKey.Text := lb_PrimKey.Items[lb_PrimKey.ItemIndex];
+end;
+
+procedure Tfrm_Settings.lb_SecKeyKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  if ((Key = VK_DELETE) and (lb_SecKey.ItemIndex <> -1)) then begin
+    lb_SecKey.Items.Delete(lb_SecKey.ItemIndex);
+  end;
 end;
 
 initialization
