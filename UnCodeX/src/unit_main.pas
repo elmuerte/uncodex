@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.90 2004-04-02 20:15:10 elmuerte Exp $
+ $Id: unit_main.pas,v 1.91 2004-04-04 09:04:08 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -2335,7 +2335,6 @@ begin
   SearchConfig.isFindFirst := DefaultSC.isFindFirst;
   SearchConfig.Scope := DefaultSC.Scope; 
   if (SearchForm(SearchConfig)) then begin
-    if (SearchConfig.isFromTop) then (ActiveControl as TTreeView).Selected := nil;
     ac_FindNext.Execute;
   end
   else SearchConfig.Wrapped := false;
