@@ -6,12 +6,12 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.146 2005-03-03 18:46:46 elmuerte Exp $
+  $Id: unit_main.pas,v 1.147 2005-03-13 09:25:20 elmuerte Exp $
 *******************************************************************************}
 
 {
   UnCodeX - UnrealScript source browser & documenter
-  Copyright (C) 2003, 2004  Michiel Hendriks
+  Copyright (C) 2003-2005  Michiel Hendriks
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public

@@ -6,12 +6,12 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.136 2005-03-03 18:46:45 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.137 2005-03-13 09:25:20 elmuerte Exp $
 *******************************************************************************}
 
 {
   UnCodeX - UnrealScript source browser & documenter
-  Copyright (C) 2003,2004  Michiel Hendriks
+  Copyright (C) 2003-2005  Michiel Hendriks
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -69,6 +69,7 @@ type
 
   // repeat a string
   function StrRepeat(line: string; count: integer): string;
+  function GetToken(var input: string; delim: char; nocut: boolean = false): string;
   function iFindFile(filename: string): string;
   function iFindDir(dirname: string; var output: string): boolean;
   function ResolveFilename(uclass: TUClass; udecl: TUDeclaration): string;
@@ -92,7 +93,7 @@ type
 
 const
   APPTITLE        = 'UnCodeX';
-  APPVERSION      = '220';
+  APPVERSION      = '221';
   {$IFDEF DEBUG_BUILD}
   DEBUGBUILD      = true;
   {$ELSE}
@@ -184,6 +185,20 @@ begin
   while (count > 0) do begin
     result := result+line;
     Dec(count);
+  end;
+end;
+
+function GetToken(var input: string; delim: char; nocut: boolean = false): string;
+var
+  i,j: integer;
+begin
+  i := 1;
+  while ((i <= length(input)) and (input[i] = delim)) do Inc(i);
+  j := i;
+  while ((j <= length(input)) and (input[j] <> delim)) do Inc(j);
+  result := copy(input, i, j-i);
+  if (not nocut) then begin
+    delete(input, 1, j);
   end;
 end;
 
