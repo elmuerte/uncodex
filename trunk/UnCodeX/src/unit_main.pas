@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.107 2004-06-15 07:34:57 elmuerte Exp $
+ $Id: unit_main.pas,v 1.108 2004-07-17 22:59:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -240,6 +240,9 @@ type
     mi_N21: TMenuItem;
     mi_N31: TMenuItem;
     mi_Browse: TMenuItem;
+    N2: TMenuItem;
+    mi_Run: TMenuItem;
+    ac_Run: TAction;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -349,6 +352,7 @@ type
     procedure ac_RenameClassExecute(Sender: TObject);
     procedure mi_SortListClick(Sender: TObject);
     procedure mi_DonateClick(Sender: TObject);
+    procedure ac_RunExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -482,7 +486,8 @@ implementation
 uses unit_settings, unit_analyse, unit_htmlout, unit_definitions,
   unit_treestate, unit_about, unit_mshtmlhelp, unit_fulltextsearch,
   unit_tags, unit_outputdefs, unit_rtfhilight, unit_utils, unit_license,
-  unit_splash, unit_ucxdocktree, unit_ucops, unit_pkgprops, unit_defprops;
+  unit_splash, unit_ucxdocktree, unit_ucops, unit_pkgprops, unit_defprops,
+  unit_rungame;
 
 const
   PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
@@ -3330,6 +3335,26 @@ end;
 procedure Tfrm_UnCodeX.mi_DonateClick(Sender: TObject);
 begin
   hh_Help.HelpTopic('donation.html');
+end;
+
+procedure Tfrm_UnCodeX.ac_RunExecute(Sender: TObject);
+var
+	lst: TStringList;
+begin
+	with (Tfrm_Run.Create(Application)) do begin
+	 	if (ShowModal = mrOk) then begin
+    	lst := TStringList.Create;
+      try
+        lst.Delimiter := ' ';
+        lst.QuoteChar := '"';
+        lst.DelimitedText := ed_Args.Text;
+				ExecuteProgram(ed_Exe.Text, lst, cb_Priority.ItemIndex);
+      finally;
+    		lst.Free;
+      end;
+    end;
+    Free;
+  end;
 end;
 
 initialization
