@@ -6,7 +6,7 @@
     Purpose:
         Global macro file, to be included by means of ($I defines.inc)
 
-    $Id: defines.inc,v 1.8 2005-03-23 11:40:48 elmuerte Exp $
+    $Id: defines.inc,v 1.9 2005-03-31 11:01:11 elmuerte Exp $
 *******************************************************************************}
 
 {$IFDEF VER140} // delphi 6
@@ -63,3 +63,6 @@
 
 // add pascalscript support for HTML Output
 {$DEFINE HTMLOUT_PASCALSCRIPT}
+
+// enables compression for HTML output
+{$DEFINE WITH_ZLIB}

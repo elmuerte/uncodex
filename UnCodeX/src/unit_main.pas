@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.152 2005-03-29 08:38:42 elmuerte Exp $
+  $Id: unit_main.pas,v 1.153 2005-03-31 11:01:13 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -2371,6 +2371,7 @@ begin
     htmlconfig.TabsToSpaces := TabsToSpaces;
     htmlconfig.CPP := CPPApp;
     htmlconfig.DefaultTitle := HTMLdefaultTitle;
+    htmlconfig.GZCompress := false; //TODO: make configurable
     runningthread := THTMLoutput.Create(htmlconfig, StatusReport);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;

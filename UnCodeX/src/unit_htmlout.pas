@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.73 2005-03-30 07:21:48 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.74 2005-03-31 11:01:12 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -105,7 +105,7 @@ type
     procedure CleanupPascalScript;
     {$ENDIF}
 
-    function CreateOutputStream(filename: string): TStream;
+    function CreateOutputStream(filename: string; forceNoCompress: boolean = false): TStream;
     function CloseOutputStream(var stream: TStream): boolean;
 
     procedure parseTemplate(input, output: TStream; replace: TReplacement; data: TObject = nil);
@@ -175,6 +175,7 @@ const
 
 var
   TargetExtention: string;
+  root_filename: string; // index.html
 
 implementation
 
@@ -182,6 +183,7 @@ uses
   unit_definitions, unit_sourceparser, Contnrs
 {$IFDEF FPC}
   , unit_fpc_compat
+  , zstream // for the TGZStream
 {$ENDIF}
 {$IFDEF HTMLOUT_PASCALSCRIPT}
   , uPSComponent_Default, IFSI_unit_uclasses, unit_pascalscript_ex, unit_pascalscript
@@ -258,11 +260,6 @@ begin
   Self.ConfDefaultTitle := config.DefaultTitle;
   TargetExtention := config.TargetExtention;
   GZCompress := config.GZCompress;
-  if (GZCompress) then begin
-    if (not SameText(Copy(TargetExtention, Length(TargetExtention)-3, 3), '.gz')) then begin
-      TargetExtention := TargetExtention+'.gz';
-    end;
-  end;
   TypeCache := Hashes.TStringHash.Create;
   ConstCache := Hashes.TStringHash.Create;
   VarCache := Hashes.TStringHash.Create;
@@ -334,6 +331,17 @@ begin
 	{$ENDIF}
 	MaxInherit := ini.ReadInteger('Settings', 'MaxInherit', MaxInt);
 	if (TargetExtention = '') then TargetExtention := ini.ReadString('Settings', 'TargetExt', 'html');
+
+  root_filename := 'index.'+TargetExtention;
+  if (GZCompress) then begin
+    if (not SameText(Copy(TargetExtention, Length(TargetExtention)-3, 3), '.gz')) then begin
+      TargetExtention := TargetExtention+'.gz';
+    end
+    else begin // remove .gz from index
+      Delete(root_filename, Length(root_filename)-4, 4);
+    end;
+  end;
+
 	if (MaxInherit <= 0) then MaxInherit := MaxInt;
 	// 0 = use template default
 	// -1 = disable
@@ -408,13 +416,16 @@ begin
   resetguard;
 end;
 
-function THTMLOutput.CreateOutputStream(filename: string): TStream;
+function THTMLOutput.CreateOutputStream(filename: string; forceNoCompress: boolean = false): TStream;
 begin
-  if (GZCompress) then begin
-    //TODO:
-    raise Exception.Create('GZCompression not implemented');
-  end;
-  result := TFileStream.Create(filename, fmCreate)
+  if (GZCompress and not forceNoCompress) then begin
+    {$IFDEF WITH_ZLIB}
+    result := TGZFileStream.Create(filename, gzOpenWrite);
+    {$ELSE}
+    raise Exception.Create('GZCompression not supported in this build.');
+    {$ENDIF}
+  end
+  else result := TFileStream.Create(filename, fmCreate);
 end;
 
 function THTMLOutput.CloseOutputStream(var stream: TStream): boolean;
@@ -520,6 +531,10 @@ begin
     replacement := ini.ReadString('Titles', 'Overview', 'Overview');
     result := true;
   end
+  else if (CompareText(replacement, 'root_link') = 0) then begin
+    replacement := StrRepeat('../', subDirDepth)+root_filename;
+    result := true;
+  end
   else if (CompareText(replacement, 'VERSION') = 0) then begin
     replacement := APPVERSION;
     result := true;
@@ -588,9 +603,9 @@ var
   target: TStream;
 begin
   guard('htmlIndex');
-  Status('Creating index.'+TargetExtention);
+  Status('Creating '+root_filename);
   template := TFileStream.Create(templatedir+'index.html', fmOpenRead or fmShareDenyWrite);
-  target := CreateOutputStream(htmloutputdir+PATHDELIM+'index.'+TargetExtention);
+  target := CreateOutputStream(htmloutputdir+PATHDELIM+root_filename, true);
   currentFile := 'index.'+TargetExtention;
   try
     parseTemplate(template, target, replaceIndex);

@@ -45,7 +45,7 @@ OutputDir=..\BIN
 UnitOutputDir=..\DCU
 PackageDLLOutputDir=
 PackageDCPOutputDir=
-SearchPath=$(DELPHI)\Lib\Debug;VCL
+SearchPath=$(DELPHI)\Lib\Debug;VCL;paszlib
 Packages=vcl;rtl;dbrtl;adortl;vcldb;vclx;bdertl;vcldbx;ibxpress;dsnap;cds;bdecds;qrpt;teeui;teedb;tee;dss;teeqr;visualclx;dsnapcrba;dsnapcon;VclSmp;vclshlctrls;vclie;xmlrtl;inet;inetdbbde;inetdbxpress;inetdb;nmfast;webdsnap;websnap;soaprtl;dbexpress;dbxcds;indy;dclOffice2k;visualdbclx;TAC2comps
 Conditionals=DEBUG_BUILD
 DebugSourceDirs=
@@ -97,9 +97,10 @@ Item4=DETECT_MEM_LEAK;DETECT_MEM_LEAK
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=2
-Item0=$(DELPHI)\Lib\Debug;VCL
-Item1=VCL
+Count=3
+Item0=$(DELPHI)\Lib\Debug;VCL;paszlib
+Item1=$(DELPHI)\Lib\Debug;VCL
+Item2=VCL
 [HistoryLists\hlUnitOutputDirectory]
 Count=1
 Item0=..\DCU

@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.141 2005-03-25 16:01:24 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.142 2005-03-31 11:01:11 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -35,7 +35,12 @@ unit unit_definitions;
 interface
 
 uses
-  Hashes, unit_uclasses, Classes, IniFiles;
+  Hashes, unit_uclasses, Classes, IniFiles
+  {$IFDEF WITH_ZLIB}
+  {$IFNDEF FPC}
+  , gzio
+  {$ENDIF}
+  {$ENDIF};
 
 type
   TLogType = (ltInfo, ltWarn, ltError, ltSearch);
@@ -62,6 +67,26 @@ type
     NewHandle: integer;
     OpenFTS: boolean;
   end;
+
+  {$IFDEF WITH_ZLIB}
+  {$IFNDEF FPC}
+  EZlibError = class(EStreamError);
+
+  TGZOpenMode = (gzOpenRead,gzOpenWrite);
+
+  TGZFileStream = Class(TStream)
+  Private
+    FOpenMode : TGZOpenmode;
+    FFIle : gzfile;
+  Public
+    Constructor Create(FileName: String;FileMode: TGZOpenMode);
+    Destructor Destroy;override;
+    Function Read(Var Buffer; Count : longint): longint;override;
+    function Write(const Buffer; Count: Longint): Longint; override;
+    function Seek(Offset: Longint; Origin: Word): Longint; override;
+  end;
+  {$ENDIF}
+  {$ENDIF}
 
   function CreateLogEntry(filename: string; line: integer = 0; pos: integer = 0;
     obj: TObject = nil): TLogEntry; overload;
@@ -93,7 +118,7 @@ type
 
 const
   APPTITLE        = 'UnCodeX';
-  APPVERSION      = '222';
+  APPVERSION      = '223';
   {$IFDEF DEBUG_BUILD}
   DEBUGBUILD      = true;
   {$ELSE}
@@ -173,6 +198,56 @@ var
   sl, TmpExtCmt: TStringList;
   ExtCommentIni: TMemIniFile;
 
+{$IFDEF WITH_ZLIB}
+{$IFNDEF FPC}
+
+const
+  SCouldntOpenFile = 'Couldn''t open file : %s';
+  SReadOnlyStream = 'Decompression streams are read-only';
+  SWriteOnlyStream = 'Compression streams are write-only';
+  SSeekError = 'Compression stream seek error';
+
+// TGZFileStream
+
+Constructor TGZFileStream.Create(FileName: String;FileMode: TGZOpenMode);
+
+Const OpenStrings : array[TGZOpenMode] of pchar = ('rb','wb');
+
+begin
+   FOpenMode:=FileMode;
+   FFile:=gzopen (PChar(FileName),Openstrings[FileMode]);
+   If FFile=Nil then
+     Raise ezlibError.CreateFmt (SCouldntOpenFIle,[FileName]);
+end;
+
+Destructor TGZFileStream.Destroy;
+begin
+  gzclose(FFile);
+  Inherited Destroy;
+end;
+
+Function TGZFileStream.Read(Var Buffer; Count : longint): longint;
+begin
+  If FOpenMode=gzOpenWrite then
+    Raise ezliberror.create(SWriteOnlyStream);
+  Result:=gzRead(FFile,@Buffer,Count);
+end;
+
+function TGZFileStream.Write(const Buffer; Count: Longint): Longint;
+begin
+  If FOpenMode=gzOpenRead then
+    Raise EzlibError.Create(SReadonlyStream);
+  Result:=gzWrite(FFile,@Buffer,Count);
+end;
+
+function TGZFileStream.Seek(Offset: Longint; Origin: Word): Longint;
+begin
+  Result:=gzseek(FFile,Offset,Origin);
+  If Result=-1 then
+    Raise eZlibError.Create(SSeekError);
+end;
+{$ENDIF} // FPC
+{$ENDIF} // WITH_ZLIB        
 
 function CreateLogEntry(filename: string; line: integer = 0; pos: integer = 0; obj: TObject = nil): TLogEntry;
 begin
