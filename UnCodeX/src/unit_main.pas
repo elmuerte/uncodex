@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.56 2003-06-22 08:58:45 elmuerte Exp $
+ $Id: unit_main.pas,v 1.57 2003-07-10 07:46:53 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_main;
@@ -1057,6 +1057,20 @@ begin
   { StringLists -- END }
   try
     { Load layout }
+    ac_VStayOnTop.Checked := ini.ReadBool('Layout', 'StayOnTop', false);
+    if (ac_VStayOnTop.Checked) then FormStyle := fsStayOnTop;
+    ac_VSaveposition.Checked := ini.ReadBool('Layout', 'SavePosition', false);
+    ac_VSavesize.Checked := ini.ReadBool('Layout', 'SaveSize', false);
+    if (ac_VSaveposition.Checked) then begin
+      Position := poDesigned;
+      Top := ini.ReadInteger('Layout', 'Top', Top);
+      Left := ini.ReadInteger('Layout', 'Left', Left);
+    end;
+    if (ac_VSavesize.Checked) then begin
+      Width := ini.ReadInteger('Layout', 'Width', Width);
+      Height := ini.ReadInteger('Layout', 'Height', Height);
+    end;
+    if (ini.ReadBool('Layout', 'IsMaximized', false)) then WindowState := wsMaximized;
     ac_VMenuBar.Checked := ini.ReadBool('Layout', 'MenuBar', true);
     ac_VToolbar.Checked := ini.ReadBool('Layout', 'Toolbar', true);
     mi_Toolbar.OnClick(Sender);
@@ -1073,20 +1087,6 @@ begin
     re_SourceSnoop.Width := ini.ReadInteger('Layout', 'SourceSnoopWidth', re_SourceSnoop.Width);
     if (spl_Main3.MinSize > re_SourceSnoop.Width) then re_SourceSnoop.Width := spl_Main3.MinSize;
     mi_SourceSnoop.OnClick(Sender);
-    ac_VStayOnTop.Checked := ini.ReadBool('Layout', 'StayOnTop', false);
-    if (ac_VStayOnTop.Checked) then FormStyle := fsStayOnTop;
-    ac_VSaveposition.Checked := ini.ReadBool('Layout', 'SavePosition', false);
-    ac_VSavesize.Checked := ini.ReadBool('Layout', 'SaveSize', false);
-    if (ac_VSaveposition.Checked) then begin
-      Position := poDesigned;
-      Top := ini.ReadInteger('Layout', 'Top', Top);
-      Left := ini.ReadInteger('Layout', 'Left', Left);
-    end;
-    if (ac_VSavesize.Checked) then begin
-      Width := ini.ReadInteger('Layout', 'Width', Width);
-      Height := ini.ReadInteger('Layout', 'Height', Height);
-    end;
-    if (ini.ReadBool('Layout', 'IsMaximized', false)) then WindowState := wsMaximized;
     ABWidth := ini.ReadInteger('Layout', 'ABWidth', 150);
     ac_VAutoHide.Checked := ini.ReadBool('Layout', 'AutoHide', false);
     mi_AutoHide.OnClick(Sender);
