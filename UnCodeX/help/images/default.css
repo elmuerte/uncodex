@@ -68,33 +68,39 @@ DIV.content {
 }
 
 H1 {
-	font-size: 16pt;
+	font-size: 14pt;
+	border-bottom: 2px solid #396782;
+	background-color: #B4BEC6;
 }
 
 H2 {
-	font-size: 14pt;
-	margin: 0px;
-	margin-top: 14pt;
-	background-color: #A3BFDE;
+	font-size: 12pt;
+	margin: 2px;
+	margin-top: 10pt;
+	border-bottom: 2px solid #598DC3;
 	font-style: italic;
+	background-color: #ACB7C0;
 }
 
 H3 {
 	font-size: 10pt;
-	margin: 0px;
+	margin: 2px;
 	margin-top: 5pt;
+	border-bottom: 1px solid #6E9BCB;
+	background-color: #B4BEC6;
 }
 
 H4 {
 	font-size: 10pt;
-	margin: 0px;
+	margin: 2px;
 	margin-top: 5pt;
 	font-style: italic;
+	background-color: #BAC3CB;
 }
 
 PRE {
 	background-color: #BCCFDA;
-	margin: 0px;
+	margin: 2px;
 	padding-left: 10px;
 	padding-right: 5px;
 	border: 1px inset silver;
@@ -111,12 +117,15 @@ TH {
 }
 
 A { 
-	/* color: #D4F7FF; */	
 	text-decoration: none;
-	font-weight: bold;
-	color: #7882A7;
+	color: #566085;
+	border: 1px solid #BDC6CE;
+	border-bottom: 1px solid #718495;
+	padding: 1px;
 }
 
 A:Hover { 
-	text-decoration: underline;
+	border: 1px solid #718495;
+	background-color: #99A8B3;
+	color: black;
 }

@@ -12,8 +12,10 @@ object frm_MoveClass: Tfrm_MoveClass
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
+  KeyPreview = True
   OldCreateOrder = False
   Position = poMainFormCenter
+  OnKeyUp = FormKeyUp
   DesignSize = (
     443
     184)

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.96 2004-04-29 15:35:40 elmuerte Exp $
+ $Id: unit_main.pas,v 1.97 2004-05-03 07:54:45 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -233,6 +233,9 @@ type
     ac_DefProps: TAction;
     mi_DefProps: TMenuItem;
     mi_SortList: TMenuItem;
+    btn_Sep6: TToolButton;
+    btn_CProp: TToolButton;
+    btn_PProp: TToolButton;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -1265,13 +1268,14 @@ begin
 			splRight.Left := APanel.Width - splRight.Width;
 		end
 		else if APanel.Align = alBottom then begin
-			APanel.Height := makeHeight;
+      APanel.Height := makeHeight;
 			APanel.Top := pb_Scan.Top-APanel.Height-1;
+
 			splBottom.Top := APanel.Top - splBottom.Height-1;
 		end
 		else if APanel.Align = alTop then begin
 			APanel.Height := makeHeight;
-			splTop.Top := pb_Scan.Top + splTop.Height;
+			splTop.Top := APanel.Top + APanel.Height;
 		end
 	end
 	else begin
@@ -1557,6 +1561,8 @@ begin
     ini.ReadBinaryStream('dckBottom.DockManager', 'data', dockData);
     if (dockData.Size > 0) then dckBottom.DockManager.LoadFromStream(dockData);
     dckBottom.Height := ini.ReadInteger('dckBottom.DockManager', 'height', dckBottom.Height);
+    dckBottom.Top := pb_Scan.Top-dckBottom.Height;
+    splBottom.Top := dckBottom.Top-1;
     dockData.Clear;
 
     ini.ReadBinaryStream('dckLeft.DockManager', 'data', dockData);
@@ -2570,7 +2576,7 @@ end;
 
 procedure Tfrm_UnCodeX.ac_HelpExecute(Sender: TObject);
 begin
-  if (ActiveControl <> nil) then hh_Help.HelpTopic('window_main.html#'+ActiveControl.HelpKeyword)
+  if (ActiveControl <> nil) then hh_Help.HelpTopic(ActiveControl.HelpKeyword)
   else hh_Help.HelpTopic('');
 end;
 
@@ -2941,7 +2947,7 @@ begin
       mi_DeleteClass.Visible := false;
       mi_MoveClass.Visible := false;
       mi_RenameClass.Visible := false;
-      mi_Properties.Visible := false;
+      //mi_Properties.Visible := false;
     end
     else if (TObject(Selected.Data).ClassType = TUClass) then begin
       mi_ClassName.Visible := true;
@@ -2953,7 +2959,7 @@ begin
       mi_DeleteClass.Visible := true;
       mi_MoveClass.Visible := true;
       mi_RenameClass.Visible := true;
-      mi_Properties.Visible := false;
+      //mi_Properties.Visible := false;
     end
     else if (TObject(Selected.Data).ClassType = TUPackage) then begin
       mi_ClassName.Visible := false;
@@ -2964,7 +2970,7 @@ begin
       mi_DeleteClass.Visible := false;
       mi_MoveClass.Visible := false;
       mi_RenameClass.Visible := false;
-      mi_Properties.Visible := true;
+      //mi_Properties.Visible := true;
     end;
     mi_SwitchTree.Visible := tv_Packages.Visible;
   end;
@@ -3115,7 +3121,8 @@ end;
 
 procedure Tfrm_UnCodeX.ac_PackagePropsExecute(Sender: TObject);
 begin
-  ShowPackageProps(SelectedUPackage);
+  if (SelectedUPackage <> nil) then ShowPackageProps(SelectedUPackage)
+  else if (SelectedUClass <> nil) then ShowPackageProps(SelectedUClass.package)
 end;
 
 procedure Tfrm_UnCodeX.mi_SaveToFile1Click(Sender: TObject);

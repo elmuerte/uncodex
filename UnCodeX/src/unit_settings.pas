@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   program settings window
- $Id: unit_settings.pas,v 1.35 2004-04-13 07:01:15 elmuerte Exp $
+ $Id: unit_settings.pas,v 1.36 2004-05-03 07:54:45 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -281,6 +281,8 @@ type
     procedure cb_SelColorChange(Sender: TObject);
     procedure btn_BrowseGPDFClick(Sender: TObject);
     procedure btn_BrowseTemplateClick(Sender: TObject);
+    procedure FormKeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
   public
     TagChanged: boolean;
@@ -486,6 +488,7 @@ begin
     li.Caption := TAction(frm_UnCodeX.al_Main.Actions[i]).Caption;
     li.SubItems.Add(ShortCutToText(TAction(frm_UnCodeX.al_Main.Actions[i]).ShortCut));
     li.Data := frm_UnCodeX.al_Main.Actions[i];
+    li.ImageIndex := TAction(frm_UnCodeX.al_Main.Actions[i]).ImageIndex;
   end;
   // backup old colors
   btextfont := TFont.Create;
@@ -909,6 +912,12 @@ procedure Tfrm_Settings.btn_BrowseTemplateClick(Sender: TObject);
 begin
 	od_BrowseUC.FileName := ed_NewClassTemplate.Text;
   if (od_BrowseUC.Execute) then ed_NewClassTemplate.Text := od_BrowseUC.FileName;
+end;
+
+procedure Tfrm_Settings.FormKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+	if (Key = VK_F1) then btn_Help.Click;
 end;
 
 end.

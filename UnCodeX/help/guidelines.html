@@ -15,14 +15,21 @@
 <h1>Coding guidelines</h1>
 To get the maximum out of the documentation created by UnCodeX you must follow a few simple coding guidelines.
 
-<h2>Package descriptions</h2>
-For every package create a UnCodeX.ini file in it's base directory with the following content, alternatively you can also place the package description to the package configuration file (&lt;package name&gt;.upkg):
+<a name="package"></a><h2>Package descriptions</h2>
+For every package create a UnCodeX.ini file in it's base directory with the following content, alternatively you can also place the package description in the package configuration file (&lt;package name&gt;.upkg):
 <pre>
 [package_description]
 Enter here you package description, it may contain HTML formatting. 
 It will included as is in the generated HTML output.
 </pre>
-<h2>Class descriptions</h2>
+UnCodeX will look at the following places for a package description (in this order):
+<ol>
+<li>&lt;package name&gt;\Classes\&lt;package name&gt;.upkg
+<li>&lt;package name&gt;\uncodex.ini
+<li>PackageDescription.ini
+</ol>
+
+<a name="class"></a><h2>Class descriptions</h2>
 Two types are accepted:
 <h3>Single line comments</h3>
 <pre>
@@ -32,7 +39,8 @@ Two types are accepted:
 </pre>
 Single comments are only accepted before the class declaration. Comments that have the same content in reverse order will be ignored in the final output, so the first and the last line in the above example are excluded. Ofcourse the two leading slashes are stripped first before it's being processed. In the HTML output each single line comment will be appended with a HTML linebreak.
 <br>
-The following lines are bad:
+<br>
+The following lines are <u>bad</u>:
 <pre>
 /// ====================
 // =+=+=+=+=+=+=+=+=+=+
@@ -56,7 +64,7 @@ Note: in the current versions of UT (451) and UT2003 (2225) the compiler does no
 ...
 </pre>
 
-<h2>Declaration descriptions</h2>
+<a name="declaration"></a><h2>Declaration descriptions</h2>
 To add descriptions to declarations (structs/vars/functions/...) include the special multiline comment <u>before</u> it's declaration.
 <pre>
 /** Var x is used to keep the usage count */

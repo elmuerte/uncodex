@@ -18,6 +18,8 @@ type
     lbl_Warning: TLabel;
     procedure ed_NewClassKeyPress(Sender: TObject; var Key: Char);
     procedure ed_NewClassChange(Sender: TObject);
+    procedure FormKeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     { Private declarations }
   public
@@ -29,6 +31,8 @@ var
   frm_RenameClass: Tfrm_RenameClass;
 
 implementation
+
+uses unit_main;
 
 {$R *.dfm}
 
@@ -70,6 +74,12 @@ begin
       break;
     end;
   end;
+end;
+
+procedure Tfrm_RenameClass.FormKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+	if (Key = VK_F1) then hh_Help.HelpTopic('window_renameclass.html');
 end;
 
 end.

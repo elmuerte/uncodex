@@ -46,7 +46,23 @@
 				<param name="Name" value="Toolbar">
 				<param name="Local" value="window_main_toolbar.html">
 				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Tree menu">
+				<param name="Local" value="window_main_classmenu.html">
+				</OBJECT>
 		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Create subclass">
+			<param name="Local" value="window_createsubclass.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Move class">
+			<param name="Local" value="window_moveclass.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Rename class">
+			<param name="Local" value="window_renameclass.html">
+			</OBJECT>
 		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="Program settings">
 			<param name="Local" value="window_settings.html">

@@ -12,7 +12,7 @@ Language=0x409 English (United States)
 Title=UnCodeX
 
 [WINDOWS]
-main="UnCodeX Help","UnCodeX-help.hhc",,"index.html","index.html",,,,,0x22520,200,0x1046,[100,100,800,600],,,,,,,0
+main="UnCodeX Help","UnCodeX-help.hhc","UnCodeX-help.hhk","index.html","index.html",,,,,0x62520,200,0x1046,[0,0,750,500],,,,,,,0
 
 
 [FILES]
@@ -74,6 +74,14 @@ UnCodeX-pkgprop.gif
 UnCodeX-search.gif
 template_class_entry_delegate.html
 x04_delegate.gif
+window_search.html
+window_createsubclass.html
+window_main_classmenu.html
+window_moveclass.html
+window_pkgprop.html
+window_renameclass.html
+UnCodeX-renameclass.gif
+UnCodeX-moveclass.gif
 
 [INFOTYPES]
 

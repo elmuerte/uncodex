@@ -32,6 +32,8 @@ type
     procedure ed_NewClassKeyPress(Sender: TObject; var Key: Char);
     procedure cb_NewPackageClick(Sender: TObject);
     procedure btn_OkClick(Sender: TObject);
+    procedure FormKeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
   	upackage: TUPackage;
     uclass: TUClass;
@@ -411,6 +413,12 @@ begin
     replacement := tmp;
 		result := true;
   end
+end;
+
+procedure Tfrm_CreateNewClass.FormKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+	if (Key = VK_F1) then hh_Help.HelpTopic('window_createsubclass.html');
 end;
 
 end.

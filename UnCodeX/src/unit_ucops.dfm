@@ -1,6 +1,7 @@
 object frm_CreateNewClass: Tfrm_CreateNewClass
   Left = 361
   Top = 209
+  HelpType = htKeyword
   BorderStyle = bsDialog
   Caption = 'Create new class'
   ClientHeight = 271
@@ -11,9 +12,12 @@ object frm_CreateNewClass: Tfrm_CreateNewClass
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
+  HelpFile = 'bla'
+  KeyPreview = True
   OldCreateOrder = False
   Position = poMainFormCenter
   OnClose = FormClose
+  OnKeyUp = FormKeyUp
   DesignSize = (
     351
     271)
@@ -87,6 +91,7 @@ object frm_CreateNewClass: Tfrm_CreateNewClass
     Top = 24
     Width = 337
     Height = 21
+    HelpType = htKeyword
     AutoDropDown = True
     Anchors = [akLeft, akTop, akRight]
     ItemHeight = 13

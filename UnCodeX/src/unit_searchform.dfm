@@ -12,9 +12,11 @@ object frm_SearchForm: Tfrm_SearchForm
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
+  KeyPreview = True
   OldCreateOrder = False
   Position = poScreenCenter
   ShowHint = True
+  OnKeyUp = FormKeyUp
   DesignSize = (
     400
     199)

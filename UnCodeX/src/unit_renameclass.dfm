@@ -11,8 +11,10 @@ object frm_RenameClass: Tfrm_RenameClass
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
+  KeyPreview = True
   OldCreateOrder = False
   Position = poMainFormCenter
+  OnKeyUp = FormKeyUp
   DesignSize = (
     442
     141)
