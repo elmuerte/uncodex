@@ -64,7 +64,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 433
     Height = 378
-    ActivePage = ts_ProgramOptions
+    ActivePage = ts_Keywords
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -488,7 +488,7 @@ object frm_Settings: Tfrm_Settings
           Height = 13
           Caption = 'Target extention (leave blank for the default)'
         end
-        object Label11: TLabel
+        object lbl_TabsToSpaces: TLabel
           Left = 8
           Top = 176
           Width = 235
@@ -590,8 +590,11 @@ object frm_Settings: Tfrm_Settings
         object ed_CPPApp: TEdit
           Left = 8
           Top = 232
-          Width = 393
+          Width = 385
           Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
           TabOrder = 7
         end
         object btn_SelectCPP: TBitBtn
@@ -1512,6 +1515,9 @@ object frm_Settings: Tfrm_Settings
         Align = alClient
         Caption = 'Keyword lists'
         TabOrder = 0
+        DesignSize = (
+          425
+          368)
         object bvl_Keys: TBevel
           Left = 2
           Top = 15
@@ -1552,6 +1558,7 @@ object frm_Settings: Tfrm_Settings
           Width = 193
           Height = 305
           Hint = 'Press delete to remove the selected keyword'
+          Anchors = [akLeft, akTop, akRight]
           ItemHeight = 13
           Sorted = True
           TabOrder = 1
@@ -1574,6 +1581,7 @@ object frm_Settings: Tfrm_Settings
           Width = 193
           Height = 21
           Hint = 'Press enter to add this keyword'
+          Anchors = [akLeft, akTop, akRight]
           CharCase = ecLowerCase
           TabOrder = 3
           OnKeyUp = ed_AddSecKeyKeyUp

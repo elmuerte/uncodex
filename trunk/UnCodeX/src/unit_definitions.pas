@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   General definitions
- $Id: unit_definitions.pas,v 1.82 2004-03-02 16:05:35 elmuerte Exp $
+ $Id: unit_definitions.pas,v 1.83 2004-03-07 13:57:28 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -211,11 +211,15 @@ begin
 end;
 {$ENDIF}
 
+var
+	kwl1, kwl2: boolean;
+
 procedure ReloadKeywords;
 var
   i: integer;
 begin
   if (FileExists(ExtractFilePath(ParamStr(0))+KEYWORDFILE1)) then begin
+  	kwl1 := true;
     Keywords1.Clear;
     sl := TStringList.Create;
     try
@@ -228,6 +232,7 @@ begin
     end;
   end;
   if (FileExists(ExtractFilePath(ParamStr(0))+KEYWORDFILE2)) then begin
+  	kwl2 := true;
     Keywords2.Clear;
     sl := TStringList.Create;
     try
@@ -242,91 +247,55 @@ begin
 end;
 
 initialization
+	kwl1 := false;
+  kwl2 := false;
   Keywords1 := Hashes.TStringHash.Create;
   Keywords2 := Hashes.TStringHash.Create;
   ReloadKeywords;
-  if (Keywords1.ItemCount = 0) then begin
-    Keywords1.Items['abstract'] := '-';
+  if (not kwl1) then begin
     Keywords1.Items['array'] := '-';
     Keywords1.Items['bool'] := '-';
     Keywords1.Items['break'] := '-';
     Keywords1.Items['byte'] := '-';
     Keywords1.Items['case'] := '-';
     Keywords1.Items['class'] := '-';
-    Keywords1.Items['coerce'] := '-';
-    Keywords1.Items['collapsecategories'] := '-';
-    Keywords1.Items['config'] := '-';
     Keywords1.Items['const'] := '-';
-    Keywords1.Items['continue'] := '-';
     Keywords1.Items['cpptext'] := '-';
     Keywords1.Items['defaultproperties'] := '-';
     Keywords1.Items['delegate'] := '-';
-    Keywords1.Items['dependsOn'] := '-';
-    Keywords1.Items['do'] := '-';
-    Keywords1.Items['editconst'] := '-';
-    Keywords1.Items['editinline'] := '-';
-    Keywords1.Items['editinlinenew'] := '-';
     Keywords1.Items['else'] := '-';
     Keywords1.Items['enum'] := '-';
     Keywords1.Items['event'] := '-';
-    Keywords1.Items['exec'] := '-';
     Keywords1.Items['expands'] := '-';
-    Keywords1.Items['export'] := '-';
-    Keywords1.Items['exportstructs'] := '-';
     Keywords1.Items['extends'] := '-';
     Keywords1.Items['false'] := '-';
-    Keywords1.Items['final'] := '-';
     Keywords1.Items['float'] := '-';
     Keywords1.Items['for'] := '-';
     Keywords1.Items['foreach'] := '-';
     Keywords1.Items['function'] := '-';
-    Keywords1.Items['globalconfig'] := '-';
-    Keywords1.Items['hidecategories'] := '-';
     Keywords1.Items['if'] := '-';
     Keywords1.Items['ignores'] := '-';
-    Keywords1.Items['input'] := '-';
-    Keywords1.Items['instanced'] := '-';
     Keywords1.Items['int'] := '-';
-    Keywords1.Items['latent'] := '-';
     Keywords1.Items['local'] := '-';
-    Keywords1.Items['localized'] := '-';
-    Keywords1.Items['name'] := '-';
-    Keywords1.Items['native'] := '-';
-    Keywords1.Items['nativereplication'] := '-';
-    Keywords1.Items['new'] := '-';
-    Keywords1.Items['noexport'] := '-';
-    Keywords1.Items['noteditinlinenew'] := '-';
-    Keywords1.Items['notplaceable'] := '-';
+ 		Keywords1.Items['name'] := '-';
+ 		Keywords1.Items['none'] := '-';
     Keywords1.Items['operator'] := '-';
-    Keywords1.Items['optional'] := '-';
-    Keywords1.Items['out'] := '-';
-    Keywords1.Items['perobjectconfig'] := '-';
-    Keywords1.Items['placeable'] := '-';
     Keywords1.Items['postoperator'] := '-';
     Keywords1.Items['preoperator'] := '-';
-    Keywords1.Items['private'] := '-';
-    Keywords1.Items['protected'] := '-';
     Keywords1.Items['reliable'] := '-';
     Keywords1.Items['replication'] := '-';
     Keywords1.Items['return'] := '-';
-    Keywords1.Items['showcategories'] := '-';
-    Keywords1.Items['simulated'] := '-';
-    Keywords1.Items['singular'] := '-';
-    Keywords1.Items['skip'] := '-';
-    Keywords1.Items['spawn'] := '-';
     Keywords1.Items['state'] := '-';
-    Keywords1.Items['static'] := '-';
     Keywords1.Items['string'] := '-';
     Keywords1.Items['struct'] := '-';
+    Keywords1.Items['super'] := '-';
     Keywords1.Items['switch'] := '-';
-    Keywords1.Items['then'] := '-';
-    Keywords1.Items['transient'] := '-';
     Keywords1.Items['true'] := '-';
     Keywords1.Items['unreliable'] := '-';
-    Keywords1.Items['until'] := '-';
     Keywords1.Items['var'] := '-';
     Keywords1.Items['while'] := '-';
-    Keywords1.Items['within'] := '-';
+
+
     sl := TStringList.Create;
     Keywords1.Restart;
     try
@@ -334,6 +303,58 @@ initialization
         if (Keywords1.CurrentKey <> '') then sl.Add(Keywords1.CurrentKey)
       end;
       sl.SaveToFile(ExtractFilePath(ParamStr(0))+KEYWORDFILE1);
+    finally
+      sl.Free;
+    end;
+  end;
+
+  if (not kwl2) then begin
+		Keywords2.Items['abstract'] := '-';
+		Keywords2.Items['auto'] := '-';
+    Keywords2.Items['cache'] := '-';
+		Keywords2.Items['cacheexempt'] := '-';
+		Keywords2.Items['coerce'] := '-';
+		Keywords2.Items['collapsecategories'] := '-';
+		Keywords2.Items['config'] := '-';
+		Keywords2.Items['dependson'] := '-';
+    Keywords2.Items['edfindable'] := '-';
+		Keywords2.Items['editconst'] := '-';
+		Keywords2.Items['editinlinenew'] := '-';
+		Keywords2.Items['exec'] := '-';
+		Keywords2.Items['export'] := '-';
+		Keywords2.Items['exportstructs'] := '-';
+		Keywords2.Items['final'] := '-';
+		Keywords2.Items['globalconfig'] := '-';
+		Keywords2.Items['hidecategories'] := '-';
+		Keywords2.Items['hidedropdown'] := '-';
+    Keywords2.Items['init'] := '-';
+		Keywords2.Items['instanced'] := '-';
+		Keywords2.Items['iterator'] := '-';
+		Keywords2.Items['localized'] := '-';
+		Keywords2.Items['native'] := '-';
+		Keywords2.Items['nativereplication'] := '-';
+    Keywords2.Items['noteditinlinenew'] := '-';
+		Keywords2.Items['noexport'] := '-';
+		Keywords2.Items['notplaceable'] := '-';
+    Keywords2.Items['optional'] := '-';
+		Keywords2.Items['out'] := '-';
+		Keywords2.Items['perobjectconfig'] := '-';
+		Keywords2.Items['placeable'] := '-';
+		Keywords2.Items['private'] := '-';
+		Keywords2.Items['protected'] := '-';
+		Keywords2.Items['showcategories'] := '-';
+		Keywords2.Items['simulated'] := '-';
+		Keywords2.Items['static'] := '-';
+		Keywords2.Items['transient'] := '-';
+    Keywords2.Items['within'] := '-';
+
+		sl := TStringList.Create;
+    Keywords2.Restart;
+    try
+      while (Keywords2.Next) do begin
+        if (Keywords2.CurrentKey <> '') then sl.Add(Keywords2.CurrentKey)
+      end;
+      sl.SaveToFile(ExtractFilePath(ParamStr(0))+KEYWORDFILE2);
     finally
       sl.Free;
     end;

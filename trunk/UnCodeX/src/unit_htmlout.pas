@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.48 2004-03-05 10:24:47 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.49 2004-03-07 13:57:28 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -106,6 +106,7 @@ type
     function replaceClass(var replacement: string; data: TObject = nil): boolean;
     function replaceClassConst(var replacement: string; data: TObject = nil): boolean;
     function replaceClassVar(var replacement: string; data: TObject = nil): boolean;
+    function replaceVarTag(var replacement: string; data: TObject = nil): boolean;
     function replaceClassEnum(var replacement: string; data: TObject = nil): boolean;
     function replaceClassStruct(var replacement: string; data: TObject = nil): boolean;
     function replaceClassFunction(var replacement: string; data: TObject = nil): boolean;
@@ -793,10 +794,11 @@ function THTMLOutput.replaceClass(var replacement: string; data: TObject = nil):
 var
   i, cnt: integer;
   uclass, up: TUClass;
-  template: TFileStream;
+  template, template2: TFileStream;
   target, source: TStringStream;
   tmp, last: string;
   idata: TInheritenceData;
+  VarOnTag: boolean;
 begin
   result := replaceDefault(replacement) or replacePackageOverview(replacement, TUClass(data).package);
   if (result) then exit;
@@ -1044,10 +1046,23 @@ begin
   else if (IsReplacement(replacement, 'class_entry_variable')) then begin
     template := TFileStream.Create(templatedir+LowerCase(replacement)+'.html', fmOpenRead);
     target := TStringStream.Create('');
+    VarOnTag := ini.ReadBool('VariablesSortOnTag', replacement, false);
+    if (VarOnTag) then TUClass(data).properties.SortOnTag
+    	else TUClass(data).properties.Sort;
     try
+    	tmp := '';
       for i := 0 to TUClass(data).properties.Count-1 do begin
         // ignore const when comment = @ignore
         if (CompareText(TUClass(data).properties[i].comment, IGNORE_KEYWORD) <> 0) then begin
+					if ((CompareText(tmp, TUClass(data).properties[i].tag) <> 0) and VarOnTag) then begin
+            template2 := TFileStream.Create(templatedir+LowerCase(replacement)+'_tag.html', fmOpenRead);
+            try
+              parseTemplate(template2, target, replaceVarTag, TUClass(data).properties[i]);
+            finally
+              template2.free;
+            end;
+						tmp := TUClass(data).properties[i].tag;
+          end;
           template.Position := 0;
           parseTemplate(template, target, replaceClassVar, TUClass(data).properties[i]);
         end;
@@ -1078,6 +1093,7 @@ begin
           end
           else begin
             tmp := '';
+            up.properties.Sort;
             for i := 0 to up.properties.Count-1 do begin
               // ignore const when comment = @ignore
               if (CompareText(up.properties[i].comment, IGNORE_KEYWORD) <> 0) then begin
@@ -1535,6 +1551,15 @@ begin
   end
   else if (CompareText(replacement, 'class_source') = 0) then begin
     replacement := StrRepeat('../', subDirDepth)+SOURCEPRE+ClassLink(currentClass);
+    result := true;
+  end
+end;
+
+function THTMLOutput.replaceVarTag(var replacement: string; data: TObject = nil): boolean;
+begin
+	result := false;
+  if (CompareText(replacement, 'tag_name') = 0) then begin
+    replacement := TUProperty(data).tag;
     result := true;
   end
 end;

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2004 Michiel 'El Muerte' Hendriks
  Purpose:   replacement docktree
- $Id: unit_ucxdocktree.pas,v 1.2 2004-02-23 12:20:47 elmuerte Exp $
+ $Id: unit_ucxdocktree.pas,v 1.3 2004-03-07 13:57:29 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -109,11 +109,13 @@ begin
 		end
     else FOldWindowProc(Message);
   end
+  {
   // disable floating
   else if (Message.Msg = WM_LBUTTONUP) then begin
 		client := HitTest(SmallPointToPoint(TWMMouse(Message).Pos), HitTestValue);
 		if client <> nil then CancelDrag;
-	end
+	en
+  }
   else FOldWindowProc(Message);
 end;
 

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.77 2004-03-02 16:05:35 elmuerte Exp $
+ $Id: unit_main.pas,v 1.78 2004-03-07 13:57:28 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -308,6 +308,8 @@ type
       Y: Integer);
     procedure pnlCenterUnDock(Sender: TObject; Client: TControl;
       NewTarget: TWinControl; var Allow: Boolean);
+    procedure pnlCenterDockDrop(Sender: TObject; Source: TDragDockObject;
+      X, Y: Integer);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -2228,7 +2230,7 @@ begin
     if (SearchQuery('Full text search', 'Enter your search query', query, isregex, FTSHistory, ['&Regular expression'])) then begin
       if (query = '') then exit;
       ac_VLog.Checked := true;
-      mi_Log.OnClick(Sender);
+      if (not lb_Log.Visible) then mi_Log.OnClick(Sender);
       lb_Log.Items.Clear;
       runningthread := TSearchThread.Create(PackageList, StatusReport, query, isregex[0], ClassList.Count);
       runningthread.OnTerminate := ThreadTerminate;
@@ -2884,7 +2886,9 @@ end;
 procedure Tfrm_UnCodeX.dckLeftDockDrop(Sender: TObject;
   Source: TDragDockObject; X, Y: Integer);
 begin
-	if (Sender as TPanel).VisibleDockClientCount > 0 then ShowDockPanel(Sender as TPanel, True, Source.Control);
+	if (Sender as TPanel).VisibleDockClientCount > 0 then ShowDockPanel(Sender as TPanel, True, Source.Control)
+  else if (visible) then ShowDockPanel(Sender as TPanel, True, Source.Control);
+
   (Sender as TPanel).DockManager.ResetBounds(True);
 end;
 
@@ -2914,7 +2918,8 @@ end;
 procedure Tfrm_UnCodeX.splRightCanResize(Sender: TObject;
   var NewSize: Integer; var Accept: Boolean);
 begin
-	NewSize := NewSize-splRight.Left-splRight.Width;
+	// HACK to fix incorrect sizing when the top splitter is not visible
+  if (not splTop.Visible)	then NewSize := NewSize-splRight.Left-splRight.Width;
   Accept := NewSize > splRight.MinSize;
   splRightHack := NewSize;
   if (splRightHack < splRight.MinSize) then splRightHack := splRight.MinSize;
@@ -2935,6 +2940,12 @@ procedure Tfrm_UnCodeX.pnlCenterUnDock(Sender: TObject; Client: TControl;
   NewTarget: TWinControl; var Allow: Boolean);
 begin
 	Allow := (NewTarget <> nil);
+end;
+
+procedure Tfrm_UnCodeX.pnlCenterDockDrop(Sender: TObject;
+  Source: TDragDockObject; X, Y: Integer);
+begin
+	if (visible) then Source.Control.Show;
 end;
 
 initialization
