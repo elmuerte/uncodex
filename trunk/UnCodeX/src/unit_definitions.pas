@@ -10,13 +10,13 @@ type
 
   function StrRepeat(line: string; count: integer): string;
 
-  function SearchQuery(const ACaption, APrompt: string; var value: string; var IsRegex: boolean;
-    var history: TStringList;  EnableRegex: boolean = true): boolean; overload;
+  function SearchQuery(const ACaption, APrompt: string; var value: string; var checkvalue: boolean;
+    var history: TStringList;  CheckPrompt: string = ''): boolean; overload;
   function SearchQuery(const ACaption, APrompt: string; var value: string; var history: TStringList): boolean; overload;
   
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '036 Beta';
+  APPVERSION = '037 Beta';
 
   PATHDELIM = '\';
   WILDCARD = '*.*';
@@ -50,8 +50,8 @@ begin
   Result.X := Result.X div 52;
 end;
 
-function SearchQuery(const ACaption, APrompt: string; var value: string; var IsRegex: boolean;
-    var history: TStringList; EnableRegex: boolean = true): boolean;
+function SearchQuery(const ACaption, APrompt: string; var value: string; var checkvalue: boolean;
+    var history: TStringList;  CheckPrompt: string = ''): boolean;
 var
   Form: TForm;
   Prompt: TLabel;
@@ -100,9 +100,9 @@ begin
         Left := Prompt.Left;
         Top := Edit.Top + Edit.Height + 5;
         Width := MulDiv(234, DialogUnits.X, 4);
-        Caption := 'Regular expression';
-        Checked := IsRegex;
-        Enabled := EnableRegex;
+        Caption := CheckPrompt;
+        Checked := checkvalue;
+        Visible := CheckPrompt <> '';
       end;
       ButtonTop := CheckBox.Top + CheckBox.Height + 15;
       ButtonWidth := MulDiv(50, DialogUnits.X, 4);
@@ -128,7 +128,7 @@ begin
       end;
       if ShowModal = mrOk then
       begin
-        IsRegex := CheckBox.Checked;
+        checkvalue := CheckBox.Checked;
         Value := Edit.Text;
         if (History.IndexOf(Value) = -1) then begin
           History.Insert(0, Value);
@@ -146,7 +146,7 @@ function SearchQuery(const ACaption, APrompt: string; var value: string; var his
 var
   tmpb: boolean;
 begin
-  result := SearchQuery(ACaption, APrompt, value, tmpb, history, false);
+  result := SearchQuery(ACaption, APrompt, value, tmpb, history, '');
 end;
 
 end.
