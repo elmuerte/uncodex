@@ -1,7 +1,7 @@
 [Setup]
 AppName=UnCodeX
-AppVerName=UnCodeX version 203
-AppVersion=203
+AppVerName=UnCodeX version 204
+AppVersion=204
 AppPublisher=Michiel 'El Muerte' Hendriks
 AppPublisherURL=http://wiki.beyondunreal.com/wiki/UnCodeX
 AppSupportURL=http://wiki.beyondunreal.com/wiki/UnCodeX
@@ -20,7 +20,7 @@ ShowLanguageDialog=yes
 UninstallDisplayIcon={app}\UnCodeX.exe
 UninstallDisplayName=UnCodeX
 AppID={FDD6ED8B-DB77-43BC-B0B2-608A1F27AABC}
-VersionInfoVersion=2.0.1.203
+VersionInfoVersion=2.0.2.204
 
 [Types]
 Name: full; Description: Full installation
