@@ -1,9 +1,11 @@
 object frm_UnCodeX: Tfrm_UnCodeX
   Left = 282
   Top = 114
-  Width = 666
-  Height = 616
   HelpType = htKeyword
+  AutoScroll = False
+  AutoSize = True
+  ClientHeight = 570
+  ClientWidth = 658
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -25,7 +27,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
   PixelsPerInch = 96
   TextHeight = 13
   object spl_Main1: TSplitter
-    Left = 281
+    Left = 185
     Top = 30
     Width = 4
     Height = 422
@@ -46,7 +48,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     OnCanResize = spl_Main2CanResize
   end
   object spl_Main3: TSplitter
-    Left = 572
+    Left = 404
     Top = 30
     Width = 4
     Height = 422
@@ -55,11 +57,12 @@ object frm_UnCodeX: Tfrm_UnCodeX
     AutoSnap = False
     MinSize = 50
     ResizeStyle = rsUpdate
+    Visible = False
   end
   object tv_Classes: TTreeView
-    Left = 285
+    Left = 189
     Top = 30
-    Width = 287
+    Width = 215
     Height = 422
     HelpType = htKeyword
     HelpKeyword = 'classtree'
@@ -72,6 +75,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     RowSelect = True
     SortType = stText
     TabOrder = 2
+    OnChange = tv_ClassesChange
     OnCollapsing = tv_ClassesExpanding
     OnDblClick = tv_ClassesDblClick
     OnExpanding = tv_ClassesExpanding
@@ -81,7 +85,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
   object tv_Packages: TTreeView
     Left = 0
     Top = 30
-    Width = 281
+    Width = 185
     Height = 422
     HelpType = htKeyword
     HelpKeyword = 'packagetree'
@@ -94,6 +98,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     RowSelect = True
     SortType = stText
     TabOrder = 1
+    OnChange = tv_ClassesChange
     OnCollapsing = tv_ClassesExpanding
     OnDblClick = tv_ClassesDblClick
     OnExpanding = tv_ClassesExpanding
@@ -277,27 +282,26 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
   end
   object re_SourceSnoop: TRichEdit
-    Left = 576
+    Left = 408
     Top = 30
-    Width = 82
+    Width = 250
     Height = 422
     HelpType = htKeyword
     HelpKeyword = 'sourcesnoop'
     Align = alRight
-    Color = clMoneyGreen
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
     Font.Name = 'Courier New'
     Font.Style = []
-    Lines.Strings = (
-      'Place '
-      'holder')
     ParentFont = False
     ReadOnly = True
     ScrollBars = ssBoth
     TabOrder = 3
+    Visible = False
     WordWrap = False
+    OnKeyDown = re_SourceSnoopKeyDown
+    OnKeyUp = re_SourceSnoopKeyUp
   end
   object mm_Main: TMainMenu
     Images = il_Small
@@ -381,8 +385,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
         Enabled = False
       end
       object mi_SourceSnoop: TMenuItem
-        Caption = 'Source Snoop'
-        Enabled = False
+        Action = ac_VSourceSnoop
+        AutoCheck = True
       end
       object mi_Log: TMenuItem
         Action = ac_VLog
@@ -523,9 +527,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
     object mi_Collapseall: TMenuItem
       Caption = 'Collapse all'
       OnClick = mi_CollapseallClick
-    end
-    object mi_Test: TMenuItem
-      Action = ac_SourceSnoop
     end
   end
   object ae_AppEvent: TApplicationEvents
@@ -790,6 +791,14 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Category = 'Class Tree'
       Caption = 'View source'
       OnExecute = ac_SourceSnoopExecute
+    end
+    object ac_VSourceSnoop: TAction
+      Category = 'Layout'
+      AutoCheck = True
+      Caption = 'Source Snoop'
+      Hint = 'View the source code of a file'
+      ShortCut = 32835
+      OnExecute = ac_VSourceSnoopExecute
     end
   end
   object il_Small: TImageList

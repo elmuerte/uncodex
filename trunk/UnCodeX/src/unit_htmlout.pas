@@ -1525,7 +1525,7 @@ begin
   Keywords.Items['final'] := '';
   Keywords.Items['float'] := '';
   Keywords.Items['for'] := '';
-  Keywords.Items['forEach'] := '';
+  Keywords.Items['foreach'] := '';
   Keywords.Items['function'] := '';
   Keywords.Items['globalconfig'] := '';
   Keywords.Items['hidecategories'] := '';

@@ -352,27 +352,28 @@ begin
         end;
         Result := toName;
       end;
-    '-', '0'..'9':
+    '-', '+', '0'..'9':
       begin
+        Result := P^;
         Inc(P);
-        if ((P-1)^ = '0') and (P^ = 'x') then begin
-          Inc(P);
-          while P^ in ['0'..'9', 'A' .. 'F', 'a' .. 'f'] do Inc(P);
+        if (((P-1)^ = '0') and (P^ in ['x', 'X'])) then begin
+          Inc(P); // hex notation
+          while P^ in ['0'..'9', 'a', 'f', 'A', 'F'] do Inc(P);
+          Result := toInteger;
+        end
+        else begin
+          while P^ in ['0'..'9'] do begin
+            Inc(P);
+            Result := toInteger;
+          end;
+          if (P^ = '.') then begin
+            Inc(P);
+            while P^ in ['0'..'9'] do begin
+              Inc(P);
+              Result := toFloat;
+            end;
+          end;
         end;
-        while P^ in ['0'..'9'] do Inc(P);
-        Result := toInteger;
-        while P^ in ['0'..'9', '.', 'e', 'E', '+', '-'] do
-        begin
-          Inc(P);
-          Result := toFloat;
-        end;
-        if (P^ in ['c', 'C', 'd', 'D', 's', 'S']) then
-        begin
-          Result := toFloat;
-          FFloatType := P^;
-          Inc(P);
-        end else
-          FFloatType := #0;
       end;
     '#':
       begin

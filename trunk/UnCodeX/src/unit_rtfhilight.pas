@@ -9,7 +9,7 @@ uses
 
 implementation
 
-uses unit_sourceparser, Hashes;
+uses unit_sourceparser, Hashes, unit_main;
 
 var
   Keywords: Hashes.TStringHash;
@@ -18,11 +18,11 @@ const
   RTFHeader: string = '{\rtf1\ansi\ansicpg1252\deff0\deflang1033'+
     '{\fonttbl\f0\fmodern Courier new;}'+
     '{\colortbl;'+
-      '\red0\green0\blue196;'+      //cf1 string
-      '\red0\green0\blue128;'+    //cf2 comment
-      '\red128\green0\blue0;'+  //cf3 name
-      '\red0\green128\blue0;'+    //cf4 macro
-      '\red0\green0\blue0;'+    //cf5 type
+      '\red0\green0\blue255;'+      //cf1 string
+      '\red0\green153\blue51;'+    //cf2 comment
+      '\red102\green0\blue0;'+  //cf3 name
+      '\red204\green0\blue0;'+    //cf4 macro
+      '\red0\green0\blue153;'+    //cf5 type  -- not used
     '}'+
     '{\f0\fs20 ';
 
@@ -31,10 +31,11 @@ var
   p: TSourceParser;
   replacement, tmp: string;
 begin
+  // must be absolute first to prevent reading the first char
+  replacement := RTFHeader;
+  Output.WriteBuffer(PChar(replacement)^, Length(replacement));
   p := TSourceParser.Create(input, output);
   try
-    replacement := RTFHeader;
-    p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
     while (p.Token <> toEOF) do begin
       if (p.Token = '{') then begin
         replacement := '\{';
@@ -58,19 +59,19 @@ begin
         replacement := StringReplace(replacement, '}', '\}', [rfReplaceAll]);
         replacement := StringReplace(replacement, '\', '\\', [rfReplaceAll]);
         replacement := StringReplace(replacement, #10, '\par ', [rfReplaceAll]);
-        replacement := '{\cf2'+replacement+'}'; // cf2 = comment
+        replacement := '{\cf2 '+replacement+'}'; // cf2 = comment
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toInteger) then begin
-        replacement := '{\cf1'+p.TokenString+'}';
+        replacement := '{\cf1 '+p.TokenString+'}';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toFloat) then begin
-        replacement := '{\cf1'+p.TokenString+'}';
+        replacement := '{\cf1 '+p.TokenString+'}';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toName) then begin
-        replacement := '{\cf3'+p.TokenString+'}'; // cf3 = name
+        replacement := '{\cf3 '+p.TokenString+'}'; // cf3 = name
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toMacro) then begin
@@ -78,7 +79,7 @@ begin
         replacement := StringReplace(replacement, '{', '\{', [rfReplaceAll]);
         replacement := StringReplace(replacement, '}', '\}', [rfReplaceAll]);
         replacement := StringReplace(replacement, '\', '\\', [rfReplaceAll]);
-        replacement := '{\cf4'+replacement+'}\par '; // cf4 = macro
+        replacement := '{\cf4 '+replacement+'}\par '; // cf4 = macro
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toSymbol) then begin
@@ -86,9 +87,6 @@ begin
         replacement := p.TokenString;
         if (Keywords.Exists(tmp)) then begin
           replacement := '{\b '+replacement+'}'; // bold
-        //end
-        //else if (TypeCache.Exists(tmp)) then begin
-        //  replacement := '{\cf5'+replacement+'}'; // type
         end;
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
@@ -136,7 +134,7 @@ initialization
   Keywords.Items['final'] := '';
   Keywords.Items['float'] := '';
   Keywords.Items['for'] := '';
-  Keywords.Items['forEach'] := '';
+  Keywords.Items['foreach'] := '';
   Keywords.Items['function'] := '';
   Keywords.Items['globalconfig'] := '';
   Keywords.Items['hidecategories'] := '';
