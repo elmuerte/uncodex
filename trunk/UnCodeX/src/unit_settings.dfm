@@ -41,7 +41,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_FullTextSearch
+    ActivePage = ts_PackagePriority
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -185,7 +185,7 @@ object frm_Settings: Tfrm_Settings
         end
         object btn_AddPackage: TBitBtn
           Left = 400
-          Top = 302
+          Top = 270
           Width = 27
           Height = 25
           Anchors = [akRight, akBottom]
@@ -201,7 +201,7 @@ object frm_Settings: Tfrm_Settings
         end
         object btn_DelPackage: TBitBtn
           Left = 400
-          Top = 334
+          Top = 302
           Width = 27
           Height = 25
           Anchors = [akRight, akBottom]
@@ -214,6 +214,25 @@ object frm_Settings: Tfrm_Settings
           ParentFont = False
           TabOrder = 4
           OnClick = btn_DelPackageClick
+        end
+        object btn_Import: TBitBtn
+          Left = 400
+          Top = 334
+          Width = 27
+          Height = 25
+          Hint = 'Import priority list from an .ini file'
+          Anchors = [akRight, akBottom]
+          Caption = '...'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 5
+          OnClick = btn_ImportClick
         end
       end
     end
@@ -410,7 +429,6 @@ object frm_Settings: Tfrm_Settings
           Anchors = [akLeft, akTop, akRight]
           BevelKind = bkSoft
           BorderStyle = bsNone
-          ReadOnly = True
           TabOrder = 2
         end
         object btn_HTMLHelpOutput: TBitBtn
@@ -703,8 +721,8 @@ object frm_Settings: Tfrm_Settings
     Filter = 'Programs|*.exe;*.bat;*.com|All Files (*.*)|*.*'
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
     Title = 'Select executable'
-    Left = 624
-    Top = 72
+    Left = 592
+    Top = 136
   end
   object pm_OpenResultPlaceHolders: TPopupMenu
     Left = 624
@@ -743,5 +761,13 @@ object frm_Settings: Tfrm_Settings
       Caption = 'Result position'
       OnClick = mi_Resultposition1Click
     end
+  end
+  object od_BrowseIni: TOpenDialog
+    DefaultExt = '*.ini'
+    Filter = 'INI Files|*.ini|All Files|*.*'
+    Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
+    Title = 'Select an .ini file'
+    Left = 624
+    Top = 136
   end
 end

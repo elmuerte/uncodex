@@ -206,15 +206,16 @@ var
   PackageList: TUPackageList;
   ClassList: TUClassList;
   searchclass: string;
-  searchbody: boolean;
+  CSprops: array[0..1] of boolean;
   IsBatching: boolean = false;
   CmdStack: TStringList;
   ConfigFile: string;
+  InitialStartup: boolean;
 
 // config vars
 var
   HTMLOutputDir, TemplateDir, HHCPath, HTMLHelpFile, ServerCmd, CompilerCmd,
-    ClientCmd, OpenResultCmd: string;
+    ClientCmd, OpenResultCmd, StateFile: string;
   ServerPrio: integer;
   SourcePaths: TStringList;
   PackagePriority: TStringList;
@@ -278,8 +279,8 @@ procedure Tfrm_UnCodeX.SaveState;
 var
   fs: TFileStream;
 begin
-  StatusReport('Saving state to classes.state');
-  fs := TFileStream.Create(ExtractFilePath(ParamStr(0))+'classes.state', fmCreate or fmShareExclusive);
+  StatusReport('Saving state to '+StateFile);
+  fs := TFileStream.Create(StateFile, fmCreate or fmShareExclusive);
   try
     with TPackageState.Create(PackageList) do begin
       SaveStateToStream(fs);
@@ -297,9 +298,9 @@ procedure Tfrm_UnCodeX.LoadState;
 var
   fs: TFileStream;
 begin
-  if (not FileExists(ExtractFilePath(ParamStr(0))+'classes.state')) then exit;
-  StatusReport('Loading state from classes.state');
-  fs := TFileStream.Create(ExtractFilePath(ParamStr(0))+'classes.state', fmOpenRead or fmShareExclusive);
+  if (not FileExists(StateFile)) then exit;
+  StatusReport('Loading state from '+StateFile);
+  fs := TFileStream.Create(StateFile, fmOpenRead or fmShareExclusive);
   try
     with TPackageState.Create(PackageList, tv_Packages) do begin
       LoadStateFromStream(fs);
@@ -555,6 +556,7 @@ begin
     else if (LowerCase(ParamStr(j)) = '-config') then begin
       Inc(j);
       ConfigFile := ParamStr(j);
+      if (ExtractFilePath(ConfigFile) = '') then ConfigFile := ExtractFilePath(ParamStr(0))+ConfigFile;
     end;
     Inc(j);
   end;
@@ -598,8 +600,9 @@ begin
   Caption := APPTITLE+' - '+APPVERSION;
   Application.Title := Caption;
   if (ParamCount() > 0) then ProcessCommandline;
-  if (ConfigFile = '') then ini := TMemIniFile.Create(ExtractFilePath(ParamStr(0))+'\UnCodeX.ini')
-    else ini := TMemIniFile.Create(ConfigFile);
+  if (ConfigFile = '') then ConfigFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ini';
+  InitialStartup := not FileExists(ConfigFile);
+  ini := TMemIniFile.Create(ConfigFile);
   sl := TStringList.Create;
   PackagePriority := TStringList.Create;
   SourcePaths := TStringList.Create;
@@ -640,7 +643,7 @@ begin
     if (mi_Left.Checked) then mi_Left.OnClick(Sender);
 
     HTMLOutputDir := ini.ReadString('Config', 'HTMLOutputDir', ExtractFilePath(ParamStr(0))+'Output');
-    TemplateDir := ini.ReadString('Config', 'TemplateDir', ExtractFilePath(ParamStr(0))+'Templates\UnrealWiki');
+    TemplateDir := ini.ReadString('Config', 'TemplateDir', ExtractFilePath(ParamStr(0))+'Templates'+PATHDELIM+'UnrealWiki');
     HHCPath := ini.ReadString('Config', 'HHCPath', '');
     HTMLHelpFile := ini.ReadString('Config', 'HTMLHelpFile', ExtractFilePath(ParamStr(0))+'UnCodeX.chm');
     ServerCmd := ini.ReadString('Config', 'ServerCmd', '');
@@ -649,6 +652,8 @@ begin
     CompilerCmd := ini.ReadString('Config', 'CompilerCmd', '');
     OpenResultCmd := ini.ReadString('Config', 'OpenResultCmd', '');
     FTSRegexp := ini.ReadBool('Config', 'FullTextSearchRegExp', false);
+    StateFile := ini.ReadString('Config', StateFile, 'classes.state');
+    if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ParamStr(0))+StateFile;
 
     ini.ReadSectionValues('PackagePriority', sl);
     for i := 0 to sl.Count-1 do begin
@@ -821,8 +826,7 @@ begin
       PackagePriority.AddStrings(lb_PackagePriority.Items);
       IgnorePackages.Clear;
       IgnorePackages.AddStrings(lb_IgnorePackages.Items);
-      if (ConfigFile = '') then ini := TMemIniFile.Create(ExtractFilePath(ParamStr(0))+'\UnCodeX.ini')
-        else ini := TMemIniFile.Create(ConfigFile);
+      ini := TMemIniFile.Create(ConfigFile);
       data := TStringList.Create;
       try
         data.Add('[Config]');
@@ -872,22 +876,14 @@ begin
 end;
 
 procedure Tfrm_UnCodeX.ac_FindClassExecute(Sender: TObject);
-var
-  i: integer;
 begin
   if (ActiveControl.ClassType = TTreeView) then begin
-    if (SearchQuery('Find a class', 'Enter the name of the class you want to find', searchclass, searchbody, CSHistory, 'Search class body')) then begin
-      with (ActiveControl as TTreeView) do begin
-        for i := 0 to Items.Count-1 do begin
-          if (AnsiContainsText(items[i].Text, searchclass)) then begin
-            Select(items[i]);
-            exit;
-          end;
-        end;
-      end;
+    CSprops[1] := FTSRegexp;
+    if (SearchQuery('Find a class', 'Enter the name of the class you want to find', searchclass, CSprops, CSHistory, ['Search class body', 'Regular expression'])) then begin
+      (ActiveControl as TTreeView).Selected := nil;
+      ac_FindNext.Execute;
     end;
   end;
-  statustext := 'No class with name '''+searchclass+''' found';
 end;
 
 procedure Tfrm_UnCodeX.FormDestroy(Sender: TObject);
@@ -939,8 +935,7 @@ var
   i: integer;
 begin
   SaveState;
-  if (ConfigFile = '') then ini := TMemIniFile.Create(ExtractFilePath(ParamStr(0))+'\UnCodeX.ini')
-    else ini := TMemIniFile.Create(ConfigFile);
+  ini := TMemIniFile.Create(ConfigFile);
   try
     ini.WriteBool('Layout', 'MenuBar', mi_MenuBar.Checked);
     ini.WriteBool('Layout', 'Toolbar', mi_Toolbar.Checked);
@@ -994,6 +989,12 @@ begin
     DoInit := false;
     LoadState;
     if (IsBatching) then NextBatchCommand;
+  end;
+  if (InitialStartup) then begin
+    if MessageDlg('This is the first time you start UnCodeX (with this config file),'+#13+#10+
+      'it''s advised that you first configure the program.'+#13+#10+''+#13+#10+
+      'Do you want to edit the settings now ?', mtConfirmation, [mbYes,mbNo], 0) = mrYes
+      then ac_Settings.Execute; 
   end;
 end;
 
@@ -1187,35 +1188,51 @@ end;
 
 procedure Tfrm_UnCodeX.ac_FindNextExecute(Sender: TObject);
 var
-  i: integer;
+  i,j: integer;
 begin
-  if (searchclass = '') then exit;
+  if (searchclass = '') then begin
+    ac_FindClass.Execute;
+    exit;
+  end;
   if (ActiveControl.ClassType = TTreeView) then begin
     with (ActiveControl as TTreeView) do begin
-      if (Selected = nil) then exit;
-      for i := Selected.AbsoluteIndex+1 to Items.Count-1 do begin
-        if (AnsiContainsText(items[i].Text, searchclass)) then begin
-          Select(items[i]);
+      if (CSprops[0]) then begin
+        if (ThreadCreate) then begin
+          lb_Log.Items.Clear;
+          runningthread := TSearchThread.Create((ActiveControl as TTreeView), StatusReport, searchclass, CSprops[1]);
+          runningthread.OnTerminate := ThreadTerminate;
+          runningthread.Resume;
           exit;
+        end;
+      end
+      else begin
+        if (Selected <> nil) then j := Selected.AbsoluteIndex+1
+          else j := 0;
+        for i := j to Items.Count-1 do begin
+          if (AnsiContainsText(items[i].Text, searchclass)) then begin
+            Select(items[i]);
+            exit;
+          end;
         end;
       end;
     end;
   end;
   statustext := 'No more classes containing '''+searchclass+''' found';
+  searchclass := '';
 end;
 
 procedure Tfrm_UnCodeX.ac_FullTextSearchExecute(Sender: TObject);
 var
   query: string;
-  isregex: boolean;
+  isregex: array[0..0] of boolean;
 begin
   if (ThreadCreate) then begin
-    isregex := FTSRegexp;
-    if (SearchQuery('Full text search', 'Enter your search query', query, isregex, FTSHistory, 'Regular expression')) then begin
+    isregex[0] := FTSRegexp;
+    if (SearchQuery('Full text search', 'Enter your search query', query, isregex, FTSHistory, ['Regular expression'])) then begin
       mi_Log.Checked := true;
       mi_Log.OnClick(Sender);
       lb_Log.Items.Clear;
-      runningthread := TSearchThread.Create(PackageList, StatusReport, query, isregex);
+      runningthread := TSearchThread.Create(PackageList, StatusReport, query, isregex[0]);
       runningthread.OnTerminate := ThreadTerminate;
       runningthread.Resume;
     end
