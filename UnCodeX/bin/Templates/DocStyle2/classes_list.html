@@ -5,9 +5,18 @@
 %include:stylesheet.inc%
 </head>
 <body>
+
+%if:has_interfaces%
+<h3>Interfaces</h3>
+<table class="class_list">
+%interfaces_list%
+</table>
+%endif%
+
 <h3>Classes</h3>
 <table class="class_list">
 %classes_list%
 </table>
+
 </body>
 </html>

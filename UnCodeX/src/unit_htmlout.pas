@@ -6,7 +6,7 @@
     Purpose:
         HTML documentation generator.
 
-    $Id: unit_htmlout.pas,v 1.60 2004-10-20 14:19:28 elmuerte Exp $
+    $Id: unit_htmlout.pas,v 1.61 2004-11-19 14:11:58 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -36,7 +36,7 @@ interface
 
 uses
     Classes, SysUtils, unit_uclasses, StrUtils, Hashes, DateUtils, IniFiles,
-    unit_outputdefs, unit_clpipe;
+    unit_outputdefs, unit_clpipe, unit_copyparser;
 
 type
     TGlossaryItem = class(TObject)
@@ -68,7 +68,7 @@ type
     end;
 
     // General replace function
-    TReplacement = function(var replacement: string; data: TObject = nil): boolean of Object;
+    TReplacement = function(var replacement: string; p: TCopyParser; data: TObject = nil): boolean of Object;
 
     THTMLOutput = class(TThread)
     protected
@@ -95,37 +95,38 @@ type
         ini: TMemIniFile;
 
         procedure parseTemplate(input, output: TStream; replace: TReplacement; data: TObject = nil);
-        function replaceDefault(var replacement: string; data: TObject = nil): boolean;
+        procedure SkipIf(p: TCopyParser);
+        function replaceDefault(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
         procedure htmlIndex; // creates index.html
-        function replaceIndex(var replacement: string; data: TObject = nil): boolean;
+        function replaceIndex(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
         procedure htmlOverview; // creates overview.html
-        function replaceOverview(var replacement: string; data: TObject = nil): boolean;
+        function replaceOverview(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
         procedure htmlPackagesList; // creates packages.html
-        function replacePackagesList(var replacement: string; data: TObject = nil): boolean;
-        function replacePackagesListEntry(var replacement: string; data: TObject = nil): boolean;
+        function replacePackagesList(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
+        function replacePackagesListEntry(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
         procedure htmlClassesList; // creates classes.html
-        function replaceClassesList(var replacement: string; data: TObject = nil): boolean;
+        function replaceClassesList(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
         procedure htmlPackageClasses; // creates PackageClasses.html
-        function replacePackageClassesList(var replacement: string; data: TObject = nil): boolean;
+        function replacePackageClassesList(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
         procedure htmlPackageOverview; // creates <packagename>.html
-        function replacePackageOverview(var replacement: string; data: TObject = nil): boolean;
+        function replacePackageOverview(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
         procedure htmlClassOverview; // creates <packagename>_<classname>.html
-        function replaceClass(var replacement: string; data: TObject = nil): boolean;
-        function replaceClassConst(var replacement: string; data: TObject = nil): boolean;
-        function replaceClassVar(var replacement: string; data: TObject = nil): boolean;
-        function replaceVarTag(var replacement: string; data: TObject = nil): boolean;
-        function replaceClassEnum(var replacement: string; data: TObject = nil): boolean;
-        function replaceClassStruct(var replacement: string; data: TObject = nil): boolean;
-        function replaceClassFunction(var replacement: string; data: TObject = nil): boolean;
-        function replaceClassState(var replacement: string; data: TObject = nil): boolean;
-        function replaceInherited(var replacement: string; data: TObject = nil): boolean;
+        function replaceClass(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
+        function replaceClassConst(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
+        function replaceClassVar(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
+        function replaceVarTag(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
+        function replaceClassEnum(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
+        function replaceClassStruct(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
+        function replaceClassFunction(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
+        function replaceClassState(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
+        function replaceInherited(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
         function GetTypeLink(name: string): string;
         function TypeLink(name: string; uclass: TUClass): string;
         procedure htmlTree;
         procedure ProcTreeNode(var replacement: string; uclass: TUClass; basestring: string);
-        function replaceClasstree(var replacement: string; data: TObject = nil): boolean;
+        function replaceClasstree(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
         procedure htmlGlossary;
-        function replaceGlossary(var replacement: string; data: TObject = nil): boolean;
+        function replaceGlossary(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
         procedure CopyFiles;
         function ProcComment(input: string): string;
         procedure SourceCode;
@@ -164,7 +165,7 @@ var
 implementation
 
 uses
-    unit_definitions, unit_copyparser, unit_sourceparser
+    unit_definitions, unit_sourceparser
 {$IFDEF FPC}
     , unit_fpc_compat
 {$ENDIF}
@@ -373,7 +374,7 @@ begin
                     replacement := '%';
                     p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
                 end
-                else if (replace(replacement, data)) then begin
+                else if (replace(replacement, p, data)) then begin
                     p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
                 end
                 else begin // put back old
@@ -392,7 +393,29 @@ begin
     unguard;
 end;
 
-function THTMLOutput.replaceDefault(var replacement: string; data: TObject = nil): boolean;
+procedure THTMLOutput.SkipIf(p: TCopyParser);
+var
+    depth: integer;
+    replacement: string;
+begin
+    depth := 1;
+    p.SkipToken(false); // the % after the "if:" 
+    while (p.Token <> toEOF) do begin
+        if (p.Token = '%') then begin
+            replacement := p.SkipToToken('%');
+            if (CompareText(replacement, 'endif') = 0) then begin
+                Dec(depth);
+                if (depth <= 0) then exit;
+            end
+            else if (IsReplacement(replacement, 'if:')) then begin
+                Inc(depth);
+            end;
+        end;
+        p.SkipToken(false);
+    end;
+end;
+
+function THTMLOutput.replaceDefault(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 var
     fs:     TFileStream;
     ss:     TStringStream;
@@ -483,6 +506,10 @@ begin
                 ss.Free;
             end;
         end;
+    end
+    else if (CompareText(replacement, 'endif') = 0) then begin
+        replacement := '';
+        result := true;
     end;
     unguard;
 end;
@@ -504,9 +531,9 @@ begin
     unguard;
 end;
 
-function THTMLOutput.replaceIndex(var replacement: string; data: TObject = nil): boolean;
+function THTMLOutput.replaceIndex(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 begin
-    result := replaceDefault(replacement);
+    result := replaceDefault(replacement, p);
 end;
 
 procedure THTMLOutput.htmlOverview;
@@ -526,14 +553,14 @@ begin
     unguard;
 end;
 
-function THTMLOutput.replaceOverview(var replacement: string; data: TObject = nil): boolean;
+function THTMLOutput.replaceOverview(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 var
     template:   TFileStream;
     target:     TStringStream;
     i:          integer;
 begin
     guard('replaceOverview '+replacement);
-    result := replaceDefault(replacement);
+    result := replaceDefault(replacement, p);
     if (result) then else
     if (CompareText(replacement, 'packages_table') = 0) then begin
         template := TFileStream.Create(templatedir+'packages_table_entry.html', fmOpenRead);
@@ -571,14 +598,14 @@ begin
     unguard;
 end;
 
-function THTMLOutput.replacePackagesList(var replacement: string; data: TObject = nil): boolean;
+function THTMLOutput.replacePackagesList(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 var
     template:   TFileStream;
     target:     TStringStream;
     i:          integer;
 begin
     guard('replacePackagesList '+replacement);
-    result := replaceDefault(replacement);
+    result := replaceDefault(replacement, p);
     if (result) then else
     if (CompareText(replacement, 'packages_list') = 0) then begin
         template := TFileStream.Create(templatedir+'packages_list_entry.html', fmOpenRead);
@@ -599,10 +626,10 @@ begin
     unguard;
 end;
 
-function THTMLOutput.replacePackagesListEntry(var replacement: string; data: TObject = nil): boolean;
+function THTMLOutput.replacePackagesListEntry(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 begin
     guard('replacePackagesListEntry '+replacement+' '+TUPackage(data).name);
-    result := replaceDefault(replacement);
+    result := replaceDefault(replacement, p);
     if (result) then else
     if (CompareText(replacement, 'package_link') = 0) then begin
         replacement := StrRepeat('../', subDirDepth)+PackageLink(TUPackage(data));
@@ -688,20 +715,21 @@ begin
     unguard;
 end;
 
-function THTMLOutput.replaceClassesList(var replacement: string; data: TObject = nil): boolean;
+function THTMLOutput.replaceClassesList(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 var
     template:   TFileStream;
     target:     TStringStream;
     i:          integer;
 begin
     guard('replaceClassesList '+replacement);
-    result := replaceDefault(replacement);
+    result := replaceDefault(replacement, p);
     if (result) then else
     if (CompareText(replacement, 'classes_list') = 0) then begin
         template := TFileStream.Create(templatedir+'classes_list_entry.html', fmOpenRead);
         target := TStringStream.Create('');
         try
             for i := 0 to ClassList.Count-1 do begin
+                if (ClassList[i].InterfaceType <> itNone) then continue;
                 template.Position := 0;
                 parseTemplate(template, target, replaceClass, ClassList[i]);
                 if (Self.Terminated) then break;
@@ -712,24 +740,54 @@ begin
             template.Free;
             target.Free;
         end;
-    end;
+    end
+    else if (CompareText(replacement, 'interfaces_list') = 0) then begin
+        template := TFileStream.Create(templatedir+'classes_list_entry.html', fmOpenRead);
+        target := TStringStream.Create('');
+        try
+            for i := 0 to ClassList.Count-1 do begin
+                if (ClassList[i].InterfaceType = itNone) then continue;
+                template.Position := 0;
+                parseTemplate(template, target, replaceClass, ClassList[i]);
+                if (Self.Terminated) then break;
+            end;
+            replacement := target.DataString;
+            result := true;
+        finally
+            template.Free;
+            target.Free;
+        end;
+    end
+    else if (CompareText(replacement, 'if:has_interfaces') = 0) then begin
+        result := false;
+        for i := 0 to ClassList.Count-1 do begin
+            if (ClassList[i].InterfaceType <> itNone) then begin
+                result := true;
+                break;
+            end;
+        end;
+        if (not result) then SkipIf(p);
+        replacement := '';
+        result := true;
+    end;;
     unguard;
 end;
 
-function THTMLOutput.replacePackageClassesList(var replacement: string; data: TObject = nil): boolean;
+function THTMLOutput.replacePackageClassesList(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 var
     template:   TFileStream;
     target:     TStringStream;
     i:          integer;
 begin
     guard('replacePackageClassesList '+replacement+' '+TUPackage(data).name);
-    result := replaceDefault(replacement, data) or replacePackagesListEntry(replacement, data);
+    result := replaceDefault(replacement, p, data) or replacePackagesListEntry(replacement, p, data);
     if (result) then else
     if (CompareText(replacement, 'classes_list') = 0) then begin
         template := TFileStream.Create(templatedir+'packageclasses_list_entry.html', fmOpenRead);
         target := TStringStream.Create('');
         try
             for i := 0 to (data as TUPackage).classes.Count-1 do begin
+                if ((data as TUPackage).classes[i].InterfaceType <> itNone) then continue;
                 template.Position := 0;
                 parseTemplate(template, target, replaceClass, (data as TUPackage).classes[i]);
                 if (Self.Terminated) then break;
@@ -740,7 +798,36 @@ begin
             template.Free;
             target.Free;
         end;
-    end;
+    end
+    else if (CompareText(replacement, 'interfaces_list') = 0) then begin
+        template := TFileStream.Create(templatedir+'packageclasses_list_entry.html', fmOpenRead);
+        target := TStringStream.Create('');
+        try
+            for i := 0 to (data as TUPackage).classes.Count-1 do begin
+                if ((data as TUPackage).classes[i].InterfaceType = itNone) then continue;
+                template.Position := 0;
+                parseTemplate(template, target, replaceClass, (data as TUPackage).classes[i]);
+                if (Self.Terminated) then break;
+            end;
+            replacement := target.DataString;
+            result := true;
+        finally
+            template.Free;
+            target.Free;
+        end;
+    end
+    else if (CompareText(replacement, 'if:has_interfaces') = 0) then begin
+        result := false;
+        for i := 0 to TUPackage(data).classes.Count-1 do begin
+            if (TUPackage(data).classes[i].InterfaceType <> itNone) then begin
+                result := true;
+                break;
+            end;
+        end;
+        if (not result) then SkipIf(p);
+        replacement := '';
+        result := true;
+    end;;
     unguard;
 end;
 
@@ -775,20 +862,21 @@ begin
     unguard;
 end;
 
-function THTMLOutput.replacePackageOverview(var replacement: string; data: TObject = nil): boolean;
+function THTMLOutput.replacePackageOverview(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 var
     template:   TFileStream;
     target:     TStringStream;
     i:          integer;
 begin
     guard('replacePackageOverview '+replacement+' '+TUPackage(data).name);
-    result := replaceDefault(replacement) or replacePackagesListEntry(replacement, data);
+    result := replaceDefault(replacement, p) or replacePackagesListEntry(replacement, p, data);
     if (result) then else
     if (CompareText(replacement, 'package_classes_table') = 0) then begin
         template := TFileStream.Create(templatedir+'package_classes_table_entry.html', fmOpenRead);
         target := TStringStream.Create('');
         try
             for i := 0 to TUPackage(data).classes.Count-1 do begin
+                if (TUPackage(data).classes[i].InterfaceType <> itNone) then continue;
                 // ignore class when comment = @ignore
                 if (not IgnoreComment(TUPackage(data).classes[i].comment)) then begin
                     template.Position := 0;
@@ -802,6 +890,38 @@ begin
             template.Free;
             target.Free;
         end;
+    end
+    else if (CompareText(replacement, 'package_interfaces_table') = 0) then begin
+        template := TFileStream.Create(templatedir+'package_classes_table_entry.html', fmOpenRead);
+        target := TStringStream.Create('');
+        try
+            for i := 0 to TUPackage(data).classes.Count-1 do begin
+                if (TUPackage(data).classes[i].InterfaceType = itNone) then continue;
+                // ignore class when comment = @ignore
+                if (not IgnoreComment(TUPackage(data).classes[i].comment)) then begin
+                    template.Position := 0;
+                    parseTemplate(template, target, replaceClass, TUPackage(data).classes[i]);
+                end;
+                if (Self.Terminated) then break;
+            end;
+            replacement := target.DataString;
+            result := true;
+        finally
+            template.Free;
+            target.Free;
+        end;
+    end
+    else if (CompareText(replacement, 'if:has_interfaces') = 0) then begin
+        result := false;
+        for i := 0 to TUPackage(data).classes.Count-1 do begin
+            if (TUPackage(data).classes[i].InterfaceType <> itNone) then begin
+                result := true;
+                break;
+            end;
+        end;
+        if (not result) then SkipIf(p);
+        replacement := '';
+        result := true;
     end;
     unguard;
 end;
@@ -856,7 +976,7 @@ begin
     Inc(level);
 end;
 
-function THTMLOutput.replaceClass(var replacement: string; data: TObject = nil): boolean;
+function THTMLOutput.replaceClass(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 var
     i, cnt:     integer;
     uclass,
@@ -870,7 +990,7 @@ var
     VarOnTag:   boolean;
 begin
     guard('replaceClass '+replacement+' '+TUClass(data).name);
-    result := replaceDefault(replacement) or replacePackageOverview(replacement, TUClass(data).package);
+    result := replaceDefault(replacement, p) or replacePackageOverview(replacement, p, TUClass(data).package);
     if (result) then else
     currentClass := TUClass(data);
     if (CompareText(replacement, 'class_link') = 0) then begin
@@ -1613,12 +1733,12 @@ begin
     unguard;
 end;
 
-function THTMLOutput.replaceClassConst(var replacement: string; data: TObject = nil): boolean;
+function THTMLOutput.replaceClassConst(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 var
     source, target: TStringStream;
 begin
     guard('replaceClassConst '+replacement+' '+TUConst(data).name);
-    result := replaceDefault(replacement);
+    result := replaceDefault(replacement, p);
     if (result) then else
     if (CompareText(replacement, 'const_name') = 0) then begin
         replacement := TUConst(data).name;
@@ -1660,13 +1780,13 @@ begin
     unguard;
 end;
 
-function THTMLOutput.replaceClassVar(var replacement: string; data: TObject = nil): boolean;
+function THTMLOutput.replaceClassVar(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 var
     source,target:  TStringStream;
     tmp:            string;
 begin
     guard('replaceClassVar '+replacement+' '+TUProperty(data).name);
-    result := replaceDefault(replacement);
+    result := replaceDefault(replacement, p);
     if (result) then else
     if (CompareText(replacement, 'var_name') = 0) then begin
         replacement := TUProperty(data).name;
@@ -1724,7 +1844,7 @@ begin
     unguard;
 end;
 
-function THTMLOutput.replaceVarTag(var replacement: string; data: TObject = nil): boolean;
+function THTMLOutput.replaceVarTag(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 begin
     result := false;
     if (CompareText(replacement, 'tag_name') = 0) then begin
@@ -1733,12 +1853,12 @@ begin
     end
 end;
 
-function THTMLOutput.replaceClassEnum(var replacement: string; data: TObject = nil): boolean;
+function THTMLOutput.replaceClassEnum(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 var
     source,target: TStringStream;
 begin
     guard('replaceClassEnum '+replacement+' '+TUEnum(data).name);
-    result := replaceDefault(replacement);
+    result := replaceDefault(replacement, p);
     if (result) then else
     if (CompareText(replacement, 'enum_name') = 0) then begin
         replacement := TUEnum(data).name;
@@ -1788,7 +1908,7 @@ begin
     unguard;
 end;
 
-function THTMLOutput.replaceClassStruct(var replacement: string; data: TObject = nil): boolean;
+function THTMLOutput.replaceClassStruct(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 var
     i:          integer;
     template:   TFileStream;
@@ -1797,7 +1917,7 @@ var
     tmp:        string;
 begin
     guard('replaceClassStruct '+replacement+' '+TUStruct(data).name);
-    result := replaceDefault(replacement);
+    result := replaceDefault(replacement, p);
     if (result) then else
     if (CompareText(replacement, 'struct_name') = 0) then begin
         replacement := TUStruct(data).name;
@@ -1914,7 +2034,7 @@ begin
     unguard;
 end;
 
-function THTMLOutput.replaceClassFunction(var replacement: string; data: TObject = nil): boolean;
+function THTMLOutput.replaceClassFunction(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 var
     source,
     target:     TStringStream;
@@ -1925,7 +2045,7 @@ var
     pclass:     TUClass;
 begin
     guard('replaceClassFunction '+replacement+' '+TUFunction(data).name);
-    result := replaceDefault(replacement);
+    result := replaceDefault(replacement, p);
     if (result) then else
     if (CompareText(replacement, 'function_name') = 0) then begin
         replacement := HTMLChars(TUFunction(data).name);
@@ -1957,6 +2077,7 @@ begin
     else if (CompareText(replacement, 'function_params') = 0) then begin
         replacement := '';
         tmp := TUFunction(data).params;
+        tmp := StringReplace(tmp, #9, ' ', [rfReplaceAll]);
         while (tmp <> '') do begin
             if (replacement <> '') then replacement := replacement+', ';
             i := Pos(',', tmp);
@@ -2038,12 +2159,12 @@ begin
     unguard;
 end;
 
-function THTMLOutput.replaceClassState(var replacement: string; data: TObject = nil): boolean;
+function THTMLOutput.replaceClassState(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 var
     i: integer;
 begin
     guard('replaceClassState '+replacement+' '+TUState(data).name);
-    result := replaceDefault(replacement);
+    result := replaceDefault(replacement, p);
     if (result) then else
     if (CompareText(replacement, 'state_name') = 0) then begin
         replacement := TUState(data).name;
@@ -2086,9 +2207,9 @@ begin
     unguard;
 end;
 
-function THTMLOutput.replaceInherited(var replacement: string; data: TObject = nil): boolean;
+function THTMLOutput.replaceInherited(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 begin
-    result := replaceClass(replacement, TInheritenceData(data).uclass);
+    result := replaceClass(replacement, p, TInheritenceData(data).uclass);
     if (result) then exit;
     if (CompareText(replacement, 'inherited_type') = 0) then begin
         replacement := TInheritenceData(data).itype;
@@ -2105,7 +2226,9 @@ var
     tname:  string;
     i, j:   integer;
     uclass: TUClass;
+    upkg: TUPackage;
 begin
+    result := '';
     name := Trim(name);
     if (name = '') then exit;
     guard('GetTypeLink '+name);
@@ -2117,7 +2240,7 @@ begin
         exit;
     end;
 
-    // Class.type
+    // Class.type or Package.type
     i := Pos('.', name);
     if (i > 0) then begin
         if (TypeCache.Exists(name)) then begin
@@ -2125,7 +2248,7 @@ begin
         end
         else begin
             uclass := nil;
-            tname := Copy(name, 1, i-1);
+            tname := Copy(name, 1, i-1); // class name
             // search in package
             for j := 0 to currentClass.package.classes.Count-1 do begin
                 if (CompareText(currentClass.package.classes[j].name, tname) = 0) then begin
@@ -2145,6 +2268,15 @@ begin
             if (uclass <> nil) then begin
                 result := TypeLink(Copy(name,i+1, MaxInt), uclass);
                 if (result <> '') then TypeCache.Items[name] := result;
+            end;
+            // not Class.type
+            if (uclass = nil) then begin
+                upkg := PackageList.Find(tname);
+                if (upkg <> nil) then uclass := upkg.classes.Find(Copy(name,i+1, MaxInt));
+                if (uclass <> nil) then begin
+                    result := ClassLink(uclass);
+                    if (result <> '') then TypeCache.Items[name] := result;
+                end;
             end;
         end;
         if (result <> '') then result := '<a href="'+StrRepeat('../', subDirDepth)+result+'">'+HTMLChars(name)+'</a>'
@@ -2244,12 +2376,12 @@ begin
     unguard;
 end;
 
-function THTMLOutput.replaceClasstree(var replacement: string; data: TObject = nil): boolean;
+function THTMLOutput.replaceClasstree(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 var
     uclass: TUClass;
 begin
     guard('replaceClasstree '+replacement);
-    result := replaceDefault(replacement);
+    result := replaceDefault(replacement, p);
     if (result) then else
     if (CompareText(replacement, 'classtree') = 0) then begin
         replacement := '';
@@ -2368,14 +2500,14 @@ begin
     unguard;
 end;
 
-function THTMLOutput.replaceGlossary(var replacement: string; data: TObject = nil): boolean;
+function THTMLOutput.replaceGlossary(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 var
     i:          integer;
     lastname:   string;
     gl :        TStringlist;
 begin
     guard('replaceGlossary '+replacement+' '+TGlossaryInfo(data).item);
-    result := replaceDefault(replacement);
+    result := replaceDefault(replacement, p);
     if (result) then else
     if (CompareText(replacement, 'glossary_item') = 0) then begin
         replacement := TGlossaryInfo(data).item;
@@ -2444,16 +2576,17 @@ begin
                 if (hadblank) then sl.Delete(i)
                 else begin
                     hadblank := true;
-                    sl[i] := '<br />';
+                    sl[i] := #1;
                 end;
             end
             else begin
                 hadblank := false;
                 sl[i] := tmp;
-                if (i < (sl.Count-1)) then sl[i] := sl[i]+'<br />';
+                if (i < (sl.Count-1)) then sl[i] := trim(sl[i])+#1;
             end;
         end;
-        result := sl.Text;
+        result := trim(sl.Text);
+        result := StringReplace(result, #1, '<br />', [rfReplaceAll]);
     finally
         sl.Free;
     end;

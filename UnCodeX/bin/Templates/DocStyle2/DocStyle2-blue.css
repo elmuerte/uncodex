@@ -50,6 +50,14 @@ A.small {
 	font-size: x-small;
 }
 
+A[name] {
+	display: none;
+}
+
+A[href] {
+	display: inline;
+}
+
 H1, H2, H3, H4, H5 {
 	margin-bottom: 0px;
 	background-color: #D8E2F5;
@@ -226,6 +234,9 @@ H3.vartag {
 /* source code listing */
 
 A.source {
+	border: none; 
+	background-color: transparent;
+	padding: 0px;
 	color: #000099;
 }
 
@@ -234,6 +245,9 @@ A.source:Visited {
 }
 
 A.source:Hover {
+	border: none; 
+	background-color: transparent;
+	padding: 0px;
 	color: #FF0000;
 }
 

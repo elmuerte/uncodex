@@ -46,6 +46,10 @@ A:Hover {
 	border: 1px solid #6919B3;
 }
 
+A[name] {
+	display: none;
+}
+
 A.small {
 	font-size: x-small;
 }
@@ -227,6 +231,9 @@ H3.vartag {
 /* source code listing */
 
 A.source {
+	border: none; 
+	background-color: transparent;
+	padding: 0px;
 	color: #000099;
 }
 
@@ -235,6 +242,9 @@ A.source:Visited {
 }
 
 A.source:Hover {
+	border: none; 
+	background-color: transparent;
+	padding: 0px;
 	color: #FF0000;
 }
 

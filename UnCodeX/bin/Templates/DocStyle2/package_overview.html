@@ -30,6 +30,13 @@
 %package_comment%
 </p>
 
+%if:has_interfaces%
+<table class="package_table">
+<tr><th colspan="2">Interface Summary</th></tr>
+%package_interfaces_table%
+</table>
+%endif%
+
 <table class="package_table">
 <tr><th colspan="2">Class Summary</th></tr>
 %package_classes_table%
