@@ -6,7 +6,7 @@
   Purpose:
     Replacement docktree
 
-  $Id: unit_ucxdocktree.pas,v 1.10 2004-12-21 08:53:44 elmuerte Exp $
+  $Id: unit_ucxdocktree.pas,v 1.11 2004-12-23 22:18:27 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -53,11 +53,25 @@ type
     destructor Destroy; override;
   end;
 
+  procedure SetDockCaption(control: TControl; caption: String);
+
 var
   OnChangeVisibility: TOnChangeVisibility;
   OnStartDockDrag: TOnDockStartDrag;
 
 implementation
+
+uses
+  Classes;
+
+var
+  DockCaptions: TStringList;
+
+procedure SetDockCaption(control: TControl; caption: String);
+begin
+  DockCaptions.Values[control.Name] := caption;
+  if (control.HostDockSite <> nil) then control.HostDockSite.Invalidate; 
+end;
 
 constructor TUCXDockTree.Create(DockSite: TWinControl);
 begin
@@ -145,23 +159,59 @@ procedure TUCXDockTree.PaintDockFrame(Canvas: TCanvas; Control: TControl; const 
     end;
   end;
 
+  procedure RotateFont(canvas: TCanvas; rot: integer);
+  var
+    lf: TLogFont;
+    tf: TFont;
+  begin
+    tf := TFont.Create;
+    try
+      tf.Assign(Canvas.Font);
+      GetObject(tf.Handle, SizeOf(lf), @lf);
+      lf.lfEscapement  := rot*10;
+      lf.lfOrientation := rot*10;
+      tf.Handle := CreateFontIndirect(lf);
+      Canvas.Font.Assign(tf);
+    finally
+      tf.Free;
+    end;
+  end;
+
 var
   tx: integer;
+  caption: string;
 begin
   tx := 0;
   with ARect do begin
+    //TODO: trim string (to end)
     Canvas.Brush.Style := bsClear;
-    Canvas.Font.Size := 7;
+    Canvas.Font.Size := 8;
     Canvas.Font.Name := 'Arial';
+    caption := DockCaptions.Values[Control.Name];
     if (DockSite.Align in [alTop, alBottom]) then
     begin
-      DrawGrabberLine(Left+3, Top+1+tx, Left+5, Bottom-2);
-      DrawGrabberLine(Left+6, Top+1+tx, Left+8, Bottom-2);
+      if (caption <> '') then begin
+        RotateFont(canvas, 90);
+        Canvas.TextOut(Left-2, bottom-8, caption);
+        tx := Canvas.TextWidth(caption)+8;
+
+        DrawGrabberLine(Left+3, Bottom-6, Left+5, Bottom-2);
+        DrawGrabberLine(Left+6, Bottom-6, Left+8, Bottom-2);
+      end;
+      if (Top+1 < Bottom-2-tx) then begin
+        DrawGrabberLine(Left+3, Top+1, Left+5, Bottom-2-tx);
+        DrawGrabberLine(Left+6, Top+1, Left+8, Bottom-2-tx);
+      end;
     end
     else
     begin
-      Canvas.TextOut(Left+1, Top, Control.Name);
-      tx := Canvas.TextWidth(Control.Name)+2;
+      if (caption <> '') then begin
+        Canvas.TextOut(Left+8, Top-2, caption);
+        tx := Canvas.TextWidth(caption)+8;
+
+        DrawGrabberLine(Left+2, Top+3, Left+6, Top+5);
+        DrawGrabberLine(Left+2, Top+6, Left+6, Top+8);
+      end;
       DrawGrabberLine(Left+2+tx, Top+3, Right-2, Top+5);
       DrawGrabberLine(Left+2+tx, Top+6, Right-2, Top+8);
     end;
@@ -174,4 +224,8 @@ begin
   if (HTFlag = HTCLOSE) then HTFlag := HTCAPTION; 
 end;
 
+initialization
+  DockCaptions := TStringList.Create;
+finalization
+  DockCaptions.Free;
 end.

@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Class property inpector frame
 
-  $Id: unit_props.pas,v 1.24 2004-12-21 08:53:44 elmuerte Exp $
+  $Id: unit_props.pas,v 1.25 2004-12-23 22:18:27 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -81,7 +81,8 @@ type
 
 implementation
 
-uses unit_main, unit_analyse, unit_definitions, unit_utils;
+uses unit_main, unit_analyse, unit_definitions, unit_utils,
+  unit_ucxdocktree;
 
 {$R *.dfm}
 
@@ -113,7 +114,7 @@ function Tfr_Properties.LoadClass: boolean;
 var
   i, j: integer;
   pclass: TUClass;
-  li, lib: TListItem;
+  li, lib, lic: TListItem;
   cnt: integer;
   return: string;
   lasttag: string;
@@ -124,8 +125,11 @@ begin
 
   if (uclass = nil) then begin
     lv_Properties.Items.EndUpdate;
+    SetDockCaption(self, '');
     exit;
   end;
+  SetDockCaption(self, uclass.FullName);
+
   lib := lv_Properties.Items.Add;
   lib.Caption := '-';
   lib.SubItems.Add('Constants');
@@ -134,13 +138,13 @@ begin
   pclass := uclass;
   while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
     if ((j > 0) and (pclass.consts.Count > 0)) then begin
-      li := lv_Properties.Items.Add;
-      li.Caption := '=';
-      li.SubItems.Add(pclass.name);
-      li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
+      lic := lv_Properties.Items.Add;
+      lic.Caption := '=';
+      lic.SubItems.Add(pclass.name);
+      lic.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
     end;
     for i := 0 to pclass.consts.Count-1 do begin
-    		Inc(cnt);
+      Inc(cnt);
       li := lv_Properties.Items.Add;
       li.Caption := 'const';
       li.SubItems.AddObject(pclass.consts[i].name, pclass.consts[i]);
@@ -167,10 +171,10 @@ begin
   lasttag := '';
   while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
     if ((j > 0) and (pclass.properties.Count > 0)) then begin
-      li := lv_Properties.Items.Add;
-      li.Caption := '=';
-      li.SubItems.Add(pclass.name);
-      li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
+      lic := lv_Properties.Items.Add;
+      lic.Caption := '=';
+      lic.SubItems.Add(pclass.name);
+      lic.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
       pclass.properties.SortOnTag;
       lasttag := '';
     end;
@@ -205,13 +209,13 @@ begin
   pclass := uclass;
   while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
     if ((j > 0) and (pclass.enums.Count > 0)) then begin
-      li := lv_Properties.Items.Add;
-      li.Caption := '=';
-      li.SubItems.Add(pclass.name);
-      li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
+      lic := lv_Properties.Items.Add;
+      lic.Caption := '=';
+      lic.SubItems.Add(pclass.name);
+      lic.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
     end;
     for i := 0 to pclass.enums.Count-1 do begin
-    		Inc(cnt);
+      Inc(cnt);
       li := lv_Properties.Items.Add;
       li.Caption := 'enum';
       li.SubItems.AddObject(pclass.enums[i].name, pclass.enums[i]);
@@ -235,13 +239,13 @@ begin
   pclass := uclass;
   while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
     if ((j > 0) and (pclass.structs.Count > 0)) then begin
-      li := lv_Properties.Items.Add;
-      li.Caption := '=';
-      li.SubItems.Add(pclass.name);
-      li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
+      lic := lv_Properties.Items.Add;
+      lic.Caption := '=';
+      lic.SubItems.Add(pclass.name);
+      lic.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
     end;
     for i := 0 to pclass.structs.Count-1 do begin
-    		Inc(cnt);
+      Inc(cnt);
       li := lv_Properties.Items.Add;
       li.Caption := 'struct';
       li.SubItems.AddObject(pclass.structs[i].name, pclass.structs[i]);
@@ -265,13 +269,13 @@ begin
   pclass := uclass;
   while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
     if ((j > 0) and (pclass.delegates.Count > 0)) then begin
-      li := lv_Properties.Items.Add;
-      li.Caption := '=';
-      li.SubItems.Add(pclass.name);
-      li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
+      lic := lv_Properties.Items.Add;
+      lic.Caption := '=';
+      lic.SubItems.Add(pclass.name);
+      lic.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
     end;
     for i := 0 to pclass.delegates.Count-1 do begin
-    		Inc(cnt);
+      Inc(cnt);
       li := lv_Properties.Items.Add;
       li.Caption := 'delegate';
       li.SubItems.AddObject(pclass.delegates[i].name, pclass.delegates[i]);
@@ -297,13 +301,13 @@ begin
   pclass := uclass;
   while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
     if ((j > 0) and (pclass.functions.Count > 0)) then begin
-      li := lv_Properties.Items.Add;
-      li.Caption := '=';
-      li.SubItems.Add(pclass.name);
-      li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
+      lic := lv_Properties.Items.Add;
+      lic.Caption := '=';
+      lic.SubItems.Add(pclass.name);
+      lic.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
     end;
     for i := 0 to pclass.functions.Count-1 do begin
-    		Inc(cnt);
+      Inc(cnt);
       li := lv_Properties.Items.Add;
       li.Caption := 'function';
       lasttag := pclass.functions[i].name;
@@ -347,14 +351,14 @@ begin
   j := 0;
   pclass := uclass;
   while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
-    if ((j > 0) and (pclass.functions.Count > 0)) then begin
-      li := lv_Properties.Items.Add;
-      li.Caption := '=';
-      li.SubItems.Add(pclass.name);
-      li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
+    if ((j > 0) and (pclass.states.Count > 0)) then begin
+      lic := lv_Properties.Items.Add;
+      lic.Caption := '=';
+      lic.SubItems.Add(pclass.name);
+      lic.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
     end;
     for i := 0 to pclass.states.Count-1 do begin
-    		Inc(cnt);
+      Inc(cnt);
       li := lv_Properties.Items.Add;
       li.Caption := 'state';
       lasttag := pclass.states[i].name;
