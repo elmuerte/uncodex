@@ -330,10 +330,10 @@ object frm_UnCodeX: Tfrm_UnCodeX
     object mi_GameServer: TMenuItem
       Caption = 'Game Server'
       object mi_Startserver: TMenuItem
-        Caption = 'Start server'
+        Action = ac_RunServer
       end
       object mi_Joinserver: TMenuItem
-        Caption = 'Join server'
+        Action = ac_JoinServer
       end
     end
     object mi_HelpMenu: TMenuItem
@@ -357,7 +357,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Default = True
     end
     object mi_Compile: TMenuItem
-      Caption = 'Compile'
+      Action = ac_CompileClass
     end
     object mi_Analyseclass: TMenuItem
       Caption = 'Analyse class'
@@ -486,6 +486,24 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Hint = 'Create HTML Help|Create a MS HTML Help file'
       ImageIndex = 10
       OnExecute = ac_HTMLHelpExecute
+    end
+    object ac_CompileClass: TAction
+      Category = 'Compiler'
+      Caption = 'Compile class'
+      Hint = 'Compile class|Compile the selected class'
+      OnExecute = ac_CompileClassExecute
+    end
+    object ac_RunServer: TAction
+      Category = 'Game Server'
+      Caption = 'Run server'
+      Hint = 'Run server|Run a game server on the local machine'
+      OnExecute = ac_RunServerExecute
+    end
+    object ac_JoinServer: TAction
+      Category = 'Game Server'
+      Caption = 'Join server'
+      Hint = 'Join Server|Join the game server'
+      OnExecute = ac_JoinServerExecute
     end
   end
   object il_Large: TImageList
