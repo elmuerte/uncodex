@@ -261,39 +261,39 @@ A.source:Hover {
 	color: #FF0000;
 }
 
-FONT.source_string {
+.source_string {
 	color: #0000FF;
 }
 
-FONT.source_int {
+.source_int {
 	color: #0000FF;
 }
 
-FONT.source_float {
+.source_float {
 	color: #0000FF;
 }
 
-FONT.source_comment {
+.source_comment {
 	color: #009933;
 }
 
-FONT.source_macro {
+.source_macro {
 	color: #CC0000;
 }
 
-FONT.source_keyword {
+.source_keyword {
 	font-weight: bold;
 }
 
-FONT.source_keyword2 {
+.source_keyword2 {
 	font-weight: bold;
 }
 
-FONT.source_name {
+.source_name {
 	color: #660000;
 }
 
-FONT.source_type {
+.source_type {
 	color: #000033;
 }
 
@@ -308,7 +308,7 @@ DIV.source {
 PRE.source {	
 }
 
-FONT.source_lineno {
+.source_lineno {
 	color: #A9A9A9;
 }
 
