@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   definitions for Unreal Classes
- $Id: unit_uclasses.pas,v 1.26 2004-06-19 13:04:26 elmuerte Exp $
+ $Id: unit_uclasses.pas,v 1.27 2004-06-19 21:17:33 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -127,6 +127,9 @@ type
     modifiers:  string;
     params:     string;
     state:      TUState;
+    locals:			TUPropertyList; // local variable delcrations (NOT USED)
+    constructor Create;
+    destructor Destroy; override;
   end;
 
   TUFunctionList = class(TObjectList)
@@ -155,12 +158,13 @@ type
     states:     TUstateList;
     functions:  TUFunctionList;
     delegates:  TUFunctionList;
-    treenode:   TObject;
+    treenode:   TObject; // class tree node
     treenode2:  TObject; // the second tree node (PackageTree)
-    filetime:   integer;
-    defaultproperties: string;
+    filetime:   integer; // used for checking for changed files
+    defaultproperties: string; // AS IS
     tagged:     boolean;
     children:   TUClassList; // not owned, don't free, don't save
+    deps:				TUClassList; // dependency list, not owned, don't free (NOT USED)
     constructor Create;
     destructor Destroy; override;
     function FullName: string;
@@ -337,6 +341,17 @@ begin
   inherited SetItem(index, AObject);
 end;
 
+{ TUFunction }
+constructor TUFunction.Create;
+begin
+  locals := TUPropertyList.Create(true);
+end;
+
+destructor TUFunction.Destroy;
+begin
+  locals.Free;
+end;
+
 { TUFunctionList }
 function TUFunctionListCompare(Item1, Item2: Pointer): integer;
 begin
@@ -375,6 +390,7 @@ begin
   functions := TUFunctionList.Create(true);
   delegates := TUFunctionList.Create(true);
   children := TUClassList.Create(false);
+  deps := TUClassList.Create(false);
 end;
 
 destructor TUClass.Destroy;
@@ -387,6 +403,7 @@ begin
   functions.Free;
   delegates.Free;
   children.Free;
+  deps.Free;
 end;
 
 function TUClass.FullName: string;
