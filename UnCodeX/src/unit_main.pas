@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.117 2004-08-02 19:58:58 elmuerte Exp $
+ $Id: unit_main.pas,v 1.118 2004-08-03 07:02:35 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -395,7 +395,6 @@ type
     procedure UnregisterABAutoHide;
     procedure ABResize;
     // AppBar methods -- end
-    procedure NextBatchCommand;
     // -reuse methods
     procedure UMAppIDCheck(var Message : TMessage); message UM_APP_ID_CHECK;
     procedure WMCopyData(var msg: TWMCopyData); message WM_COPYDATA;
@@ -420,6 +419,7 @@ type
     procedure BrowseEntry(Sender: TObject);
   public
     statustext : string; // current status text
+    procedure NextBatchCommand;
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
     procedure OpenSourceLine(uclass: TUClass; line, caret: integer);
     procedure OpenSourceInline(uclass: TUClass; line, caret: integer);    
@@ -1015,6 +1015,9 @@ begin
   else if (Pos('ext:', cmd) = 1) then begin
     Delete(cmd, 1, 4);
     CallCustomOutputModule('out_'+cmd+'.dll');
+  end
+  else if (Pos('ps:', cmd) = 1) then begin
+		// execute pascalscript
   end
   else begin
     NextBatchCommand;
