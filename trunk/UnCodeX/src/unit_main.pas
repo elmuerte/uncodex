@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.123 2004-09-14 11:13:03 elmuerte Exp $
+ $Id: unit_main.pas,v 1.124 2004-09-16 18:36:59 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -2366,23 +2366,22 @@ var
   filename: string;
   i: integer;
 begin
-  if (ActiveControl.ClassType = TTreeView) then begin
-    with (ActiveControl as TTreeView) do begin
-      if (Selected <> nil) then begin
-        if (TObject(Selected.Data).ClassType <> TUClass) then exit;
-        for i := 0 to lb_Log.Items.Count-1 do begin
-          if (lb_Log.Items.Objects[i] <> nil) then begin
-            if (TObject(lb_Log.Items.Objects[i]) = TObject(Selected.Data)) then begin
-              lb_Log.ItemIndex := i;
-              lb_Log.OnDblClick(Sender);
-              exit;
-            end;
-          end;
+	if (SelectedUPackage <> nil) then begin
+    ExecuteProgram(SelectedUPackage.path);
+    exit;
+  end;
+  if (SelectedUClass <> nil) then begin
+    for i := 0 to lb_Log.Items.Count-1 do begin
+    	if (lb_Log.Items.Objects[i] <> nil) then begin
+      	if (TObject(lb_Log.Items.Objects[i]) = SelectedUClass) then begin
+        	lb_Log.ItemIndex := i;
+          lb_Log.OnDblClick(Sender);
+          exit;
         end;
-        filename := TUClass(Selected.Data).package.path+PATHDELIM+TUClass(Selected.Data).filename;
-        ExecuteProgram(filename);
-      end;
-    end;
+			end;
+		end;
+		filename := SelectedUClass.package.path+PATHDELIM+SelectedUClass.filename;
+		ExecuteProgram(filename);
   end;
 end;
 
@@ -3244,6 +3243,7 @@ begin
       mi_MoveClass.Visible := false;
       mi_RenameClass.Visible := false;
       //mi_Properties.Visible := false;
+      mi_SingleOutput.Visible := false;
     end
     else if (TObject(Selected.Data).ClassType = TUClass) then begin
       mi_ClassName.Visible := true;
@@ -3256,6 +3256,7 @@ begin
       mi_MoveClass.Visible := true;
       mi_RenameClass.Visible := true;
       //mi_Properties.Visible := false;
+      mi_SingleOutput.Visible := true;
     end
     else if (TObject(Selected.Data).ClassType = TUPackage) then begin
       mi_ClassName.Visible := false;
@@ -3267,6 +3268,7 @@ begin
       mi_MoveClass.Visible := false;
       mi_RenameClass.Visible := false;
       //mi_Properties.Visible := true;
+      mi_SingleOutput.Visible := false;
     end;
     mi_SwitchTree.Visible := tv_Packages.Visible;
   end;
