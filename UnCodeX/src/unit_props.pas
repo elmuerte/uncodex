@@ -6,7 +6,7 @@
     Purpose:
         UnrealScript Class property inpector frame
 
-    $Id: unit_props.pas,v 1.20 2004-12-03 15:17:19 elmuerte Exp $
+    $Id: unit_props.pas,v 1.21 2004-12-04 21:32:50 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -113,10 +113,10 @@ function Tfr_Properties.LoadClass: boolean;
 var
     i, j:       integer;
     pclass:     TUClass;
-    li:         TListItem;
+    li, lib:    TListItem;
+    cnt:				integer;
     return:     string;
     lasttag:    string;
-    te:         TTagEntry;
 begin
     result := false;
     lv_Properties.Items.BeginUpdate;
@@ -126,9 +126,10 @@ begin
         lv_Properties.Items.EndUpdate;
         exit;
     end;
-    li := lv_Properties.Items.Add;
-    li.Caption := '-';
-    li.SubItems.Add('Constants');
+    lib := lv_Properties.Items.Add;
+    lib.Caption := '-';
+    lib.SubItems.Add('Constants');
+    cnt := 0;
     j := 0;
     pclass := uclass;
     while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
@@ -139,6 +140,7 @@ begin
             li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
         end;
         for i := 0 to pclass.consts.Count-1 do begin
+        		Inc(cnt);
             li := lv_Properties.Items.Add;
             li.Caption := 'const';
             li.SubItems.AddObject(pclass.consts[i].name, pclass.consts[i]);
@@ -153,10 +155,12 @@ begin
         pclass := pclass.parent;
         Inc(j);
     end;
+    if (cnt = 0) then lib.Delete;
 
-    li := lv_Properties.Items.Add;
-    li.Caption := '-';
-    li.SubItems.Add('Variables');
+    lib := lv_Properties.Items.Add;
+    lib.Caption := '-';
+    lib.SubItems.Add('Variables');
+    cnt := 0;
     j := 0;
     pclass := uclass;
     pclass.properties.SortOnTag;
@@ -177,6 +181,7 @@ begin
                 li.SubItems.Add(pclass.properties[i].tag);
                 lasttag := pclass.properties[i].tag;
             end;
+            Inc(cnt);
             li := lv_Properties.Items.Add;
             li.Caption := 'var';
             li.SubItems.AddObject(pclass.properties[i].name, pclass.properties[i]);
@@ -190,10 +195,12 @@ begin
         pclass := pclass.parent;
         Inc(j);
     end;
+    if (cnt = 0) then lib.Delete;
 
-    li := lv_Properties.Items.Add;
-    li.Caption := '-';
-    li.SubItems.Add('Enumerations');
+    lib := lv_Properties.Items.Add;
+    lib.Caption := '-';
+    lib.SubItems.Add('Enumerations');
+    cnt := 0;
     j := 0;
     pclass := uclass;
     while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
@@ -204,6 +211,7 @@ begin
             li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
         end;
         for i := 0 to pclass.enums.Count-1 do begin
+        		Inc(cnt);
             li := lv_Properties.Items.Add;
             li.Caption := 'enum';
             li.SubItems.AddObject(pclass.enums[i].name, pclass.enums[i]);
@@ -217,10 +225,12 @@ begin
         pclass := pclass.parent;
         Inc(j);
     end;
+    if (cnt = 0) then lib.Delete;
 
-    li := lv_Properties.Items.Add;
-    li.Caption := '-';
-    li.SubItems.Add('Structs');
+    lib := lv_Properties.Items.Add;
+    lib.Caption := '-';
+    lib.SubItems.Add('Structs');
+    cnt := 0;
     j := 0;
     pclass := uclass;
     while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
@@ -231,6 +241,7 @@ begin
             li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
         end;
         for i := 0 to pclass.structs.Count-1 do begin
+        		Inc(cnt);
             li := lv_Properties.Items.Add;
             li.Caption := 'struct';
             li.SubItems.AddObject(pclass.structs[i].name, pclass.structs[i]);
@@ -244,10 +255,12 @@ begin
         pclass := pclass.parent;
         Inc(j);
     end;
+    if (cnt = 0) then lib.Delete;
 
-    li := lv_Properties.Items.Add;
-    li.Caption := '-';
-    li.SubItems.Add('Delegates');
+    lib := lv_Properties.Items.Add;
+    lib.Caption := '-';
+    lib.SubItems.Add('Delegates');
+    cnt := 0;
     j := 0;
     pclass := uclass;
     while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
@@ -258,6 +271,7 @@ begin
             li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
         end;
         for i := 0 to pclass.delegates.Count-1 do begin
+        		Inc(cnt);
             li := lv_Properties.Items.Add;
             li.Caption := 'delegate';
             li.SubItems.AddObject(pclass.delegates[i].name, pclass.delegates[i]);
@@ -273,10 +287,12 @@ begin
         pclass := pclass.parent;
         Inc(j);
     end;
+    if (cnt = 0) then lib.Delete;
 
-    li := lv_Properties.Items.Add;
-    li.Caption := '-';
-    li.SubItems.Add('Functions');
+    lib := lv_Properties.Items.Add;
+    lib.Caption := '-';
+    lib.SubItems.Add('Functions');
+    cnt := 0;
     j := 0;
     pclass := uclass;
     while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
@@ -287,6 +303,7 @@ begin
             li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
         end;
         for i := 0 to pclass.functions.Count-1 do begin
+        		Inc(cnt);
             li := lv_Properties.Items.Add;
             li.Caption := 'function';
             lasttag := pclass.functions[i].name;
@@ -321,6 +338,7 @@ begin
         pclass := pclass.parent;
         Inc(j);
     end;
+    if (cnt = 0) then lib.Delete;
     lv_Properties.Items.EndUpdate;
     result := true;
 end;
@@ -338,14 +356,11 @@ begin
 end;
 
 procedure Tfr_Properties.lv_PropertiesClick(Sender: TObject);
-var
-    up: TUDeclaration;
 begin
     if (lv_Properties.Selected = nil) then exit;
     if (lv_Properties.Selected.Data = nil) then exit;
     if (frm_UnCodeX.Visible and frm_UnCodeX.mi_SourceSnoop.Checked) then begin
-        up := TUDeclaration(lv_Properties.Selected.SubItems.Objects[0]);
-        frm_UnCodeX.OpenSourceInline(TUClass(lv_Properties.Selected.Data), StrToIntDef(lv_Properties.Selected.SubItems[1], 1)-1, 0, up.definedIn);
+        frm_UnCodeX.OpenSourceInline(TUClass(lv_Properties.Selected.Data), TUDeclaration(lv_Properties.Selected.SubItems.Objects[0]), StrToIntDef(lv_Properties.Selected.SubItems[1], 1)-1, 0);
     end;
 end;
 

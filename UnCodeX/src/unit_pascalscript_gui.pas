@@ -6,7 +6,7 @@
     Purpose:
         Additional GUI only PascalScript routines
 
-    $Id: unit_pascalscript_gui.pas,v 1.10 2004-11-29 14:46:10 elmuerte Exp $
+    $Id: unit_pascalscript_gui.pas,v 1.11 2004-12-04 21:32:50 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -268,7 +268,8 @@ end;
 
 procedure OpenSourceInLine(uclass: TUClass; line, caret: integer);
 begin
-    frm_UnCodeX.OpenSourceInLine(uclass, line, caret);
+		//TODO: fix
+    //frm_UnCodeX.OpenSourceInLine(uclass, line, caret);
 end;
 
 procedure Sleep(time: cardinal);

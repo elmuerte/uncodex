@@ -123,7 +123,7 @@ object frm_About: Tfrm_About
   object lbl_TimeStamp: TLabel
     Left = 64
     Top = 29
-    Width = 265
+    Width = 3
     Height = 13
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clGrayText
