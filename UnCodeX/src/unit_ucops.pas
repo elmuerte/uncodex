@@ -377,7 +377,7 @@ begin
     TTreeNode(newclass.treenode).StateIndex := TTreeNode(newclass.treenode).ImageIndex;
     TTreeNode(newclass.treenode).Parent.AlphaSort();
 
-    ClassesHash.Items[newclass.name] := '-';
+    ClassesHash.Items[newclass.name] := uclass;
     
     TreeUpdated := true;
   end

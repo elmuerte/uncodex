@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.97 2004-05-03 07:54:45 elmuerte Exp $
+ $Id: unit_main.pas,v 1.98 2004-05-08 12:06:27 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -2724,6 +2724,7 @@ var
   curpos: integer;
   tr: TEXTRANGE;
   tmp: array[0..256] of char;
+  tmpc: TUClass;
 begin
   pt := Point(X, Y);
   curpos := re_SourceSnoop.Perform(EM_CHARFROMPOS, 0, Integer(@pt));
@@ -2731,9 +2732,14 @@ begin
   tr.chrg.cpMax := re_SourceSnoop.Perform(EM_FINDWORDBREAK, WB_RIGHT, curpos);
   tr.lpstrText := tmp;
   if (re_SourceSnoop.Perform(EM_GETTEXTRANGE, 0, integer(@tr)) > 0) then begin
-    if unit_rtfhilight.ClassesHash.Exists(LowerCase(tmp)) then begin
+    if (unit_rtfhilight.ClassesHash.Exists(LowerCase(tmp)) and (not (ssCtrl in Shift))) then begin
+    	tmpc := TUClass(unit_rtfhilight.ClassesHash[LowerCase(tmp)]);
+    	re_SourceSnoop.Hint := tmpc.FullName+' '+tmpc.FullFileName;
       re_SourceSnoop.Cursor := crHandPoint;
       exit;
+    end
+    else begin
+			if (SelectedUClass <> nil) then re_SourceSnoop.Hint := SelectedUClass.FullFileName;
     end;
   end;
   re_SourceSnoop.Cursor := crDefault;
@@ -2771,7 +2777,7 @@ begin
     pt := re_SourceSnoop.ClientToScreen(Point(x,y));
     pm_SourceSnoop.Popup(pt.X, pt.Y);
   end;
-  if ((re_SourceSnoop.Cursor = crHandPoint) and (button = mbLeft)) then begin
+  if ((re_SourceSnoop.Cursor = crHandPoint) and (button = mbLeft) and (not (ssCtrl in Shift))) then begin
     pt := Point(X, Y);
     curpos := re_SourceSnoop.Perform(EM_CHARFROMPOS, 0, Integer(@pt));
     tr.chrg.cpMin := re_SourceSnoop.Perform(EM_FINDWORDBREAK, WB_LEFT, curpos);

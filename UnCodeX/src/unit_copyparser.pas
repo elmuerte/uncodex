@@ -2,24 +2,28 @@
  Unit Name: unit_copyparser
  Author:    elmuerte
  Purpose:   parser class based on CopyParser.pas used for processing the HTML
-            templates
+            templates, only token is '%'
             Based on the Borland's TCopyParser
- $Id: unit_copyparser.pas,v 1.6 2003-06-22 08:58:45 elmuerte Exp $
+ $Id: unit_copyparser.pas,v 1.7 2004-05-08 12:06:27 elmuerte Exp $
 -----------------------------------------------------------------------------}
+{
+    UnCodeX - UnrealScript source browser & documenter
+    Copyright (C) 2003, 2004  Michiel Hendriks
 
-{ *************************************************************************** }
-{                                                                             }
-{ Kylix and Delphi Cross-Platform Visual Component Library                    }
-{ Internet Application Runtime                                                }
-{                                                                             }
-{ Copyright (C) 1997, 2001 Borland Software Corporation                       }
-{                                                                             }
-{ Licensees holding a valid Borland No-Nonsense License for this Software may }
-{ use this file in accordance with such license, which appears in the file    }
-{ license.txt that came with this Software.                                   }
-{                                                                             }
-{ *************************************************************************** }
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
 
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+}
 
 unit unit_copyparser;
 
@@ -27,9 +31,6 @@ interface
 
 uses
   Classes;
-
-const
-  toEOL = Char(5);
 
 type
 { TCopyParser }
@@ -45,7 +46,6 @@ type
     FSourcePtr: PChar;
     FSourceEnd: PChar;
     FTokenPtr: PChar;
-    FStringPtr: PChar;
     FSourceLine: Integer;
     FSaveChar: Char;
     FToken: Char;
@@ -58,15 +58,9 @@ type
     constructor Create(Stream, OutStream: TStream);
     destructor Destroy; override;
     procedure CopyTokenToOutput;
-    procedure Error(const Ident: string);
-    procedure ErrorFmt(const Ident: string; const Args: array of const);
-    procedure ErrorStr(const Message: string);
     function NextToken: Char;
     function SkipToken(CopyBlanks: Boolean): Char;
     function SkipToToken(AToken: Char): string;
-    function SourcePos: Longint;
-    function TokenString: string;
-    property SourceLine: Integer read FSourceLine;
     property Token: Char read FToken;
     property OutputStream: TStream read FOutStream write FOutStream;
   end;
@@ -74,7 +68,7 @@ type
 implementation
 
 uses
-  SysUtils, RTLConsts;
+  SysUtils;
 
 { TCopyParser }
 
@@ -127,8 +121,7 @@ var
           end;
         #10:
           Inc(FSourceLine);
-        #33..#255:
-          Break;
+        '%': break;
       end;
       Inc(FSourcePtr);
     end;
@@ -136,11 +129,8 @@ var
   end;
 
 var
-  InSingleQuote, InDoubleQuote: Boolean;
   Found: Boolean;
 begin
-  InSingleQuote := False;
-  InDoubleQuote := False;
   Found := False;
   Result := '';
   while (not Found) and (Token <> toEOF) do
@@ -153,14 +143,7 @@ begin
       Result := Result + Temp;
     end;
     SkipToNextToken(DoCopy, DoCopy);
-    if Token = '"' then
-      InDoubleQuote := not InDoubleQuote and not InSingleQuote
-    else if Token = '''' then
-      InSingleQuote := not InSingleQuote and not InDoubleQuote;
-    Found := (Token = AToken) and
-         (((Token = '"') and (not InSingleQuote)) or
-          ((Token = '''') and (not InDoubleQuote)) or
-           not (InDoubleQuote or InSingleQuote));
+    Found := (Token = AToken);
     if not Found then
     begin
       SetString(Temp, FTokenPtr, FSourcePtr - FTokenPtr);
@@ -174,21 +157,6 @@ begin
   UpdateOutStream(FTokenPtr);
 end;
 
-procedure TCopyParser.Error(const Ident: string);
-begin
-  ErrorStr(Ident);
-end;
-
-procedure TCopyParser.ErrorFmt(const Ident: string; const Args: array of const);
-begin
-  ErrorStr(Format(Ident, Args));
-end;
-
-procedure TCopyParser.ErrorStr(const Message: string);
-begin
-  raise EParserError.CreateResFmt(@SParseError, [Message, FSourceLine]);
-end;
-
 function TCopyParser.NextToken: Char;
 begin
   Result := SkipToNextToken(True, True);
@@ -200,32 +168,12 @@ begin
 end;
 
 function TCopyParser.SkipToNextToken(CopyBlanks, DoCopy: Boolean): Char;
-var
-  P, StartPos: PChar;
 begin
   SkipBlanks(CopyBlanks);
-  P := FSourcePtr;
-  FTokenPtr := P;
-  case P^ of
-    'A'..'Z', 'a'..'z', '_':
-      begin
-        Inc(P);
-        while P^ in ['A'..'Z', 'a'..'z', '0'..'9', '_'] do Inc(P);
-        Result := toSymbol;
-      end;
-    #10:
-      begin
-        Inc(P);
-        Inc(FSourceLine);
-        Result := toEOL;
-      end;
-  else
-    Result := P^;
-    if Result <> toEOF then Inc(P);
-  end;
-  StartPos := FSourcePtr;
-  FSourcePtr := P;
-  if DoCopy then UpdateOutStream(StartPos);
+  FTokenPtr := FSourcePtr;
+  Result := FSourcePtr^;
+  if Result <> toEOF then Inc(FSourcePtr);
+  if DoCopy then UpdateOutStream(FTokenPtr);
   FToken := Result;
 end;
 
@@ -249,7 +197,6 @@ begin
   if FSourceEnd = FBufEnd then
   begin
     FSourceEnd := LineStart(FBuffer, FSourceEnd - 1);
-    if FSourceEnd = FBuffer then Error(SLineTooLong);
   end;
   FSaveChar := FSourceEnd[0];
   FSourceEnd[0] := #0;
@@ -273,27 +220,11 @@ begin
         end;
       #10:
         Inc(FSourceLine);
-      #33..#255:
-        Break;
+      '%': break;
     end;
     Inc(FSourcePtr);
   end;
   if DoCopy then UpdateOutStream(Start);
-end;
-
-function TCopyParser.SourcePos: Longint;
-begin
-  Result := FOrigin + (FTokenPtr - FBuffer);
-end;
-
-function TCopyParser.TokenString: string;
-var
-  L: Integer;
-begin
-  if FToken = toString then
-    L := FStringPtr - FTokenPtr else
-    L := FSourcePtr - FTokenPtr;
-  SetString(Result, FTokenPtr, L);
 end;
 
 procedure TCopyParser.UpdateOutStream(StartPos: PChar);

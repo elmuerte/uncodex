@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   definitions for Unreal Classes
- $Id: unit_uclasses.pas,v 1.23 2004-04-05 13:36:51 elmuerte Exp $
+ $Id: unit_uclasses.pas,v 1.24 2004-05-08 12:06:28 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -177,6 +177,7 @@ type
     constructor Create;
     destructor Destroy; override;
     function FullName: string;
+    function FullFileName: string;
   end;
 
   TUClassList = class(TObjectList)
@@ -406,6 +407,11 @@ end;
 function TUClass.FullName: string;
 begin
   result := package.name+'.'+name;
+end;
+
+function TUClass.FullFileName: string;
+begin
+  result := package.path+PathDelim+filename;
 end;
 
 { TUClassList }
