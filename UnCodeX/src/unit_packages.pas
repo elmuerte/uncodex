@@ -6,7 +6,7 @@
     Purpose:
         UnrealScript package scanner, search for UnrealScript classes
 
-    $Id: unit_packages.pas,v 1.36 2004-11-18 09:06:01 elmuerte Exp $
+    $Id: unit_packages.pas,v 1.37 2004-11-22 13:17:41 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -340,9 +340,12 @@ begin
             lst := TStringList.Create;
             try
                 FindFiles(Packagelist[i].path, '', SOURCECARD, faAnyFile, lst);
+                {$IFDEF UNIX}
+                FindFiles(Packagelist[i].path, '', SOURCECARD_1, faAnyFile, lst, true);
+                FindFiles(Packagelist[i].path, '', SOURCECARD_2, faAnyFile, lst, true);
+                FindFiles(Packagelist[i].path, '', SOURCECARD_3, faAnyFile, lst, true);
+                {$ENDIF}
                 for j := 0 to lst.Count-1 do begin
-            //if FindFirst(Packagelist[i].path+PATHDELIM+SOURCECARD, faAnyFile, sr) = 0 then begin
-            //    repeat
                     Status('Parsing file '+Packagelist[i].path+PATHDELIM+lst[j]);
                     try
                         uclass := GetUClassName(Packagelist[i].path+PATHDELIM+lst[j]);
@@ -380,8 +383,6 @@ begin
                         end;
                     end
                     else log('Scanner: No class found in this file: '+sr.Name);
-                //until (FindNext(sr) <> 0) or (Self.Terminated);
-                //FindClose(sr);
                 end;
                 if (Self.Terminated) then break;
             finally
@@ -416,7 +417,14 @@ begin
         {$IFDEF USE_TREEVIEW}
         packagetree.EndUpdate;
         // TODO: fix
-        //if (classtree.Count > 0) then classtree.GetFirstNode.Expand(false);
+        ti := classtree.GetFirstNode;
+        while (ti <> nil) do begin
+            if CompareText(ti.Text, 'object') = 0 then begin
+                ti.Expand(false);
+                break;
+            end;
+            ti := ti.getNextSibling;
+        end;
         classtree.EndUpdate;
         {$ENDIF}
     end;

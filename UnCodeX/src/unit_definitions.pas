@@ -6,7 +6,7 @@
     Purpose:
         General definitions and independed utility functions
 
-    $Id: unit_definitions.pas,v 1.121 2004-11-20 12:18:43 elmuerte Exp $
+    $Id: unit_definitions.pas,v 1.122 2004-11-22 13:17:41 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -58,7 +58,7 @@ type
     function iFindDir(dirname: string; var output: string): boolean;
     function CopyFile(filename, target: string): boolean;
     function GetFiles(path: string; Attr: Integer; var files: TStringList): boolean;
-    function FindFiles(base, path, mask: string; Attr: Integer; var files: TStringList): boolean;
+    function FindFiles(base, path, mask: string; Attr: Integer; var files: TStringList; append: boolean = false): boolean;
     function ExtractBaseName(filename: string): string;
 
     procedure ReloadKeywords;
@@ -83,12 +83,17 @@ const
     {$IFDEF MSWINDOWS}
     WILDCARD        = '*.*';
     {$ENDIF}
-    {$IFDEF LINUX}
+    {$IFDEF UNIX}
     WILDCARD        = '*';
     {$ENDIF}
     UCEXT           = '.uc';
     PKGCFG          = '.upkg';
     SOURCECARD      = '*'+UCEXT;
+    {$IFDEF UNIX} // because the find is not case-insensitive
+    SOURCECARD_1    = '*.UC';
+    SOURCECARD_2    = '*.Uc';
+    SOURCECARD_3    = '*.uC';
+    {$ENDIF}
     CLASSDIR        = 'Classes';
     TEMPLATEPATH    = 'Templates';
     DEFTEMPLATE     = 'DocStyle2';
@@ -174,7 +179,7 @@ begin
     result := LowerCase(ExpandFileName(filename));
 end;
 {$ENDIF}
-{$IFDEF LINUX}
+{$IFDEF UNIX}
 var
     fcm: TFilenameCaseMatch;
 begin
@@ -192,7 +197,7 @@ begin
     output := LowerCase(dirname);
 end;
 {$ENDIF}
-{$IFDEF LINUX}
+{$IFDEF UNIX}
 var
     basename: string;
 begin
@@ -224,7 +229,7 @@ begin
     result := Windows.CopyFile(PChar(filename), PChar(target), false);
 end;
 {$ENDIF}
-{$IFDEF LINUX}
+{$IFDEF UNIX}
 var
     fs1, fs2: TFileStream;
 begin
@@ -328,11 +333,11 @@ begin
     result := files.count > 0;
 end;
 
-function FindFiles(base, path, mask: string; Attr: Integer; var files: TStringList): boolean;
+function FindFiles(base, path, mask: string; Attr: Integer; var files: TStringList; append: boolean = false): boolean;
 var
     sr: TSearchRec;
 begin
-    if (path = '') then files.Clear;
+    if ((path = '') and (not append)) then files.Clear;
     // pass #1 - sub dirs
     if (FindFirst(base+PathDelim+path+WILDCARD, faDirectory, sr) = 0) then begin
         repeat
