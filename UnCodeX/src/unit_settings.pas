@@ -6,7 +6,7 @@
   Purpose:
     Program settings dialog
 
-  $Id: unit_settings.pas,v 1.43 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_settings.pas,v 1.44 2004-12-15 08:18:20 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -172,9 +172,6 @@ type
     lbl_SecondKey: TLabel;
     ed_HTMLDefaultTitle: TEdit;
     lbl_HTMLDefaultTitle: TLabel;
-    ed_gpdf: TEdit;
-    lbl_gpdf: TLabel;
-    btn_BrowseGPDF: TBitBtn;
     lbl_OpenResult: TLabel;
     ed_OpenResultCmd: TEdit;
     btn_OpenResultPlaceHolder: TBitBtn;
@@ -184,9 +181,6 @@ type
     ed_NewClassTemplate: TEdit;
     btn_BrowseTemplate: TBitBtn;
     od_BrowseUC: TOpenDialog;
-    lbl_ExtCmtFile: TLabel;
-    ed_ExtCmtFile: TEdit;
-    btn_ExtCmtFile: TBitBtn;
     lbl_UPSDIR: TLabel;
     ed_UPSDIR: TEdit;
     btn_UPSDIR: TBitBtn;
@@ -207,6 +201,13 @@ type
     cb_LoadCustomModules: TCheckBox;
     lbl_RunHint: TLabel;
     tv_SettingSelect: TTreeView;
+    ts_Comments: TTabSheet;
+    lbl_gpdf: TLabel;
+    ed_gpdf: TEdit;
+    btn_BrowseGPDF: TBitBtn;
+    lbl_ExtCmtFile: TLabel;
+    ed_ExtCmtFile: TEdit;
+    btn_ExtCmtFile: TBitBtn;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -701,7 +702,7 @@ end;
 
 procedure Tfrm_Settings.btn_HelpClick(Sender: TObject);
 begin
-  hh_Help.HelpTopic('window_settings.html#'+pc_Settings.ActivePage.HelpKeyword);
+  hh_Help.HelpTopic('GUI/window_settings.html#'+pc_Settings.ActivePage.HelpKeyword);
 end;
 
 procedure Tfrm_Settings.lv_HotKeysSelectItem(Sender: TObject;
