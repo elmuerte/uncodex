@@ -309,8 +309,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
         Caption = '-'
       end
       object mi_Quit: TMenuItem
-        Caption = 'Quit'
-        OnClick = mi_QuitClick
+        Action = ac_Close
       end
     end
     object mi_Find: TMenuItem
@@ -331,28 +330,19 @@ object frm_UnCodeX: Tfrm_UnCodeX
     object mi_View: TMenuItem
       Caption = 'View'
       object mi_Menubar: TMenuItem
+        Action = ac_VMenuBar
         AutoCheck = True
-        Caption = 'Menu bar'
-        Checked = True
-        ShortCut = 32845
-        OnClick = mi_MenubarClick
       end
       object mi_Toolbar: TMenuItem
+        Action = ac_VToolbar
         AutoCheck = True
-        Caption = 'Toolbar'
-        Checked = True
-        ShortCut = 32852
-        OnClick = mi_ToolbarClick
       end
       object mi_N10: TMenuItem
         Caption = '-'
       end
       object mi_PackageTree: TMenuItem
+        Action = ac_VPackageTree
         AutoCheck = True
-        Caption = 'Package Tree'
-        Checked = True
-        ShortCut = 32848
-        OnClick = mi_PackageTreeClick
       end
       object mi_ClassTree: TMenuItem
         AutoCheck = True
@@ -365,58 +355,47 @@ object frm_UnCodeX: Tfrm_UnCodeX
         Enabled = False
       end
       object mi_Log: TMenuItem
+        Action = ac_VLog
         AutoCheck = True
-        Caption = 'Log'
-        Checked = True
-        ShortCut = 32844
-        OnClick = mi_LogClick
       end
       object mi_N11: TMenuItem
         Caption = '-'
       end
       object mi_Savesize: TMenuItem
+        Action = ac_VSaveSize
         AutoCheck = True
-        Caption = 'Save size'
       end
       object mi_Saveposition: TMenuItem
+        Action = ac_VSavePosition
         AutoCheck = True
-        Caption = 'Save position'
       end
       object mi_N12: TMenuItem
         Caption = '-'
       end
       object mi_Stayontop: TMenuItem
+        Action = ac_VStayOnTop
         AutoCheck = True
-        Caption = 'Stay on top'
-        ShortCut = 32851
-        OnClick = mi_StayontopClick
       end
       object mi_Toolwindow: TMenuItem
         Caption = 'Tool window'
         object mi_Autohide: TMenuItem
+          Action = ac_VAutoHide
           AutoCheck = True
-          Caption = 'Auto hide'
           GroupIndex = 1
-          ShortCut = 41025
-          OnClick = mi_AutohideClick
         end
         object mi_N13: TMenuItem
           Caption = '-'
           GroupIndex = 1
         end
         object mi_Right: TMenuItem
+          Action = ac_VTRight
           AutoCheck = True
-          Caption = 'Right'
           GroupIndex = 1
-          ShortCut = 40999
-          OnClick = mi_RightClick
         end
         object mi_Left: TMenuItem
+          Action = ac_VTLeft
           AutoCheck = True
-          Caption = 'Left'
           GroupIndex = 1
-          ShortCut = 40997
-          OnClick = mi_LeftClick
         end
       end
     end
@@ -673,6 +652,85 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Category = 'Program'
       Caption = 'Help'
       ImageIndex = 23
+    end
+    object ac_Close: TAction
+      Category = 'Program'
+      Caption = 'Quit'
+      Hint = 'Quit|Quit UnCodeX'
+      OnExecute = ac_CloseExecute
+    end
+    object ac_VMenuBar: TAction
+      Category = 'Layout'
+      AutoCheck = True
+      Caption = 'Menu bar'
+      Checked = True
+      Hint = 'Menu bar|Show or hide the menu bar'
+      ShortCut = 32845
+      OnExecute = ac_VMenuBarExecute
+    end
+    object ac_VToolbar: TAction
+      Category = 'Layout'
+      AutoCheck = True
+      Caption = 'Toolbar'
+      Checked = True
+      ShortCut = 32852
+      OnExecute = ac_VToolbarExecute
+    end
+    object ac_VPackageTree: TAction
+      Category = 'Layout'
+      AutoCheck = True
+      Caption = 'Package Tree'
+      Checked = True
+      ShortCut = 32848
+      OnExecute = ac_VPackageTreeExecute
+    end
+    object ac_VLog: TAction
+      Category = 'Layout'
+      AutoCheck = True
+      Caption = 'Log'
+      Checked = True
+      ShortCut = 32844
+      OnExecute = ac_VLogExecute
+    end
+    object ac_VSaveSize: TAction
+      Category = 'Layout'
+      AutoCheck = True
+      Caption = 'Save size'
+      OnExecute = ac_VSaveSizeExecute
+    end
+    object ac_VSavePosition: TAction
+      Category = 'Layout'
+      AutoCheck = True
+      Caption = 'Save position'
+      OnExecute = ac_VSavePositionExecute
+    end
+    object ac_VStayOnTop: TAction
+      Category = 'Layout'
+      AutoCheck = True
+      Caption = 'Stay on top'
+      ShortCut = 32851
+      OnExecute = ac_VStayOnTopExecute
+    end
+    object ac_VAutoHide: TAction
+      Category = 'Layout'
+      AutoCheck = True
+      Caption = 'Auto hide'
+      ShortCut = 41025
+      OnExecute = ac_VAutoHideExecute
+    end
+    object ac_VTRight: TAction
+      Category = 'Layout'
+      AutoCheck = True
+      Caption = 'Right'
+      ShortCut = 40999
+      OnExecute = ac_VTRightExecute
+    end
+    object ac_VTLeft: TAction
+      Category = 'Layout'
+      AutoCheck = True
+      Caption = 'Left'
+      ShortCut = 40997
+      OnExecute = ac_VTLeftExecute
     end
   end
   object il_Small: TImageList

@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Buttons {$IFDEF MSWINDOWS},FileCtrl{$ENDIF}, ComCtrls,
-  Menus, ExtCtrls, IniFiles, CheckLst;
+  Menus, ExtCtrls, IniFiles, CheckLst, ActnList;
 
 type
   
@@ -110,13 +110,15 @@ type
     cb_ExpandObject: TCheckBox;
     ts_ProgramOptions: TTabSheet;
     gb_ProgramOptions: TGroupBox;
-    Edit1: TEdit;
+    ed_StateFilename: TEdit;
     lbl_StateFile: TLabel;
-    CheckBox1: TCheckBox;
-    Edit2: TEdit;
-    CheckBox2: TCheckBox;
-    CheckBox3: TCheckBox;
+    cb_MinimzeOnClose: TCheckBox;
     clb_PackagePriority: TCheckListBox;
+    lv_HotKeys: TListView;
+    lbl_HotKeys: TLabel;
+    ed_HotKey: TEdit;
+    btn_SetHotKey: TBitBtn;
+    hk_HotKey: THotKey;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -158,6 +160,8 @@ type
     procedure btn_LogFontClick(Sender: TObject);
     procedure btn_LogFontColorClick(Sender: TObject);
     procedure btn_LogColorClick(Sender: TObject);
+    procedure lv_HotKeysClick(Sender: TObject);
+    procedure btn_SetHotKeyClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -168,6 +172,8 @@ var
   frm_Settings: Tfrm_Settings;
 
 implementation
+
+uses unit_main;
 
 {$R *.dfm}
 
@@ -282,6 +288,7 @@ end;
 procedure Tfrm_Settings.FormCreate(Sender: TObject);
 var
   i: integer;
+  li: TListItem;
 begin
   lb_Settings.Items.Clear;
   for i := 0 to pc_Settings.PageCount-1 do begin
@@ -290,6 +297,12 @@ begin
   lb_Settings.ItemIndex := 0;
   pc_Settings.ActivePageIndex := 0;
   tv_TreeLayout.FullExpand;
+  for i := 0 to frm_UnCodeX.al_Main.ActionCount-1 do begin
+    li := lv_HotKeys.Items.Add;
+    li.Caption := TAction(frm_UnCodeX.al_Main.Actions[i]).Caption;
+    li.SubItems.Add(ShortCutToText(TAction(frm_UnCodeX.al_Main.Actions[i]).ShortCut));
+    li.Data := frm_UnCodeX.al_Main.Actions[i];
+  end;
 end;
 
 procedure Tfrm_Settings.lb_SettingsClick(Sender: TObject);
@@ -491,6 +504,19 @@ begin
   if (cd_Color.Execute) then begin
     lb_LogLayout.Color := cd_Color.Color;
   end;
+end;
+
+procedure Tfrm_Settings.lv_HotKeysClick(Sender: TObject);
+begin
+  if (lv_HotKeys.Selected = nil) then exit;
+  ed_HotKey.Text := lv_HotKeys.Selected.Caption;
+  hk_HotKey.HotKey := TextToShortCut(lv_HotKeys.Selected.SubItems[0]);
+end;
+
+procedure Tfrm_Settings.btn_SetHotKeyClick(Sender: TObject);
+begin
+  if (lv_HotKeys.Selected = nil) then exit;
+  lv_HotKeys.Selected.SubItems[0] := ShortCutToText(hk_HotKey.HotKey);
 end;
 
 end.

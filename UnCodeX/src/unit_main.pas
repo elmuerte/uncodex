@@ -129,6 +129,17 @@ type
     ac_CopyName: TAction;
     mi_Help2: TMenuItem;
     ac_Help: TAction;
+    ac_Close: TAction;
+    ac_VMenuBar: TAction;
+    ac_VToolbar: TAction;
+    ac_VPackageTree: TAction;
+    ac_VLog: TAction;
+    ac_VSaveSize: TAction;
+    ac_VSavePosition: TAction;
+    ac_VStayOnTop: TAction;
+    ac_VAutoHide: TAction;
+    ac_VTRight: TAction;
+    ac_VTLeft: TAction;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_OpenClassClick(Sender: TObject);
@@ -139,7 +150,6 @@ type
     procedure ac_AnalyseAllExecute(Sender: TObject);
     procedure ac_CreateHTMLfilesExecute(Sender: TObject);
     procedure ac_SettingsExecute(Sender: TObject);
-    procedure mi_QuitClick(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure ac_AbortExecute(Sender: TObject);
     procedure ac_FindClassExecute(Sender: TObject);
@@ -153,20 +163,12 @@ type
     procedure ac_HTMLHelpExecute(Sender: TObject);
     procedure mi_ExpandallClick(Sender: TObject);
     procedure mi_CollapseallClick(Sender: TObject);
-    procedure mi_ToolbarClick(Sender: TObject);
-    procedure mi_PackageTreeClick(Sender: TObject);
-    procedure mi_LogClick(Sender: TObject);
-    procedure mi_StayontopClick(Sender: TObject);
     procedure spl_Main2CanResize(Sender: TObject; var NewSize: Integer;
       var Accept: Boolean);
     procedure FormResize(Sender: TObject);
-    procedure mi_RightClick(Sender: TObject);
     procedure ac_RunServerExecute(Sender: TObject);
     procedure ac_JoinServerExecute(Sender: TObject);
     procedure ac_CompileClassExecute(Sender: TObject);
-    procedure mi_AutohideClick(Sender: TObject);
-    procedure mi_MenubarClick(Sender: TObject);
-    procedure mi_LeftClick(Sender: TObject);
     procedure ac_FindNextExecute(Sender: TObject);
     procedure ac_FullTextSearchExecute(Sender: TObject);
     procedure lb_LogDblClick(Sender: TObject);
@@ -176,6 +178,17 @@ type
     procedure ac_TagsExecute(Sender: TObject);
     procedure ac_CopyNameExecute(Sender: TObject);
     procedure FormActivate(Sender: TObject);
+    procedure ac_CloseExecute(Sender: TObject);
+    procedure ac_VMenuBarExecute(Sender: TObject);
+    procedure ac_VToolbarExecute(Sender: TObject);
+    procedure ac_VPackageTreeExecute(Sender: TObject);
+    procedure ac_VLogExecute(Sender: TObject);
+    procedure ac_VStayOnTopExecute(Sender: TObject);
+    procedure ac_VAutoHideExecute(Sender: TObject);
+    procedure ac_VTRightExecute(Sender: TObject);
+    procedure ac_VTLeftExecute(Sender: TObject);
+    procedure ac_VSavePositionExecute(Sender: TObject);
+    procedure ac_VSaveSizeExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -259,6 +272,7 @@ var
   FTSHistory: TStringList;
   CSHistory: TStringList;
   ExpandObject: boolean;
+  MinimizeOnClose: boolean = false;
 
 implementation
 
@@ -610,6 +624,8 @@ end;
 procedure Tfrm_UnCodeX.WMCopyData(var msg: TWMCopyData);
 var
   data: TRedirectStruct;
+  lst: TStringList;
+  i: integer;
 begin
   if (msg.CopyDataStruct.cbData = SizeOf(data)) then begin
     RestoreHandle := Handle;
@@ -624,7 +640,17 @@ begin
       tv_Classes.Selected := nil;
       ac_FindNext.Execute;
     end;
-    // data.Batch;
+    if (data.Batch <> '') then begin
+      lst := TStringList.Create;
+      try
+        lst.DelimitedText := data.Batch;
+        CmdStack.Clear;
+        for i := 0 to lst.Count-1 do CmdStack.Add(lst[i]);
+        NextBatchCommand;
+      finally
+        lst.Free;
+      end;
+    end;
     Msg.Result := ord(true);
   end;
 end;
@@ -690,7 +716,7 @@ begin
   Caption := APPTITLE+' - '+APPVERSION;
   Application.Title := Caption;
   if (ConfigFile = '') then ConfigFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ini';
-  if (StateFile = '') then StateFile := ExtractFilePath(ParamStr(0))+'classes.state';
+  if (StateFile = '') then StateFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ucx';
   InitialStartup := not FileExists(ConfigFile);
   ini := TMemIniFile.Create(ConfigFile);
   sl := TStringList.Create;
@@ -745,6 +771,7 @@ begin
     tv_Packages.Font.Size := ini.ReadInteger('Layout', 'Tree.Font.Size', tv_Packages.Font.Size);
     tv_Packages.Color := ini.ReadInteger('Layout', 'Tree.Color', tv_Packages.Color);
     ExpandObject := ini.ReadBool('Layout', 'ExpandObject', true);
+    MinimizeOnClose := ini.ReadBool('Layout', 'MinimizeOnClose', MinimizeOnClose);
 
     HTMLOutputDir := ini.ReadString('Config', 'HTMLOutputDir', ExtractFilePath(ParamStr(0))+'Output');
     TemplateDir := ini.ReadString('Config', 'TemplateDir', ExtractFilePath(ParamStr(0))+'Templates'+PATHDELIM+'UnrealWiki');
@@ -757,7 +784,11 @@ begin
     OpenResultCmd := ini.ReadString('Config', 'OpenResultCmd', '');
     FTSRegexp := ini.ReadBool('Config', 'FullTextSearchRegExp', false);
     StateFile := ini.ReadString('Config', 'StateFile', StateFile);
-    if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ParamStr(0))+StateFile;
+    if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ConfigFile)+StateFile;
+
+    for i := 0 to al_Main.ActionCount-1 do begin
+      TAction(al_Main.Actions[i]).ShortCut := TextToShortCut(ini.ReadString('HotKeys', TAction(al_Main.Actions[i]).Caption, ShortCutToText(TAction(al_Main.Actions[i]).ShortCut)));
+    end;
 
     ini.ReadSectionValues('PackagePriority', sl);
     for i := 0 to sl.Count-1 do begin
@@ -936,6 +967,8 @@ begin
     tv_TreeLayout.Color := tv_Classes.Color;
     tv_TreeLayout.Font := tv_Classes.Font;
     cb_ExpandObject.Checked := ExpandObject;
+    ed_StateFilename.Text := ExtractFilename(StateFile);
+    cb_MinimzeOnClose.Checked := MinimizeOnClose;
     if (ShowModal = mrOk) then begin
       HTMLOutputDir := ed_HTMLOutputDir.Text;
       TemplateDir := ed_TemplateDir.Text;
@@ -947,6 +980,8 @@ begin
       CompilerCmd := ed_CompilerCommandline.Text;
       OpenResultCmd := ed_OpenResultCmd.Text;
       FTSRegexp := cb_FTSRegExp.Checked;
+      StateFile := ed_StateFilename.Text;
+      if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ConfigFile)+StateFile;
       SourcePaths.Clear;
       SourcePaths.AddStrings(lb_Paths.Items);
       PackagePriority.Clear;
@@ -965,6 +1000,7 @@ begin
       tv_Packages.Color := tv_TreeLayout.Color;
       tv_Packages.Font := tv_TreeLayout.Font;
       ExpandObject := cb_ExpandObject.Checked;
+      MinimizeOnClose := cb_MinimzeOnClose.Checked;
       ini := TMemIniFile.Create(ConfigFile);
       data := TStringList.Create;
       try
@@ -979,6 +1015,7 @@ begin
         data.Add('CompilerCmd='+CompilerCmd);
         data.Add('OpenResultCmd='+OpenResultCmd);
         data.Add('FullTextSearchRegExp='+IntToStr(Ord(FTSRegexp)));
+        data.Add('StateFile='+ed_StateFilename.Text);
 
         data.Add('[Layout]');
         data.Add('Log.Font.Name='+lb_Log.Font.Name);
@@ -990,6 +1027,13 @@ begin
         data.Add('Tree.Font.Size='+IntToStr(tv_Classes.Font.Size));
         data.Add('Tree.Color='+IntToStr(tv_Classes.Color));
         Data.Add('ExpandObject='+IntToStr(Ord(ExpandObject)));
+        data.Add('MinimizeOnClose='+BoolToStr(MinimizeOnClose));
+
+        data.Add('[HotKeys]');
+        for i := 0 to lv_HotKeys.Items.Count-1 do begin
+          data.Add(lv_HotKeys.Items[i].Caption+'='+lv_HotKeys.Items[i].SubItems[0]);
+          TAction(lv_HotKeys.Items[i].Data).ShortCut := TextToShortCut(lv_HotKeys.Items[i].SubItems[0]);
+        end;
 
         data.Add('[SourcePaths]');
         for i := 0 to SourcePaths.Count-1 do data.Add('Path='+SourcePaths[i]);
@@ -1009,11 +1053,6 @@ begin
       end;
     end;
   end;
-end;
-
-procedure Tfrm_UnCodeX.mi_QuitClick(Sender: TObject);
-begin
-  Close;
 end;
 
 procedure Tfrm_UnCodeX.FormCloseQuery(Sender: TObject;
@@ -1100,52 +1139,57 @@ var
   ini: TMemIniFile;
   i: integer;
 begin
-  SaveState;
-  ini := TMemIniFile.Create(ConfigFile);
-  try
-    ini.WriteBool('Layout', 'MenuBar', mi_MenuBar.Checked);
-    ini.WriteBool('Layout', 'Toolbar', mi_Toolbar.Checked);
-    ini.WriteBool('Layout', 'PackageTree', mi_PackageTree.Checked);
-    ini.WriteInteger('Layout', 'PackageTreeWidth', tv_Packages.Width);
-    //ini.WriteBool('Layout', 'ClassTree', mi_ClassTree.Checked);
-    ini.WriteBool('Layout', 'Log', mi_Log.Checked);
-    ini.WriteInteger('Layout', 'LogHeight', lb_Log.Height);
-    ini.WriteBool('Layout', 'StayOnTop', mi_StayOnTop.Checked);
-    ini.WriteBool('Layout', 'SavePosition', mi_Saveposition.Checked);
-    ini.WriteBool('Layout', 'SaveSize', mi_Savesize.Checked);
-    if (mi_Saveposition.Checked) then begin
-      if (IsAppBar) then begin
-        ini.WriteInteger('Layout', 'Top', OldSize.Top);
-        ini.WriteInteger('Layout', 'Left', OldSize.Left);
-      end
-      else begin
-        ini.WriteInteger('Layout', 'Top', Top);
-        ini.WriteInteger('Layout', 'Left', Left);
+  if (MinimizeOnClose) then begin
+    Action := caMinimize;
+  end
+  else begin
+    SaveState;
+    ini := TMemIniFile.Create(ConfigFile);
+    try
+      ini.WriteBool('Layout', 'MenuBar', mi_MenuBar.Checked);
+      ini.WriteBool('Layout', 'Toolbar', mi_Toolbar.Checked);
+      ini.WriteBool('Layout', 'PackageTree', mi_PackageTree.Checked);
+      ini.WriteInteger('Layout', 'PackageTreeWidth', tv_Packages.Width);
+      //ini.WriteBool('Layout', 'ClassTree', mi_ClassTree.Checked);
+      ini.WriteBool('Layout', 'Log', mi_Log.Checked);
+      ini.WriteInteger('Layout', 'LogHeight', lb_Log.Height);
+      ini.WriteBool('Layout', 'StayOnTop', mi_StayOnTop.Checked);
+      ini.WriteBool('Layout', 'SavePosition', mi_Saveposition.Checked);
+      ini.WriteBool('Layout', 'SaveSize', mi_Savesize.Checked);
+      if (mi_Saveposition.Checked) then begin
+        if (IsAppBar) then begin
+          ini.WriteInteger('Layout', 'Top', OldSize.Top);
+          ini.WriteInteger('Layout', 'Left', OldSize.Left);
+        end
+        else begin
+          ini.WriteInteger('Layout', 'Top', Top);
+          ini.WriteInteger('Layout', 'Left', Left);
+        end;
       end;
-    end;
-    if (mi_Savesize.Checked) then begin
-      if (IsAppBar) then begin
-        ini.WriteInteger('Layout', 'Width', OldSize.Right);
-        ini.WriteInteger('Layout', 'Height', OldSize.Bottom);
-      end
-      else begin
-        ini.WriteInteger('Layout', 'Width', Width);
-        ini.WriteInteger('Layout', 'Height', Height);
+      if (mi_Savesize.Checked) then begin
+        if (IsAppBar) then begin
+          ini.WriteInteger('Layout', 'Width', OldSize.Right);
+          ini.WriteInteger('Layout', 'Height', OldSize.Bottom);
+        end
+        else begin
+          ini.WriteInteger('Layout', 'Width', Width);
+          ini.WriteInteger('Layout', 'Height', Height);
+        end;
       end;
+      ini.WriteInteger('Layout', 'ABWidth', ABWidth);
+      ini.WriteBool('Layout', 'AutoHide', mi_AutoHide.Checked);
+      ini.WriteBool('Layout', 'ABRight', mi_Right.Checked);
+      ini.WriteBool('Layout', 'ABLeft', mi_Left.Checked);
+      for i := 0 to FTSHistory.Count-1 do begin
+        ini.WriteString('FullTextSearch', IntToStr(i), FTSHistory[i]);
+      end;
+      for i := 0 to CSHistory.Count-1 do begin
+        ini.WriteString('ClassSearch', IntToStr(i), CSHistory[i]);
+      end;
+      ini.UpdateFile;
+    finally
+      ini.Free;
     end;
-    ini.WriteInteger('Layout', 'ABWidth', ABWidth);
-    ini.WriteBool('Layout', 'AutoHide', mi_AutoHide.Checked);
-    ini.WriteBool('Layout', 'ABRight', mi_Right.Checked);
-    ini.WriteBool('Layout', 'ABLeft', mi_Left.Checked);
-    for i := 0 to FTSHistory.Count-1 do begin
-      ini.WriteString('FullTextSearch', IntToStr(i), FTSHistory[i]);
-    end;
-    for i := 0 to CSHistory.Count-1 do begin
-      ini.WriteString('ClassSearch', IntToStr(i), CSHistory[i]);
-    end;
-    ini.UpdateFile;
-  finally
-    ini.Free;
   end;
 end;
 
@@ -1182,33 +1226,6 @@ begin
   end;
 end;
 
-procedure Tfrm_UnCodeX.mi_ToolbarClick(Sender: TObject);
-begin
-  tb_Tools.Visible := mi_Toolbar.Checked;
-end;
-
-procedure Tfrm_UnCodeX.mi_PackageTreeClick(Sender: TObject);
-begin
-  spl_Main1.Visible := mi_PackageTree.Checked;
-  tv_Packages.Visible := mi_PackageTree.Checked;
-end;
-
-procedure Tfrm_UnCodeX.mi_LogClick(Sender: TObject);
-begin
-  lb_Log.Top := 0;
-  spl_Main2.Top := 1;
-  lb_Log.Visible := mi_Log.Checked;
-  spl_Main2.Visible := mi_Log.Checked;
-end;
-
-procedure Tfrm_UnCodeX.mi_StayontopClick(Sender: TObject);
-begin
-  // This prevents window recreation
-  if (mi_Stayontop.Checked) then
-    SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_NOACTIVATE)
-    else SetWindowPos(Handle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_NOACTIVATE);
-end;
-
 procedure Tfrm_UnCodeX.spl_Main2CanResize(Sender: TObject;
   var NewSize: Integer; var Accept: Boolean);
 begin
@@ -1218,17 +1235,6 @@ end;
 procedure Tfrm_UnCodeX.FormResize(Sender: TObject);
 begin
   if (IsAppBar) then ABResize;
-end;
-
-procedure Tfrm_UnCodeX.mi_RightClick(Sender: TObject);
-begin
-  if (mi_Right.Checked) then begin
-    mi_Left.Checked := false;
-    mi_Left.OnClick(Sender);
-    abd.uEdge := ABE_RIGHT;
-    RegisterAppBar
-  end
-  else UnregisterAppBar;
 end;
 
 procedure Tfrm_UnCodeX.ac_RunServerExecute(Sender: TObject);
@@ -1303,38 +1309,6 @@ begin
       end;
     end;
   end;
-end;
-
-procedure Tfrm_UnCodeX.mi_AutohideClick(Sender: TObject);
-begin
-  ABAutoHide := mi_AutoHide.Checked;
-  if (IsAppBar) then begin
-    if (ABAutoHide) then RegisterABAutoHide
-      else UnregisterABAutoHide;
-  end;
-end;
-
-procedure Tfrm_UnCodeX.mi_MenubarClick(Sender: TObject);
-begin
-  if (mi_MenuBar.Checked) then begin
-    Windows.SetMenu(Handle, mm_Main.Handle);
-    mm_Main.WindowHandle := Handle;
-  end
-  else begin
-    Windows.SetMenu(Handle, 0);
-    mm_Main.WindowHandle := 0;
-  end;
-end;
-
-procedure Tfrm_UnCodeX.mi_LeftClick(Sender: TObject);
-begin
-  if (mi_Left.Checked) then begin
-    mi_Right.Checked := false;
-    mi_Right.OnClick(Sender);
-    abd.uEdge := ABE_LEFT;
-    RegisterAppBar
-  end
-  else UnregisterAppBar;
 end;
 
 procedure Tfrm_UnCodeX.ac_FindNextExecute(Sender: TObject);
@@ -1507,9 +1481,95 @@ end;
 procedure Tfrm_UnCodeX.FormActivate(Sender: TObject);
 begin
   if ((RestoreHandle <> Handle) and InitActivateFix) then begin
-    SetActiveWindow(RestoreHandle);
+    if (RestoreHandle <> 0) then SetActiveWindow(RestoreHandle);
     InitActivateFix := false;
   end;
+end;
+
+procedure Tfrm_UnCodeX.ac_CloseExecute(Sender: TObject);
+begin
+  MinimizeOnClose := false;
+  Close;
+end;
+
+procedure Tfrm_UnCodeX.ac_VMenuBarExecute(Sender: TObject);
+begin
+  if (mi_MenuBar.Checked) then begin
+    Windows.SetMenu(Handle, mm_Main.Handle);
+    mm_Main.WindowHandle := Handle;
+  end
+  else begin
+    Windows.SetMenu(Handle, 0);
+    mm_Main.WindowHandle := 0;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.ac_VToolbarExecute(Sender: TObject);
+begin
+  tb_Tools.Visible := mi_Toolbar.Checked;
+end;
+
+procedure Tfrm_UnCodeX.ac_VPackageTreeExecute(Sender: TObject);
+begin
+  spl_Main1.Visible := mi_PackageTree.Checked;
+  tv_Packages.Visible := mi_PackageTree.Checked;
+end;
+
+procedure Tfrm_UnCodeX.ac_VLogExecute(Sender: TObject);
+begin
+  lb_Log.Top := 0;
+  spl_Main2.Top := 1;
+  lb_Log.Visible := mi_Log.Checked;
+  spl_Main2.Visible := mi_Log.Checked;
+end;
+
+procedure Tfrm_UnCodeX.ac_VStayOnTopExecute(Sender: TObject);
+begin
+  // This prevents window recreation
+  if (mi_Stayontop.Checked) then
+    SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_NOACTIVATE)
+    else SetWindowPos(Handle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE or SWP_NOSIZE or SWP_NOACTIVATE);
+end;
+
+procedure Tfrm_UnCodeX.ac_VAutoHideExecute(Sender: TObject);
+begin
+  ABAutoHide := mi_AutoHide.Checked;
+  if (IsAppBar) then begin
+    if (ABAutoHide) then RegisterABAutoHide
+      else UnregisterABAutoHide;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.ac_VTRightExecute(Sender: TObject);
+begin
+  if (mi_Right.Checked) then begin
+    mi_Left.Checked := false;
+    mi_Left.OnClick(Sender);
+    abd.uEdge := ABE_RIGHT;
+    RegisterAppBar
+  end
+  else UnregisterAppBar;
+end;
+
+procedure Tfrm_UnCodeX.ac_VTLeftExecute(Sender: TObject);
+begin
+  if (mi_Left.Checked) then begin
+    mi_Right.Checked := false;
+    mi_Right.OnClick(Sender);
+    abd.uEdge := ABE_LEFT;
+    RegisterAppBar
+  end
+  else UnregisterAppBar;
+end;
+
+procedure Tfrm_UnCodeX.ac_VSavePositionExecute(Sender: TObject);
+begin
+  // nop
+end;
+
+procedure Tfrm_UnCodeX.ac_VSaveSizeExecute(Sender: TObject);
+begin
+  // nop
 end;
 
 end.

@@ -41,7 +41,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_PackagePriority
+    ActivePage = ts_ProgramOptions
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -743,7 +743,7 @@ object frm_Settings: Tfrm_Settings
           Width = 417
           Height = 17
           Anchors = [akLeft, akTop, akRight]
-          Caption = 'Default regular expression'
+          Caption = 'Default to regular expression'
           TabOrder = 3
         end
       end
@@ -905,52 +905,97 @@ object frm_Settings: Tfrm_Settings
         Align = alClient
         Caption = 'Program Options'
         TabOrder = 0
+        DesignSize = (
+          433
+          368)
         object lbl_StateFile: TLabel
           Left = 8
           Top = 16
-          Width = 41
+          Width = 162
           Height = 13
-          Caption = 'State file'
+          Caption = 'State file (relative to the config file)'
         end
-        object Edit1: TEdit
+        object lbl_HotKeys: TLabel
+          Left = 8
+          Top = 128
+          Width = 42
+          Height = 13
+          Caption = 'Hot keys'
+        end
+        object ed_StateFilename: TEdit
           Left = 8
           Top = 32
-          Width = 385
+          Width = 417
           Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
           TabOrder = 0
-          Text = 'Edit1'
         end
-        object CheckBox1: TCheckBox
+        object cb_MinimzeOnClose: TCheckBox
           Left = 8
           Top = 56
-          Width = 97
-          Height = 17
-          Caption = 'Properties file'
-          TabOrder = 1
-        end
-        object Edit2: TEdit
-          Left = 8
-          Top = 72
-          Width = 385
-          Height = 21
-          TabOrder = 2
-          Text = 'Edit2'
-        end
-        object CheckBox2: TCheckBox
-          Left = 8
-          Top = 104
           Width = 113
           Height = 17
           Caption = 'Minimize on close'
+          TabOrder = 1
+        end
+        object lv_HotKeys: TListView
+          Left = 8
+          Top = 168
+          Width = 417
+          Height = 193
+          Anchors = [akLeft, akTop, akRight, akBottom]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          Columns = <
+            item
+              AutoSize = True
+              Caption = 'Command'
+            end
+            item
+              AutoSize = True
+              Caption = 'Hot key'
+            end>
+          ColumnClick = False
+          ReadOnly = True
+          RowSelect = True
+          SortType = stText
+          TabOrder = 2
+          ViewStyle = vsReport
+          OnClick = lv_HotKeysClick
+        end
+        object ed_HotKey: TEdit
+          Left = 8
+          Top = 144
+          Width = 177
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          ReadOnly = True
           TabOrder = 3
         end
-        object CheckBox3: TCheckBox
-          Left = 8
-          Top = 120
-          Width = 113
-          Height = 17
-          Caption = 'CheckBox3'
+        object btn_SetHotKey: TBitBtn
+          Left = 368
+          Top = 144
+          Width = 57
+          Height = 21
+          Anchors = [akTop, akRight]
+          Caption = 'Set'
           TabOrder = 4
+          OnClick = btn_SetHotKeyClick
+        end
+        object hk_HotKey: THotKey
+          Left = 192
+          Top = 144
+          Width = 169
+          Height = 21
+          Anchors = [akTop, akRight]
+          HotKey = 0
+          InvalidKeys = [hcNone]
+          Modifiers = []
+          TabOrder = 5
         end
       end
     end
