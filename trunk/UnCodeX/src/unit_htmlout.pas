@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.39 2003-11-27 17:01:55 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.40 2003-12-03 10:31:23 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -29,7 +29,7 @@ unit unit_htmlout;
 interface
 
 uses
-  Windows, Classes, SysUtils, unit_uclasses, StrUtils, Hashes,
+  Classes, SysUtils, unit_uclasses, StrUtils, Hashes, DateUtils,
   IniFiles, unit_outputdefs, unit_clpipe;
 
 type
@@ -267,7 +267,7 @@ end;
 
 procedure THTMLOutput.Execute;
 var
-  stime: Cardinal;
+  stime: TDateTime;
   i: integer;
 begin
   curPos := 0;
@@ -276,7 +276,7 @@ begin
   if (ini.ReadBool('Settings', 'CreateGlossary', true)) then maxPos := maxPos+26;
   if (ini.ReadBool('Settings', 'SourceCode', true)) then maxPos := maxPos+ClassList.Count;
   Status('Working ...', 0);
-  stime := GetTickCount();
+  stime := Now();
   forcedirectories(htmloutputdir);
   PackageList.AlphaSort;
   ClassList.Sort;
@@ -309,7 +309,7 @@ begin
   subDirDepth := 1;
   if (ini.ReadBool('Settings', 'SourceCode', true) and (not Self.Terminated) and CreateSource) then SourceCode; //
   if (IsCPP and (CPPPipe <> nil)) then CPPPipe.Close;
-  Status('Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds');
+  Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds');
 end;
 
 procedure THTMLOutput.parseTemplate(input, output: TStream; replace: TReplacement; data: TObject = nil);
@@ -386,6 +386,10 @@ begin
   end
   else if (CompareText(replacement, 'UNCODEX') = 0) then begin
     replacement := APPTITLE;
+    result := true;
+  end
+  else if (CompareText(replacement, 'PLATFORM') = 0) then begin
+    replacement := APPPLATFORM;
     result := true;
   end
   else if (CompareText(replacement, 'packages_list_link') = 0) then begin
@@ -1834,7 +1838,7 @@ begin
       tmp := sl[i];
       Delete(tmp, 1, Pos('=', tmp));
       Log('Copy template file '+tmp);
-      CopyFile(PChar(TemplateDir+tmp), PChar(HTMLOutputDir+PATHDELIM+tmp), false);
+      CopyFile(TemplateDir+tmp, HTMLOutputDir+PATHDELIM+tmp);
     end;
   finally
     sl.Free;
@@ -2086,7 +2090,7 @@ begin
         template1.Position := 0;
         parseTemplate(template1, target, replaceClass, ClassList[i]);
         if (Self.Terminated) then break;
-        source := TFileStream.Create(ClassList[i].package.path+PATHDELIM+CLASSDIR+PATHDELIM+ClassList[i].filename, fmOpenRead or fmShareDenyWrite);
+        source := TFileStream.Create(ClassList[i].package.path+PATHDELIM+ClassList[i].filename, fmOpenRead or fmShareDenyWrite);
         try
           parseCode(source, target);
         finally

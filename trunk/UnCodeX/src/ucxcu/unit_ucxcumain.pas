@@ -33,6 +33,8 @@ var
   PackageList: TUPackageList;
   ClassList: TUClassList;
   PhaseLabel, StatusFormat: string;
+  LogFile: TextFile;
+  Logging: boolean = false;
 
 procedure LoadConfig;
 var
@@ -92,7 +94,7 @@ begin
       tmp := sl[i];
       Delete(tmp, 1, Pos('=', tmp));
       Log('Config: Path = '+tmp);
-      SourcePaths.Add(LowerCase(tmp));
+      if (iFindDir(tmp, tmp)) then SourcePaths.Add(tmp);
     end;
   finally
     sl.free;
@@ -106,6 +108,16 @@ var
   lst: TStringList;
   i: integer;
 begin
+  if (CmdOption('l', tmp)) then begin
+    if (DirectoryExists(ExtractFilePath(tmp)) or (ExtractFilePath(tmp) = '')) then begin
+      Assign(LogFile, tmp);
+      if (FileExists(tmp)) then Append(LogFile)
+      else Rewrite(LogFile);
+      WriteLn(LogFile, 'Log started on: '+DateTimeToStr(Now()));
+      Flush(LogFile);
+      Logging := true;
+    end;
+  end;
 	if (CmdOption('uc', tmp)) then begin
 
   end;
@@ -206,17 +218,21 @@ end;
 
 procedure FatalError(msg: string; errorcode: integer = -1);
 begin
-  writeln('');
-  writeln('Fatal error:');
-  writeln(#9+msg);
+  Flush(Output);
+  writeln(ErrOutput, '');
+  writeln(ErrOutput, 'Fatal error:');
+  writeln(ErrOutput, #9+msg);
+  Flush(ErrOutput);
   Halt(errorcode);
 end;
 
 procedure Warning(msg: string);
 begin
-  writeln('');
-  writeln('Warning:');
-  writeln(#9+msg);
+  Flush(Output);
+  writeln(ErrOutput, '');
+  writeln(ErrOutput, 'Warning:');
+  writeln(ErrOutput, #9+msg);
+  Flush(ErrOutput);
 end;
 
 procedure StatusReport(msg: string; progress: byte = 255);
@@ -230,10 +246,12 @@ end;
 
 procedure Log(msg: string);
 begin
+  if (Logging) then WriteLn(LogFile, msg);
 end;
 
 procedure LogClass(msg: string; uclass: TUClass = nil);
 begin
+  if (Logging) then WriteLn(LogFile, msg);
 end;
 
 initialization
@@ -250,4 +268,9 @@ finalization
   ignorepackages.Free;
   ClassList.Free;
   PackageList.Free;
+  if (Logging) then begin
+    Flush(LogFile);
+    WriteLn(LogFile, 'Log closed on: '+DateTimeToStr(Now()));
+    CloseFile(logfile);
+  end;
 end.

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   General definitions
- $Id: unit_definitions.pas,v 1.69 2003-11-27 17:01:55 elmuerte Exp $
+ $Id: unit_definitions.pas,v 1.70 2003-12-03 10:31:23 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -47,13 +47,27 @@ type
 
   // repeat a string
   function StrRepeat(line: string; count: integer): string;
+  function iFindFile(filename, dirname: string): string;
+  function iFindDir(dirname: string; var output: string): boolean;
+  function CopyFile(filename, target: string): boolean;
   procedure ReloadKeywords;
 
 const
   APPTITLE = 'UnCodeX';
   APPVERSION = '156';
+  {$IFDEF MSWINDOWS}
+  APPPLATFORM = 'MS Windows';
+  {$ENDIF}
+  {$IFDEF LINUX}
+  APPPLATFORM = 'GNU\Linux';
+  {$ENDIF}
 
+  {$IFDEF MSWINDOWS}
   PATHDELIM = '\';
+  {$ENDIF}
+  {$IFDEF LINUX}
+  PATHDELIM = '/';
+  {$ENDIF}
   WILDCARD = '*.*';
   SOURCECARD = '*.uc';
   CLASSDIR = 'Classes';
@@ -105,6 +119,9 @@ var
 implementation
 
 uses
+{$IFDEF MSWINDOWS}
+  Windows,
+{$ENDIF}
   SysUtils, Classes;
 
 var
@@ -118,6 +135,86 @@ begin
     Dec(count);
   end;
 end;
+
+function iFindFile(filename, dirname: string): string;
+var
+  sr: TSearchRec;
+begin
+  if (FileExists(dirname+filename)) then result := dirname+filename
+  else begin
+    if (not DirectoryExists(dirname)) then exit;
+    if (FindFirst(dirname+WILDCARD, faAnyFile, sr) = 0) then begin
+      repeat
+        if (CompareText(filename, sr.Name) = 0) then begin
+          result := dirname+sr.Name;
+        end;
+      until (FindNext(sr) <> 0) and (result = '');
+      FindClose(sr);
+    end;
+  end;
+  {$IFDEF MSWINDOWS}
+  result := LowerCase(result);
+  {$ENDIF}
+end;
+
+function iFindDir(dirname: string; var output: string): boolean;
+{$IFDEF MSWINDOWS}
+begin
+  result := DirectoryExists(dirname);
+  output := LowerCase(dirname);
+end;
+{$ENDIF}
+{$IFDEF LINUX}
+var
+  basename: string;
+begin
+  if (Length(dirname) = 0) then begin
+    result := false;
+    exit;
+  end;
+  if (DirectoryExists(dirname)) then begin
+    output := dirname;
+    result := true;
+  end
+  else begin
+    dirname := ExcludeTrailingPathDelimiter(dirname);
+    basename := ExtractFileName(dirname);
+    dirname := ExtractFilePath(dirname);
+    result := iFindDir(dirname, output); // find the parent dir
+    if (result) then begin
+      output := iFindFile(basename, output); // find the file
+      if (output <> '') then output := output+PATHDELIM;
+      result := (output <> '');
+    end;
+  end;
+end;
+{$ENDIF}
+
+function CopyFile(filename, target: string): boolean;
+{$IFDEF MSWINDOWS}
+begin
+  result := Windows.CopyFile(PChar(filename), PChar(target), false);
+end;
+{$ENDIF}
+{$IFDEF LINUX}
+var
+  fs1, fs2: TFileStream;
+begin
+  result := false;
+  try
+    fs1 := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite	);
+    fs2 := TFileStream.Create(target, fmCreate or fmShareExclusive);
+    try
+      fs2.CopyFrom(fs1, fs1.Size);
+      result := true;
+    finally
+      fs1.Free;
+      fs2.Free;
+    end;
+  except;
+  end;
+end;
+{$ENDIF}
 
 procedure ReloadKeywords;
 var

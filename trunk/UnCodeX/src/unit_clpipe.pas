@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Create a pipe with a commandline application
- $Id: unit_clpipe.pas,v 1.3 2003-11-04 19:35:27 elmuerte Exp $
+ $Id: unit_clpipe.pas,v 1.4 2003-12-03 10:31:23 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -29,7 +29,10 @@ unit unit_clpipe;
 interface
 
 uses
-  SysUtils, Classes, Windows;
+  SysUtils, Classes
+  {$IFDEF MSWINDOWS}
+  , Windows
+  {$ENDIF};
 
 type
   TCLPipe = class(TObject)
@@ -38,8 +41,10 @@ type
     buffer: array[0..1024] of char;
     c: char;
 
+    {$IFDEF MSWINDOWS}
     StartupInfo:TStartupInfo;
     ProcessInfo:TProcessInformation;
+    {$ENDIF}
     InRead,InWrite,OutRead,OutWrite:THandle;
     InStream: THandleStream;
     OutStream: THandleStream;
@@ -66,10 +71,11 @@ begin
   inherited Destroy;
 end;
 
+{$IFDEF MSWINDOWS}
 function TCLPipe.Open: boolean;
 var
   TempHandle: THandle;
-  sa: TSECURITYATTRIBUTES; 
+  sa: TSECURITYATTRIBUTES;
 begin
   result := true;
   FillChar(StartupInfo,SizeOf(StartupInfo), 0);
@@ -114,7 +120,16 @@ begin
     result := false;
   end;
 end;
+{$ENDIF}
 
+{$IFDEF LINUX}
+function TCLPipe.Open: boolean;
+begin
+
+end;
+{$ENDIF}
+
+{$IFDEF MSWINDOWS}
 function TCLPipe.Close: boolean;
 begin
   result := true;
@@ -134,6 +149,13 @@ begin
     end;
   end;
 end;
+{$ENDIF}
+
+{$IFDEF LINUX}
+function TCLPipe.Close: boolean;
+begin
+end;
+{$ENDIF}
 
 function TCLPipe.Pipe(input: string): string;
 var
