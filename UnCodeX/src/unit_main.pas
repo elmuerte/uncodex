@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.119 2004-08-03 13:53:00 elmuerte Exp $
+ $Id: unit_main.pas,v 1.120 2004-08-03 20:31:42 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -255,6 +255,7 @@ type
     ac_PluginRefresh: TAction;
     mi_Refresh: TMenuItem;
     mi_PluginDiv1: TMenuItem;
+    ps_dll: TPSDllPlugin;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);

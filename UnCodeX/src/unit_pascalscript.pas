@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   General PascalScript routines
- $Id: unit_pascalscript.pas,v 1.5 2004-08-03 13:53:00 elmuerte Exp $
+ $Id: unit_pascalscript.pas,v 1.6 2004-08-03 20:31:42 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -80,6 +80,7 @@ begin
   ps.AddFunction(@DateTimeToFileDate, 'function DateTimeToFileDate(DateTime: TDateTime): Integer;');
   ps.AddFunction(@CreateDir, 'function CreateDir(const Dir: string): Boolean;');
   ps.AddFunction(@RemoveDir, 'function RemoveDir(const Dir: string): Boolean;');
+  
   ps.AddFunction(@GetFiles, 'function GetFiles(path: string; Attr: Integer; var files: TStringList): boolean;');
   ps.AddFunction(@ExtractBaseName, 'function ExtractBaseName(filename: string): string;');
 

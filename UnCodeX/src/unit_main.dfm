@@ -1127,7 +1127,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Left = 40
     Top = 104
     Bitmap = {
-      494C010121002200040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010121002200040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000005E5E5E00252425002524250025242500252425005E5E5E00FC3E
@@ -2319,7 +2319,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
       E003E00300010001800080000001000180008000000100018000800000010001
       8000800000010001800080000001000180008000000100018000800000010001
       800080000001000180008000000100018000800000010001E003E00300010001
-      F80FF80F00010001FE3FFE3FFFFFFFFF}
+      F80FF80F00010001FE3FFE3FFFFFFFFF00000000000000000000000000000000
+      000000000000}
   end
   object pm_SourceSnoop: TPopupMenu
     AutoPopup = False
@@ -2425,8 +2426,11 @@ object frm_UnCodeX: Tfrm_UnCodeX
       end
       item
         Plugin = psi_unit_uclasses
+      end
+      item
+        Plugin = ps_dll
       end>
-    UsePreProcessor = False
+    UsePreProcessor = True
     Left = 8
     Top = 280
   end
@@ -2441,10 +2445,14 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Top = 344
   end
   object psi_unit_uclasses: TPSImport_unit_uclasses
-    Left = 8
-    Top = 408
+    Left = 40
+    Top = 344
   end
   object psi_miscclasses: TPSImport_miscclasses
+    Left = 40
+    Top = 312
+  end
+  object ps_dll: TPSDllPlugin
     Left = 8
     Top = 376
   end
