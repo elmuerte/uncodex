@@ -2,7 +2,7 @@ object frm_GraphViz: Tfrm_GraphViz
   Left = 398
   Top = 227
   BorderStyle = bsDialog
-  Caption = 'GraphViz - version 007 beta'
+  Caption = 'GraphViz - version 008 beta'
   ClientHeight = 287
   ClientWidth = 420
   Color = clBtnFace
@@ -527,7 +527,17 @@ object frm_GraphViz: Tfrm_GraphViz
     Width = 97
     Height = 17
     Caption = 'Legenda'
+    Enabled = False
     TabOrder = 8
+  end
+  object btn_Colorize: TBitBtn
+    Left = 224
+    Top = 256
+    Width = 75
+    Height = 25
+    Caption = 'Colorize'
+    TabOrder = 9
+    OnClick = btn_ColorizeClick
   end
   object sd_Save: TSaveDialog
     DefaultExt = '.dot'

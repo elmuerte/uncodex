@@ -22,6 +22,7 @@ type
     cb_Other: TCheckBox;
     cb_PackageBorder: TCheckBox;
     cb_Legenda: TCheckBox;
+    btn_Colorize: TBitBtn;
     procedure FormCreate(Sender: TObject);
     procedure BitBtn1Click(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -31,6 +32,7 @@ type
     procedure lv_PackagesDblClick(Sender: TObject);
     procedure cb_ColorExit(Sender: TObject);
     procedure cb_ColorChange(Sender: TObject);
+    procedure btn_ColorizeClick(Sender: TObject);
   private
     plist: TGraphUPAckageList;
     deplist: TDepList;
@@ -215,6 +217,28 @@ begin
   if (cb_Color.Items[cb_Color.ItemIndex] = '') then exit;
   lv_Packages.Selected.SubItems[0] := cb_Color.Items[cb_Color.ItemIndex];
   cb_Color.Visible := false;
+end;
+
+procedure Tfrm_GraphViz.btn_ColorizeClick(Sender: TObject);
+var
+  i, j, cnt, size: integer;
+  tmp: string;
+begin
+  cnt := 0;
+  for i := 0 to lv_Packages.Items.Count-1 do begin
+    if (lv_Packages.Items[i].Checked) then Inc(cnt);
+  end;
+  if (cnt = 0) then exit;
+  size := cb_Color.Items.Count div cnt;
+  for i := 0 to lv_Packages.Items.Count-1 do begin
+    if (lv_Packages.Items[i].Checked) then begin
+      j := abs(size*cnt) mod cb_Color.Items.Count;
+      Dec(cnt);
+      tmp := cb_Color.Items[j];
+      if (tmp = '') then tmp := cb_Color.Items[j+1];
+      lv_Packages.Items[i].SubItems[0] := tmp;
+    end;
+  end;
 end;
 
 end.
