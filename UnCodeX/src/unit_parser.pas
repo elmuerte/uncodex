@@ -11,6 +11,7 @@ type
   TUCParser = class(TObject)
   private
     FStream: TStream;
+    FCopyStream: TStringStream;
     FOrigin: Longint;
     FBuffer: PChar;
     FBufPtr: PChar;
@@ -18,15 +19,14 @@ type
     FSourcePtr: PChar;
     FSourceEnd: PChar;
     FTokenPtr: PChar;
-    FStringPtr: PChar;
     FSourceLine: Integer;
     FSaveChar: Char;
     FToken: Char;
     FFloatType: Char;
-    FWideStr: WideString;
     procedure ReadBuffer;
     procedure SkipBlanks;
   public
+    FullCopy: boolean;
     constructor Create(Stream: TStream);
     destructor Destroy; override;
     procedure CheckToken(T: Char);
@@ -42,8 +42,8 @@ type
     function TokenFloat: Extended;
     function TokenInt: Int64;
     function TokenString: string;
-    function TokenWideString: WideString;
     function TokenSymbolIs(const S: string): Boolean;
+    function GetCopyData(flush: boolean = true): string;
     property FloatType: Char read FFloatType;
     property SourceLine: Integer read FSourceLine;
     property Token: Char read FToken;
@@ -51,6 +51,7 @@ type
 
 const
   toComment = Char(6);
+  toName = Char(7);
 
 implementation
 
@@ -96,6 +97,8 @@ end;
 constructor TUCParser.Create(Stream: TStream);
 begin
   FStream := Stream;
+  FullCopy := false;
+  FCopyStream := TStringStream.Create('');
   GetMem(FBuffer, ParseBufSize);
   FBuffer[0] := #0;
   FBufPtr := FBuffer;
@@ -109,6 +112,7 @@ end;
 
 destructor TUCParser.Destroy;
 begin
+  FCopyStream.Free;
   if FBuffer <> nil then
   begin
     FStream.Seek(Longint(FTokenPtr) - Longint(FBufPtr), 1);
@@ -176,9 +180,9 @@ end;
 
 function TUCParser.NextTokenTmp: Char;
 var
-  J: Integer;
-  IsWideStr: Boolean;
-  P, S: PChar;
+  P: PChar;
+  isComment: boolean;
+  CommentString: string;
 begin
   SkipBlanks;
   P := FSourcePtr;
@@ -190,80 +194,37 @@ begin
         while P^ in ['A'..'Z', 'a'..'z', '0'..'9', '_'] do Inc(P);
         Result := toSymbol;
       end;
-    '"': 
+    '"':
       begin
-        IsWideStr := False;
-        J := 0;
-        S := P;
-        while True do
+        Inc(P);
+        while true do begin
           case P^ of
-            '"':
-              begin
-                Inc(P);
-                while True do
-                begin
-                  case P^ of
-                    #0, #10, #13:
-                      Error(SInvalidString);
-                    '\':
-                      begin
-                        Inc(P);
-                      end;
-                    '"':
-                      begin
-                        Inc(P);
-                        Break;
-                      end;
+            #0, #10, #13: Error(SInvalidString);
+            '\':  Inc(P);
+            '"':  begin
+                    Inc(P);
+                    Break;
                   end;
-                  Inc(J);
-                  Inc(P);
-                end;
-              end;
-          else
-            Break;
           end;
-        P := S;
-        if IsWideStr then SetLength(FWideStr, J);
-        J := 1;
-        while True do
+          Inc(P);
+        end;
+        Result := toString;
+      end;
+    '''':
+      begin
+        Inc(P);
+        while true do begin
           case P^ of
-            '"':
-              begin
-                Inc(P);
-                while True do
-                begin
-                  case P^ of
-                    #0, #10, #13:
-                      Error(SInvalidString);
-                    '\':
-                      begin
-                        Inc(P);
-                      end;
-                    '"': 
-                      begin
-                        Inc(P);
-                        Break;
-                      end;
+            #0, #10, #13: Error(SInvalidString);
+            '\':  Inc(P);
+            '''':  begin
+                    Inc(P);
+                    Break;
                   end;
-                  if IsWideStr then
-                  begin
-                    FWideStr[J] := WideChar(P^);
-                    Inc(J);
-                  end else
-                  begin
-                    S^ := P^;
-                    Inc(S);
-                  end;
-                  Inc(P);
-                end;
-              end;
-          else
-            Break;
           end;
-        FStringPtr := S;
-        if IsWideStr then
-          Result := toWString else
-          Result := toString;
+          Inc(P);
+        end;
+        Result := toName;
       end;
     '-', '0'..'9':
       begin
@@ -315,10 +276,18 @@ begin
           end;
         end
         else if (P^ = '*') then begin // block comment
+          isComment := (P+1)^ = '*';
+          if (isComment) then begin
+            GetCopyData(true); // empty buffer
+          end;
           repeat begin
             Inc(P);
             if ((P^ = #0) or (P^ = #0)) then begin
               FSourcePtr := P;
+              if (isComment) then begin
+                SetString(CommentString, FTokenPtr+3, FSourcePtr - FTokenPtr - 3);
+                FCopyStream.WriteString(CommentString);
+              end;
               ReadBuffer;
               P := FSourcePtr;
               FTokenPtr := P;
@@ -326,6 +295,10 @@ begin
             if (P^ = #10) then Inc(FSourceLine); // next line
           end
           until ((P^ ='*') and ((P+1)^ ='/' ));
+          if (isComment) then begin
+            SetString(CommentString, FTokenPtr+3, P - FTokenPtr - 3); // 3 to strip /**
+            FCopyStream.WriteString(CommentString);
+          end;
           Inc(P, 2);
           Result := toComment;
         end
@@ -340,6 +313,7 @@ begin
   end;
   FSourcePtr := P;
   FToken := Result;
+  if (FullCopy) then FCopyStream.WriteString(TokenString);
 end;
 
 procedure TUCParser.ReadBuffer;
@@ -364,22 +338,34 @@ begin
 end;
 
 procedure TUCParser.SkipBlanks;
+var
+  SkipedBlanks: string;
+  FirstBlank: PChar;
 begin
-  while True do
-  begin
+  FirstBlank := FSourcePtr;
+  while True do begin
     case FSourcePtr^ of
       #0:
         begin
+          if (FullCopy) then begin
+            SetString(SkipedBlanks, FirstBlank, FSourcePtr - FirstBlank);
+            FCopyStream.WriteString(SkipedBlanks);
+          end;
           ReadBuffer;
           if FSourcePtr^ = #0 then Exit;
+          FirstBlank := FSourcePtr;
           Continue;
         end;
       #10:
         Inc(FSourceLine);
       #33..#255:
-        Exit;
+        Break;
     end;
     Inc(FSourcePtr);
+  end;
+  if (FullCopy) then begin
+    SetString(SkipedBlanks, FirstBlank, FSourcePtr - FirstBlank);
+    FCopyStream.WriteString(SkipedBlanks);
   end;
 end;
 
@@ -401,22 +387,9 @@ begin
 end;
 
 function TUCParser.TokenString: string;
-var
-  L: Integer;
 begin
-  if FToken = toString then
-    L := FStringPtr - FTokenPtr else
-    L := FSourcePtr - FTokenPtr;
-  SetString(Result, FTokenPtr, L);
-end;
-
-function TUCParser.TokenWideString: WideString;
-begin
-  if FToken = toString then
-    Result := TokenString
-  else
-    Result := FWideStr;
-end;
+  SetString(Result, FTokenPtr, FSourcePtr - FTokenPtr);
+end;     
 
 function TUCParser.TokenSymbolIs(const S: string): Boolean;
 begin
@@ -440,6 +413,15 @@ begin
   end;
   FSourcePtr := P;
   Result := TokenString;
+end;
+
+function TUCParser.GetCopyData(flush: boolean = true): string;
+begin
+  Result := FCopyStream.DataString;
+  if (flush) then begin
+    FCopyStream.Position := 0;
+    FCopyStream.Size := 0;
+  end;
 end;
 
 end.

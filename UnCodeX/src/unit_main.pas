@@ -1394,13 +1394,11 @@ procedure Tfrm_UnCodeX.tv_ClassesExpanding(Sender: TObject;
   pt: TPoint;
   ht: THitTests;}
 begin
-  // FIXME:
   {with Node.TreeView do begin
     pt := ScreenToClient(Mouse.CursorPos);
     ht := GetHitTestInfoAt(Pt.X, Pt.y);
     AllowExpansion := not (htOnItem in ht);
   end;}
-  AllowExpansion := true;
 end;
 
 procedure Tfrm_UnCodeX.tv_ClassesDblClick(Sender: TObject);

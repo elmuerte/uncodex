@@ -197,6 +197,7 @@ end;
 function TClassAnalyser.pConst: TUConst;
 begin
   result := TUConst.Create;
+  result.comment := p.GetCopyData;
   result.name := p.TokenString;
   result.srcline := p.SourceLine;
   p.NextToken; // =
@@ -216,6 +217,7 @@ var
 begin
   pBrackets;
   result := TUProperty.Create;
+  result.comment := p.GetCopyData;
   result.srcline := p.SourceLine;
   while (p.Token <> ';') do begin
     if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
@@ -250,6 +252,7 @@ begin
   i := Pos(',', result.name);
   while (i > 0) do begin
     nprop := TUProperty.Create;
+    nprop.comment := result.comment;
     nprop.srcline := result.srcline;
     nprop.ptype := result.ptype;
     nprop.modifiers := result.modifiers;
@@ -266,6 +269,7 @@ end;
 function TClassAnalyser.pEnum: TUEnum;
 begin
   result := TUEnum.Create;
+  result.comment := p.GetCopyData;
   result.name := p.TokenString;
   result.srcline := p.SourceLine;
   p.NextToken; // {
@@ -281,11 +285,10 @@ end;
 // struct <modifiers> <name> [extends <name>] { declaration };
 function TClassAnalyser.pStruct: TUStruct;
 var
-  bcount: integer;
   last, prev: string;
 begin
   Result := TUStruct.Create;
-  bcount := 0;
+  result.comment := p.GetCopyData;
   result.name := p.TokenString;
   result.srcline := p.SourceLine;
   while (p.Token <> '{') do begin
@@ -302,16 +305,12 @@ begin
     end;
   end;
   result.name := last;
-  if (p.Token = '{') then bcount := 1;
-  while (bcount > 0) do begin
-    result.data := result.data+' '+p.TokenString;
-    p.NextToken;
-    case (p.token) of
-      '{' : Inc(bcount);
-      '}' : Dec(bcount);
-    end;
-  end;
-  result.data := result.data+' '+p.TokenString; // get the last tokens
+  result.data := p.TokenString;
+  p.FullCopy := true;
+  p.GetCopyData(true);// preflush
+  pCurlyBrackets();
+  p.FullCopy := false;
+  result.data := result.data+p.GetCopyData(true);
   p.NextToken; // = ;
   uclass.structs.Add(result);
 end;
@@ -372,7 +371,8 @@ begin
   else if (p.TokenSymbolIs('postoperator')) then result.ftype := uftPostoperator
   else if (p.TokenSymbolIs('delegate')) then result.ftype := uftDelegate
   else result.ftype := uftFunction;
-  // todo function type
+  result.comment := p.GetCopyData;
+  //FIXME: todo function type
   p.NextToken;
   pBrackets; // possible operator precendence
   result.return := p.TokenString; // optional return
@@ -419,6 +419,7 @@ end;
 function TClassAnalyser.pState(modifiers: string): TUState;
 begin
   result := TUState.Create;
+  result.comment := p.GetCopyData;
   result.srcline := p.SourceLine;
   result.modifiers := modifiers;
   p.NextToken; // name
@@ -454,6 +455,7 @@ begin
         bHadClass := true;
         p.NextToken;
         uclass.name := p.TokenString;
+        uclass.comment := p.GetCopyData;
         p.NextToken;
         if (p.TokenSymbolIs('extends') or p.TokenSymbolIs('expands')) then begin
           p.NextToken;
@@ -463,10 +465,12 @@ begin
             uclass.parentname := p.TokenString;
           end;
         end;
+        uclass.modifiers := '';
         while (p.Token <> ';') do begin
           uclass.modifiers := uclass.modifiers+p.TokenString+' ';
           p.NextToken;
         end;
+        continue;
       end;
       if (p.TokenSymbolIs('var')) then begin
         p.NextToken;
@@ -489,8 +493,13 @@ begin
         continue;
       end;
       if (p.TokenSymbolIs('defaultproperties')) then begin
-        p.NextToken; 
+        p.GetCopyData(true);// preflush
+        p.NextToken;
+        uclass.defaultproperties := p.TokenString;
+        p.FullCopy := true;
         pCurlyBrackets();
+        p.FullCopy := false;
+        uclass.defaultproperties := uclass.defaultproperties+p.GetCopyData(true);
         continue;
       end;
       if (p.TokenSymbolIs('replication')) then begin
