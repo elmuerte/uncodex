@@ -1,6 +1,7 @@
 program UnCodeX;
 
 uses
+  ShareMem, // used for the output modules
   Windows,
   Messages,
   SysUtils,
@@ -24,7 +25,8 @@ uses
   RegExpr in 'RegExpr.pas',
   unit_tags in 'unit_tags.pas' {frm_Tags},
   hh_funcs in 'hh_funcs.pas',
-  hh in 'hh.pas';
+  hh in 'hh.pas',
+  unit_outputdefs in 'unit_outputdefs.pas';
 
 {$R *.res}
 
@@ -143,8 +145,8 @@ begin
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-    Application.CreateForm(Tfrm_About, frm_About);
-    if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+  Application.CreateForm(Tfrm_About, frm_About);
+  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end;
 end.

@@ -3,10 +3,10 @@ unit unit_main;
 interface
 
 uses
-  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ComCtrls, Menus, StdCtrls, unit_packages, ExtCtrls, unit_uclasses,
-  IniFiles, ShellApi, AppEvnts, ImgList, ActnList, ToolWin, StrUtils, Clipbrd,
-  hh, hh_funcs, StdActns;
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls,
+  Forms, Dialogs, ComCtrls, Menus, StdCtrls, unit_packages, ExtCtrls,
+  unit_uclasses, IniFiles, ShellApi, AppEvnts, ImgList, ActnList, StrUtils,
+  Clipbrd, hh, hh_funcs, ToolWin;
 
 const
   WM_APPBAR                      = WM_USER+$100;
@@ -146,6 +146,7 @@ type
     mi_AnalyseModifiedClasses: TMenuItem;
     ac_AnalyseModified: TAction;
     btn_AnalyseModified: TToolButton;
+    mi_Output: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_OpenClassClick(Sender: TObject);
@@ -234,6 +235,8 @@ type
     procedure UMAppIDCheck(var Message : TMessage); message UM_APP_ID_CHECK;
     procedure WMCopyData(var msg: TWMCopyData); message WM_COPYDATA;
     procedure UMRestoreApplication(var msg: TMessage); message UM_RESTORE_APPLICATION;
+    procedure LoadOutputModules;
+    procedure miCustomOurputClick(sender: TObject);
   public
     statustext : string;
     procedure StatusReport(msg: string; progress: byte = 255);
@@ -276,6 +279,8 @@ var
   AppInstanceId: integer = 0;
   // help system
   hh_Help: THookHelpSystem;
+  // output modules
+  OutputModules: TStringList;
 
 // config vars
 var
@@ -296,7 +301,7 @@ implementation
 
 uses unit_settings, unit_analyse, unit_htmlout, unit_definitions,
   unit_treestate, unit_about, unit_mshtmlhelp, unit_fulltextsearch,
-  unit_tags;
+  unit_tags, unit_outputdefs;
 
 const
   PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
@@ -717,6 +722,74 @@ begin
   end;
 end;
 
+procedure Tfrm_UnCodeX.LoadOutputModules;
+var
+  rec: TSearchRec;
+  omod: THandle;
+  info: TUCXOutputDetails;
+  dfunc: TUCX_Details;
+  mi: TMenuItem;
+begin
+  if FindFirst(ExtractFilePath(ParamStr(0))+'out_*.dll', 0, rec) = 0 then begin
+    repeat
+      omod := LoadLibrary(PChar(rec.Name));
+      if (omod <> 0) then begin
+        try
+          @dfunc := nil;
+          @dfunc := GetProcAddress(omod, 'UCX_Details');
+          if (@dfunc <> nil) then begin
+            if dfunc(info) then begin
+              Log('Output module: '+rec.Name+' '+info.AName);
+              mi_Output.Visible := true;
+              mi := TMenuItem.Create(mi_Output);
+              mi.Tag := OutputModules.Add(rec.Name); // add to list
+              mi.Caption := info.AName;
+              mi.Hint := info.ADescription;
+              mi.OnClick := miCustomOurputClick;
+              mi_Output.Add(mi);
+            end;
+          end;
+        finally
+          FreeLibrary(omod);
+        end;
+      end;
+    until (FindNext(rec) <> 0);
+    FindClose(rec);
+  end;
+end;
+
+procedure Tfrm_UnCodeX.miCustomOurputClick(sender: TObject);
+var
+  omod: THandle;
+  dfunc: TUCX_Output;
+  info: TUCXOutputInfo;
+begin
+  omod := LoadLibrary(PChar(OutputModules[(Sender as TMenuItem).Tag]));
+  if (omod <> 0) then begin
+    try
+      @dfunc := nil;
+      @dfunc := GetProcAddress(omod, 'UCX_Output');
+      if (@dfunc <> nil) then begin
+        info.AClassList := ClassList;
+        info.APackageList := PackageList;
+        info.AStatusReport := StatusReport;
+        info.AThreadTerminated := ThreadTerminate;
+        info.WaitForTerminate := false;
+        info.AThread := nil;
+        if dfunc(info) then begin
+          if (info.WaitForTerminate) then begin
+            lb_Log.Items.Clear;
+            runningthread := info.AThread;
+            runningthread.Resume;
+          end;
+        end;
+      end;
+    finally
+      FreeLibrary(omod);
+    end;
+  end;
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Auto generated methods
 
@@ -745,6 +818,7 @@ begin
   IgnorePackages := TStringList.Create;
   FTSHistory := TStringList.Create;
   CSHistory := TStringList.Create;
+  OutputModules := TStringList.Create;
   try
     mi_MenuBar.Checked := ini.ReadBool('Layout', 'MenuBar', true);
     mi_Toolbar.Checked := ini.ReadBool('Layout', 'Toolbar', true);
@@ -857,6 +931,7 @@ begin
       Delete(tmp, 1, Pos('=', tmp));
       CSHistory.Add(tmp);
     end;
+    if (ini.ReadBool('[config]', 'LoadOutputModules', true)) then LoadOutputModules;
   finally
     ini.Free;
     sl.Free;
@@ -1116,6 +1191,7 @@ begin
   IgnorePackages.Free;
   FTSHistory.Free;
   CSHistory.Free;
+  OutputModules.Free;
 end;
 
 procedure Tfrm_UnCodeX.ac_OpenClassExecute(Sender: TObject);

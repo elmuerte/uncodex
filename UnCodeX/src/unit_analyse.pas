@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, SysUtils, Variants, Classes, unit_uclasses, unit_parser,
-  unit_definitions;
+  unit_definitions, unit_outputdefs;
 
 type
   TClassAnalyser = class(TThread)

@@ -3,7 +3,8 @@ unit unit_fulltextsearch;
 interface
 
 uses
-  Windows, SysUtils, Classes, unit_uclasses, unit_definitions, RegExpr, ComCtrls;
+  Windows, SysUtils, Classes, unit_uclasses, unit_definitions, RegExpr, ComCtrls,
+  unit_outputdefs;
 
 type
   TSearchThread = class(TThread)
