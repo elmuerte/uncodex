@@ -64,15 +64,16 @@ object frm_Tags: Tfrm_Tags
     ReadOnly = True
     RowSelect = True
     ParentShowHint = False
+    PopupMenu = pm_Props
     ShowColumnHeaders = False
     ShowHint = True
     SmallImages = il_Types
     TabOrder = 0
     ViewStyle = vsReport
-    OnClick = lv_PropertiesClick
     OnCustomDrawItem = lv_PropertiesCustomDrawItem
-    OnDblClick = lv_PropertiesDblClick
+    OnDblClick = mi_OpenLocationClick
     OnInfoTip = lv_PropertiesInfoTip
+    OnSelectItem = lv_PropertiesSelectItem
   end
   object ed_InheritanceLevel: TEdit
     Left = 96
@@ -523,5 +524,20 @@ object frm_Tags: Tfrm_Tags
       C0039C038003CC07E003FC030001EC07F00FFC0380038001F83FFC03E00FEC17
       FCFFFC07F83FEDB7FFFFFC07FEFFFFFF00000000000000000000000000000000
       000000000000}
+  end
+  object pm_Props: TPopupMenu
+    Left = 8
+    Top = 64
+    object mi_CopyToClipboard: TMenuItem
+      Caption = 'Copy to clipboard'
+    end
+    object mi_InsertText: TMenuItem
+      Caption = 'Insert text'
+      Visible = False
+    end
+    object mi_OpenLocation: TMenuItem
+      Caption = 'Open source code'
+      OnClick = mi_OpenLocationClick
+    end
   end
 end
