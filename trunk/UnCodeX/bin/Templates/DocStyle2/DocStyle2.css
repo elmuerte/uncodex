@@ -271,6 +271,7 @@ TD.source_lineno {
 }
 
 TD.source {
+	width: 99%;
 	vertical-align: top;
 	border: none;	
 }
