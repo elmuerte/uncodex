@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   UScript to RTF
- $Id: unit_rtfhilight.pas,v 1.16 2003-11-22 19:27:05 elmuerte Exp $
+ $Id: unit_rtfhilight.pas,v 1.17 2003-11-27 17:01:55 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -36,7 +36,7 @@ uses
 var
   textfont: TFont; // default font
   tabs: integer;
-  ClassesHash: TStringHash;
+  ClassesHash: Hashes.TStringHash;
   // fonts
   fntKeyword1: TFont;
   fntKeyword2: TFont;

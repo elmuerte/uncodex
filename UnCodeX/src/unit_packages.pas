@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Unreal Package scanner, searches for classes in directories
- $Id: unit_packages.pas,v 1.15 2003-11-25 22:08:03 elmuerte Exp $
+ $Id: unit_packages.pas,v 1.16 2003-11-27 17:01:55 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -38,7 +38,7 @@ uses
   {$IFDEF __USE_TREEVIEW}
   ComCtrls,
   {$ENDIF}
-  unit_uclasses, unit_outputdefs, Hashes;
+  unit_uclasses, unit_outputdefs, IniFiles, Hashes;
 
 type
   TPackageScanner = class(TThread)
@@ -54,6 +54,7 @@ type
     PackagePriority: TStringList;
     IgnorePackages: TStringList;
     ClassHash: TStringHash;
+    PDF: TMemIniFile;
     procedure ScanPackages;
     {$IFDEF __USE_TREEVIEW}
     procedure CreateClassTree(classlist: TUClassList; parent: TUClass = nil; pnode: TTreeNode = nil);
@@ -65,11 +66,11 @@ type
     {$IFDEF __USE_TREEVIEW}
     constructor Create(paths: TStringList; packagetree, classtree: TTreeNodes;
       status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
-      PackagePriority, IgnorePackages: TStringList; CHash: TStringHash = nil);
+      PackagePriority, IgnorePackages: TStringList; CHash: TStringHash = nil; PDFile: string = '');
     {$ELSE}
     constructor Create(paths: TStringList;
       status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
-      PackagePriority, IgnorePackages: TStringList; CHash: TStringHash = nil);
+      PackagePriority, IgnorePackages: TStringList; CHash: TStringHash = nil; PDFile: string = '');
     {$ENDIF}
     destructor Destroy; override;
     procedure Execute; override;
@@ -83,11 +84,11 @@ uses
 {$IFDEF __USE_TREEVIEW}
 constructor TPackageScanner.Create(paths: TStringList; packagetree, classtree: TTreeNodes;
   status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
-  PackagePriority, IgnorePackages: TStringList; CHash: TStringHash = nil);
+  PackagePriority, IgnorePackages: TStringList; CHash: TStringHash = nil; PDFile: string = '');
 {$ELSE}
 constructor TPackageScanner.Create(paths: TStringList;
   status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
-  PackagePriority, IgnorePackages: TStringList; CHash: TStringHash = nil);
+  PackagePriority, IgnorePackages: TStringList; CHash: TStringHash = nil; PDFile: string = '');
 {$ENDIF}
 begin
   Self.paths := paths;
@@ -102,11 +103,13 @@ begin
   self.IgnorePackages := IgnorePackages;
   Self.FreeOnTerminate := true;
   Self.ClassHash := CHash;
+  if (FileExists(PDFile)) then Self.PDF := TMemIniFile.Create(PDFile);
   inherited Create(true);
 end;
 
 destructor TPackageScanner.Destroy;
 begin
+  if (PDF <> nil) then PDF.Free;
   inherited Destroy();
 end;
 
@@ -129,6 +132,8 @@ var
   UClass: TUClass;
   UPackage: TUPackage;
   knownpackages: TStringList;
+  ini: TMemIniFile;
+  lst: TStringList;
 begin
   {$IFDEF __USE_TREEVIEW}
   packagetree.BeginUpdate;
@@ -157,6 +162,27 @@ begin
                 end
                 else begin
                   UPackage.tagged := PackagePriority.Objects[UPackage.priority] <> nil;
+                end;
+                if (FileExists(UPackage.path+PATHDELIM+UCXPACKAGEINFO)) then begin
+                  lst := TStringList.Create;
+                  ini := TMemIniFile.Create(UPackage.path+PATHDELIM+UCXPACKAGEINFO);
+                  try
+                    ini.ReadSectionValues('package_description', lst);
+                    UPackage.comment := lst.Text;
+                  finally
+                    lst.Free;
+                    ini.Free;
+                  end;
+                end
+                else if (PDF <> nil) then begin
+                  // get from package description file
+                  lst := TStringList.Create;
+                  try
+                    PDF.ReadSectionValues(UPackage.name, lst);
+                    UPackage.comment := lst.Text;
+                  finally
+                    lst.Free;
+                  end;
                 end;
                 PackageList.Add(UPackage);
                 knownpackages.Add(LowerCase(sr.Name));

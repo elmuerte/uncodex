@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.38 2003-11-26 21:15:36 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.39 2003-11-27 17:01:55 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -513,9 +513,6 @@ begin
 end;
 
 function THTMLOutput.replacePackagesListEntry(var replacement: string; data: TObject = nil): boolean;
-var
-  ini: TMemIniFile;
-  lst: TStringList;
 begin
   result := replaceDefault(replacement);
   if (result) then exit;
@@ -540,18 +537,7 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'package_comment') = 0) then begin
-    if (FileExists(TUPackage(data).path+PATHDELIM+'uncodex.ini')) then begin
-      lst := TStringList.Create;
-      ini := TMemIniFile.Create(TUPackage(data).path+PATHDELIM+'uncodex.ini');
-      try
-        ini.ReadSectionValues('package_description', lst);
-        replacement := CommentPreprocessor(lst.Text);
-      finally
-        lst.Free;
-        ini.Free;
-      end;
-    end
-    else replacement := '';
+    replacement := CommentPreprocessor(TUPackage(data).comment);
     result := true;
   end
   else if (CompareText(replacement, 'package_next') = 0) then begin

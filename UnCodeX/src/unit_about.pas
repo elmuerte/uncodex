@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   about UnCodeX dialog
- $Id: unit_about.pas,v 1.7 2003-11-04 19:35:27 elmuerte Exp $
+ $Id: unit_about.pas,v 1.8 2003-11-27 17:01:55 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -70,7 +70,9 @@ function LinkerTimeStamp: TDateTime;
 var
   LI: TLoadedImage;
 begin
+  {$WARN SYMBOL_PLATFORM OFF}
   Win32Check(MapAndLoad(PChar(ParamStr(0)), nil, @LI, False, True));
+  {$WARN SYMBOL_PLATFORM ON}
   Result := LI.FileHeader.FileHeader.TimeDateStamp / SecsPerDay + UnixDateDelta;
   UnMapAndLoad(@LI);
 end;

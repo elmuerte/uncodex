@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.63 2003-11-26 21:15:36 elmuerte Exp $
+ $Id: unit_main.pas,v 1.64 2003-11-27 17:01:55 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -372,7 +372,7 @@ var
 // config vars
 var
   // general
-  StateFile: string;
+  StateFile, GPDF: string;
   SourcePaths: TStringList;
   PackagePriority: TStringList;
   IgnorePackages: TStringList;
@@ -1205,7 +1205,7 @@ begin
     { Program configuration }
     HTMLOutputDir := ini.ReadString('Config', 'HTMLOutputDir', ExtractFilePath(ParamStr(0))+'Output');
     ac_OpenOutput.Enabled := HTMLOutputDir <> '';
-    TemplateDir := ini.ReadString('Config', 'TemplateDir', ExtractFilePath(ParamStr(0))+'Templates'+PATHDELIM+'UnrealWiki');
+    TemplateDir := ini.ReadString('Config', 'TemplateDir', ExtractFilePath(ParamStr(0))+'Templates'+PATHDELIM+DEFTEMPLATE);
     HTMLTargetExt := ini.ReadString('Config', 'HTMLTargetExt', '');
     TabsToSpaces := ini.ReadInteger('Config', 'TabsToSpaces', 0);
     CPPApp := ini.ReadString('Config', 'CPP', '');
@@ -1225,6 +1225,7 @@ begin
     ac_OpenClass.Enabled := OpenResultCmd <> '';
     FTSRegexp := ini.ReadBool('Config', 'FullTextSearchRegExp', false);
     StateFile := ini.ReadString('Config', 'StateFile', StateFile);
+    GPDF := ini.ReadString('Config', 'PackageDescriptionFile', ExtractFilePath(ParamStr(0))+DefaultPDF);
     AnalyseModified := ini.ReadBool('Config', 'AnalyseModified', true);
     DefaultInheritanceDepth := ini.ReadInteger('Config', 'DefaultInheritanceDepth', 0);
     if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ConfigFile)+StateFile;
@@ -1331,7 +1332,7 @@ begin
     ClassList.Clear;
     runningthread := TPackageScanner.Create(SourcePaths, tv_Packages.Items,
           tv_Classes.items, statusReport, PackageList, ClassList,
-          PackagePriority, IgnorePackages, unit_rtfhilight.ClassesHash);
+          PackagePriority, IgnorePackages, unit_rtfhilight.ClassesHash, GPDF);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
   end;
@@ -1434,6 +1435,7 @@ begin
     cb_LoadCustomModules.Checked := LoadCustomOutputModules;
     cb_CPAsWindow.Checked := ClassPropertiesWindow;
     ud_InlineSearchTimeout.Position := tmr_InlineSearch.Interval div 1000;
+    ed_gpdf.text := GPDF;
     if (ShowModal = mrOk) then begin
       { HTML output }
       HTMLOutputDir := ed_HTMLOutputDir.Text;
@@ -1471,6 +1473,7 @@ begin
       LoadCustomOutputModules := cb_LoadCustomModules.Checked;
       ClassPropertiesWindow := cb_CPAsWindow.Checked;
       tmr_InlineSearch.Interval := ud_InlineSearchTimeout.Position * 1000;
+      GPDF := ed_gpdf.Text;
       { Source paths }
       SourcePaths.Clear;
       SourcePaths.AddStrings(lb_Paths.Items);
@@ -1523,6 +1526,7 @@ begin
         data.Add('LoadOutputModules='+IntToStr(Ord(LoadCustomOutputModules)));
         data.Add('ClassPropertiesWindow='+IntToStr(Ord(ClassPropertiesWindow)));
         data.Add('InlineSearchTimeout='+IntToStr(tmr_InlineSearch.Interval div 1000));
+        data.Add('PackageDescriptionFile='+GPDF);
 
         data.Add('[Layout]');
         data.Add('Log.Font.Name='+lb_Log.Font.Name);
@@ -2271,24 +2275,37 @@ var
   ms: TMemoryStream;
   fs: TFileStream;
   filename: string;
+  ss: TStringStream;
 begin
   if (ActiveControl.ClassType = TTreeView) then begin
     with (ActiveControl as TTreeView) do begin
       if (Selected <> nil) then begin
-        if (TObject(Selected.Data).ClassType <> TUClass) then exit;
-        filename := TUClass(Selected.Data).package.path+PATHDELIM+CLASSDIR+PATHDELIM+TUClass(Selected.Data).filename;
-        re_SourceSnoop.Hint := filename;
-        if (not FileExists(filename)) then exit;
-        fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
-        ms := TMemoryStream.Create;
-        try
-          RTFHilightUScript(fs, ms, TUClass(Selected.Data));
-          re_SourceSnoop.Lines.Clear;
-          ms.Position := 0;
-          re_SourceSnoop.Lines.LoadFromStream(ms);
-        finally
-          ms.Free;
-          fs.Free;
+        if (TObject(Selected.Data).ClassType = TUClass) then begin
+          filename := TUClass(Selected.Data).package.path+PATHDELIM+CLASSDIR+PATHDELIM+TUClass(Selected.Data).filename;
+          re_SourceSnoop.Hint := filename;
+          if (not FileExists(filename)) then exit;
+          fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
+          ms := TMemoryStream.Create;
+          try
+            RTFHilightUScript(fs, ms, TUClass(Selected.Data));
+            re_SourceSnoop.Lines.Clear;
+            ms.Position := 0;
+            re_SourceSnoop.Lines.LoadFromStream(ms);
+          finally
+            ms.Free;
+            fs.Free;
+          end;
+        end
+        else if (TObject(Selected.Data).ClassType = TUPackage) then begin
+          if (TUPackage(Selected.Data).comment <> '') then begin
+            ss := TStringStream.Create(TUPackage(Selected.Data).comment);
+            try
+              re_SourceSnoop.Lines.Clear;
+              re_SourceSnoop.Lines.LoadFromStream(ss);
+            finally
+              ss.Free;
+            end;
+          end;
         end;
       end;
     end;
@@ -2557,10 +2574,16 @@ begin
       mi_ClassName.Visible := true;
       mi_ClassName.Caption := TUClass(Selected.Data).name;
       mi_PackageName.Caption := TUClass(Selected.Data).package.name;
+      mi_Analyseclass.Visible := true;
+      mi_ShowProperties.Visible := true;
+      mi_Compile.Visible := true;
     end
     else if (TObject(Selected.Data).ClassType = TUPackage) then begin
       mi_ClassName.Visible := false;
       mi_PackageName.Caption := TUPackage(Selected.Data).name;
+      mi_Analyseclass.Visible := false;
+      mi_ShowProperties.Visible := false;
+      mi_Compile.Visible := false;
     end;
   end;
 end;
