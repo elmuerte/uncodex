@@ -565,6 +565,13 @@ object frm_UnCodeX: Tfrm_UnCodeX
         end
       end
     end
+    object mi_Browse: TMenuItem
+      AutoHotkeys = maManual
+      AutoLineReduction = maAutomatic
+      Caption = 'Browse history'
+      Hint = 'Past viewed lines'
+      Visible = False
+    end
     object mi_HTMLoutput: TMenuItem
       Caption = 'HTML Output'
       object mi_Createindexfiles: TMenuItem
