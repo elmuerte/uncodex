@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Unreal Package scanner, searches for classes in directories
- $Id: unit_packages.pas,v 1.22 2004-03-27 14:14:21 elmuerte Exp $
+ $Id: unit_packages.pas,v 1.23 2004-03-30 09:46:18 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -286,7 +286,8 @@ begin
             uclass.filename := sr.Name;
             uclass.priority := PackageList[i].priority;
             {$IFDEF __USE_TREEVIEW}
-            with packagetree.AddChildObject(ti, uclass.name, uclass) do begin
+            uclass.treenode2 := packagetree.AddChildObject(ti, uclass.name, uclass);
+            with TTreeNode(uclass.treenode2) do begin
               if (uclass.tagged) then begin
                 ImageIndex := ICON_CLASS_TAGGED;
                 StateIndex := ICON_CLASS_TAGGED;

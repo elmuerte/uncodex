@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.87 2004-03-29 19:59:39 elmuerte Exp $
+ $Id: unit_main.pas,v 1.88 2004-03-30 09:46:17 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -1119,6 +1119,7 @@ begin
   if (InlineSearch = '') then exit;
   if (ActiveControl.ClassType <> TTreeView) then ActiveControl := tv_Classes;
   tv := TTreeView(ActiveControl);
+  if (tv.Selected = nil) then tv.Selected := tv.TopItem;
   j := tv.Selected.AbsoluteIndex;
   if (skipcurrent) then Inc(j);
   for i := j to tv.Items.Count-1 do begin

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Copy paste window
- $Id: unit_wiki.pas,v 1.7 2003-11-12 22:57:07 elmuerte Exp $
+ $Id: unit_wiki.pas,v 1.8 2004-03-30 09:46:18 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_wiki;
@@ -136,15 +136,15 @@ begin
         end;
       end;
       { delegates }
-      if (uclass.functions.Count > 0) then begin
+      if (uclass.delegates.Count > 0) then begin
         Add('');
         Add('== Delegates');
         hist.Clear;
-        for i := 0 to uclass.functions.Count-1 do begin
-          if (uclass.functions[i].ftype = uftDelegate) then begin
-            if (hist.IndexOf(LowerCase(uclass.functions[i].name)) = -1) then begin
-              Add('; '+uclass.functions[i].return+' '+uclass.functions[i].name+'('+uclass.functions[i].params+' ): '+FixComments(trim(uclass.functions[i].comment)));
-              hist.Add(LowerCase(uclass.functions[i].name));
+        for i := 0 to uclass.delegates.Count-1 do begin
+          if (uclass.delegates[i].ftype = uftDelegate) then begin
+            if (hist.IndexOf(LowerCase(uclass.delegates[i].name)) = -1) then begin
+              Add('; '+uclass.functions[i].return+' '+uclass.delegates[i].name+'('+uclass.delegates[i].params+' ): '+FixComments(trim(uclass.delegates[i].comment)));
+              hist.Add(LowerCase(uclass.delegates[i].name));
             end;
           end;
         end;

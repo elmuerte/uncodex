@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   definitions for Unreal Classes
- $Id: unit_uclasses.pas,v 1.21 2004-03-27 14:14:21 elmuerte Exp $
+ $Id: unit_uclasses.pas,v 1.22 2004-03-30 09:46:18 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -168,6 +168,7 @@ type
     functions:  TUFunctionList;
     delegates:  TUFunctionList;
     treenode:   TObject;
+    treenode2:  TObject; // the second tree node (PackageTree)
     filetime:   integer;
     defaultproperties: string;
     comment:    string;
