@@ -6,7 +6,7 @@
     Purpose:
         Program settings dialog
 
-    $Id: unit_settings.pas,v 1.41 2004-10-20 14:19:29 elmuerte Exp $
+    $Id: unit_settings.pas,v 1.42 2004-11-22 13:17:41 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -51,43 +51,27 @@ type
         ts_PackagePriority: TTabSheet;
         ts_HTMLOutput: TTabSheet;
         ts_HTMLHelp: TTabSheet;
-        gb_SourcePaths: TGroupBox;
-        lb_Paths: TListBox;
-        btn_SAdd: TBitBtn;
-        btn_SRemove: TBitBtn;
-        btn_SUp: TBitBtn;
-        btn_SDown: TBitBtn;
-        gb_PackagePriority: TGroupBox;
-        btn_PUp: TBitBtn;
-        btn_PDown: TBitBtn;
-        btn_AddPackage: TBitBtn;
-        btn_DelPackage: TBitBtn;
-        gb_HTMLOutput: TGroupBox;
         lbl_OutputDir: TLabel;
         lbl_Template: TLabel;
         ed_HTMLOutputDir: TEdit;
         btn_HTMLOutputDir: TBitBtn;
         ed_TemplateDir: TEdit;
         btn_SelectTemplateDir: TBitBtn;
-        gb_HTMLHelp: TGroupBox;
         lbl_Workshop: TLabel;
         lbl_HTMLHelpOutput: TLabel;
         ed_WorkshopPath: TEdit;
         btn_SelectWorkshop: TBitBtn;
         ed_HTMLHelpOutput: TEdit;
         btn_HTMLHelpOutput: TBitBtn;
-        lb_Settings: TListBox;
         ts_Command: TTabSheet;
-        gb_Compile: TGroupBox;
         lbl_CompilerCommandline: TLabel;
         ed_CompilerCommandline: TEdit;
         btn_BrowseCompiler: TBitBtn;
         ts_GameServer: TTabSheet;
-        gb_GameServer: TGroupBox;
         lbl_ServerCommandline: TLabel;
         ed_ServerCommandline: TEdit;
         btn_BrowseServer: TBitBtn;
-        Label3: TLabel;
+    lbl_ServerPriority: TLabel;
         cb_ServerPriority: TComboBox;
         btn_CompilerPlaceholders: TBitBtn;
         pm_CompilerPlaceholders: TPopupMenu;
@@ -102,7 +86,6 @@ type
         ed_ClientCommandline: TEdit;
         btn_ClientCommandline: TBitBtn;
         ts_IgnorePackages: TTabSheet;
-        gb_IgnorePackages: TGroupBox;
         lb_IgnorePackages: TListBox;
         btn_AddIgnore: TBitBtn;
         btn_DelIgnore: TBitBtn;
@@ -116,10 +99,8 @@ type
         mi_N3: TMenuItem;
         mi_Resultline1: TMenuItem;
         mi_Resultposition1: TMenuItem;
-        btn_Import: TBitBtn;
         od_BrowseIni: TOpenDialog;
         ts_Layout: TTabSheet;
-        gb_Layout: TGroupBox;
         lbl_TreeFont: TLabel;
         tv_TreeLayout: TTreeView;
         btn_FontSelect: TBitBtn;
@@ -129,15 +110,12 @@ type
         lb_LogLayout: TListBox;
         cb_ExpandObject: TCheckBox;
         ts_ProgramOptions: TTabSheet;
-        gb_ProgramOptions: TGroupBox;
         ed_StateFilename: TEdit;
         lbl_StateFile: TLabel;
         cb_MinimzeOnClose: TCheckBox;
-        clb_PackagePriority: TCheckListBox;
         btn_Help: TBitBtn;
         cb_ModifiedOnStartup: TCheckBox;
         ts_HotKeys: TTabSheet;
-        gb_HotKeys: TGroupBox;
         ed_HotKey: TEdit;
         hk_HotKey: THotKey;
         btn_SetHotKey: TBitBtn;
@@ -147,15 +125,12 @@ type
         Label1: TLabel;
         ed_DefInheritanceDepth: TEdit;
         ud_DefInheritDepth: TUpDown;
-        cb_LoadCustomModules: TCheckBox;
-        btn_Ignore: TBitBtn;
         ts_SourceSnoop: TTabSheet;
-        gb_Sourcesnoop: TGroupBox;
         btn_SourceFont: TBitBtn;
         re_Preview: TRichEditEx;
         cb_Background: TColorBox;
-        Label9: TLabel;
-        Label10: TLabel;
+    lbl_BackGround: TLabel;
+    lbl_TabSize: TLabel;
         ud_TabSize: TUpDown;
         ed_TabSize: TEdit;
         cb_CPAsWindow: TCheckBox;
@@ -188,7 +163,6 @@ type
         cb_SelColor: TColorBox;
         cb_fstrikeout: TCheckBox;
         ts_Keywords: TTabSheet;
-        gb_Keywordlists: TGroupBox;
         bvl_Keys: TBevel;
         lb_PrimKey: TListBox;
         lb_SecKey: TListBox;
@@ -216,6 +190,23 @@ type
         lbl_UPSDIR: TLabel;
         ed_UPSDIR: TEdit;
         btn_UPSDIR: TBitBtn;
+    ts_PlugIns: TTabSheet;
+    pnl_Caption: TPanel;
+    btn_SAdd: TBitBtn;
+    btn_SRemove: TBitBtn;
+    lb_Paths: TListBox;
+    btn_SUp: TBitBtn;
+    btn_SDown: TBitBtn;
+    clb_PackagePriority: TCheckListBox;
+    btn_PUp: TBitBtn;
+    btn_PDown: TBitBtn;
+    btn_AddPackage: TBitBtn;
+    btn_DelPackage: TBitBtn;
+    btn_Ignore: TBitBtn;
+    btn_Import: TBitBtn;
+    cb_LoadCustomModules: TCheckBox;
+    lbl_RunHint: TLabel;
+    tv_SettingSelect: TTreeView;
         procedure btn_PUpClick(Sender: TObject);
         procedure btn_PDownClick(Sender: TObject);
         procedure btn_SUpClick(Sender: TObject);
@@ -229,7 +220,6 @@ type
         procedure btn_DelPackageClick(Sender: TObject);
         procedure btn_AddPackageClick(Sender: TObject);
         procedure FormCreate(Sender: TObject);
-        procedure lb_SettingsClick(Sender: TObject);
         procedure btn_CompilerPlaceholdersClick(Sender: TObject);
         procedure btn_BrowseCompilerClick(Sender: TObject);
         procedure mi_ClassnameClick(Sender: TObject);
@@ -292,6 +282,11 @@ type
             Shift: TShiftState);
         procedure btn_ExtCmtFileClick(Sender: TObject);
         procedure btn_UPSDIRClick(Sender: TObject);
+    procedure tv_SettingSelectExpanding(Sender: TObject; Node: TTreeNode;
+      var AllowExpansion: Boolean);
+    procedure tv_SettingSelectCollapsing(Sender: TObject; Node: TTreeNode;
+      var AllowCollapse: Boolean);
+    procedure tv_SettingSelectChange(Sender: TObject; Node: TTreeNode);
     private
     public
         TagChanged: boolean;
@@ -483,14 +478,25 @@ procedure Tfrm_Settings.FormCreate(Sender: TObject);
 var
     i:  integer;
     li: TListItem;
+
+    procedure TabsTree(idx: integer; root: TTreeNode = nil);
+    var
+        i: integer;
+        ti: TTreeNode;
+    begin
+        for i := 0 to pc_Settings.PageCount-1 do begin
+            if pc_Settings.Pages[i].Tag = idx then begin
+                ti := tv_SettingSelect.Items.AddChildObject(root, pc_Settings.Pages[i].Caption, pc_Settings.Pages[i]);
+                TabsTree(i, ti);
+                ti.Expand(true);
+            end;
+        end;
+    end;
+
 begin
     TagChanged := false;
-    lb_Settings.Items.Clear;
-    for i := 0 to pc_Settings.PageCount-1 do begin
-        lb_Settings.Items.Add(pc_Settings.Pages[i].Caption);
-    end;
-    lb_Settings.ItemIndex := 0;
-    pc_Settings.ActivePageIndex := 0;
+    TabsTree(-1);
+    tv_SettingSelect.Select(tv_SettingSelect.Items.GetFirstNode);
     tv_TreeLayout.FullExpand;
     for i := 0 to frm_UnCodeX.al_Main.ActionCount-1 do begin
         li := lv_HotKeys.Items.Add;
@@ -538,12 +544,6 @@ begin
         lb_PrimKey.Items.LoadFromFile(ExtractFilePath(ParamStr(0))+KEYWORDFILE1);
     if (FileExists(ExtractFilePath(ParamStr(0))+KEYWORDFILE2)) then
         lb_SecKey.Items.LoadFromFile(ExtractFilePath(ParamStr(0))+KEYWORDFILE2);
-end;
-
-procedure Tfrm_Settings.lb_SettingsClick(Sender: TObject);
-begin
-    if (lb_Settings.ItemIndex < 0) then exit;
-    pc_Settings.ActivePageIndex := lb_Settings.ItemIndex;
 end;
 
 procedure Tfrm_Settings.btn_CompilerPlaceholdersClick(Sender: TObject);
@@ -943,6 +943,25 @@ begin
     if SelectDirectory('Select the UnCodeX Pascal Script directory', '', dir) then begin
         ed_UPSDIR.Text := dir;
     end;
+end;
+
+procedure Tfrm_Settings.tv_SettingSelectExpanding(Sender: TObject;
+  Node: TTreeNode; var AllowExpansion: Boolean);
+begin
+    if (Node.Expanded) then AllowExpansion := false;
+end;
+
+procedure Tfrm_Settings.tv_SettingSelectCollapsing(Sender: TObject;
+  Node: TTreeNode; var AllowCollapse: Boolean);
+begin
+    AllowCollapse := false;
+end;
+
+procedure Tfrm_Settings.tv_SettingSelectChange(Sender: TObject;
+  Node: TTreeNode);
+begin
+    pc_Settings.ActivePage := TTabSheet(Node.Data);
+    pnl_Caption.Caption := '  '+pc_Settings.ActivePage.Caption;
 end;
 
 end.

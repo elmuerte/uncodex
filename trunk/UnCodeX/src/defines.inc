@@ -6,8 +6,12 @@
     Purpose:
         Global macro file, to be included by means of ($I defines.inc)
 
-    $Id: defines.inc,v 1.3 2004-10-20 14:19:27 elmuerte Exp $
+    $Id: defines.inc,v 1.4 2004-11-22 13:17:41 elmuerte Exp $
 *******************************************************************************}
+
+{$IFDEF LINUX}
+    {$DEFINE UNIX}
+{$ENDIF}
 
 {$IFDEF FPC}
     {$DEFINE CONSOLE}
