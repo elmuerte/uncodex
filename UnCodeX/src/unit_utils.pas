@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   General function/utils that require Forms
- $Id: unit_utils.pas,v 1.7 2004-07-24 14:35:13 elmuerte Exp $
+ $Id: unit_utils.pas,v 1.8 2004-08-02 19:58:58 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -47,7 +47,12 @@ type
     property Caption;
   end;
 
+  function MInputQuery(const ACaption, APrompt: string; var Value: string): Boolean;
+
 implementation
+
+uses
+	unit_multilinequery;
 
 { SearchQuery }
 
@@ -180,6 +185,20 @@ end;
 }
 
 { TPropertyHintWindow -- END }
+
+function MInputQuery(const ACaption, APrompt: string; var Value: string): Boolean;
+begin
+	result := false;
+  with (Tfrm_MultiLineQuery.Create(nil)) do begin
+    Caption := ACaption;
+    lbl_Prompt.Caption := APrompt;
+    mm_Input.Lines.Text := Value;
+    if (ShowModal = IDOK) then begin
+			Value := mm_Input.Lines.Text;
+      result := true;
+    end;
+  end;
+end;
 
 initialization
   Application.HintColor := clWindow;

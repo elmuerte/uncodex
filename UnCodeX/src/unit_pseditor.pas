@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, ToolWin, ComCtrls, ActnList;
+  Dialogs, ExtCtrls, StdCtrls, ToolWin, ComCtrls, ActnList, StdActns;
 
 type
   Tfrm_PSEditor = class(TForm)
@@ -26,6 +26,11 @@ type
     btn_New: TToolButton;
     btn_Sep3: TToolButton;
     ac_New: TAction;
+    EditSelectAll1: TEditSelectAll;
+    od_Open: TOpenDialog;
+    sd_Save: TSaveDialog;
+    ac_Save: TAction;
+    ac_Load: TAction;
     procedure ac_CompileExecute(Sender: TObject);
     procedure ac_RunExecute(Sender: TObject);
     procedure mm_EditorChange(Sender: TObject);
@@ -36,10 +41,13 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormCreate(Sender: TObject);
     procedure ac_NewExecute(Sender: TObject);
+    procedure EditSelectAll1Execute(Sender: TObject);
+    procedure ac_SaveExecute(Sender: TObject);
+    procedure ac_LoadExecute(Sender: TObject);
   private
     ScriptSaved: boolean;
   public
-    { Public declarations }
+    function SaveFile: boolean;
   end;
 
 var
@@ -50,6 +58,17 @@ implementation
 uses unit_main;
 
 {$R *.dfm}
+
+function Tfrm_PSEditor.SaveFile: boolean;
+begin
+	sd_Save.FileName := sb_EditorBar.Panels[2].Text;
+	result := sd_Save.Execute;
+  if (result) then begin
+    mm_Editor.Lines.SaveToFile(sd_Save.FileName);
+  	sb_EditorBar.Panels[2].Text := sd_Save.FileName;
+    ScriptSaved := true;
+  end;
+end;
 
 procedure Tfrm_PSEditor.ac_CompileExecute(Sender: TObject);
 var
@@ -75,7 +94,11 @@ end;
 
 procedure Tfrm_PSEditor.ac_RunExecute(Sender: TObject);
 begin
-	frm_UnCodeX.ps_Main.Execute;
+	lb_Output.Items.Clear;
+	if (not frm_UnCodeX.ps_Main.Execute) then begin
+    lb_Output.Items.Add(frm_UnCodeX.ps_Main.ExecErrorToString);
+    lb_Output.Items.Add(format('Execution failed @ %d:%d', [frm_UnCodeX.ps_Main.ExecErrorRow, frm_UnCodeX.ps_Main.ExecErrorCol]));
+  end;
 end;
 
 procedure Tfrm_PSEditor.mm_EditorChange(Sender: TObject);
@@ -109,9 +132,7 @@ procedure Tfrm_PSEditor.FormCloseQuery(Sender: TObject;
 begin
 	if (not ScriptSaved) then begin
 		case MessageDlg('The current script has not been saved.'+#13+#10+'Do you want to save it now?', mtConfirmation, [mbYes, mbNo, mbCancel], 0) of
-    	mrYes:	begin
-								// if saved close
-      				end;
+    	mrYes:		CanClose := SaveFile;
 	    mrNo:   	CanClose := true;
   	  mrCancel: CanClose := false;
 	  end;
@@ -119,10 +140,10 @@ begin
 end;
 
 procedure Tfrm_PSEditor.FormCreate(Sender: TObject);
-var
-	i: integer;
 begin
 	ScriptSaved := true;
+  sd_Save.InitialDir := ExtractFilePath(ParamStr(0));
+  od_Open.InitialDir := ExtractFilePath(ParamStr(0));
 end;
 
 procedure Tfrm_PSEditor.ac_NewExecute(Sender: TObject);
@@ -130,10 +151,42 @@ begin
 	if (not ScriptSaved) then begin
   	case MessageDlg('The current script has not been saved.'+#13+#10+'Do you want to save it now?', mtConfirmation, [mbYes, mbNo, mbCancel], 0) of
     	mrYes:	begin
-								// if saved close
+								if (SaveFile) then begin
+                  mm_Editor.Lines.Clear;
+	    	  				ScriptSaved := true;
+                  sb_EditorBar.Panels[2].Text := 'untitled.ups';
+                end;
       				end;
-	    mrNo:   	mm_Editor.Lines.Clear;
+	    mrNo:   begin
+		     				mm_Editor.Lines.Clear;
+    	  				ScriptSaved := true;
+                sb_EditorBar.Panels[2].Text := 'untitled.ups';
+      				end;
 	  end;
+  end
+  else begin
+		mm_Editor.Lines.Clear;
+		ScriptSaved := true;
+    sb_EditorBar.Panels[2].Text := 'untitled.ups';
+  end;
+end;
+
+procedure Tfrm_PSEditor.EditSelectAll1Execute(Sender: TObject);
+begin
+	mm_Editor.SelectAll;
+end;
+
+procedure Tfrm_PSEditor.ac_SaveExecute(Sender: TObject);
+begin
+	SaveFile;
+end;
+
+procedure Tfrm_PSEditor.ac_LoadExecute(Sender: TObject);
+begin
+	if (od_Open.Execute) then begin
+    mm_Editor.Lines.LoadFromFile(od_Open.FileName);
+    sb_EditorBar.Panels[2].Text := od_Open.FileName;
+    ScriptSaved := true;
   end;
 end;
 

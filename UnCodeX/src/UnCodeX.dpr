@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
- $Id: UnCodeX.dpr,v 1.44 2004-08-01 20:25:34 elmuerte Exp $
+ $Id: UnCodeX.dpr,v 1.45 2004-08-02 19:58:58 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -73,7 +73,9 @@ uses
   unit_multilinequery in 'unit_multilinequery.pas' {frm_MultiLineQuery},
   unit_pascalscript in 'unit_pascalscript.pas',
   unit_pascalscript_gui in 'unit_pascalscript_gui.pas',
-  unit_pseditor in 'unit_pseditor.pas' {frm_PSEditor};
+  unit_pseditor in 'unit_pseditor.pas' {frm_PSEditor},
+  unit_pascalscript_ex in 'unit_pascalscript_ex.pas',
+  IFSI_unit_uclasses in 'IFSI_unit_uclasses.pas';
 
 {$R *.res}
 
@@ -196,9 +198,9 @@ begin
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-  	Application.CreateForm(Tfrm_About, frm_About);
-  	Application.CreateForm(Tfrm_License, frm_License);
-  	if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+  Application.CreateForm(Tfrm_About, frm_About);
+  Application.CreateForm(Tfrm_License, frm_License);
+  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end
   else if (frm_Splash <> nil) then frm_Splash.Close;

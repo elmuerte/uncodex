@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   General definitions
- $Id: unit_definitions.pas,v 1.108 2004-07-27 10:59:49 elmuerte Exp $
+ $Id: unit_definitions.pas,v 1.109 2004-08-02 19:58:58 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -59,8 +59,6 @@ type
 
   function RetExternalComment(ref: string): string;
   procedure SetExtCommentFile(ini: string);
-
-  function MInputQuery(const ACaption, APrompt: string; var Value: string): Boolean;
 
 const
   APPTITLE = 'UnCodeX';
@@ -135,7 +133,7 @@ uses
 {$IFDEF MSWINDOWS}
   Windows,
 {$ENDIF}
-  SysUtils, unit_multilinequery, Forms;
+  SysUtils;
 
 var
   sl, TmpExtCmt: TStringList;
@@ -291,20 +289,6 @@ begin
   if (not FileExists(ini)) then exit;
   if (ExtCommentIni <> nil) then FreeAndNil(ExtCommentIni);
   ExtCommentIni := TMemIniFile.Create(ini);
-end;
-
-function MInputQuery(const ACaption, APrompt: string; var Value: string): Boolean;
-begin
-	result := false;
-  with (Tfrm_MultiLineQuery.Create(nil)) do begin
-    Caption := ACaption;
-    lbl_Prompt.Caption := APrompt;
-    mm_Input.Lines.Text := Value;
-    if (ShowModal = IDOK) then begin
-			Value := mm_Input.Lines.Text;
-      result := true;
-    end;
-  end;
 end;
 
 initialization

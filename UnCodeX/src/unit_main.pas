@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.116 2004-08-01 20:25:34 elmuerte Exp $
+ $Id: unit_main.pas,v 1.117 2004-08-02 19:58:58 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -33,7 +33,8 @@ uses
   Forms, Dialogs, ComCtrls, Menus, StdCtrls, unit_packages, ExtCtrls,
   unit_uclasses, IniFiles, ShellApi, AppEvnts, ImgList, ActnList, StrUtils,
   Clipbrd, hh, hh_funcs, ToolWin, richedit, unit_richeditex, unit_searchform,
-  Buttons, DdeMan, unit_props, uPSComponent, uPSComponent_Default;
+  Buttons, DdeMan, unit_props, uPSComponent, uPSComponent_Default,
+  IFSI_unit_uclasses, unit_pascalscript_ex;
 
 const
   // custom window messages
@@ -249,6 +250,8 @@ type
     psi_DateUtils: TPSImport_DateUtils;
     N3: TMenuItem;
     ac_PSEditor: TAction;
+    psi_unit_uclasses: TPSImport_unit_uclasses;
+    psi_miscclasses: TPSImport_miscclasses;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -362,6 +365,7 @@ type
     procedure ps_MainLine(Sender: TObject);
     procedure ps_MainCompile(Sender: TPSScript);
     procedure ac_PSEditorExecute(Sender: TObject);
+    procedure ps_MainExecute(Sender: TPSScript);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -447,6 +451,8 @@ var
   // UScript data
   PackageList: TUPackageList;
   ClassList: TUClassList;
+  SelectedUClass: TUClass = nil;
+  SelectedUPackage: TUPackage = nil;
   // class search vars
   SearchConfig, DefaultSC: TClassSearch;
   IsInlineSearch: boolean;
@@ -504,8 +510,6 @@ const
   AUTOHIDEEXPOSURE = 4; // number of pixel to show of the app bar
 
 var
-	SelectedUClass: TUClass = nil;
-  SelectedUPackage: TUPackage = nil;
   splRightHack: integer;
   OutputModule: THandle;
 
@@ -3368,6 +3372,11 @@ end;
 procedure Tfrm_UnCodeX.ac_PSEditorExecute(Sender: TObject);
 begin
   with Tfrm_PSEditor.Create(Application) do ShowModal;
+end;
+
+procedure Tfrm_UnCodeX.ps_MainExecute(Sender: TPSScript);
+begin
+  LinkPSGui(Sender);
 end;
 
 initialization

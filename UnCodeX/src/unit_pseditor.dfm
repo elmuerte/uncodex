@@ -794,14 +794,12 @@ object frm_PSEditor: Tfrm_PSEditor
     object btn_Load: TToolButton
       Left = 31
       Top = 0
-      Caption = 'Load'
-      ImageIndex = 21
+      Action = ac_Load
     end
     object btn_Save: TToolButton
       Left = 54
       Top = 0
-      Caption = 'Save'
-      ImageIndex = 22
+      Action = ac_Save
     end
     object btn_Spl1: TToolButton
       Left = 77
@@ -858,6 +856,7 @@ object frm_PSEditor: Tfrm_PSEditor
     SimplePanel = False
   end
   object al_PSEditor: TActionList
+    Images = frm_UnCodeX.il_Small
     Left = 8
     Top = 80
     object ac_Compile: TAction
@@ -881,5 +880,36 @@ object frm_PSEditor: Tfrm_PSEditor
       ShortCut = 16462
       OnExecute = ac_NewExecute
     end
+    object EditSelectAll1: TEditSelectAll
+      Category = 'Edit'
+      Caption = 'Select &All'
+      Hint = 'Select All|Selects the entire document'
+      ShortCut = 16449
+      OnExecute = EditSelectAll1Execute
+    end
+    object ac_Save: TAction
+      Caption = 'Save'
+      ImageIndex = 22
+      ShortCut = 16467
+      OnExecute = ac_SaveExecute
+    end
+    object ac_Load: TAction
+      Caption = 'Load'
+      ImageIndex = 21
+      ShortCut = 16463
+      OnExecute = ac_LoadExecute
+    end
+  end
+  object od_Open: TOpenDialog
+    Filter = 'UnCodeX Pascal Script|*.ups|All Files|*.*'
+    Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
+    Left = 8
+    Top = 112
+  end
+  object sd_Save: TSaveDialog
+    Filter = 'UnCodeX Pascal Script|*.ups|All Files|*.*'
+    Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
+    Left = 40
+    Top = 112
   end
 end

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   General PascalScript routines
- $Id: unit_pascalscript.pas,v 1.2 2004-08-01 20:25:34 elmuerte Exp $
+ $Id: unit_pascalscript.pas,v 1.3 2004-08-02 19:58:58 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -51,6 +51,9 @@ begin
 	ps.AddFunction(@StrToBool, 'function StrToBool(const S: string): Boolean;');
 	ps.AddFunction(@StrToBoolDef, 'function StrToBoolDef(const S: string; const Default: Boolean): Boolean;');
   ps.AddFunction(@BoolToStr, 'function BoolToStr(B: Boolean; UseBoolStrs: Boolean): string;');
+  ps.Comp.AddTypeS('TReplaceFlags', 'set of (rfReplaceAll, rfIgnoreCase);');
+  ps.AddFunction(@StringReplace, 'function StringReplace(const S, OldPattern, NewPattern: string; Flags: TReplaceFlags): string;');
+
 
   { file access }
   ps.Comp.AddTypeS('TCharSet', 'set of Char');
@@ -114,6 +117,7 @@ begin
 
   { Misc }
   ps.AddFunction(@Log, 'procedure Log(msg: string);');
+  ps.AddFunction(@LogClass, 'procedure LogClass(msg: string; uclass: TUClass);');
 
 end;
 

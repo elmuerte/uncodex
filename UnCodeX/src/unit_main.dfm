@@ -1115,7 +1115,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Left = 40
     Top = 104
     Bitmap = {
-      494C010120002200040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010120002200040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000009000000001002000000000000090
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -2307,7 +2307,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
       E003E00300010001800080000001000180008000000100018000800000010001
       8000800000010001800080000001000180008000000100018000800000010001
       800080000001000180008000000100018000800000010001E003E00300010001
-      F80FF80F00010001FE3FFE3FFFFFFFFF}
+      F80FF80F00010001FE3FFE3FFFFFFFFF00000000000000000000000000000000
+      000000000000}
   end
   object pm_SourceSnoop: TPopupMenu
     AutoPopup = False
@@ -2400,12 +2401,19 @@ object frm_UnCodeX: Tfrm_UnCodeX
     CompilerOptions = []
     OnLine = ps_MainLine
     OnCompile = ps_MainCompile
+    OnExecute = ps_MainExecute
     Plugins = <
       item
         Plugin = psi_Classes
       end
       item
         Plugin = psi_DateUtils
+      end
+      item
+        Plugin = psi_miscclasses
+      end
+      item
+        Plugin = psi_unit_uclasses
       end>
     UsePreProcessor = False
     Left = 8
@@ -2420,5 +2428,13 @@ object frm_UnCodeX: Tfrm_UnCodeX
   object psi_DateUtils: TPSImport_DateUtils
     Left = 8
     Top = 344
+  end
+  object psi_unit_uclasses: TPSImport_unit_uclasses
+    Left = 8
+    Top = 408
+  end
+  object psi_miscclasses: TPSImport_miscclasses
+    Left = 8
+    Top = 376
   end
 end
