@@ -1,12 +1,12 @@
 <html>
 <head>
 	<title>UnCodeX - Message commands</title>
-	<link href="default.css" rel="stylesheet" type="text/css">
+	<link href="../images/default.css" rel="stylesheet" type="text/css">
 </head>
 <body>
 <div class="main">
 <div class="head">
-<img src="UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<img src="../images/UnCodeX-icon.gif" alt="UnCodeX" align="top">
 <div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
 <div class="subject">messages</div>
 </div>
@@ -23,7 +23,7 @@ TRedirectStruct = packed record
   OpenTags:  boolean;
   Batch:     string[255];
   NewHandle: integer;
-	OpenFTS:   boolean;
+  OpenFTS:   boolean;
 end;
 </pre>
 This structure needs to be send to the main UnCodeX window using WM_COPYDATA.

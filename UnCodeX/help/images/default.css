@@ -7,7 +7,7 @@ FONT, DIV, TD {
 	font-family: sans-serif;  
 	font-size: 10pt;  
 	line-height: 13.2pt;
-	color: WindowText;   
+	color: black;   
 }
 
 DIV.main { 
@@ -125,12 +125,20 @@ PRE.indent {
 	margin-left: 20px;
 }
 
+TABLE {
+	width: 100%;
+}
+
 TH {
 	/* TODO */
 	font-weight: bold;
 	font-size: 10pt;
 	line-height: normal;
 	border-bottom: 2px inset silver;
+}
+
+TD {
+	border-bottom: 1px dotted gray;
 }
 
 A {
