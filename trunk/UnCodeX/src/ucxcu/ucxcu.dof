@@ -1,6 +1,5 @@
 [FileVersion]
 Version=6.0
-
 [Compiler]
 A=8
 B=0
@@ -31,7 +30,6 @@ Z=1
 ShowHints=1
 ShowWarnings=1
 UnitAliases=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
-
 [Linker]
 MapFile=0
 OutputObjs=0
@@ -42,7 +40,6 @@ MinStackSize=16384
 MaxStackSize=1048576
 ImageBase=4194304
 ExeDescription=
-
 [Directories]
 OutputDir=..\..\bin
 UnitOutputDir=..\..\dcu\ucxcu
@@ -53,19 +50,16 @@ Packages=vcl;rtl;dbrtl;adortl;vcldb;vclx;bdertl;vcldbx;ibxpress;dsnap;cds;bdecds
 Conditionals=
 DebugSourceDirs=
 UsePackages=0
-
 [Parameters]
 RunParams=-l ucxcu.log
 HostApplication=
 Launcher=
 UseLauncher=0
 DebugCWD=
-
 [Language]
 ActiveLang=
 ProjectLang=
 RootDir=F:\PROGRAM FILES\BORLAND\DELPHI6\BIN\
-
 [Version Info]
 IncludeVerInfo=0
 AutoIncBuild=0
@@ -80,7 +74,6 @@ Private=0
 DLL=0
 Locale=1033
 CodePage=1252
-
 [Version Info Keys]
 CompanyName=
 FileDescription=
@@ -92,27 +85,22 @@ OriginalFilename=
 ProductName=
 ProductVersion=1.0.0.0
 Comments=
-
 [HistoryLists\hlConditionals]
 Count=2
 Item0={$DEFINE __USE_TREEVIEW}
 Item1=$DEFINE __USE_TREEVIEW;$DEFINE __USE_TREEVIEW
-
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
-
 [HistoryLists\hlSearchPath]
 Count=2
 Item0=VCL
 Item1=..
-
 [HistoryLists\hlUnitOutputDirectory]
 Count=3
 Item0=..\DCU
 Item1=..\..\dcu\ucxcu
 Item2=..\dcu\ucxcu
-
 [HistoryLists\hlOutputDirectorry]
 Count=2
 Item0=..\BIN
