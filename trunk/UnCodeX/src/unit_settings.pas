@@ -170,6 +170,7 @@ type
     ud_InlineSearchTimeout: TUpDown;
     lbl_CPP: TLabel;
     ed_CPPApp: TEdit;
+    btn_SelectCPP: TBitBtn;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -228,6 +229,7 @@ type
     procedure cb_LogColorChange(Sender: TObject);
     procedure btn_UnIgnoreClick(Sender: TObject);
     procedure clb_PackagePriorityClickCheck(Sender: TObject);
+    procedure btn_SelectCPPClick(Sender: TObject);
   private
   public
     TagChanged: boolean;
@@ -716,6 +718,12 @@ end;
 procedure Tfrm_Settings.clb_PackagePriorityClickCheck(Sender: TObject);
 begin
   TagChanged := true;
+end;
+
+procedure Tfrm_Settings.btn_SelectCPPClick(Sender: TObject);
+begin
+  od_BrowseExe.FileName := ed_CPPApp.Text;
+  if (od_BrowseExe.Execute) then ed_CPPApp.Text := od_BrowseExe.FileName;
 end;
 
 initialization

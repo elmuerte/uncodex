@@ -565,6 +565,16 @@ object frm_Settings: Tfrm_Settings
           Height = 21
           TabOrder = 7
         end
+        object btn_SelectCPP: TBitBtn
+          Left = 400
+          Top = 192
+          Width = 25
+          Height = 21
+          Anchors = [akTop, akRight]
+          Caption = '...'
+          TabOrder = 8
+          OnClick = btn_SelectCPPClick
+        end
       end
     end
     object ts_HTMLHelp: TTabSheet
