@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.60 2003-11-04 19:35:27 elmuerte Exp $
+ $Id: unit_main.pas,v 1.61 2003-11-22 10:45:34 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -1178,18 +1178,24 @@ begin
     { Load layout -- END }
     { Program configuration }
     HTMLOutputDir := ini.ReadString('Config', 'HTMLOutputDir', ExtractFilePath(ParamStr(0))+'Output');
+    ac_OpenOutput.Enabled := HTMLOutputDir <> '';
     TemplateDir := ini.ReadString('Config', 'TemplateDir', ExtractFilePath(ParamStr(0))+'Templates'+PATHDELIM+'UnrealWiki');
     HTMLTargetExt := ini.ReadString('Config', 'HTMLTargetExt', '');
     TabsToSpaces := ini.ReadInteger('Config', 'TabsToSpaces', 0);
     CPPApp := ini.ReadString('Config', 'CPP', '');
     HHCPath := ini.ReadString('Config', 'HHCPath', '');
+    ac_HTMLHelp.Enabled := HHCPath <> '';
     HTMLHelpFile := ini.ReadString('Config', 'HTMLHelpFile', ExtractFilePath(ParamStr(0))+'UnCodeX.chm');
     HHTitle := ini.ReadString('Config', 'HHTitle', '');
     ServerCmd := ini.ReadString('Config', 'ServerCmd', '');
+    ac_RunServer.Enabled := ServerCmd <> '';
     ServerPrio := ini.ReadInteger('Config', 'ServerPrio', 1);
     ClientCmd := ini.ReadString('Config', 'ClientCmd', '');
+    ac_JoinServer.Enabled := ClientCmd <> '';
     CompilerCmd := ini.ReadString('Config', 'CompilerCmd', '');
+    ac_CompileClass.Enabled := CompilerCmd <> '';
     OpenResultCmd := ini.ReadString('Config', 'OpenResultCmd', '');
+    ac_OpenClass.Enabled := OpenResultCmd <> '';
     FTSRegexp := ini.ReadBool('Config', 'FullTextSearchRegExp', false);
     StateFile := ini.ReadString('Config', 'StateFile', StateFile);
     AnalyseModified := ini.ReadBool('Config', 'AnalyseModified', true);
@@ -1220,7 +1226,7 @@ begin
       Delete(tmp, 1, Pos('=', tmp));
       if (LowerCase(tmp2) = 'tag=') then begin
         Log('Config: Tagged package = '+tmp);
-        PackagePriority.Objects[PackagePriority.IndexOf(LowerCase(tmp))] := PackagePriority; 
+        PackagePriority.Objects[PackagePriority.IndexOf(LowerCase(tmp))] := PackagePriority;
       end;
     end;
     ini.ReadSectionValues('IgnorePackages', sl);
@@ -1403,21 +1409,27 @@ begin
     if (ShowModal = mrOk) then begin
       { HTML output }
       HTMLOutputDir := ed_HTMLOutputDir.Text;
+      ac_OpenOutput.Enabled := HTMLOutputDir <> '';
       TemplateDir := ed_TemplateDir.Text;
       HTMLTargetExt := ed_HTMLTargetExt.Text;
       TabsToSpaces := ud_TabsToSpaces.Position;
       CPPApp := ed_CPPApp.Text;
       { HTML Help }
       HHCPath := ed_WorkshopPath.Text;
+      ac_HTMLHelp.Enabled := HHCPath <> '';
       HTMLHelpFile := ed_HTMLHelpOutput.Text;
       HHTitle := ed_HHTitle.Text;
       { Run server }
       ServerCmd := ed_ServerCommandline.Text;
+      ac_RunServer.Enabled := ServerCmd <> '';
       ServerPrio := cb_ServerPriority.ItemIndex;
       ClientCmd := ed_ClientCommandline.Text;
+      ac_JoinServer.Enabled := ClientCmd <> '';
       { Commandlines }
       CompilerCmd := ed_CompilerCommandline.Text;
+      ac_CompileClass.Enabled := CompilerCmd <> '';
       OpenResultCmd := ed_OpenResultCmd.Text;
+      ac_OpenClass.Enabled := OpenResultCmd <> '';
       { Search settings }
       FTSRegexp := cb_FTSRegExp.Checked;
       { Program options }
@@ -1453,6 +1465,11 @@ begin
       re_SourceSnoop.Color := re_Preview.Color;
 
       ini := TMemIniFile.Create(ConfigFile);
+
+      lb_PrimKey.Items.SaveToFile(ExtractFilePath(ParamStr(0))+'keywords1.list');
+      lb_SecKey.Items.SaveToFile(ExtractFilePath(ParamStr(0))+'keywords2.list');
+      ReloadKeywords;
+
       data := TStringList.Create;
       try
         data.Add('[Config]');
@@ -1750,7 +1767,7 @@ begin
   end;
   if (ThreadCreate) then begin
     lb_Log.Items.Clear;
-    runningthread := TMSHTMLHelp.Create(HHCPath, HTMLOutputDir, HTMLHelpFile, HHTitle, PackageList, tv_Classes, StatusReport);
+    runningthread := TMSHTMLHelp.Create(HHCPath, HTMLOutputDir, HTMLHelpFile, HHTitle, PackageList, ClassList, StatusReport);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
   end;

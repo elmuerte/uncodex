@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   UScript to RTF
- $Id: unit_rtfhilight.pas,v 1.14 2003-11-04 19:35:27 elmuerte Exp $
+ $Id: unit_rtfhilight.pas,v 1.15 2003-11-22 10:45:34 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -38,6 +38,15 @@ var
   textfont: TFont;
   tabs: integer;
   ClassesHash: TStringHash;
+  // fonts
+  fntKeyword1: TFont;
+  fntKeyword2: TFont;
+  fntString: TFont;
+  fntNumber: TFont;
+  fntMacro: TFont;
+  fntComment: TFont;
+  fntName: TFont;
+  fntClassLink: TFont;
 
 implementation
 
@@ -145,7 +154,10 @@ begin
       else if (p.Token = toSymbol) then begin
         tmp := LowerCase(p.TokenString);
         replacement := p.TokenString;
-        if (Keywords.Exists(tmp)) then begin
+        if (Keywords1.Exists(tmp)) then begin
+          replacement := '{\b '+replacement+'}'; // bold
+        end
+        else if (Keywords2.Exists(tmp)) then begin
           replacement := '{\b '+replacement+'}'; // bold
         end
         else if (ClassesHash.Exists(tmp)) then begin

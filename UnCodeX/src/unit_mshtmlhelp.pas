@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   creates the HTML Help project file and runs the compiler
- $Id: unit_mshtmlhelp.pas,v 1.9 2003-11-04 19:35:27 elmuerte Exp $
+ $Id: unit_mshtmlhelp.pas,v 1.10 2003-11-22 10:45:34 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -29,8 +29,7 @@ unit unit_mshtmlhelp;
 interface
 
 uses
-  Windows, SysUtils, Classes, unit_definitions, ComCtrls, unit_uclasses,
-  unit_outputdefs;
+  Windows, SysUtils, Classes, unit_definitions, unit_uclasses, unit_outputdefs;
 
 type
   TMSHTMLHelp = class(TThread)
@@ -40,14 +39,16 @@ type
     MainTitle: string;
     hhp: TStringList;
     PackageList: TUPackageList;
-    ClassTree: TTreeView;
+    ClassList: TUClassList;
     status: TStatusReport;
     procedure CreateHHPFile;
     procedure CreateHHCFile;
     procedure RunHHCompiler;
     function ExecConsoleApp(const Commandline: String): Cardinal;
+    procedure ListDir(basedir, offset: string);
+    procedure HHCClassTree(uclass: TUClass; hhc: TStringList);
   public
-    constructor Create(hccpath, outputpath, resultfile, title: string; PackageList: TUPackageList; ClassTree: TTreeView; status: TStatusReport);
+    constructor Create(hccpath, outputpath, resultfile, title: string; PackageList: TUPackageList; ClassList: TUClassList; status: TStatusReport);
     procedure Execute; override;
     destructor Destroy; override;
   end;
@@ -63,14 +64,14 @@ uses
 var
   nFiles: integer;
 
-constructor TMSHTMLHelp.Create(hccpath, outputpath, resultfile, title: string; PackageList: TUPackageList; ClassTree: TTreeView; status: TStatusReport);
+constructor TMSHTMLHelp.Create(hccpath, outputpath, resultfile, title: string; PackageList: TUPackageList; ClassList: TUClassList; status: TStatusReport);
 begin
   hhp := TStringList.Create;
   Self.HCCPath := hccpath;
   Self.OutputPath := outputpath;
   Self.ResultFile := resultfile;
   Self.PackageList := PackageList;
-  Self.ClassTree := ClassTree;
+  Self.ClassList := ClassList;
   Self.status := status;
   Self.MainTitle := title;
   if (MainTitle = '') then MainTitle := APPTITLE+' - '+APPVERSION;
@@ -97,8 +98,6 @@ begin
 end;
 
 procedure TMSHTMLHelp.CreateHHPFile;
-var
-  sr: TSearchRec;
 begin
   Status('Creating HTML Help project file');
   hhp.Add('[OPTIONS]');
@@ -117,17 +116,33 @@ begin
   hhp.Add('');
   hhp.Add('[FILES]');
   nFiles := 0;
-  if FindFirst(outputpath+PATHDELIM+WILDCARD, faDirectory, sr) = 0 then begin
+  ListDir(outputpath+PATHDELIM, '');
+  hhp.SaveToFile(outputpath+PATHDELIM+'_htmlhelp.hhp');
+  Inc(nFiles,7); // 7 extra status lines
+end;
+
+procedure TMSHTMLHelp.ListDir(basedir, offset: string);
+var
+  sr: TSearchRec;
+begin
+  if FindFirst(basedir+WILDCARD, faAnyFile, sr) = 0 then begin
     repeat
       if ((sr.Name <> '.') and (sr.Name <> '..')) then begin
-        Inc(nFiles);
-        hhp.Add(sr.Name);
+        if (sr.Attr and faDirectory <> 0) then begin
+          ListDir(basedir+sr.Name+PATHDELIM, offset+sr.Name+PATHDELIM);
+        end
+        else begin
+          Inc(nFiles);
+          hhp.Add(offset+sr.Name);
+          // dynamically find target ext
+          if ((offset = '') and (sr.Name = 'index'+extractfileext(sr.Name))) then begin
+            unit_htmlout.TargetExtention := Copy(extractfileext(sr.Name), 2, MaxInt);
+          end;
+        end;
       end;
     until FindNext(sr) <> 0;
     FindClose(sr);
   end;
-  hhp.SaveToFile(outputpath+PATHDELIM+'_htmlhelp.hhp');
-  Inc(nFiles,7); // 7 extra status lines
 end;
 
 procedure TMSHTMLHelp.CreateHHCFile;
@@ -150,26 +165,26 @@ begin
     hhc.Add('<ul>');
     hhc.Add(' <li><object type="text/sitemap"><param name="name" value="Classes"></object>');
     hhc.Add(' <ul>');
-    j := 0;
-    for i := 0 to ClassTree.Items.Count-1 do begin
-      hhc.Add(StrRepeat('<ul>', ClassTree.Items[i].Level-J));
-      hhc.Add(StrRepeat('</ul>', J-ClassTree.Items[i].Level));
-      hhc.Add('     <li><object type="text/sitemap"><param name="name" value="'+ClassTree.Items[i].Text+'"><param name="Local" value="'+ClassLink(TUClass(ClassTree.Items[i].Data))+'"></object>');
-      j := ClassTree.Items[i].Level;
+    for i := 0 to  ClassList.Count-1 do begin
+      if (ClassList[i].parent = nil) then begin
+        hhc.Add('     <li><object type="text/sitemap"><param name="name" value="'+ClassList[i].name+'"><param name="Local" value="'+ClassLink(ClassList[i])+'"></object>');
+        if (ClassList[i].children.Count > 0) then HHCClassTree(ClassList[i], hhc);
+        hhc.Add('     </li>');
+      end;
     end;
-    hhc.Add(StrRepeat('</ul>', J));
     hhc.Add(' </ul>');
     hhc.Add('</ul>');
     hhc.Add('<ul>');
     hhc.Add(' <li><object type="text/sitemap"><param name="name" value="Packages"></object>');
     hhc.Add(' <ul>');
     for i := 0 to PackageList.Count-1 do begin
-      hhc.Add('   <li><object type="text/sitemap"><param name="name" value="'+PackageList[i].name+'"><param name="Local" value="package_'+PackageList[i].name+'.html"></object>');
+      hhc.Add('   <li><object type="text/sitemap"><param name="name" value="'+PackageList[i].name+'"><param name="Local" value="'+PackageLink(PackageList[i])+'.html"></object>');
       hhc.Add('   <ul>');
       for j := 0 to PackageList[i].classes.Count-1 do begin
         hhc.Add('     <li><object type="text/sitemap"><param name="name" value="'+PackageList[i].classes[j].name+'"><param name="Local" value="'+ClassLink(PackageList[i].classes[j])+'"></object>');
       end;
       hhc.Add('   </ul>');
+      hhc.Add('   </li>');
     end;
     hhc.Add(' </ul>');
     hhc.Add('</ul>');
@@ -180,10 +195,24 @@ begin
   end;
 end;
 
+procedure TMSHTMLHelp.HHCClassTree(uclass: TUClass; hhc: TStringList);
+var
+  i: integer;
+begin
+  hhc.Add('<ul>');
+  for i := 0 to uclass.children.Count-1 do begin
+    hhc.Add('     <li><object type="text/sitemap"><param name="name" value="'+uclass.children[i].name+'"><param name="Local" value="'+ClassLink(uclass.children[i])+'"></object>');
+    if (uclass.children[i].children.Count > 0) then HHCClassTree(uclass.children[i], hhc);
+    hhc.Add('     </li>');
+  end;
+  hhc.Add('</ul>');
+end;
+
 procedure TMSHTMLHelp.RunHHCompiler;
 begin
   Status('Running HTML Help compiler ...');
   try
+    Log('exec: '+HCCPath+PATHDELIM+COMPILER+' _htmlhelp.hhp ...');
     ExecConsoleApp(HCCPath+PATHDELIM+COMPILER+' _htmlhelp.hhp');
   except
   end;

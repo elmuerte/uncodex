@@ -3,7 +3,7 @@
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
             Based on the TParser class by Borland Software Corporation
- $Id: unit_parser.pas,v 1.9 2003-06-22 08:58:45 elmuerte Exp $
+ $Id: unit_parser.pas,v 1.10 2003-11-22 10:45:34 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 { *************************************************************************** }
@@ -184,7 +184,7 @@ begin
         end;
         while P^ in ['0'..'9'] do Inc(P);
         Result := toInteger;
-        while P^ in ['0'..'9', '.', 'e', 'E', '+', '-'] do
+        while P^ in ['0'..'9', '.', 'e', 'E', '+', '-', 'f', 'F'] do
         begin
           Inc(P);
           Result := toFloat;

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.36 2003-11-12 22:57:07 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.37 2003-11-22 10:45:34 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -149,6 +149,9 @@ const
   ASCII_TREE_L = '+-- ';
   ASCII_TREE_I = '|   ';
 
+var
+  TargetExtention: string;
+
 implementation
 
 uses
@@ -157,7 +160,6 @@ uses
 var
   currentClass: TUClass;
   curPos, maxPos: integer;
-  TargetExtention: string;
   GlossaryElipse: string;
   TreeNone: string;
   TreeT: string;
@@ -1310,7 +1312,7 @@ begin
               // ignore const when comment = @ignore
               if (CompareText(up.functions[i].comment, IGNORE_KEYWORD) <> 0) then begin
                 if (i > 0) then tmp := tmp+', ';
-                tmp := tmp+'<a href="'+StrRepeat('../', subDirDepth)+ClassLink(up)+'#'+up.functions[i].name+'">'+up.functions[i].name+'</a>';
+                tmp := tmp+'<a href="'+StrRepeat('../', subDirDepth)+ClassLink(up)+'#'+HTMLChars(up.functions[i].name)+'">'+HTMLChars(up.functions[i].name)+'</a>';
               end;
             end;
             if (tmp = '') then tmp := '-';
@@ -2181,8 +2183,11 @@ begin
       else if (p.Token = toSymbol) then begin
         tmp := LowerCase(p.TokenString);
         replacement := p.TokenString;
-        if (Keywords.Exists(tmp)) then begin
+        if (Keywords1.Exists(tmp)) then begin
           replacement := '<font class="source_keyword">'+replacement+'</font>';
+        end
+        else if (Keywords2.Exists(tmp)) then begin
+          replacement := '<font class="source_keyword2">'+replacement+'</font>';
         end
         else if (TypeCache.Exists(tmp)) then begin
           if (TypeCache.Items[tmp] <> '-') then replacement := '<font class="source_type"><a href="'+StrRepeat('../', subDirDepth)+TypeCache.Items[tmp]+'" class="source">'+replacement+'</a></font>'

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
             Based on the TParser class by Borland Software Corporation
- $Id: unit_sourceparser.pas,v 1.9 2003-06-22 08:58:45 elmuerte Exp $           
+ $Id: unit_sourceparser.pas,v 1.10 2003-11-22 10:45:34 elmuerte Exp $           
 -----------------------------------------------------------------------------}
 
 { *************************************************************************** }
@@ -199,7 +199,7 @@ begin
           Inc(P);
           if (((P-1)^ = '0') and (P^ in ['x', 'X'])) then begin
             Inc(P); // hex notation
-            while P^ in ['0'..'9', 'a', 'f', 'A', 'F'] do Inc(P);
+            while P^ in ['0'..'9', 'a' .. 'f', 'A' .. 'F'] do Inc(P);
           end
           else begin
             while P^ in ['0'..'9'] do begin
@@ -207,7 +207,7 @@ begin
             end;
             if (P^ = '.') then begin
               Inc(P);
-              while P^ in ['0'..'9'] do begin
+              while P^ in ['0'..'9', 'f' ,'F'] do begin
                 Inc(P);
                 Result := toFloat;
               end;
@@ -223,7 +223,7 @@ begin
           else begin
             Inc(P);
             Inc(FSourceLine); // next line
-            Result := toMacro; // not realy a comment but we just ignore it
+            Result := toMacro; 
           end;
         end;
       '/':
@@ -236,7 +236,7 @@ begin
               Inc(P);
               Inc(FSourceLine); // next line
             end;
-            Result := toComment; // not realy a comment but we just ignore it
+            Result := toComment;
           end
           else if (P^ = '*') then begin // block comment
             Result := toComment;
