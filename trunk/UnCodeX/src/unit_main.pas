@@ -11,7 +11,6 @@ const
   WM_APPBAR                      = WM_USER+$100;
   UM_APP_ID_CHECK                = WM_APP + 101;
   UM_RESTORE_APPLICATION         = WM_APP + 102;
-  UM_PREVIOUS_INST_PARAMS        = WM_APP + 103;
 
 type
   Tfrm_UnCodeX = class(TForm)
@@ -173,11 +172,10 @@ type
     procedure lb_LogDblClick(Sender: TObject);
     procedure lb_LogClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure tv_ClassesExpanding(Sender: TObject; Node: TTreeNode;
-      var AllowExpansion: Boolean);
     procedure tv_ClassesDblClick(Sender: TObject);
     procedure ac_TagsExecute(Sender: TObject);
     procedure ac_CopyNameExecute(Sender: TObject);
+    procedure FormActivate(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -207,6 +205,7 @@ type
     procedure NextBatchCommand;
     procedure UMAppIDCheck(var Message : TMessage); message UM_APP_ID_CHECK;
     procedure WMCopyData(var msg: TWMCopyData); message WM_COPYDATA;
+    procedure UMRestoreApplication(var msg: TMessage); message UM_RESTORE_APPLICATION;
   public
     statustext : string;
     procedure StatusReport(msg: string; progress: byte = 255);
@@ -231,6 +230,7 @@ var
   DoInit: boolean = true;
   PackageList: TUPackageList;
   ClassList: TUClassList;
+  InitActivateFix: Boolean = true;
   // class search vars
   searchclass: string;
   CSprops: array[0..2] of boolean;
@@ -242,8 +242,9 @@ var
   ConfigFile: string;
   InitialStartup: boolean;
   StatusHandle: integer = -1;
+  TreeUpdated: boolean = false; // prevent useless saving
   // used for -reuse
-  PrevInst: HWND;
+  PrevInst, RestoreHandle: HWND;
   AppInstanceId: integer = 0;
 
 // config vars
@@ -333,6 +334,7 @@ procedure Tfrm_UnCodeX.SaveState;
 var
   fs: TFileStream;
 begin
+  if (not TreeUpdated) then exit;
   StatusReport('Saving state to '+StateFile);
   Application.ProcessMessages;
   fs := TFileStream.Create(StateFile, fmCreate or fmShareExclusive);
@@ -392,7 +394,6 @@ begin
   Minfo.fMask := MIIM_TYPE;
   Minfo.fType := MFT_SEPARATOR;
   InsertMenuItem(Sysmenu, 0, true, Minfo);
-
   // Add view menu
   Minfo.cbSize := SizeOf(TMENUITEMINFO);
   Minfo.fMask := MIIM_ID or MIIM_TYPE or MIIM_SUBMENU;
@@ -611,6 +612,7 @@ var
   data: TRedirectStruct;
 begin
   if (msg.CopyDataStruct.cbData = SizeOf(data)) then begin
+    RestoreHandle := Handle;
     CopyMemory(@data, msg.CopyDataStruct.lpData, msg.CopyDataStruct.cbData);
     StatusHandle := data.NewHandle;
     if (data.Find <> '') then begin
@@ -623,9 +625,13 @@ begin
       ac_FindNext.Execute;
     end;
     // data.Batch;
-
     Msg.Result := ord(true);
   end;
+end;
+
+procedure Tfrm_UnCodeX.UMRestoreApplication(var msg: TMessage);
+begin
+  msg.Result := RestoreHandle;
 end;
 
 procedure Tfrm_UnCodeX.OpenSourceLine(uclass: TUClass; line, caret: integer);
@@ -850,6 +856,7 @@ end;
 procedure Tfrm_UnCodeX.ac_RecreateTreeExecute(Sender: TObject);
 begin
   if (ThreadCreate) then begin
+    TreeUpdated := true;
     lb_Log.Items.Clear;
     tv_Packages.Items.Clear;
     tv_Classes.Items.Clear;
@@ -876,6 +883,7 @@ end;
 procedure Tfrm_UnCodeX.ac_AnalyseAllExecute(Sender: TObject);
 begin
   if (ThreadCreate) then begin
+    TreeUpdated := true;
     lb_Log.Items.Clear;
     runningthread := TClassAnalyser.Create(ClassList, statusReport);
     runningthread.OnTerminate := ThreadTerminate;
@@ -1448,19 +1456,6 @@ begin
   end;
 end;
 
-procedure Tfrm_UnCodeX.tv_ClassesExpanding(Sender: TObject;
-  Node: TTreeNode; var AllowExpansion: Boolean);
-{var
-  pt: TPoint;
-  ht: THitTests;}
-begin
-  {with Node.TreeView do begin
-    pt := ScreenToClient(Mouse.CursorPos);
-    ht := GetHitTestInfoAt(Pt.X, Pt.y);
-    AllowExpansion := not (htOnItem in ht);
-  end;}
-end;
-
 procedure Tfrm_UnCodeX.tv_ClassesDblClick(Sender: TObject);
 var
   pt: TPoint;
@@ -1487,12 +1482,11 @@ begin
       if (Selected <> nil) then begin
         if (TObject(Selected.Data).ClassType <> TUClass) then exit;
         selclass := TUclass(Selected.Data);
-        with Tfrm_Tags.Create(nil) do begin          
+        with Tfrm_Tags.Create(nil) do begin
+          RestoreHandle := Handle;
           uclass := selclass;
           if LoadClass then begin
             Show;
-            // workaround of the auto size column
-            lv_Properties.Columns[1].Width := lv_Properties.ClientWidth-lv_Properties.Columns[0].Width;
           end;
         end;
       end;
@@ -1507,6 +1501,14 @@ begin
       if (Selected <> nil) then
         Clipboard.SetTextBuf(PChar(Selected.Text));
     end;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.FormActivate(Sender: TObject);
+begin
+  if ((RestoreHandle <> Handle) and InitActivateFix) then begin
+    SetActiveWindow(RestoreHandle);
+    InitActivateFix := false;
   end;
 end;
 

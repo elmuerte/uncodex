@@ -54,18 +54,19 @@ end;
 procedure FindOtherWindow;
 var
   CopyData: TCopyDataStruct;
+  RestoreHandle: HWND;
 begin
   EnumWindows(@EnumWindowCallBack, 0);
   if (PrevInst <> 0) then begin
-    if (not RedirectData.OpenTags) then begin
-      SetForegroundWindow(PrevInst);
-      BringWindowToTop(PrevInst);
-    end;
     CopyData.cbData := SizeOf(RedirectData);
     CopyData.dwData := PrevInst;
     CopyData.lpData := @RedirectData;
     SendMessage(PrevInst, WM_COPYDATA, PrevInst, Integer(@CopyData));
     HasPrevInst := true;
+    RestoreHandle := SendMessage(PrevInst, UM_RESTORE_APPLICATION, PrevInst, 0);
+    SetForegroundWindow(RestoreHandle);
+    BringWindowToTop(RestoreHandle);
+    SetActiveWindow(RestoreHandle);
   end;
 end;
 
@@ -142,7 +143,7 @@ begin
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-  Application.CreateForm(Tfrm_About, frm_About);
-  Application.Run;
+    Application.CreateForm(Tfrm_About, frm_About);
+    Application.Run;
   end;
 end.
