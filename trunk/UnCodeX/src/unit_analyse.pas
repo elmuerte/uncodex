@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.41 2004-08-25 20:31:59 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.42 2004-09-26 17:30:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -118,6 +118,13 @@ const
 
 var
 	FunctionModifiers: TStringList;
+
+// unquote an unrealscript string
+function UnQuoteString(input: string): string;
+begin
+  result := Copy(input, 2, length(input)-2);
+  result := StringReplace(result, '\"', '"', [rfReplaceAll]);
+end;
 
 // Create for a class list
 constructor TClassAnalyser.Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false; myClassList: TObjectHash = nil);
@@ -406,6 +413,7 @@ var
   last, prev: string;
   nprop: TUProperty;
   i: integer;
+
 begin
 	guard('pVar '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   result := TUProperty.Create;
@@ -464,6 +472,16 @@ begin
         last := last+pSquareBrackets; // name
       end;
       break;
+    end;
+    // variable description
+    if (p.Token = toString) then begin
+      if (result.comment <> '') then begin
+        logclass(uclass.FullName+' '+Result.name+': ignoring variable description', uclass);
+      end
+      else begin
+	      result.comment := UnQuoteString(p.TokenString);
+      end;
+    	p.NextToken; // should be: ';'
     end;
   end;
   result.ptype := prev;
