@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Buttons {$IFDEF MSWINDOWS},FileCtrl{$ENDIF}, ComCtrls,
-  Menus, ExtCtrls;
+  Menus, ExtCtrls, IniFiles;
 
 type
   
@@ -92,6 +92,8 @@ type
     mi_Resultline1: TMenuItem;
     mi_Resultposition1: TMenuItem;
     cb_FTSRegExp: TCheckBox;
+    btn_Import: TBitBtn;
+    od_BrowseIni: TOpenDialog;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -126,6 +128,7 @@ type
     procedure mi_PackagePath2Click(Sender: TObject);
     procedure mi_Resultline1Click(Sender: TObject);
     procedure mi_Resultposition1Click(Sender: TObject);
+    procedure btn_ImportClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -378,6 +381,38 @@ end;
 procedure Tfrm_Settings.mi_Resultposition1Click(Sender: TObject);
 begin
   ed_OpenResultCmd.Text := ed_OpenResultCmd.Text+' %resultpos%';
+end;
+
+procedure Tfrm_Settings.btn_ImportClick(Sender: TObject);
+var
+  ini: TMemIniFile;
+  sl: TStringList;
+  i, j: integer;
+  tmp: string;
+begin
+  if (lb_PackagePriority.Items.Count > 0) then begin
+    if MessageDlg('This will clear the current priority list.'+#13+#10+
+      'Are you sure you want to continue ?', mtWarning, [mbYes,mbNo], 0) = mrNo then exit;
+    lb_PackagePriority.Items.Clear;
+  end;
+  if (od_BrowseIni.Execute) then begin
+    ini := TMemIniFile.Create(od_BrowseIni.FileName);
+    sl := TStringList.Create;
+    try
+      ini.ReadSectionValues('Editor.EditorEngine', sl);
+      for i := 0 to sl.Count-1 do begin
+        tmp := sl[i];
+        j := Pos('=', tmp);
+        if (LowerCase(Copy(tmp, 1, j-1)) = 'editpackages') then begin
+          Delete(tmp, 1, j);
+          lb_PackagePriority.Items.Add(tmp);
+        end;
+      end;
+    finally
+      sl.Free;
+      ini.Free;
+    end;
+  end;
 end;
 
 end.

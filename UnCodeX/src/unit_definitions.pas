@@ -10,13 +10,13 @@ type
 
   function StrRepeat(line: string; count: integer): string;
 
-  function SearchQuery(const ACaption, APrompt: string; var value: string; var checkvalue: boolean;
-    var history: TStringList;  CheckPrompt: string = ''): boolean; overload;
-  function SearchQuery(const ACaption, APrompt: string; var value: string; var history: TStringList): boolean; overload;
+  function SearchQuery(const ACaption, APrompt: string; var value: string; var checkvalue: array of boolean;
+    var history: TStringList; CheckPrompt: array of string): boolean; overload;
+  //function SearchQuery(const ACaption, APrompt: string; var value: string; var history: TStringList): boolean; overload;
   
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '037 Beta';
+  APPVERSION = '038 Beta';
 
   PATHDELIM = '\';
   WILDCARD = '*.*';
@@ -50,15 +50,15 @@ begin
   Result.X := Result.X div 52;
 end;
 
-function SearchQuery(const ACaption, APrompt: string; var value: string; var checkvalue: boolean;
-    var history: TStringList;  CheckPrompt: string = ''): boolean;
+function SearchQuery(const ACaption, APrompt: string; var value: string; var checkvalue: array of boolean;
+    var history: TStringList; CheckPrompt: array of string): boolean;
 var
   Form: TForm;
   Prompt: TLabel;
   Edit: TComboBox;
-  CheckBox: TCheckBox;
+  CheckBox: array of TCheckBox;
   DialogUnits: TPoint;
-  ButtonTop, ButtonWidth, ButtonHeight: Integer;
+  ButtonTop, ButtonWidth, ButtonHeight, i, last: Integer;
 begin
   Result := False;
   Form := TForm.Create(Application);
@@ -93,18 +93,22 @@ begin
         AutoComplete := true;
         SelectAll;
       end;
-      CheckBox := TCheckBox.Create(Form);
-      with CheckBox do
-      begin
-        Parent := Form;
-        Left := Prompt.Left;
-        Top := Edit.Top + Edit.Height + 5;
-        Width := MulDiv(234, DialogUnits.X, 4);
-        Caption := CheckPrompt;
-        Checked := checkvalue;
-        Visible := CheckPrompt <> '';
+      last := Edit.Top + Edit.Height;
+      SetLength(CheckBox, High(CheckPrompt)+1);
+      for i := 0 to High(CheckPrompt) do begin
+        CheckBox[i] := TCheckBox.Create(Form);
+        with CheckBox[i] do
+        begin
+          Parent := Form;
+          Left := Prompt.Left;
+          Top := last + 5;
+          Width := MulDiv(234, DialogUnits.X, 4);
+          Caption := CheckPrompt[i];
+          Checked := checkvalue[i];
+          last := Top+Height;
+        end;
       end;
-      ButtonTop := CheckBox.Top + CheckBox.Height + 15;
+      ButtonTop := Last + 10;
       ButtonWidth := MulDiv(50, DialogUnits.X, 4);
       ButtonHeight := MulDiv(14, DialogUnits.Y, 8);
       with TButton.Create(Form) do
@@ -128,7 +132,7 @@ begin
       end;
       if ShowModal = mrOk then
       begin
-        checkvalue := CheckBox.Checked;
+        for i := 0 to High(CheckPrompt) do checkvalue[i] := CheckBox[i].Checked;
         Value := Edit.Text;
         if (History.IndexOf(Value) = -1) then begin
           History.Insert(0, Value);
@@ -142,12 +146,11 @@ begin
     end;
 end;
 
-function SearchQuery(const ACaption, APrompt: string; var value: string; var history: TStringList): boolean;
+{function SearchQuery(const ACaption, APrompt: string; var value: string; var history: TStringList): boolean;
 var
   tmpb: boolean;
 begin
   result := SearchQuery(ACaption, APrompt, value, tmpb, history, '');
-end;
+end;}
 
 end.
- 
