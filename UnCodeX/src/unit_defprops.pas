@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class defaultproperties browser.
 
-  $Id: unit_defprops.pas,v 1.8 2005-03-20 08:57:55 elmuerte Exp $
+  $Id: unit_defprops.pas,v 1.9 2005-03-27 20:10:34 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -104,7 +104,7 @@ begin
   try
     while (pclass <> nil) do begin
       sl.Clear;
-      sl.Text := pclass.defaultproperties;
+      sl.Text := pclass.defaultproperties.data;
       i := 0;
       while (i < sl.Count) do begin
         s := trim(sl.Names[i]);

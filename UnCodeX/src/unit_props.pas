@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Class property inpector frame
 
-  $Id: unit_props.pas,v 1.27 2005-03-25 19:12:34 elmuerte Exp $
+  $Id: unit_props.pas,v 1.28 2005-03-27 20:10:52 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -453,6 +453,10 @@ begin
   mi_States1.Visible := liState <> nil;
 
   lv_Properties.Items.EndUpdate;
+
+  //if (visible) then lv_Properties.Columns[0].Width := abs(lv_Properties.ClientWidth);
+  if (Visible) then lv_Properties.Refresh;
+
   result := true;
 end;
 

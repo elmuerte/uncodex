@@ -517,11 +517,11 @@ Begin T := Self.tagged; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TUClassdefaultproperties_W(Self: TUClass; const T: string);
-Begin Self.defaultproperties := T; end;
+Begin Self.defaultproperties.data := T; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TUClassdefaultproperties_R(Self: TUClass; var T: string);
-Begin T := Self.defaultproperties; end;
+Begin T := Self.defaultproperties.data; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TUClassfiletime_W(Self: TUClass; const T: integer);

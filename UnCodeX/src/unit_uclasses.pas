@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.49 2005-03-20 20:25:56 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.50 2005-03-27 20:10:52 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -38,7 +38,7 @@ uses
 
 const
   // used for output module compatibility testing
-  UCLASSES_REV: LongInt = 4;
+  UCLASSES_REV: LongInt = 5;
 
 type
   TUCommentType = (ctSource, ctExtern, ctInherited);
@@ -227,7 +227,15 @@ type
     treenode:           TObject; // class tree node
     treenode2:          TObject; // the second tree node (PackageTree)
     filetime:           integer; // used for checking for changed files
-    defaultproperties:  string; // AS IS
+    defaultproperties:  record
+      srcline:          integer; // start of the default properties block in the source
+      data:             string; // AS IS
+    end;
+    replication:        record
+      srcline:          integer; // start of the replication block in the source
+      symbols:          TStringList; // symbol=index
+      expressions:       TStringList; // expression (DO NOT SORT)
+    end;
     //TODO: replication
     //  - per statement a list of replicated symbols?
     //  - hash list for replicated symbols (to entry in statement list)
@@ -247,6 +255,10 @@ type
     function FullName: string;
     function FullFileName: string;
     function declaration: string; override;
+    // replication functions
+    function IsReplicated(symbol: string): boolean; // returns true of symbol is replicated
+    function GetReplication(symbol: string): string; // returns the expression required to replicate
+    function AddReplication(expression: string): integer; // adds an expression and returns the index
   end;
 
   TUClassList = class(TUObjectList)
@@ -621,6 +633,10 @@ begin
   deps := TUClassList.Create(false);
   defs := TDefinitionList.Create(self);
   includes := TStringList.Create;
+  replication.expressions := TStringList.Create;
+  replication.symbols := TStringList.Create;
+  replication.symbols.CaseSensitive := false;
+  replication.symbols.Duplicates := dupIgnore; //TODO: might need to be an error?
 end;
 
 destructor TUClass.Destroy;
@@ -636,6 +652,8 @@ begin
   FreeAndNil(deps);
   FreeAndNil(defs);
   FreeAndNil(includes);
+  FreeAndNil(replication.expressions);
+  FreeAndNil(replication.symbols);
 end;
 
 function TUClass.FullName: string;
@@ -658,6 +676,28 @@ begin
   if (parentname <> '') then result := result + 'extends' + parentname;
   result := result + ' ' + modifiers + ';'
 end;
+
+function TUClass.IsReplicated(symbol: string): boolean;
+begin
+  result := replication.symbols.IndexOfName(symbol) > -1;
+end;
+
+function TUClass.GetReplication(symbol: string): string;
+var
+  i: integer;
+begin
+  i := StrToIntDef(replication.symbols.values[symbol], -1);
+  result := '';
+  if ((i > 0) and (i < replication.expressions.Count)) then begin
+    result := replication.expressions[i];
+  end;
+end;
+
+function TUClass.AddReplication(expression: string): integer;
+begin
+  result := replication.expressions.Add(expression);
+end;
+
 
 { TUClassList }
 function TUClassListCompare(Item1, Item2: Pointer): integer;

@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.71 2005-03-23 11:40:49 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.72 2005-03-27 20:10:34 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -1088,7 +1088,7 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'class_defaultproperties') = 0) then begin
-    source := TStringStream.Create('defaultproperties'+#13#10+TUClass(data).defaultproperties);
+    source := TStringStream.Create('defaultproperties'+#13#10+TUClass(data).defaultproperties.data);
     target := TStringStream.Create('');
     try
       parseCode(source, target, true);
@@ -1101,9 +1101,9 @@ begin
   end
   else if (CompareText(replacement, 'class_defaultproperties_plain') = 0) then begin
     if (TabsToSpaces >= 0) then begin
-      replacement := StringReplace(TUClass(data).defaultproperties, #9, StrRepeat(' ', TabsToSpaces), [rfReplaceAll]);
+      replacement := StringReplace(TUClass(data).defaultproperties.data, #9, StrRepeat(' ', TabsToSpaces), [rfReplaceAll]);
     end
-    else replacement := TUClass(data).defaultproperties;
+    else replacement := TUClass(data).defaultproperties.data;
     result := true;
   end
   else if (CompareText(replacement, 'class_comment') = 0) then begin
@@ -1776,7 +1776,7 @@ begin
     template := TFileStream.Create(templatedir+LowerCase(replacement)+'.html', fmOpenRead);
     target := TStringStream.Create('');
     try
-      if (TUClass(data).defaultproperties <> '') then begin
+      if (TUClass(data).defaultproperties.data <> '') then begin
         parseTemplate(template, target, replaceClass, data);
         replacement := target.DataString;
       end
