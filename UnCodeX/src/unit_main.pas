@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.75 2004-02-23 12:20:47 elmuerte Exp $
+ $Id: unit_main.pas,v 1.76 2004-02-23 22:02:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -33,7 +33,7 @@ uses
   Forms, Dialogs, ComCtrls, Menus, StdCtrls, unit_packages, ExtCtrls,
   unit_uclasses, IniFiles, ShellApi, AppEvnts, ImgList, ActnList, StrUtils,
   Clipbrd, hh, hh_funcs, ToolWin, richedit, unit_richeditex, unit_searchform,
-  Buttons, DdeMan, unit_props, unit_dockpanel;
+  Buttons, DdeMan, unit_props;
 
 const
   // custom window messages
