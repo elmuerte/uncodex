@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ComCtrls, Menus, StdCtrls, unit_packages, ExtCtrls, unit_uclasses,
-  IniFiles, ShellApi, AppEvnts, ImgList, ActnList, ToolWin;
+  IniFiles, ShellApi, AppEvnts, ImgList, ActnList, ToolWin, StrUtils;
 
 const
   WM_APPBAR = WM_USER+$100;
@@ -63,7 +63,6 @@ type
     btn_OpenClass: TToolButton;
     btn_FindClass: TToolButton;
     ac_OpenClass: TAction;
-    il_LargeDisabled: TImageList;
     ac_OpenOutput: TAction;
     mi_OpenOutput: TMenuItem;
     btn_OpenOutput: TToolButton;
@@ -105,6 +104,13 @@ type
     mi_Autohide: TMenuItem;
     mi_N13: TMenuItem;
     mi_Left: TMenuItem;
+    mi_FindClass: TMenuItem;
+    mi_FindNext: TMenuItem;
+    ac_FindNext: TAction;
+    re_SourceSnoop: TRichEdit;
+    spl_Main3: TSplitter;
+    mi_SourceSnoop: TMenuItem;
+    mi_FindNext2: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_OpenClassClick(Sender: TObject);
@@ -144,6 +150,7 @@ type
     procedure mi_AutohideClick(Sender: TObject);
     procedure mi_MenubarClick(Sender: TObject);
     procedure mi_LeftClick(Sender: TObject);
+    procedure ac_FindNextExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -184,6 +191,7 @@ var
   DoInit: boolean = true;
   PackageList: TUPackageList;
   ClassList: TUClassList;
+  searchclass: string;
 
 // config vars
 var
@@ -734,13 +742,12 @@ end;
 procedure Tfrm_UnCodeX.ac_FindClassExecute(Sender: TObject);
 var
   i: integer;
-  searchclass: string;
 begin
   if (ActiveControl.ClassType = TTreeView) then begin
     if (InputQuery('Find a class', 'Enter the name of the class you want to find', searchclass)) then begin
       with (ActiveControl as TTreeView) do begin
         for i := 0 to Items.Count-1 do begin
-          if (CompareText(items[i].Text, searchclass) = 0) then begin
+          if (AnsiContainsText(items[i].Text, searchclass)) then begin
             Select(items[i]);
             exit;
           end;
@@ -748,6 +755,7 @@ begin
       end;
     end;
   end;
+  statustext := 'No class with name '''+searchclass+''' found';
 end;
 
 procedure Tfrm_UnCodeX.FormDestroy(Sender: TObject);
@@ -865,28 +873,16 @@ begin
 end;
 
 procedure Tfrm_UnCodeX.mi_ExpandallClick(Sender: TObject);
-var
-  node: TTreeNode;
 begin
   if (ActiveControl.ClassType = TTreeView) then begin
-    node := (ActiveControl as TTreeView).Items.GetFirstNode;
-    while (node <> nil) do begin
-      Node.Expand(true);
-      Node := Node.getNextSibling;
-    end;
+    (ActiveControl as TTreeView).FullExpand;
   end;
 end;
 
 procedure Tfrm_UnCodeX.mi_CollapseallClick(Sender: TObject);
-var
-  node: TTreeNode;
 begin
   if (ActiveControl.ClassType = TTreeView) then begin
-    node := (ActiveControl as TTreeView).Items.GetFirstNode;
-    while (node <> nil) do begin
-      Node.Collapse(true);
-      Node := Node.getNextSibling;
-    end;
+    (ActiveControl as TTreeView).FullCollapse;
   end;
 end;
 
@@ -903,6 +899,8 @@ end;
 
 procedure Tfrm_UnCodeX.mi_LogClick(Sender: TObject);
 begin
+  lb_Log.Top := 0;
+  spl_Main2.Top := 1;
   lb_Log.Visible := mi_Log.Checked;
   spl_Main2.Visible := mi_Log.Checked;
 end;
@@ -1041,6 +1039,25 @@ begin
     RegisterAppBar
   end
   else UnregisterAppBar;
+end;
+
+procedure Tfrm_UnCodeX.ac_FindNextExecute(Sender: TObject);
+var
+  i: integer;
+begin
+  if (searchclass = '') then exit;
+  if (ActiveControl.ClassType = TTreeView) then begin
+    with (ActiveControl as TTreeView) do begin
+      if (Selected = nil) then exit;
+      for i := Selected.AbsoluteIndex+1 to Items.Count-1 do begin
+        if (AnsiContainsText(items[i].Text, searchclass)) then begin
+          Select(items[i]);
+          exit;
+        end;
+      end;
+    end;
+  end;
+  statustext := 'No more classes containing '''+searchclass+''' found';
 end;
 
 end.

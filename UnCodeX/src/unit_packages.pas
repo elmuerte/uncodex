@@ -187,7 +187,7 @@ begin
           result := TUClass.Create;
           result.name := p.TokenString;
           p.NextToken;
-          if (p.TokenSymbolIs('extends')) then begin
+          if (p.TokenSymbolIs('extends') or p.TokenSymbolIs('expands')) then begin
             p.NextToken;
             result.parentname := p.TokenString;
             if (p.NextToken = '.') then begin // package.class
