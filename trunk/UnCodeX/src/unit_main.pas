@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.64 2003-11-27 17:01:55 elmuerte Exp $
+ $Id: unit_main.pas,v 1.65 2003-12-03 19:49:31 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -33,7 +33,7 @@ uses
   Forms, Dialogs, ComCtrls, Menus, StdCtrls, unit_packages, ExtCtrls,
   unit_uclasses, IniFiles, ShellApi, AppEvnts, ImgList, ActnList, StrUtils,
   Clipbrd, hh, hh_funcs, ToolWin, richedit, unit_richeditex, unit_searchform,
-  Buttons, DdeManEx;
+  Buttons, DdeMan;
 
 const
   // custom window messages
@@ -192,12 +192,12 @@ type
     mi_ClearHilight: TMenuItem;
     mi_FindSelection: TMenuItem;
     tmr_InlineSearch: TTimer;
-    EXEC: TDdeServerConvEx;
-    cmd: TDdeServerItemEx;
     mi_ClassName: TMenuItem;
     mi_PackageName: TMenuItem;
     mi_License: TMenuItem;
     ac_License: TAction;
+    EXEC: TDdeServerConv;
+    cmd: TDdeServerItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -779,7 +779,7 @@ var
   exe: string;
 begin
   if (OpenResultCmd = '') then begin
-    ExecuteProgram(uclass.package.path+PATHDELIM+CLASSDIR+PATHDELIM+uclass.filename);
+    ExecuteProgram(uclass.package.path+PATHDELIM+uclass.filename);
     exit;
   end;
 
@@ -797,7 +797,7 @@ begin
       end;
       lst[i] := AnsiReplaceStr(lst[i], '%classname%', uclass.name);
       lst[i] := AnsiReplaceStr(lst[i], '%classfile%', uclass.filename);
-      lst[i] := AnsiReplaceStr(lst[i], '%classpath%', uclass.package.path+PATHDELIM+CLASSDIR+PATHDELIM+uclass.filename);
+      lst[i] := AnsiReplaceStr(lst[i], '%classpath%', uclass.package.path+PATHDELIM+uclass.filename);
       lst[i] := AnsiReplaceStr(lst[i], '%packagename%', uclass.package.name);
       lst[i] := AnsiReplaceStr(lst[i], '%packagepath%', uclass.package.path);
       lst[i] := AnsiReplaceStr(lst[i], '%classsearch%', SearchConfig.query);
@@ -1708,7 +1708,7 @@ begin
             end;
           end;
         end;
-        filename := TUClass(Selected.Data).package.path+PATHDELIM+CLASSDIR+PATHDELIM+TUClass(Selected.Data).filename;
+        filename := TUClass(Selected.Data).package.path+PATHDELIM+TUClass(Selected.Data).filename;
         ExecuteProgram(filename);
       end;
     end;
@@ -1911,7 +1911,7 @@ begin
             else if (CompareText(lst[i], '%classfile%') = 0) then
               lst[i] := TUClass(Selected.Data).filename
             else if (CompareText(lst[i], '%classpath%') = 0) then
-              lst[i] := TUClass(Selected.Data).package.path+PATHDELIM+CLASSDIR+PATHDELIM+TUClass(Selected.Data).filename
+              lst[i] := TUClass(Selected.Data).package.path+PATHDELIM+TUClass(Selected.Data).filename
             else if (CompareText(lst[i], '%packagename%') = 0) then
               lst[i] := TUClass(Selected.Data).package.name
             else if (CompareText(lst[i], '%packagepath%') = 0) then
@@ -2281,7 +2281,7 @@ begin
     with (ActiveControl as TTreeView) do begin
       if (Selected <> nil) then begin
         if (TObject(Selected.Data).ClassType = TUClass) then begin
-          filename := TUClass(Selected.Data).package.path+PATHDELIM+CLASSDIR+PATHDELIM+TUClass(Selected.Data).filename;
+          filename := TUClass(Selected.Data).package.path+PATHDELIM+TUClass(Selected.Data).filename;
           re_SourceSnoop.Hint := filename;
           if (not FileExists(filename)) then exit;
           fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
