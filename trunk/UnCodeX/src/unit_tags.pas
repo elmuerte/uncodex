@@ -4,7 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, unit_uclasses, ComCtrls, StdCtrls, Buttons, ImgList, Clipbrd;
+  Dialogs, unit_uclasses, ComCtrls, StdCtrls, Buttons, ImgList, Clipbrd,
+  Menus;
 
 type
   Tfrm_Tags = class(TForm)
@@ -15,19 +16,24 @@ type
     btn_Refresh: TBitBtn;
     il_Types: TImageList;
     btn_MakeWindow: TBitBtn;
+    pm_Props: TPopupMenu;
+    mi_OpenLocation: TMenuItem;
+    mi_CopyToClipboard: TMenuItem;
+    mi_InsertText: TMenuItem;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btn_RefreshClick(Sender: TObject);
     procedure lv_PropertiesCustomDrawItem(Sender: TCustomListView;
       Item: TListItem; State: TCustomDrawState; var DefaultDraw: Boolean);
-    procedure lv_PropertiesDblClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure FormDblClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure lv_PropertiesClick(Sender: TObject);
     procedure lv_PropertiesInfoTip(Sender: TObject; Item: TListItem;
       var InfoTip: String);
+    procedure mi_OpenLocationClick(Sender: TObject);
+    procedure lv_PropertiesSelectItem(Sender: TObject; Item: TListItem;
+      Selected: Boolean);
   private
     procedure WMActivate(var Message: TWMActivate); message WM_Activate;
   public
@@ -159,7 +165,7 @@ begin
         else li.SubItems.Add(pclass.enums[i].name);
       li.SubItems.Add(IntToStr(pclass.enums[i].srcline));
       li.SubItems.Add(IntToStr(j));
-      li.SubItems.Add(pclass.enums[i].name+' = '+pclass.enums[i].options);
+      li.SubItems.Add(pclass.enums[i].name+' = '+StringReplace(pclass.enums[i].options, ',', ', ', [rfReplaceAll]));
       li.Data := pclass;
       li.ImageIndex := 2;
     end;
@@ -180,7 +186,7 @@ begin
         else li.SubItems.Add(pclass.structs[i].name);
       li.SubItems.Add(IntToStr(pclass.structs[i].srcline));
       li.SubItems.Add(IntToStr(j));
-      li.SubItems.Add(li.SubItems[0]);
+      li.SubItems.Add(pclass.structs[i].name);
       li.Data := pclass;
       li.ImageIndex := 3;
     end;
@@ -283,13 +289,6 @@ begin
   else DefaultDraw := true;
 end;
 
-procedure Tfrm_Tags.lv_PropertiesDblClick(Sender: TObject);
-begin
-  if (lv_Properties.Selected = nil) then exit;
-  if (lv_Properties.Selected.Data = nil) then exit;
-  frm_UnCodeX.OpenSourceLine(TUClass(lv_Properties.Selected.Data), StrToIntDef(lv_Properties.Selected.SubItems[1], 0), 0);
-end;
-
 procedure Tfrm_Tags.FormCreate(Sender: TObject);
 var
   pt: TPoint;
@@ -325,19 +324,27 @@ begin
   SetActiveWindow(Handle);
 end;
 
-procedure Tfrm_Tags.lv_PropertiesClick(Sender: TObject);
-begin
-  if (lv_Properties.Selected.Caption <> '-') then begin
-    Clipboard.SetTextBuf(PChar(lv_Properties.Selected.SubItems[0]));
-  end;
-end;
-
 procedure Tfrm_Tags.lv_PropertiesInfoTip(Sender: TObject; Item: TListItem;
   var InfoTip: String);
 begin
   if (Item.Caption = '-') then InfoTip := '';
   if (Item.SubItems.Count < 4) then exit;
   InfoTip := Item.SubItems[3];
+end;
+
+procedure Tfrm_Tags.mi_OpenLocationClick(Sender: TObject);
+begin
+  if (lv_Properties.Selected = nil) then exit;
+  if (lv_Properties.Selected.Data = nil) then exit;
+  frm_UnCodeX.OpenSourceLine(TUClass(lv_Properties.Selected.Data), StrToIntDef(lv_Properties.Selected.SubItems[1], 0), 0);
+end;
+
+procedure Tfrm_Tags.lv_PropertiesSelectItem(Sender: TObject;
+  Item: TListItem; Selected: Boolean);
+begin
+  if (Item.Caption <> '-') then begin
+    Clipboard.SetTextBuf(PChar(Item.SubItems[0]));
+  end;
 end;
 
 end.

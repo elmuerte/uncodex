@@ -209,19 +209,22 @@ end;
 
 procedure TPropertyHintWindow.Paint;
 var
-  R: TRect;
+  R, R2: TRect;
+  TmpCaption: String;
 begin
   R := ClientRect;
   with Canvas do begin
     Brush.Style := bsSolid;
-    Brush.Color := clHighlight;
-    Pen.Color   := clHighlightText;
+    Brush.Color := clBtnFace;
+    Pen.Color   := clBtnShadow;
     Pen.Width   := 1;
     Rectangle(R.Top, R.Left, R.Left+18, R.Bottom);
     Canvas.Font.Name := 'Marlett';
     Canvas.Font.Style := [fsBold];
-    Canvas.Font.Color := clHighlightText;
-    Canvas.TextOut(((R.Left + 18 - Canvas.TextWidth('s')) div 2), (R.Bottom div 2) - (Canvas.Textheight('s') div 2), '?');
+    Canvas.Font.Color := clWindowText;
+    R2 := Rect(R.Left+1, R.Top+2, R.Left+18, R.Bottom-2);
+    TmpCaption := '?';
+    DrawText(Canvas.Handle, PChar(TmpCaption), 1, R2, DT_LEFT or DT_NOPREFIX or DT_VCENTER or DT_CENTER or DrawTextBiDiModeFlagsReadingOnly);
   end;
 
   Canvas.Font.Name := 'Arial';
@@ -244,7 +247,7 @@ end;
 
 function TPropertyHintWindow.CalcHintRect(MaxWidth: Integer; const AHint: string; AData: Pointer): TRect;
 begin
-  Result := Rect(0, 0, MaxWidth, 0);
+  Result := Rect(0, 0, MaxWidth*2, 0);
   DrawText(Canvas.Handle, PChar(AHint), -1, Result, DT_CALCRECT or DT_LEFT or
     DT_WORDBREAK or DT_NOPREFIX or DrawTextBiDiModeFlagsReadingOnly);
   Inc(Result.Right, 6+24);
