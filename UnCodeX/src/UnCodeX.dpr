@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
- $Id: UnCodeX.dpr,v 1.31 2004-03-13 12:07:15 elmuerte Exp $
+ $Id: UnCodeX.dpr,v 1.32 2004-03-20 20:56:07 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 program UnCodeX;
@@ -145,7 +145,7 @@ begin
       i := Pos('.', tmp);
       if (i > 0) then Delete(tmp, i, MaxInt);
       SearchConfig.query := tmp;
-      SearchConfig.isBodySearch := false;
+      SearchConfig.isFTS := false;
       SearchConfig.Wrapped := true;
       RedirectData.Find := tmp;
       if (OpenFind or OpenTags) then SearchConfig.isStrict := true;

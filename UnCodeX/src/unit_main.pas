@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.80 2004-03-13 12:07:15 elmuerte Exp $
+ $Id: unit_main.pas,v 1.81 2004-03-20 20:56:08 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -212,6 +212,9 @@ type
     mi_PropInspector: TMenuItem;
     pnlCenter: TPanel;
     splRight: TSplitter;
+    mi_FTS2: TMenuItem;
+    mi_SwitchTree: TMenuItem;
+    ac_SwitchTree: TAction;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -310,6 +313,7 @@ type
       NewTarget: TWinControl; var Allow: Boolean);
     procedure pnlCenterDockDrop(Sender: TObject; Source: TDragDockObject;
       X, Y: Integer);
+    procedure ac_SwitchTreeExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -323,6 +327,7 @@ type
     // AppBar vars -- end;
     function ThreadCreate: boolean;
     procedure ThreadTerminate(Sender: TObject);
+    procedure SearchThreadTerminate(Sender: TObject);
     procedure SaveState;
     procedure LoadState;
     procedure UpdateSystemMenu;
@@ -387,7 +392,7 @@ var
   PackageList: TUPackageList;
   ClassList: TUClassList;
   // class search vars
-  SearchConfig: TClassSearch;
+  SearchConfig, DefaultSC: TClassSearch;
   IsInlineSearch: boolean;
   InlineSearch: string;
   OpenFind: boolean = false; // only on startup
@@ -425,10 +430,6 @@ var
   ServerPrio: integer;
   // Commandlines
   CompilerCmd, OpenResultCmd: string;
-  // Search
-  FTSRegexp: boolean;
-  FTSHistory: TStringList;
-  CSHistory: TStringList;
   // class properties
   DefaultInheritanceDepth: integer = 0;
 
@@ -537,6 +538,24 @@ begin
   runningthread := nil;
   ac_Abort.Enabled := false;
   if (IsBatching) then NextBatchCommand;
+end;
+
+procedure Tfrm_UnCodeX.SearchThreadTerminate(Sender: TObject);
+var
+	i: integer;
+begin
+	if (SearchConfig.isFindFirst and (lb_Log.Items.Count > 0)) then begin
+    lb_Log.ItemIndex := 0;
+    SelectedUClass := TUClass(lb_Log.Items.Objects[0]);
+    for i := 0 to SearchConfig.searchtree.Items.Count do begin
+    	if (SearchConfig.searchtree.Items[i].Data = SelectedUClass) then begin
+        SearchConfig.searchtree.Select(SearchConfig.searchtree.Items[i]);
+      	break;
+      end;
+    end;
+    lb_LogClick(Sender);
+  end;
+	ThreadTerminate(Sender);
 end;
 
 { Package\Class Tree state }
@@ -938,7 +957,7 @@ begin
     if (data.NewHandle <> 0) then StatusHandle := data.NewHandle;
     if (data.Find <> '') then begin
       SearchConfig.query := data.Find;
-      SearchConfig.isBodySearch := false;
+      SearchConfig.isFTS := false;
       SearchConfig.Wrapped := true;
       OpenFind := data.OpenFind;
       OpenTags := data.OpenTags;
@@ -1282,8 +1301,8 @@ begin
   PackagePriority := TStringList.Create;
   SourcePaths := TStringList.Create;
   IgnorePackages := TStringList.Create;
-  FTSHistory := TStringList.Create;
-  CSHistory := TStringList.Create;
+  DefaultSC.ftshistory := TStringList.Create;
+  DefaultSC.history := TStringList.Create;
   OutputModules := TStringList.Create;
   { StringLists -- END }
   try
@@ -1435,7 +1454,7 @@ begin
     ac_CompileClass.Enabled := CompilerCmd <> '';
     OpenResultCmd := ini.ReadString('Config', 'OpenResultCmd', '');
     ac_OpenClass.Enabled := OpenResultCmd <> '';
-    FTSRegexp := ini.ReadBool('Config', 'FullTextSearchRegExp', false);
+    DefaultSC.isRegex := ini.ReadBool('Config', 'FullTextSearchRegExp', false);
     StateFile := ini.ReadString('Config', 'StateFile', StateFile);
     GPDF := ini.ReadString('Config', 'PackageDescriptionFile', ExtractFilePath(ParamStr(0))+DefaultPDF);
     AnalyseModified := ini.ReadBool('Config', 'AnalyseModified', true);
@@ -1491,13 +1510,13 @@ begin
     for i := 0 to sl.Count-1 do begin
       tmp := sl[i];
       Delete(tmp, 1, Pos('=', tmp));
-      FTSHistory.Add(tmp);
+      DefaultSC.ftshistory.Add(tmp);
     end;
     ini.ReadSectionValues('ClassSearch', sl);
     for i := 0 to sl.Count-1 do begin
       tmp := sl[i];
       Delete(tmp, 1, Pos('=', tmp));
-      CSHistory.Add(tmp);
+      DefaultSC.history.Add(tmp);
     end;
     { Search history -- END }
   finally
@@ -1622,7 +1641,7 @@ begin
     ed_CompilerCommandline.Text := CompilerCmd;
     ed_OpenResultCmd.Text := OpenResultCmd;
     { Search settings }
-    cb_FTSRegExp.Checked := FTSRegexp;
+    cb_FTSRegExp.Checked := DefaultSC.isRegex;
     { Layout settings }
     lb_LogLayout.Color := lb_Log.Color;
     cb_LogColor.Selected := lb_Log.Color;
@@ -1671,7 +1690,7 @@ begin
       OpenResultCmd := ed_OpenResultCmd.Text;
       ac_OpenClass.Enabled := OpenResultCmd <> '';
       { Search settings }
-      FTSRegexp := cb_FTSRegExp.Checked;
+      DefaultSC.isRegex := cb_FTSRegExp.Checked;
       { Program options }
       StateFile := ed_StateFilename.Text;
       AnalyseModified := cb_ModifiedOnStartup.Checked;
@@ -1728,7 +1747,7 @@ begin
         data.Add('ClientCmd='+ClientCmd);
         data.Add('CompilerCmd='+CompilerCmd);
         data.Add('OpenResultCmd='+OpenResultCmd);
-        data.Add('FullTextSearchRegExp='+IntToStr(Ord(FTSRegexp)));
+        //data.Add('FullTextSearchRegExp='+IntToStr(Ord(FTSRegexp)));
         data.Add('StateFile='+ed_StateFilename.Text);
         data.Add('AnalyseModified='+IntToStr(Ord(AnalyseModified)));
         data.Add('DefaultInheritanceDepth='+IntToStr(DefaultInheritanceDepth));
@@ -1874,14 +1893,20 @@ begin
   end;
   InlineSearch := '';
   IsInlineSearch := false;
-  SearchConfig.caption := 'Find a class';
-  SearchConfig.text := 'Enter the name of the class you want to find';
-  SearchConfig.isRegex := FTSRegexp;
-  SearchConfig.history := CSHistory;
+  SearchConfig.isFTS := false;
+  SearchConfig.history := DefaultSC.history;
+  SearchConfig.ftshistory := DefaultSC.ftshistory;
+  // defaults
+  SearchConfig.isFromTop := DefaultSC.isFromTop;
+  SearchConfig.isStrict := DefaultSC.isStrict;
+  SearchConfig.isRegex := DefaultSC.isRegex;
+  SearchConfig.isFindFirst := DefaultSC.isFindFirst;
+  SearchConfig.Scope := DefaultSC.Scope; 
   if (SearchForm(SearchConfig)) then begin
     if (SearchConfig.isFromTop) then (ActiveControl as TTreeView).Selected := nil;
     ac_FindNext.Execute;
-  end;
+  end
+  else SearchConfig.Wrapped := false;
 end;
 
 procedure Tfrm_UnCodeX.FormDestroy(Sender: TObject);
@@ -1894,8 +1919,8 @@ begin
   ClassList.Free;
   SourcePaths.Free;
   IgnorePackages.Free;
-  FTSHistory.Free;
-  CSHistory.Free;
+  DefaultSC.ftshistory.Free;
+  DefaultSC.history.Free;
   OutputModules.Free;
 end;
 
@@ -2031,11 +2056,11 @@ begin
       ini.WriteBool('Layout', 'AutoHide', mi_AutoHide.Checked);
       ini.WriteBool('Layout', 'ABRight', mi_Right.Checked);
       ini.WriteBool('Layout', 'ABLeft', mi_Left.Checked);
-      for i := 0 to FTSHistory.Count-1 do begin
-        ini.WriteString('FullTextSearch', IntToStr(i), FTSHistory[i]);
+      for i := 0 to DefaultSC.ftshistory.Count-1 do begin
+        ini.WriteString('FullTextSearch', IntToStr(i), DefaultSC.ftshistory[i]);
       end;
-      for i := 0 to CSHistory.Count-1 do begin
-        ini.WriteString('ClassSearch', IntToStr(i), CSHistory[i]);
+      for i := 0 to DefaultSC.History.Count-1 do begin
+        ini.WriteString('ClassSearch', IntToStr(i), DefaultSC.History[i]);
       end;
       ini.UpdateFile;
     finally
@@ -2193,12 +2218,14 @@ begin
     ActiveControl := tv_Classes;
   end;
   with (ActiveControl as TTreeView) do begin
-    if (SearchConfig.isBodySearch) then begin
+    if (SearchConfig.isFTS) then begin
       if (ThreadCreate) then begin
         lb_Log.Items.Clear;
-        runningthread := TSearchThread.Create((ActiveControl as TTreeView), StatusReport, SearchConfig.query , SearchConfig.isRegex);
-        runningthread.OnTerminate := ThreadTerminate;
+        SearchConfig.searchtree := (ActiveControl as TTreeView);
+        runningthread := TSearchThread.Create(SearchConfig, StatusReport);
+        runningthread.OnTerminate := SearchThreadTerminate;
         runningthread.Resume;
+        if (SearchConfig.isFindFirst and (SearchConfig.Scope = 0)) then SearchConfig.Scope := 1;
         exit;
       end;
     end
@@ -2224,26 +2251,30 @@ begin
   OpenFind := false;
   statustext := 'No more classes matching '''+SearchConfig.query+''' found';
   SearchConfig.Wrapped := false;
+  Beep;
 end;
 
 procedure Tfrm_UnCodeX.ac_FullTextSearchExecute(Sender: TObject);
-var
-  query: string;
-  isregex: array[0..0] of boolean;
 begin
-  if (ThreadCreate) then begin
-    isregex[0] := FTSRegexp;
-    if (SearchQuery('Full text search', 'Enter your search query', query, isregex, FTSHistory, ['&Regular expression'])) then begin
-      if (query = '') then exit;
-      ac_VLog.Checked := true;
-      if (not lb_Log.Visible) then mi_Log.OnClick(Sender);
-      lb_Log.Items.Clear;
-      runningthread := TSearchThread.Create(PackageList, StatusReport, query, isregex[0], ClassList.Count);
-      runningthread.OnTerminate := ThreadTerminate;
-      runningthread.Resume;
-    end
-    else ac_Abort.Enabled := false;
+	if (ActiveControl.ClassType <> TTreeView) then begin
+    ActiveControl := tv_Classes;
   end;
+  InlineSearch := '';
+  IsInlineSearch := false;
+  SearchConfig.isFTS := true;
+  SearchConfig.history := DefaultSC.history;
+  SearchConfig.ftshistory := DefaultSC.ftshistory;
+  // defaults
+  SearchConfig.isFromTop := DefaultSC.isFromTop;
+  SearchConfig.isStrict := DefaultSC.isStrict;
+  SearchConfig.isRegex := DefaultSC.isRegex;
+  SearchConfig.isFindFirst := DefaultSC.isFindFirst;
+  SearchConfig.Scope := DefaultSC.Scope; 
+  if (SearchForm(SearchConfig)) then begin
+    if (SearchConfig.isFromTop) then (ActiveControl as TTreeView).Selected := nil;
+    ac_FindNext.Execute;
+  end
+  else SearchConfig.Wrapped := false;
 end;
 
 procedure Tfrm_UnCodeX.lb_LogDblClick(Sender: TObject);
@@ -2300,7 +2331,7 @@ begin
     ActiveControl := tv_Classes;
     //if (tv_Classes.Items.Count > 0) then tv_Classes.Select(tv_Classes.Items[0]);
     if (SearchConfig.query <> '') then begin
-      SearchConfig.isBodySearch := false;
+      SearchConfig.isFTS := false;
       ActiveControl := tv_Classes;
       ac_FindNext.Execute;
     end
@@ -2773,7 +2804,7 @@ begin
           OpenFind := (CompareText(lst[i], '-open') = 0);
           OpenTags := (CompareText(lst[i], '-tags') = 0);
           SearchConfig.query := trim(lst[i+1]);
-          SearchConfig.isBodySearch := false;
+          SearchConfig.isFTS := false;
           SearchConfig.Wrapped := true;
           if (not (OpenTags or OpenFind)) then BringToFront;
           if (SearchConfig.query <> '') then begin
@@ -2852,6 +2883,7 @@ begin
       mi_ShowProperties.Visible := false;
       mi_Compile.Visible := false;
     end;
+    mi_SwitchTree.Visible := tv_Packages.Visible;
   end;
 end;
 
@@ -2954,6 +2986,25 @@ procedure Tfrm_UnCodeX.pnlCenterDockDrop(Sender: TObject;
   Source: TDragDockObject; X, Y: Integer);
 begin
 	if (visible) then Source.Control.Show;
+end;
+
+procedure Tfrm_UnCodeX.ac_SwitchTreeExecute(Sender: TObject);
+var
+	atree, ftree: TTreeview;
+  i: integer;
+begin
+	atree := (ActiveControl as TTreeView);
+  if (atree = nil) then exit;
+  if (atree.Selected = nil) then exit;
+  if (atree = tv_Classes) then ftree := tv_Packages
+  else ftree := tv_Classes;
+	for i := 0 to ftree.Items.Count-1 do begin
+		if (ftree.Items[i].Data = atree.Selected.Data) then begin
+			ftree.Select(ftree.Items[i]);
+      ActiveControl := ftree;
+      exit;
+    end;
+  end;
 end;
 
 initialization

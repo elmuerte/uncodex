@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Full Text Search (+ regular expressions) thread
- $Id: unit_fulltextsearch.pas,v 1.10 2003-12-15 20:25:58 elmuerte Exp $
+ $Id: unit_fulltextsearch.pas,v 1.11 2004-03-20 20:56:07 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -29,7 +29,8 @@ unit unit_fulltextsearch;
 interface
 
 uses
-  Windows, SysUtils, Classes, RegExpr, ComCtrls, unit_uclasses, unit_outputdefs;
+  Windows, SysUtils, Classes, RegExpr, ComCtrls, unit_uclasses, unit_outputdefs,
+  unit_searchform;
 
 type
   TSearchThread = class(TThread)
@@ -37,18 +38,24 @@ type
     Tree: TTreeView;
     Status: TStatusReport;
     re: TRegExpr;
-    IsRegex: boolean;
+    seltreenode: TTreeNode;
     Total: integer;
     Matches: integer;
     RealExpr: string;
+    config: TClassSearch;
+    curpos1: integer;
+    curclass: TUClass;
     function SearchFile(uclass: TUClass): boolean;
-    procedure ExecuteFTS;
-    procedure ExecuteBody;
+    function GetNextClass(): TUClass;
   public
-    constructor Create(PackageList: TUPackageList; Status: TStatusReport; expr: string; IsRegEx: boolean = true; total: integer = -1); overload;
-    constructor Create(Tree: TTreeView; Status: TStatusReport; expr: string; IsRegEx: boolean = true); overload;
+    constructor Create(var sc: TClassSearch; Status: TStatusReport); overload;
     destructor Destroy; override;
     procedure Execute; override;
+  end;
+
+  TSearchStackItem = record
+		offset: integer;
+    uclass:	TUClass;
   end;
 
 implementation
@@ -56,92 +63,115 @@ implementation
 uses
   unit_definitions;
 
+var
+	SearchStack: array of TSearchStackItem;
+
 const
   BUFFSIZE = 4096;
 
-constructor TSearchThread.Create(PackageList: TUPackageList; Status: TStatusReport; expr: string; IsRegEx: boolean = true; total: integer = -1);
+constructor TSearchThread.Create(var sc: TClassSearch; Status: TStatusReport);
 begin
+  Self.Tree := sc.searchtree;
+  Self.Status := Status;
   Self.PackageList := PackageList;
-  Self.Status := Status;
-  Self.IsRegex := IsRegEx;
-  Self.Total := Total;
-  re := TRegExpr.Create;
-  re.Expression := expr;
-  RealExpr := expr;
-  if (not IsRegEx) then re.Expression := UpperCase(re.Expression);
-  re.ModifierI := true;
-  Matches := 0;
-  inherited Create(true);
-end;
+  Self.config := sc;
 
-constructor TSearchThread.Create(Tree: TTreeView; Status: TStatusReport; expr: string; IsRegEx: boolean = true);
-begin
-  Self.Tree := Tree;
-  Self.Status := Status;
-  Self.IsRegex := IsRegEx;
   re := TRegExpr.Create;
-  re.Expression := expr;
-  RealExpr := expr;
-  if (not IsRegEx) then re.Expression := UpperCase(re.Expression);
+  re.Expression := config.query;
+  RealExpr := config.query;
+  if (not config.isRegex) then re.Expression := UpperCase(re.Expression);
   re.ModifierI := true;
   Matches := 0;
+  curpos1 := 0;
+  Total := Tree.Items.Count;
+  case config.Scope of
+    1:	if (Tree.Selected <> nil) then begin
+    			Total := Total-Tree.Selected.AbsoluteIndex;
+    			curpos1 := Tree.Selected.AbsoluteIndex+1;
+    		end;
+    2:  begin
+    			if (Tree.Selected <> nil) then begin
+  	  			curclass := TUClass(Tree.Selected.Data);
+	    		end;
+					SetLength(SearchStack, 1);
+          SearchStack[High(SearchStack)].offset := 0;
+          SearchStack[High(SearchStack)].uclass := curclass;
+    		end;
+    3:	if (Tree.Selected <> nil) then begin
+    			curclass := TUClass(Tree.Selected.Data);
+    		end;
+  end;
+  if (not sc.isFindFirst) then sc.Wrapped := false;
   inherited Create(true);
 end;
 
 destructor TSearchThread.Destroy;
 begin
+	SearchStack := nil;
   re.Free;
 end;
 
 procedure TSearchThread.Execute;
-begin
-  if (Tree <> nil) then ExecuteBody
-  else if (PackageList <> nil) then ExecuteFTS;
-end;
-
-procedure TSearchThread.ExecuteFTS;
 var
-  i,j, ccount: integer;
+  ccount: integer;
   stime: Cardinal;
+  uclass: TUClass;
+  res: boolean;
 begin
   stime := GetTickCount();
   ccount := 0;
-  for i := 0 to PackageList.Count-1 do begin
-    for j := 0 to PackageList[i].classes.Count-1 do begin
-      Status('Searching file '+PackageList[i].classes[j].filename+' ...', round((ccount+1)/total*100));
-      SearchFile(PackageList[i].classes[j]);
-      Inc(ccount);
-      if (Self.Terminated) then break;
+  uclass := GetNextClass();
+  while (uclass <> nil) do begin
+    Status('Searching file '+uclass.filename+' ...', round((ccount+1)/total*100));
+    res := SearchFile(uclass);
+    if (res and config.isFindFirst) then begin
+      break;
     end;
+		inc(ccount);
+    uclass := GetNextClass();
     if (Self.Terminated) then break;
   end;
-  Status(IntToStr(Matches)+' matches found for '''+RealExpr+'''. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds', 100);
+  if (Matches = 0) then  Status('Nothing found for '''+RealExpr+'''. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds', 100)
+		else Status(IntToStr(Matches)+' matches found for '''+RealExpr+'''. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds', 100);
 end;
 
-procedure TSearchThread.ExecuteBody;
+function TSearchThread.GetNextClass: TUClass;
 var
-  i,j, ccount: integer;
-  stime: Cardinal;
-  uclass: TUClass;
+	obj: TObject;
 begin
-  uclass := nil;
-  stime := GetTickCount();
-  ccount := Tree.Items.Count;
-  if (Tree.Selected <> nil) then j := Tree.Selected.AbsoluteIndex+1
-    else j := 0;
-  for i := j to ccount-1 do begin
-    if (TObject(Tree.Items[i].Data).ClassType = TUClass) then begin
-      uclass := TUClass(Tree.Items[i].Data);
-      Status('Searching file '+uclass.filename+' ...', round((i+1)/ccount*100));
-      if (SearchFile(uclass)) then begin
-        Tree.Select(Tree.Items[i]);
-        break;
-      end;
-    end;
-    if (Self.Terminated) then break;
+	result := nil;
+	case config.Scope of
+		0,1:begin // all or from selection
+    			while (curpos1 < Tree.Items.Count) do begin
+	          obj := TObject(Tree.Items[curpos1].data);
+            if (obj.ClassType = TUClass) then begin
+              result := TUClass(obj);
+              Inc(curpos1);
+              exit;
+            end;
+            Inc(curpos1);
+          end;
+    		end;
+    2:	begin	// subclasses
+          while (SearchStack[High(SearchStack)].uclass.children.Count <= SearchStack[High(SearchStack)].offset) do begin
+						if (High(SearchStack) < 1) then exit;
+            SetLength(SearchStack, High(SearchStack));
+          end;
+          result := SearchStack[High(SearchStack)].uclass;
+          result := result.children[SearchStack[High(SearchStack)].offset];
+          Inc(SearchStack[High(SearchStack)].offset); // increase offset
+          // add new
+          if (result.children.Count > 0) then begin
+	          SetLength(SearchStack, Length(SearchStack)+1);
+  	        SearchStack[High(SearchStack)].offset := 0;
+    	      SearchStack[High(SearchStack)].uclass := result;
+          end;
+    		end;
+    3:	begin // parent classes
+    			curclass := curclass.parent;
+          result := curclass;
+    		end;
   end;
-  if ((Tree.Selected = nil) or (Matches = 0)) then  Status('Nothing found for '''+RealExpr+'''. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds', 100)
-    else Status(IntToStr(Matches)+' matches found for '''+RealExpr+''' in '+uclass.name+'. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds');
 end;
 
 function TSearchThread.SearchFile(uclass: TUClass): boolean;
@@ -156,7 +186,7 @@ var
   var
     i: integer;
   begin
-    if (IsRegex) then begin
+    if (config.isRegex) then begin
       if (re.Exec(line)) then begin
         Inc(Matches);
         result := true;
