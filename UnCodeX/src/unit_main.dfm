@@ -7,7 +7,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
   ClientHeight = 570
   ClientWidth = 658
   Color = clBtnFace
-  DockSite = True
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.72 2004-01-31 14:01:37 elmuerte Exp $
+ $Id: unit_main.pas,v 1.73 2004-02-01 10:14:50 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -1196,7 +1196,8 @@ begin
 			APanel.Height := 0;
 	end;
 
-  if MakeVisible and (Client <> nil) then Client.Show;
+  if MakeVisible and (Client <> nil) then Client.Show
+  else if not MakeVisible and (Client <> nil) then Client.Hide;
 end;
 
 procedure Tfrm_UnCodeX.OnDockVisChange(client: TControl; visible: boolean; var CanChange: boolean);
@@ -1208,7 +1209,7 @@ begin
   else if (client = fr_Props) then ac_PropInspector.Checked := visible;
   
   if (client.HostDockSite <> nil) then begin
-    ShowDockPanel(client.HostDockSite as TPanel, visible, client);
+    ShowDockPanel(client.HostDockSite, visible, client);
   end;
 end;
 
@@ -2870,7 +2871,7 @@ end;
 procedure Tfrm_UnCodeX.ac_PropInspectorExecute(Sender: TObject);
 begin
 	fr_Props.Visible := mi_PropInspector.Checked;
-  ShowDockPanel((fr_Props.Parent as TPanel), fr_Props.Visible, nil);
+  ShowDockPanel(fr_Props.HostDockSite, fr_Props.Visible, nil);
 end;
 
 initialization
