@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.29 2004-03-11 20:55:31 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.30 2004-03-16 08:47:00 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -614,7 +614,8 @@ begin
         uclass.parentname := p.TokenString;
         if (p.NextToken = '.') then begin // package.class
           p.NextToken;                    // (should work with checking package)
-          uclass.parentname := p.TokenString;
+          uclass.parentname := uclass.parentname+'.'+p.TokenString;
+          p.NextToken; 
         end;
       end;
       uclass.modifiers := '';
