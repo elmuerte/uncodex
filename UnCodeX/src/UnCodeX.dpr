@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
- $Id: UnCodeX.dpr,v 1.28 2003-12-28 11:30:29 elmuerte Exp $
+ $Id: UnCodeX.dpr,v 1.29 2004-01-29 09:02:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 program UnCodeX;
@@ -44,7 +44,8 @@ uses
   unit_searchform in 'unit_searchform.pas' {frm_SearchForm},
   unit_clpipe in 'unit_clpipe.pas',
   unit_license in 'unit_license.pas' {frm_License},
-  unit_splash in 'unit_splash.pas' {frm_Splash};
+  unit_splash in 'unit_splash.pas' {frm_Splash},
+  unit_props in 'unit_props.pas' {fr_Properties: TFrame};
 
 {$R *.res}
 
@@ -166,9 +167,9 @@ begin
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-    Application.CreateForm(Tfrm_About, frm_About);
-    Application.CreateForm(Tfrm_License, frm_License);
-    if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+  Application.CreateForm(Tfrm_About, frm_About);
+  Application.CreateForm(Tfrm_License, frm_License);
+  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end
   else frm_Splash.Close;
