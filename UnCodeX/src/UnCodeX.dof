@@ -82,16 +82,16 @@ Locale=1033
 CodePage=1252
 
 [Version Info Keys]
-CompanyName=
+CompanyName=Michiel 'El Muerte' Hendriks
 FileDescription=
-FileVersion=1.0.0.25
-InternalName=
-LegalCopyright=
+FileVersion=1.0.0.42
+InternalName=UnCodeX
+LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
 LegalTrademarks=
-OriginalFilename=
+OriginalFilename=UnCodeX.exe
 ProductName=UnCodeX
 ProductVersion=1.0.0.0
-Comments=
+Comments=http://wiki.beyondunreal.com/wiki/UnCodeX
 
 [HistoryLists\hlUnitAliases]
 Count=1
