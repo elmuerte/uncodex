@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Full Text Search (+ regular expressions) thread
- $Id: unit_fulltextsearch.pas,v 1.12 2004-03-27 14:14:21 elmuerte Exp $
+ $Id: unit_fulltextsearch.pas,v 1.13 2004-10-17 13:17:19 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -147,6 +147,10 @@ begin
 	case config.Scope of
 		0,1:begin // all or from selection
     			while (curpos1 < Tree.Items.Count) do begin
+          	if (Tree.Items[curpos1].data = nil) then begin
+            	Inc(curpos1);
+            	continue;
+            end;
 	          obj := TObject(Tree.Items[curpos1].data);
             if (obj.ClassType = TUClass) then begin
               result := TUClass(obj);

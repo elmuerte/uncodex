@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Definitions used from custom output modules
- $Id: unit_outputdefs.pas,v 1.10 2004-07-30 11:18:51 elmuerte Exp $
+ $Id: unit_outputdefs.pas,v 1.11 2004-10-17 13:17:19 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -69,6 +69,8 @@ begin
 	result := unit_uclasses.UCLASSES_REV;
 end;
 
+{$IFNDEF CONSOLE}
 exports
-  UCX_UClassesRev;  
+  UCX_UClassesRev;
+{$ENDIF}
 end.

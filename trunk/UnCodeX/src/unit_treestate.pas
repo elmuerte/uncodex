@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   loading/saving the tree state
- $Id: unit_treestate.pas,v 1.23 2004-08-09 13:25:15 elmuerte Exp $
+ $Id: unit_treestate.pas,v 1.24 2004-10-17 13:17:19 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -110,6 +110,7 @@ const
   UCXheader156 = UCXheader+'156'+UCXHTail;
   UCXheader171 = UCXheader+'171'+UCXHTail;
   UCXheader209 = UCXheader+'209'+UCXHTail;
+  UCXHeader212 = UCXheader+'212'+UCXHTail;
 
 procedure TUnCodeXState.SavePackageToStream(upackage: TUPackage; stream: TStream);
 var
@@ -144,6 +145,8 @@ begin
     Writer.WriteString(uclass.comment);
     Writer.WriteInteger(Ord(uclass.CommentType));
     Writer.WriteString(uclass.defaultproperties);
+    Writer.WriteBoolean(uclass.isInterface);
+
     Writer.WriteInteger(uclass.consts.Count);
     for i := 0 to uclass.consts.Count-1 do begin
       Writer.WriteString(uclass.consts[i].name);
@@ -233,7 +236,7 @@ var
   Reader: TReader;
   NumClasses: Cardinal;
   ALevel, n, m, i, o, j: integer;
-  ANode, NextNode: TTreeNode;
+  ANode, NextNode, InterfaceNode: TTreeNode;
   uclass, puclass: TUClass;
   uconst: TUConst;
   uprop: TUProperty;
@@ -244,6 +247,7 @@ var
 begin
   ANode := nil;
   puclass := nil;
+  InterfaceNode := nil;
   Reader := TReader.Create(stream, 4096);
   try
     Stream.Read(NumClasses, 4);
@@ -261,6 +265,7 @@ begin
       if (version >= 150) then uclass.comment := Reader.ReadString;
       if (version >= 209) then uclass.CommentType := TUCommentType(Reader.ReadInteger);
       if (version >= 151) then uclass.defaultproperties := Reader.ReadString;
+			if (version >= 212) then uclass.isInterface := Reader.ReadBoolean;
       m := Reader.ReadInteger;
       for i := 0 to m-1 do begin
         uconst := TUconst.Create;
@@ -375,7 +380,13 @@ begin
         if (version >= 209) then ufunc.CommentType := TUCommentType(Reader.ReadInteger);
         uclass.functions.Add(ufunc);
       end;
-      if ANode = nil then // root
+      if (uclass.isInterface) then begin
+        if (InterfaceNode = nil) then begin
+					InterfaceNode := FClassTree.Items.AddChild(nil, 'Interfaces');
+        end;
+        ANode := FClassTree.Items.AddChildObject(InterfaceNode, uclass.name, uclass)
+      end
+      else if ANode = nil then // root
         ANode := FClassTree.Items.AddChildObject(nil, uclass.name, uclass)
       else if ANode.Level = ALevel then begin // same level
         uclass.parent := puclass.parent;
@@ -529,6 +540,7 @@ begin
     else if (StrComp(tmp, UCXHeader156) = 0) then fversion := 156
     else if (StrComp(tmp, UCXHeader171) = 0) then fversion := 171
     else if (StrComp(tmp, UCXHeader209) = 0) then fversion := 209
+    else if (StrComp(tmp, UCXHeader212) = 0) then fversion := 212
     else begin
       Log('Unsupported file version, header: '+tmp);
       exit;
@@ -550,7 +562,7 @@ var
   c: cardinal;
 begin
   try
-    stream.WriteBuffer(UCXHeader209, 9);
+    stream.WriteBuffer(UCXHeader212, 9);
     // packages
     c := FPackageList.Count;
     stream.WriteBuffer(c, 4);
@@ -558,9 +570,10 @@ begin
       SavePackageToStream(FPackageList[i] , stream);
     end;
     // classes
-    c := FClassTree.Items.Count;
+    c := FClassList.Count;
     stream.WriteBuffer(c, 4);
     for i := 0 to FClassTree.Items.Count-1 do begin
+    	if (FClassTree.Items[i].Data = nil) then continue; // might be the interface root node
       SaveClassToStream(TUClass(FClassTree.Items[i].Data), stream);
     end;
   except

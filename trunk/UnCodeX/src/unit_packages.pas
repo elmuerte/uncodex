@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Unreal Package scanner, searches for classes in directories
- $Id: unit_packages.pas,v 1.28 2004-09-14 11:13:03 elmuerte Exp $
+ $Id: unit_packages.pas,v 1.29 2004-10-17 13:17:19 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -47,6 +47,7 @@ type
     {$IFDEF __USE_TREEVIEW}
     packagetree: TTreeNodes;
     classtree: TTreeNodes;
+    InterfaceNode: TTreeNode;
     {$ENDIF}
     status: TStatusReport;
     packagelist: TUPackageList;
@@ -143,6 +144,13 @@ begin
             end;
           end;
           break; // we don't need to parse the rest
+        end
+        else if (p.TokenSymbolIs('interface')) then begin
+          p.NextToken;
+          result := TUClass.Create;
+          result.name := p.TokenString;
+          result.isInterface := true;
+          logclass('Found interface class: '+result.name, result);
         end;
       end;
       token := p.NextToken;
@@ -391,7 +399,8 @@ begin
     knownpackages.Free;
     {$IFDEF __USE_TREEVIEW}
     packagetree.EndUpdate;
-    if (classtree.Count > 0) then classtree.GetFirstNode.Expand(false);
+		// TODO: fix
+    //if (classtree.Count > 0) then classtree.GetFirstNode.Expand(false);
     classtree.EndUpdate;
     {$ENDIF}
   end;
@@ -431,7 +440,15 @@ begin
         classlist[i].parent := parent;
         if (parent <> nil) then parent.children.Add(classlist[i]);
         {$IFDEF __USE_TREEVIEW}
-        classlist[i].treenode := classtree.AddChildObject(pnode, classlist[i].name, classlist[i]);
+        if (classlist[i].isInterface) then begin
+        	if (InterfaceNode = nil) then begin
+						InterfaceNode := classtree.AddChild(nil, 'Interfaces');
+          end;
+          classlist[i].treenode := classtree.AddChildObject(InterfaceNode, classlist[i].name, classlist[i]);
+        end
+        else begin
+	      	classlist[i].treenode := classtree.AddChildObject(pnode, classlist[i].name, classlist[i]);
+        end;
         if (classlist[i].tagged) then begin
           TTreeNode(classlist[i].treenode).ImageIndex := ICON_CLASS_TAGGED;
           TTreeNode(classlist[i].treenode).StateIndex := ICON_CLASS_TAGGED;
