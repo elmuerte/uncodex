@@ -1,29 +1,29 @@
 object fr_Properties: Tfr_Properties
   Left = 0
   Top = 0
-  Width = 202
+  Width = 193
   Height = 272
   TabOrder = 0
+  object bcl_Spacer: TBevel
+    Left = 0
+    Top = 0
+    Width = 193
+    Height = 21
+    Align = alTop
+    Shape = bsSpacer
+  end
   object lbl_InheritanceLevel: TLabel
-    Left = 13
+    Left = 15
     Top = 4
     Width = 78
     Height = 13
     Caption = 'Inheritance level'
   end
-  object bcl_Spacer: TBevel
-    Left = 0
-    Top = 0
-    Width = 202
-    Height = 22
-    Align = alTop
-    Shape = bsSpacer
-  end
   object lv_Properties: TListView
     Left = 0
-    Top = 22
-    Width = 202
-    Height = 250
+    Top = 21
+    Width = 193
+    Height = 251
     Align = alClient
     Columns = <
       item
@@ -65,6 +65,7 @@ object fr_Properties: Tfr_Properties
     OnClick = lv_PropertiesClick
     OnCustomDrawSubItem = lv_PropertiesCustomDrawSubItem
     OnInfoTip = lv_PropertiesInfoTip
+    OnResize = lv_PropertiesResize
     OnSelectItem = lv_PropertiesSelectItem
   end
   object ed_InheritanceLevel: TEdit
@@ -87,7 +88,7 @@ object fr_Properties: Tfr_Properties
     Wrap = False
   end
   object btn_Refresh: TBitBtn
-    Left = 152
+    Left = 144
     Top = 0
     Width = 49
     Height = 21

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.71 2004-01-30 13:56:46 elmuerte Exp $
+ $Id: unit_main.pas,v 1.72 2004-01-31 14:01:37 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -33,7 +33,7 @@ uses
   Forms, Dialogs, ComCtrls, Menus, StdCtrls, unit_packages, ExtCtrls,
   unit_uclasses, IniFiles, ShellApi, AppEvnts, ImgList, ActnList, StrUtils,
   Clipbrd, hh, hh_funcs, ToolWin, richedit, unit_richeditex, unit_searchform,
-  Buttons, DdeMan, unit_props;
+  Buttons, DdeMan, unit_props, unit_dockpanel;
 
 const
   // custom window messages
@@ -208,10 +208,10 @@ type
     splRight: TSplitter;
     splTop: TSplitter;
     splBottom: TSplitter;
-    pnlCenter: TPanel;
     lb_Log: TListBox;
     ac_PropInspector: TAction;
     mi_PropInspector: TMenuItem;
+    pnlCenter: TPanel;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -341,7 +341,8 @@ type
     procedure InlineSearchNext(skipcurrent: boolean = false);
     procedure InlineSearchPrevious(skipcurrent: boolean = false);
     procedure InlineSearchComplete;
-    procedure ShowDockPanel(APanel: TPanel; MakeVisible: Boolean; Client: TControl);
+    procedure ShowDockPanel(DockHost: TControl; MakeVisible: Boolean; Client: TControl);
+    procedure OnDockVisChange(client: TControl; visible: boolean; var CanChange: boolean);
   public
     statustext : string; // current status text
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
@@ -426,12 +427,16 @@ implementation
 uses unit_settings, unit_analyse, unit_htmlout, unit_definitions,
   unit_treestate, unit_about, unit_mshtmlhelp, unit_fulltextsearch,
   unit_tags, unit_outputdefs, unit_rtfhilight, unit_utils, unit_license,
-  unit_splash;
+  unit_splash, unit_ucxdocktree;
 
 const
   PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
                                        HIGH_PRIORITY_CLASS, REALTIME_PRIORITY_CLASS);
   AUTOHIDEEXPOSURE = 4; // number of pixel to show of the app bar
+
+var
+	SelectedUClass: TUClass = nil;
+  SelectedUPackage: TUPackage = nil;
 
 {$R *.dfm}
 
@@ -844,24 +849,21 @@ end;
 
 procedure Tfrm_UnCodeX.OpenSourceInline(uclass: TUClass; line, caret: integer);
 var
-  i: integer;
+  oldsel: TUClass;
 begin
-  ActiveControl := tv_Classes;
-  for i := 0 to tv_Classes.Items.Count-1 do begin
-    if (tv_Classes.Items[i].Data = uclass) then begin
-      tv_Classes.Select(tv_Classes.Items[i]);
-      if (mi_SourceSnoop.Checked) then begin
-        re_SourceSnoop.Perform(EM_LINESCROLL, 0, -1*re_SourceSnoop.Lines.Count);
-        re_SourceSnoop.Perform(EM_LINESCROLL, 0, line);
-        line := re_SourceSnoop.Perform(EM_LINEINDEX, line, 0); // get line index
-        re_SourceSnoop.ClearBgColor();
-        re_SourceSnoop.SelStart := line;
-        re_SourceSnoop.SelLength := re_SourceSnoop.Perform(EM_LINELENGTH, line, 0);
-        re_SourceSnoop.SetSelBgColor(clBtnFace);
-        re_SourceSnoop.SelLength := 0;
-      end;
-      exit;
-    end;
+	oldsel := SelectedUClass;
+	SelectedUClass := uclass;
+  SelectedUPackage := nil;
+  if (mi_SourceSnoop.Checked) then begin
+    if (SelectedUClass <> oldsel) then ac_SourceSnoop.Execute;
+  	re_SourceSnoop.Perform(EM_LINESCROLL, 0, -1*re_SourceSnoop.Lines.Count);
+		re_SourceSnoop.Perform(EM_LINESCROLL, 0, line);
+    line := re_SourceSnoop.Perform(EM_LINEINDEX, line, 0); // get line index
+		re_SourceSnoop.ClearBgColor();
+		re_SourceSnoop.SelStart := line;
+		re_SourceSnoop.SelLength := re_SourceSnoop.Perform(EM_LINELENGTH, line, 0);
+		re_SourceSnoop.SetSelBgColor(clBtnFace);
+		re_SourceSnoop.SelLength := 0;
   end;
 end;
 
@@ -1131,17 +1133,20 @@ begin
   else result := mid;
 end;
 
-procedure Tfrm_UnCodeX.ShowDockPanel(APanel: TPanel; MakeVisible: Boolean; Client: TControl);
+procedure Tfrm_UnCodeX.ShowDockPanel(DockHost: TControl; MakeVisible: Boolean; Client: TControl);
 var
 	makeHeight, makeWidth: integer;
+  APanel: TPanel;
 begin
-  //Client - the docked client to show if we are re-showing the panel.
-  //Client is ignored if hiding the panel.
+	APanel := nil;
+  if (DockHost <> nil) then
+  	if (DockHost.ClassType = TPanel) then
+    	APanel := TPanel(DockHost);
 
-  //Since docking to a non-visible docksite isn't allowed, instead of setting
-  //Visible for the panels we set the width to zero. The default InfluenceRect
-  //for a control extends a few pixels beyond it's boundaries, so it is possible
-  //to dock to zero width controls.
+  if (APanel = nil) then begin
+		if MakeVisible and (Client <> nil) then Client.Show;
+    exit;
+  end;
 
   //Don't try to hide a panel which has visible dock clients.
   if not MakeVisible and (APanel.VisibleDockClientCount > 1) then
@@ -1190,7 +1195,21 @@ begin
 		else if (APanel.Align = alTop) or (APanel.Align = alBottom) then
 			APanel.Height := 0;
 	end;
+
   if MakeVisible and (Client <> nil) then Client.Show;
+end;
+
+procedure Tfrm_UnCodeX.OnDockVisChange(client: TControl; visible: boolean; var CanChange: boolean);
+begin
+	if (client = tv_Classes) then CanChange := visible = true
+  else if (client = tv_Packages) then ac_VPackageTree.Checked := visible
+  else if (client = lb_Log) then ac_VLog.Checked := visible
+  else if (client = re_SourceSnoop) then ac_VSourceSnoop.Checked := visible
+  else if (client = fr_Props) then ac_PropInspector.Checked := visible;
+  
+  if (client.HostDockSite <> nil) then begin
+    ShowDockPanel(client.HostDockSite as TPanel, visible, client);
+  end;
 end;
 
 { Custom methods -- END}
@@ -1216,6 +1235,8 @@ var
   dockData: TMemoryStream;
   dckHost: TPanel;
 begin
+  OnChangeVisibility := OnDockVisChange;
+  
   Mouse.DragImmediate := false;
   Mouse.DragThreshold := 5;
   hh_Help := THookHelpSystem.Create(ExtractFilePath(ParamStr(0))+'UnCodeX-help.chm', '', htHHAPI);
@@ -2245,6 +2266,9 @@ begin
   if (DoInit) then begin
     DoInit := false;
     LoadState;
+    tv_Classes.Show;
+    ActiveControl := tv_Classes;
+    //if (tv_Classes.Items.Count > 0) then tv_Classes.Select(tv_Classes.Items[0]);
     if (SearchConfig.query <> '') then begin
       SearchConfig.isBodySearch := false;
       ActiveControl := tv_Classes;
@@ -2346,26 +2370,16 @@ end;
 
 procedure Tfrm_UnCodeX.ac_VPackageTreeExecute(Sender: TObject);
 begin
-  //spl_Main1.Visible := mi_PackageTree.Checked;
   tv_Packages.Visible := mi_PackageTree.Checked;
   if (not tv_Packages.Visible) then
 	  if (ActiveControl = nil) then ActiveControl := tv_Classes;
-  ShowDockPanel((tv_Packages.Parent as TPanel), tv_Packages.Visible, nil);
-  //if (tv_Packages.Visible) then begin
-  //  if (spl_Main1.Left > spl_Main3.Left) then tv_Packages.Width := spl_Main3.Left-spl_Main1.MinSize;
-  //end
-  //else begin
-  //  if (ActiveControl = nil) then ActiveControl := tv_Classes;
-  //end;
+  ShowDockPanel(tv_Packages.HostDockSite, tv_Packages.Visible, nil);
 end;
 
 procedure Tfrm_UnCodeX.ac_VLogExecute(Sender: TObject);
 begin
-  //lb_Log.Top := 0;
-  //spl_Main2.Top := 1;
   lb_Log.Visible := mi_Log.Checked;
-  ShowDockPanel((lb_Log.Parent as TPanel), lb_Log.Visible, nil);
-  //spl_Main2.Visible := mi_Log.Checked;
+  ShowDockPanel(lb_Log.Parent, lb_Log.Visible, nil);
 end;
 
 procedure Tfrm_UnCodeX.ac_VStayOnTopExecute(Sender: TObject);
@@ -2486,36 +2500,30 @@ var
   filename: string;
   ss: TStringStream;
 begin
-  if (ActiveControl.ClassType = TTreeView) then begin
-    with (ActiveControl as TTreeView) do begin
-      if (Selected <> nil) then begin
-        if (TObject(Selected.Data).ClassType = TUClass) then begin
-          filename := TUClass(Selected.Data).package.path+PATHDELIM+TUClass(Selected.Data).filename;
-          re_SourceSnoop.Hint := filename;
-          if (not FileExists(filename)) then exit;
-          fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
-          ms := TMemoryStream.Create;
-          try
-            RTFHilightUScript(fs, ms, TUClass(Selected.Data));
-            re_SourceSnoop.Lines.Clear;
-            ms.Position := 0;
-            re_SourceSnoop.Lines.LoadFromStream(ms);
-          finally
-            ms.Free;
-            fs.Free;
-          end;
-        end
-        else if (TObject(Selected.Data).ClassType = TUPackage) then begin
-          if (TUPackage(Selected.Data).comment <> '') then begin
-            ss := TStringStream.Create(TUPackage(Selected.Data).comment);
-            try
-              re_SourceSnoop.Lines.Clear;
-              re_SourceSnoop.Lines.LoadFromStream(ss);
-            finally
-              ss.Free;
-            end;
-          end;
-        end;
+	if (SelectedUClass <> nil) then begin
+    filename := SelectedUClass.package.path+PATHDELIM+SelectedUClass.filename;
+    re_SourceSnoop.Hint := filename;
+    if (not FileExists(filename)) then exit;
+    fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
+    ms := TMemoryStream.Create;
+    try
+      RTFHilightUScript(fs, ms, SelectedUClass);
+      re_SourceSnoop.Lines.Clear;
+      ms.Position := 0;
+      re_SourceSnoop.Lines.LoadFromStream(ms);
+    finally
+      ms.Free;
+      fs.Free;
+    end;
+  end
+  else if (SelectedUPackage <> nil) then begin
+    if (SelectedUPackage.comment <> '') then begin
+      ss := TStringStream.Create(SelectedUPackage.comment);
+      try
+        re_SourceSnoop.Lines.Clear;
+        re_SourceSnoop.Lines.LoadFromStream(ss);
+      finally
+        ss.Free;
       end;
     end;
   end;
@@ -2525,35 +2533,29 @@ procedure Tfrm_UnCodeX.tv_ClassesChange(Sender: TObject; Node: TTreeNode);
 begin
   if (Sender = nil) then exit;
   if (not (Sender as TWinControl).Visible) then exit;
-  ActiveControl := (Sender as TWinControl);
+  SelectedUClass := nil;
+  SelectedUPackage := nil;
+  if (Sender.ClassType = TTreeView) then begin
+  	with (Sender as TTreeView) do begin
+    	if (Selected.Data = nil) then exit;
+			if (TObject(Selected.Data).ClassType = TUClass) then SelectedUClass := TUClass(Selected.Data)
+      else if (TObject(Selected.Data).ClassType = TUPackage) then SelectedUPackage := TUPackage(Selected.Data);
+		end;
+  end;
   if (re_SourceSnoop.Visible) then begin
     ac_SourceSnoop.Execute;
   end;
-  if (fr_Props.Visible) then begin
-    if (ActiveControl.ClassType = TTreeView) then begin
-    	with (ActiveControl as TTreeView) do begin
-      	if (Selected <> nil) then begin
-        	if (TObject(Selected.Data).ClassType = TUClass) then begin
-            fr_Props.uclass := TUClass(Selected.Data);
-            fr_Props.LoadClass;
-          end;
-        end;
-      end
-    end;
+  if (fr_Props.Visible and (SelectedUClass <> nil)) then begin
+    fr_Props.uclass := SelectedUClass;
+		fr_Props.LoadClass;
   end;
 end;
 
 procedure Tfrm_UnCodeX.ac_VSourceSnoopExecute(Sender: TObject);
 begin
-  //re_SourceSnoop.Left := ClientWidth;
-  //spl_Main3.Left := ClientWidth-1;
-  //spl_Main3.Visible := mi_SourceSnoop.Checked;
   re_SourceSnoop.Visible := mi_SourceSnoop.Checked;
   ShowDockPanel((re_SourceSnoop.Parent as TPanel), re_SourceSnoop.Visible, nil);
   if (mi_SourceSnoop.Checked and not DoInit) then ac_SourceSnoop.Execute;
-  //if (re_SourceSnoop.Visible) then begin
-  //  if (re_SourceSnoop.Left < tv_Classes.Left) then re_SourceSnoop.Width := spl_Main3.MinSize;
-  //end;
 end;
 
 procedure Tfrm_UnCodeX.ac_CopySelectionExecute(Sender: TObject);
@@ -2872,6 +2874,7 @@ begin
 end;
 
 initialization
+	DefaultDockTreeClass := TUCXDockTree;
   unit_definitions.Log := Log;
   unit_definitions.LogClass := LogClass;
 end.

@@ -30,11 +30,13 @@ object frm_Tags: Tfrm_Tags
     Height = 294
     Align = alClient
     AutoScroll = False
-    AutoSize = True
     TabOrder = 1
+    inherited bcl_Spacer: TBevel
+      Width = 201
+    end
     inherited lv_Properties: TListView
       Width = 201
-      Height = 270
+      Height = 277
     end
   end
   object btn_MakeWindow: TBitBtn

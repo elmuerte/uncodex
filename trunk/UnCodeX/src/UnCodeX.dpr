@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
- $Id: UnCodeX.dpr,v 1.29 2004-01-29 09:02:51 elmuerte Exp $
+ $Id: UnCodeX.dpr,v 1.30 2004-01-31 14:01:37 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 program UnCodeX;
@@ -45,7 +45,8 @@ uses
   unit_clpipe in 'unit_clpipe.pas',
   unit_license in 'unit_license.pas' {frm_License},
   unit_splash in 'unit_splash.pas' {frm_Splash},
-  unit_props in 'unit_props.pas' {fr_Properties: TFrame};
+  unit_props in 'unit_props.pas' {fr_Properties: TFrame},
+  unit_ucxdocktree in 'unit_ucxdocktree.pas';
 
 {$R *.res}
 

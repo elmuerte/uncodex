@@ -45,7 +45,7 @@ OutputDir=..\BIN
 UnitOutputDir=..\DCU
 PackageDLLOutputDir=
 PackageDCPOutputDir=
-SearchPath=VCL
+SearchPath=$(DELPHI)\Lib\Debug;VCL
 Packages=vcl;rtl;dbrtl;adortl;vcldb;vclx;bdertl;vcldbx;ibxpress;dsnap;cds;bdecds;qrpt;teeui;teedb;tee;dss;teeqr;visualclx;dsnapcrba;dsnapcon;VclSmp;vclshlctrls;vclie;xmlrtl;inet;inetdbbde;inetdbxpress;inetdb;nmfast;webdsnap;websnap;soaprtl;dbexpress;dbxcds;indy;dclOffice2k;visualdbclx;TAC2comps
 Conditionals=
 DebugSourceDirs=
@@ -66,7 +66,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=5
 Release=1
-Build=159
+Build=160
 Debug=0
 PreRelease=1
 Special=0
@@ -77,7 +77,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Michiel 'El Muerte' Hendriks
 FileDescription=
-FileVersion=1.5.1.159
+FileVersion=1.5.1.160
 InternalName=UnCodeX
 LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
 LegalTrademarks=
@@ -85,6 +85,11 @@ OriginalFilename=UnCodeX.exe
 ProductName=UnCodeX
 ProductVersion=2.0
 Comments=http://wiki.beyondunreal.com/wiki/UnCodeX
+[Excluded Packages]
+c:\program files\borland\delphi6\Bin\dclnet60.bpl=Borland Internet Components
+c:\program files\borland\delphi6\Bin\dclwbm60.bpl=Borland InternetExpress Components
+c:\program files\borland\delphi6\Bin\dclwebsnap60.bpl=Borland WebSnap Components
+c:\program files\borland\delphi6\Bin\dclsoap60.bpl=Borland SOAP Components
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
