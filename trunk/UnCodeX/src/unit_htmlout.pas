@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.70 2005-03-18 14:42:42 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.71 2005-03-23 11:40:49 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -36,7 +36,10 @@ interface
 
 uses
   Classes, SysUtils, unit_uclasses, StrUtils, Hashes, DateUtils, IniFiles,
-  unit_outputdefs, unit_clpipe, unit_copyparser;
+  unit_outputdefs, unit_clpipe, unit_copyparser
+  {$IFDEF HTMLOUT_PASCALSCRIPT}
+  , uPSComponent
+  {$ENDIF};
 
 type
   TGlossaryItem = class(TObject)
@@ -93,6 +96,12 @@ type
     ClassList: TUClassList;
     status: TStatusReport;
     ini: TMemIniFile;
+
+    {$IFDEF HTMLOUT_PASCALSCRIPT}
+    psComp: TPSScript;
+    procedure SetupPascalScript;
+    procedure CleanupPascalScript;
+    {$ENDIF}
 
     procedure parseTemplate(input, output: TStream; replace: TReplacement; data: TObject = nil);
     procedure SkipIf(p: TCopyParser);
@@ -168,6 +177,9 @@ uses
   unit_definitions, unit_sourceparser, Contnrs
 {$IFDEF FPC}
   , unit_fpc_compat
+{$ENDIF}
+{$IFDEF HTMLOUT_PASCALSCRIPT}
+  , uPSComponent_Default, IFSI_unit_uclasses, unit_pascalscript_ex, unit_pascalscript
 {$ENDIF}
   ;
 
@@ -246,7 +258,12 @@ begin
   EnumCache := Hashes.TStringHash.Create;
   StructCache := Hashes.TStringHash.Create;
   FunctionCache := Hashes.TStringHash.Create;
-  DelegateCache := Hashes.TStringHash.Create;  
+  DelegateCache := Hashes.TStringHash.Create;
+  {$IFDEF HTMLOUT_PASCALSCRIPT}
+  psComp := TPSScript.Create(nil);
+  SetupPascalScript();
+  {$ENDIF}
+
   inherited Create(true);
   FreeOnTerminate := true;
 end;
@@ -262,7 +279,35 @@ begin
   FreeAndNil(FunctionCache);
   FreeAndNil(DelegateCache);
   FreeAndNil(ini);
+  {$IFDEF HTMLOUT_PASCALSCRIPT}
+  CleanupPascalScript();
+  FreeAndNil(psComp);
+  {$ENDIF}
 end;
+
+{$IFDEF HTMLOUT_PASCALSCRIPT}
+procedure THTMLOutput.SetupPascalScript;
+var
+  plugin: TPSPluginItem;
+begin
+  psComp.CompilerOptions := [icAllowNoBegin, icAllowNoEnd, icBooleanShortCircuit];
+  plugin := TPSPluginItem(psComp.Plugins.Add());
+  plugin.Plugin := TPSImport_Classes.Create(nil);
+  plugin := TPSPluginItem(psComp.Plugins.Add());
+  plugin.Plugin := TPSImport_DateUtils.Create(nil);
+  plugin := TPSPluginItem(psComp.Plugins.Add());
+  plugin.Plugin := TPSDllPlugin.Create(nil);
+end;
+
+procedure THTMLOutput.CleanupPascalScript;
+var
+  i: integer;
+begin
+  for i := psComp.Plugins.Count-1 downto 0 do begin
+    TPSPluginItem(psComp.Plugins.Items[i]).Plugin.Free;
+  end;
+end;
+{$ENDIF}
 
 procedure THTMLOutput.Execute;
 var

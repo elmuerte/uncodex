@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.147 2005-03-13 09:25:20 elmuerte Exp $
+  $Id: unit_main.pas,v 1.148 2005-03-23 11:40:50 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -2561,6 +2561,7 @@ begin
   if (runningthread <> nil) then begin
     ac_Abort.Enabled := false;
     runningthread.Terminate;
+    Log('Aborted', ltError);
   end;
 end;
 

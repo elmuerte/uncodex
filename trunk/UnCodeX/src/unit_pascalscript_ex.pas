@@ -7,7 +7,7 @@
     Defines additional PascalScript objects and functions. (Generation is
     automated)
 
-  $Id: unit_pascalscript_ex.pas,v 1.10 2005-03-13 09:25:20 elmuerte Exp $
+  $Id: unit_pascalscript_ex.pas,v 1.11 2005-03-23 11:40:52 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -107,12 +107,12 @@ begin
   RegisterMethod('Procedure WriteInteger( const Section, Ident : string; Value : Longint)');
   RegisterMethod('Function ReadBool( const Section, Ident : string; Default : Boolean) : Boolean');
   RegisterMethod('Procedure WriteBool( const Section, Ident : string; Value : Boolean)');
-  RegisterMethod('Function ReadBinaryStream( const Section, Name : string; Value : TStream) : Integer');
+  //RegisterMethod('Function ReadBinaryStream( const Section, Name : string; Value : TStream) : Integer');
   RegisterMethod('Function ReadDate( const Section, Name : string; Default : TDateTime) : TDateTime');
   RegisterMethod('Function ReadDateTime( const Section, Name : string; Default : TDateTime) : TDateTime');
   RegisterMethod('Function ReadFloat( const Section, Name : string; Default : Double) : Double');
   RegisterMethod('Function ReadTime( const Section, Name : string; Default : TDateTime) : TDateTime');
-  RegisterMethod('Procedure WriteBinaryStream( const Section, Name : string; Value : TStream)');
+  //RegisterMethod('Procedure WriteBinaryStream( const Section, Name : string; Value : TStream)');
   RegisterMethod('Procedure WriteDate( const Section, Name : string; Value : TDateTime)');
   RegisterMethod('Procedure WriteDateTime( const Section, Name : string; Value : TDateTime)');
   RegisterMethod('Procedure WriteFloat( const Section, Name : string; Value : Double)');
@@ -213,11 +213,11 @@ begin T := Self.FileName; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TMemIniFileCaseSensitive_W(Self: TMemIniFile; const T: Boolean);
-begin Self.CaseSensitive := T; end;
+begin {$IFNDEF FPC} Self.CaseSensitive := T; {$ENDIF} end;
 
 (*----------------------------------------------------------------------------*)
 procedure TMemIniFileCaseSensitive_R(Self: TMemIniFile; var T: Boolean);
-begin T := Self.CaseSensitive; end;
+begin {$IFNDEF FPC} T := Self.CaseSensitive; {$ELSE} T := true; {$ENDIF} end;
 
 (*----------------------------------------------------------------------------*)
 procedure TObjectListItems_W(Self: TObjectList; const T: TObject; const t1: Integer);
@@ -276,7 +276,11 @@ procedure RIRegister_TMemIniFile(CL: TPSRuntimeClassImporter);
 begin
   with CL.Add(TMemIniFile) do
   begin
+  {$IFDEF FPC}
+  //TODO: fix
+  {$ELSE}
   RegisterConstructor(@TMemIniFile.Create, 'Create');
+  {$ENDIF}
   RegisterMethod(@TMemIniFile.SectionExists, 'SectionExists');
   RegisterMethod(@TMemIniFile.ReadString, 'ReadString');
   RegisterMethod(@TMemIniFile.WriteString, 'WriteString');
@@ -284,12 +288,12 @@ begin
   RegisterMethod(@TMemIniFile.WriteInteger, 'WriteInteger');
   RegisterMethod(@TMemIniFile.ReadBool, 'ReadBool');
   RegisterMethod(@TMemIniFile.WriteBool, 'WriteBool');
-  RegisterMethod(@TMemIniFile.ReadBinaryStream, 'ReadBinaryStream');
+  //RegisterMethod(@TMemIniFile.ReadBinaryStream, 'ReadBinaryStream');
   RegisterMethod(@TMemIniFile.ReadDate, 'ReadDate');
   RegisterMethod(@TMemIniFile.ReadDateTime, 'ReadDateTime');
   RegisterMethod(@TMemIniFile.ReadFloat, 'ReadFloat');
   RegisterMethod(@TMemIniFile.ReadTime, 'ReadTime');
-  RegisterMethod(@TMemIniFile.WriteBinaryStream, 'WriteBinaryStream');
+  //RegisterMethod(@TMemIniFile.WriteBinaryStream, 'WriteBinaryStream');
   RegisterMethod(@TMemIniFile.WriteDate, 'WriteDate');
   RegisterMethod(@TMemIniFile.WriteDateTime, 'WriteDateTime');
   RegisterMethod(@TMemIniFile.WriteFloat, 'WriteFloat');

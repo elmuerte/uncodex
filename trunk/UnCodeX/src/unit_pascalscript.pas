@@ -6,7 +6,7 @@
   Purpose:
     Global PascalScript routines and functionality
 
-  $Id: unit_pascalscript.pas,v 1.17 2005-03-13 09:25:20 elmuerte Exp $
+  $Id: unit_pascalscript.pas,v 1.18 2005-03-23 11:40:52 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -36,12 +36,27 @@ interface
 uses
   SysUtils, uPSComponent, uPSUtils;
 
+  {TPSImport_miscclasses = class(TPSPlugin)
+  protected
+    procedure CompOnUses(CompExec: TPSScript); override;
+    procedure ExecOnUses(CompExec: TPSScript); override;
+    procedure CompileImport1(CompExec: TPSScript); override;
+    procedure CompileImport2(CompExec: TPSScript); override;
+    procedure ExecImport1(CompExec: TPSScript; const ri: TPSRuntimeClassImporter); override;
+    procedure ExecImport2(CompExec: TPSScript; const ri: TPSRuntimeClassImporter); override;
+  end;
+
+  procedure Register; }
+
   // pre-compile routines
   procedure RegisterPS(ps: TPSScript);
 
 implementation
 
-uses unit_definitions;
+uses unit_definitions
+  {$IFDEF FPC}
+  , unit_fpc_compat
+  {$ENDIF};
 
 procedure RegisterPS(ps: TPSScript);
 begin
@@ -53,9 +68,17 @@ begin
   ps.AddFunction(@TrimLeft, 'function TrimLeft(const S: string): string;');
   ps.AddFunction(@TrimRight, 'function TrimRight(const S: string): string;');
   ps.AddFunction(@QuotedStr, 'function QuotedStr(const S: string): string;');
+  {$IFDEF FPC}
+  //TODO: fix
+  {$ELSE}
   ps.AddFunction(@IntToHex, 'function IntToHex(Value: Integer; Digits: Integer): string;');
+  {$ENDIF}
   ps.AddFunction(@StrToBool, 'function StrToBool(const S: string): Boolean;');
+  {$IFDEF FPC}
+  //TODO: fix
+  {$ELSE}
   ps.AddFunction(@StrToBoolDef, 'function StrToBoolDef(const S: string; const Default: Boolean): Boolean;');
+  {$ENDIF}
   ps.AddFunction(@BoolToStr, 'function BoolToStr(B: Boolean; UseBoolStrs: Boolean): string;');
   ps.Comp.AddTypeS('TReplaceFlags_', '(rfReplaceAll, rfIgnoreCase);');
   ps.Comp.AddTypeS('TReplaceFlags', 'set of TReplaceFlags_;');
@@ -92,7 +115,11 @@ begin
   ps.AddFunction(@ExtractBaseName, 'function ExtractBaseName(filename: string): string;');
 
   { Commandline support }
+  {$IFDEF FPC}
+  //TODO: fix
+  {$ELSE}
   ps.AddFunction(@FindCmdLineSwitch, 'function FindCmdLineSwitch(const Switch: string; const Chars: TCharSet; IgnoreCase: Boolean): Boolean;');
+  {$ENDIF}
   ps.AddFunction(@ParamCount, 'function ParamCount: Integer;');
   ps.AddFunction(@ParamStr, 'function ParamStr(Index: Integer): string;');
 
@@ -101,7 +128,11 @@ begin
   ps.AddFunction(@Log, 'procedure Log(msg: string);');
   ps.AddFunction(@Log, 'procedure LogType(msg: string; mt: TLogType);');
   ps.AddFunction(@Log, 'procedure LogTypeObject(msg: string; mt: TLogType; obj: TObject);');
+  {$IFDEF FPC}
+  //TODO:
+  {$ELSE}
   ps.AddFunction(@CreateLogEntry, 'function CreateLogEntry(filename: string; line: integer; pos: integer; obj: TObject): TLogEntry;');
+  {$ENDIF}
   ps.AddFunction(@ResolveFilename, 'function ResolveFilename(uclass: TUClass; udecl: TUDeclaration): string;');
 end;
 

@@ -1,17 +1,16 @@
-DCUOUT="../../dcu/ucxcu/"
-BINOUT="../../bin/"
+DCUOUT=../../dcu/ucxcu/
+BINOUT=../../bin/
 
-.PHONY : all
+FPCPATH=-Fu"C:\Program Files\RemObjects Software\Pascal Script for Delphi\Source" -Fi"C:\Program Files\RemObjects Software\Pascal Script for Delphi\Source"
+
+FPCOPT=-Mdelphi -Xs -XD -O3 -Op3
+
 all:
-	ppc386 -S2dg -O2p3 -Xs -XD -vewi -l -Fu../ -Fu. -FE${DCUOUT} ucxcu.dpr
-	mv ${DCUOUT}ucxcu ${BINOUT}
+	ppc386 $(FPCOPT) -Fu../ -Fu. $(FPCPATH) -FE$(BINOUT) -FU$(DCUOUT) ucxcu.dpr
 
-.PHONY : debug
 debug:
-	ppc386 -S2dg -O2p3 -Xs -XD -vewi -l -Fu../ -Fu. -FE${DCUOUT} -dDEBUG_BUILD ucxcu.dpr
-	mv ${DCUOUT}ucxcu ${BINOUT}
+	ppc386 $(FPCOPT) -Fu../ -Fu. $(FPCPATH) -FE$(BINOUT) -FU$(DCUOUT) -dDEBUG_BUILD ucxcu.dpr
 
-.PHONY : clean
 clean:
-	rm ${DCUOUT}*.o
-	rm ${DCUOUT}*.ppu
+	rm $(DCUOUT)*.o
+	rm $(DCUOUT)*.ppu
