@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.111 2004-07-24 14:35:13 elmuerte Exp $
+ $Id: unit_main.pas,v 1.112 2004-07-27 10:59:50 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -1339,7 +1339,10 @@ begin
 
   //Don't try to hide a panel which has visible dock clients.
   if not MakeVisible then begin
-  	if (not Client.Visible and (APanel.VisibleDockClientCount >= 1)) then Exit
+  	if (Client = nil) then begin
+			if (APanel.VisibleDockClientCount > 1) then Exit;
+    end
+  	else if (not Client.Visible and (APanel.VisibleDockClientCount >= 1)) then Exit
 	  else if (APanel.VisibleDockClientCount > 1) then Exit;
   end;
 
@@ -1409,7 +1412,10 @@ begin
 	if (client = tv_Classes) then CanChange := visible = true
   else if (client = tv_Packages) then ac_VPackageTree.Checked := visible
   else if (client = lb_Log) then ac_VLog.Checked := visible
-  else if (client = re_SourceSnoop) then ac_VSourceSnoop.Checked := visible
+  else if (client = re_SourceSnoop) then begin
+  	ac_VSourceSnoop.Checked := visible;
+    mi_Browse.Visible := visible;
+  end
   else if (client = fr_Props) then ac_PropInspector.Checked := visible;
   
   if (client.HostDockSite <> nil) then begin
@@ -1643,10 +1649,10 @@ begin
   dockData := TMemoryStream.Create;
   try
     { Load layout }
-    ac_VStayOnTop.Checked := ini.ReadBool('Layout', 'StayOnTop', false);
+    ac_VStayOnTop.Checked := ini.ReadBool('Layout', 'StayOnTop', ac_VStayOnTop.Checked);
     if (ac_VStayOnTop.Checked) then FormStyle := fsStayOnTop;
-    ac_VSaveposition.Checked := ini.ReadBool('Layout', 'SavePosition', false);
-    ac_VSavesize.Checked := ini.ReadBool('Layout', 'SaveSize', false);
+    ac_VSaveposition.Checked := ini.ReadBool('Layout', 'SavePosition', ac_VSaveposition.Checked);
+    ac_VSavesize.Checked := ini.ReadBool('Layout', 'SaveSize', ac_VSavesize.Checked);
     if (ac_VSaveposition.Checked) then begin
       Position := poDesigned;
       Top := ini.ReadInteger('Layout', 'Top', Top);
@@ -1657,16 +1663,16 @@ begin
       Height := ini.ReadInteger('Layout', 'Height', Height);
     end;
     if (ini.ReadBool('Layout', 'IsMaximized', false)) then WindowState := wsMaximized;
-    ac_VMenuBar.Checked := ini.ReadBool('Layout', 'MenuBar', true);
-    ac_VToolbar.Checked := ini.ReadBool('Layout', 'Toolbar', true);
+    ac_VMenuBar.Checked := ini.ReadBool('Layout', 'MenuBar', ac_VMenuBar.Checked);
+    ac_VToolbar.Checked := ini.ReadBool('Layout', 'Toolbar', ac_VToolbar.Checked);
     mi_Toolbar.OnClick(nil);
 
-    ac_VPackageTree.Checked := ini.ReadBool('Layout', 'PackageTree', true);
-    ac_VLog.Checked := ini.ReadBool('Layout', 'Log', true);
-    ac_VSourceSnoop.Checked := ini.ReadBool('Layout', 'SourceSnoop', false);
+    ac_VPackageTree.Checked := ini.ReadBool('Layout', 'PackageTree', ac_VPackageTree.Checked);
+    ac_VLog.Checked := ini.ReadBool('Layout', 'Log', ac_VLog.Checked);
+    ac_VSourceSnoop.Checked := ini.ReadBool('Layout', 'SourceSnoop', ac_VSourceSnoop.Checked);
     re_SourceSnoop.Visible := ac_VSourceSnoop.Checked;
     mi_Browse.Visible := re_SourceSnoop.Visible;
-    ac_PropInspector.Checked := ini.ReadBool('Layout', 'PropertyInspector', false);
+    ac_PropInspector.Checked := ini.ReadBool('Layout', 'PropertyInspector', ac_PropInspector.Checked);
     fr_Props.Visible := ac_PropInspector.Checked;
 
     { load dock settings }
@@ -1893,6 +1899,7 @@ begin
   mi.Hint := StringReplace(hint, #9, '  ', [rfReplaceAll]);
   mi.OnClick := BrowseEntry;
   mi_Browse.Insert(0, mi);
+  mi_Browse.Enabled := true;
   BrowseHistory[i].uclass := uclass;
   BrowseHistory[i].line := line;
 end;

@@ -1,7 +1,7 @@
 [Setup]
 AppName=UnCodeX
-AppVerName=UnCodeX version 204
-AppVersion=204
+AppVerName=UnCodeX version 208
+AppVersion=208
 AppPublisher=Michiel 'El Muerte' Hendriks
 AppPublisherURL=http://wiki.beyondunreal.com/wiki/UnCodeX
 AppSupportURL=http://wiki.beyondunreal.com/wiki/UnCodeX
@@ -19,8 +19,8 @@ AppCopyright=Copyright 2003, 2004 Michiel Hendriks
 ShowLanguageDialog=yes
 UninstallDisplayIcon={app}\UnCodeX.exe
 UninstallDisplayName=UnCodeX
-AppID={FDD6ED8B-DB77-43BC-B0B2-608A1F27AABC}
-VersionInfoVersion=2.0.2.204
+AppID={{FDD6ED8B-DB77-43BC-B0B2-608A1F27AABC}}
+VersionInfoVersion=2.1.3.208
 
 [Types]
 Name: full; Description: Full installation
@@ -46,11 +46,13 @@ Name: quicklaunchicon; Description: Create a &Quick Launch icon; GroupDescriptio
 Source: ..\Bin\UnCodeX.exe; DestDir: {app}; Flags: ignoreversion; Components: gui
 Source: ..\Bin\LICENSE.TXT; DestDir: {app}; Flags: ignoreversion; Components: main
 Source: ..\Bin\PackageDescriptions.ini; DestDir: {app}; Flags: ignoreversion; Components: main
+Source: ..\Bin\ExternalComments.ini; DestDir: {app}; Flags: ignoreversion; Components: main
 Source: ..\Bin\ucxcu.exe; DestDir: {app}; Flags: ignoreversion; Components: commandline
 Source: ..\Bin\UnCodeX-help.chm; DestDir: {app}; Flags: ignoreversion; Components: help
 Source: ..\Bin\Templates\*.*; DestDir: {app}\Templates\DocStyle2; Flags: ignoreversion recursesubdirs; Components: templates
 Source: ..\Bin\out_wikifier.dll; DestDir: {app}; Flags: ignoreversion; Components: gui\customoutput
 Source: ..\Bin\out_graphviz.dll; DestDir: {app}; Flags: ignoreversion; Components: gui\customoutput
+Source: ..\Bin\out_ctags.dll; DestDir: {app}; Flags: ignoreversion; Components: gui\customoutput
 
 Source: ..\Bin\out_sample\*.*; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
 Source: ..\src\out_sample\*.pas; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
