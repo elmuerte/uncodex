@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.101 2004-05-13 07:08:28 elmuerte Exp $
+ $Id: unit_main.pas,v 1.102 2004-05-13 20:03:45 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -385,7 +385,7 @@ type
     // Custom output modules
     procedure LoadOutputModules;
     procedure miCustomOutputClick(sender: TObject);
-    procedure CallCustomOutputModule(module: string; selectedclass: TUClass = nil);
+    procedure CallCustomOutputModule(module: string; selectedclass: TUClass = nil; issingle: boolean = false);
     // inline search
     procedure InlineSearchNext(skipcurrent: boolean = false);
     procedure InlineSearchPrevious(skipcurrent: boolean = false);
@@ -1069,7 +1069,7 @@ var
     if (info2.AMultipleClass) then CreateMenuItem(info2.AName, info2.ADescription, mi_Output, mtag);
     if (info2.ASingleClass) then CreateMenuItem(info2.AName, info2.ADescription, mi_SingleOutput, mtag);
     // TODO: fix this
-    OutputModules.Values[rec.Name] := BoolToStr(info2.ASingleClass);
+    OutputModules.Values[rec.Name] := '2;'+BoolToStr(info2.ASingleClass);
     result := true;
   end;
 
@@ -1088,7 +1088,7 @@ var
     if (info.ASingleClass) then CreateMenuItem(info.AName, info.ADescription, mi_SingleOutput, mtag)
     else CreateMenuItem(info.AName, info.ADescription, mi_Output, mtag);
     // TODO: fix this
-    OutputModules.Values[rec.Name] := BoolToStr(info.ASingleClass);
+    OutputModules.Values[rec.Name] := '1;'+BoolToStr(info.ASingleClass);
     result := true;
   end;
 
@@ -1117,45 +1117,90 @@ end;
 procedure Tfrm_UnCodeX.miCustomOutputClick(sender: TObject);
 var
 	selclass: TUClass;
+  tmp: string;
+  mver: integer;
 begin
 	selclass := nil;
-  if (OutputModules.Values[OutputModules.Names[(Sender as TMenuItem).Tag]] = BoolToStr(true)) then begin
-    if (SelectedUClass = nil) then exit;
+  tmp := OutputModules.Values[OutputModules.Names[(Sender as TMenuItem).Tag]];
+  mver := StrToIntDef(Copy(tmp, 1, Pos(';', tmp)-1), 0);
+  if (Copy(tmp, Pos(';', tmp)+1, Length(tmp)) = BoolToStr(true)) then begin
+    if ((SelectedUClass = nil) and (mver < 2)) then exit;
     selclass := SelectedUClass;
   end;
-  CallCustomOutputModule(OutputModules.Names[(Sender as TMenuItem).Tag], selclass);
+  CallCustomOutputModule(OutputModules.Names[(Sender as TMenuItem).Tag], selclass, (sender as TMenuItem).Parent = mi_SingleOutput);
 end;
 
-procedure Tfrm_UnCodeX.CallCustomOutputModule(module: string; selectedclass: TUClass = nil);
+procedure Tfrm_UnCodeX.CallCustomOutputModule(module: string; selectedclass: TUClass = nil; issingle: boolean = false);
 var
   omod: THandle;
-  dfunc: TUCX_Output2;
-  info: TUCXOutputInfo2;
+  twait: boolean;
+  waitt: TThread;
+  res: boolean;
+  mver: integer;
+
+  function RunModule1: boolean;
+  var
+		info: TUCXOutputInfo;
+    dfunc: TUCX_Output;
+  begin
+  	result := false;
+		@dfunc := nil;
+    @dfunc := GetProcAddress(omod, 'UCX_Output');
+    if (@dfunc <> nil) then begin
+      info.AClassList := ClassList;
+      info.APackageList := PackageList;
+      info.AStatusReport := StatusReport;
+      info.AThreadTerminated := ThreadTerminate;
+      info.WaitForTerminate := false;
+      info.ASelectedClass := selectedclass;
+      info.AThread := nil;
+    	result := dfunc(info);
+      twait := info.WaitForTerminate;
+      if (twait) then waitt := info.AThread;
+    end;
+  end;
+
+  function RunModule2: boolean;
+  var
+		info: TUCXOutputInfo2;
+    dfunc: TUCX_Output2;
+  begin
+  	result := false;
+		@dfunc := nil;
+    @dfunc := GetProcAddress(omod, 'UCX_Output2');
+    if (@dfunc <> nil) then begin
+      info.AClassList := ClassList;
+      info.APackageList := PackageList;
+      info.AStatusReport := StatusReport;
+      info.AThreadTerminated := ThreadTerminate;
+      info.WaitForTerminate := false;
+      info.ASelectedClass := selectedclass;
+      info.AThread := nil;
+      info.ABatching := IsBatching;
+      info.ASingleClass := issingle;
+    	result := dfunc(info);
+      twait := info.WaitForTerminate;
+      if (twait) then waitt := info.AThread;
+    end;
+  end;
+
 begin
   omod := LoadLibrary(PChar(module));
   if (omod <> 0) then begin
     try
-      @dfunc := nil;
-      @dfunc := GetProcAddress(omod, 'UCX_Output2');
-      if (@dfunc <> nil) then begin
-        info.AClassList := ClassList;
-        info.APackageList := PackageList;
-        info.AStatusReport := StatusReport;
-        info.AThreadTerminated := ThreadTerminate;
-        info.WaitForTerminate := false;
-        info.ASelectedClass := selectedclass;
-        info.ABatching := IsBatching;
-        info.AThread := nil;
-        if dfunc(info) then begin
-          if (info.WaitForTerminate) then begin
-            lb_Log.Items.Clear;
-            runningthread := info.AThread;
-            runningthread.Resume;
-          end
-          else if (IsBatching) then NextBatchCommand;
+    	res := false;
+      mver := StrToIntDef(Copy(OutputModules.Values[module], 1, 1), 0);
+      if (mver = 1) then res := RunModule1
+      else if (mver = 2) then res := RunModule2;
+      if res then begin
+        if (twait) then begin
+          lb_Log.Items.Clear;
+          runningthread := waitt;
+          runningthread.Resume;
         end
         else if (IsBatching) then NextBatchCommand;
-      end;
+      end
+      else if (IsBatching) then NextBatchCommand;
     finally
       FreeLibrary(omod);
     end;

@@ -49,9 +49,18 @@ Source: ..\Bin\PackageDescriptions.ini; DestDir: {app}; Flags: ignoreversion; Co
 Source: ..\Bin\ucxcu.exe; DestDir: {app}; Flags: ignoreversion; Components: commandline
 Source: ..\Bin\UnCodeX-help.chm; DestDir: {app}; Flags: ignoreversion; Components: help
 Source: ..\Bin\Templates\*.*; DestDir: {app}\Templates\DocStyle2; Flags: ignoreversion recursesubdirs; Components: templates
-Source: ..\Bin\out_sample\*.*; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
 Source: ..\Bin\out_wikifier.dll; DestDir: {app}; Flags: ignoreversion; Components: gui\customoutput
 Source: ..\Bin\out_graphviz.dll; DestDir: {app}; Flags: ignoreversion; Components: gui\customoutput
+
+Source: ..\Bin\out_sample\*.*; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
+Source: ..\src\out_sample\*.pas; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
+Source: ..\src\out_sample\*.dfm; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
+Source: ..\src\out_sample\*.dpr; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
+Source: ..\src\out_sample\*.cfg; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
+Source: ..\src\out_sample\*.dof; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
+Source: ..\src\unit_outputdefs.pas; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
+Source: ..\src\unit_uclasses.pas; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
+Source: ..\src\FastShareMem.pas; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
 
 [INI]
 Filename: {app}\UnCodeX.url; Section: InternetShortcut; Key: URL; String: http://wiki.beyondunreal.com/wiki/UnCodeX

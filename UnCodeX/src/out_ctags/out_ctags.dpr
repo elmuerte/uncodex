@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   CTAGS file creation library
- $Id: out_ctags.dpr,v 1.2 2004-05-13 07:08:28 elmuerte Exp $
+ $Id: out_ctags.dpr,v 1.3 2004-05-13 20:03:45 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -35,9 +35,6 @@ uses
   unit_ctags in 'unit_ctags.pas' {frm_CTAGS};
 
 {$R *.res}
-
-const
-  DLLVERSION = '100';
 
 // return true if succesfull
 function UCX_Details2(var Info: TUCXOutputDetails2): boolean; stdcall
