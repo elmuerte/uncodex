@@ -1,0 +1,40 @@
+/* special style sheet to fix MSIE */
+
+BODY, TD, DIV {
+	font-size: 10pt;	
+}
+
+TABLE {
+	border-spacing: 0px;
+	border-collapse: collapse;
+}
+
+TH {
+	font-size: 10pt;
+}
+
+A.small {
+	font-size: 7pt;
+}
+
+TD.header {
+	border: 3px solid #C6BEEF;
+	font-size: 12pt;
+}
+
+TD.header_hilight {
+	font-size: 12pt;
+}
+
+TD.logo {
+	font-size: 12pt;
+}
+
+TD.subheader {
+
+	font-size: 7pt;
+}
+
+DIV.stats {
+	font-size: 7pt;
+}

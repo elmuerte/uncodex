@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.43 2004-01-30 13:56:45 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.44 2004-02-01 14:07:34 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -427,7 +427,7 @@ begin
     fs := TFileStream.Create(TemplateDir+tmp, fmOpenRead or fmShareDenyWrite);
     ss := TStringStream.Create('');
     try
-    	ss.CopyFrom(fs, fs.Size);
+      parseTemplate(fs, ss, replaceDefault);
     	replacement := ss.DataString;
       result := true;
   	finally
