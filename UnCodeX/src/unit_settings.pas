@@ -160,6 +160,7 @@ type
     cb_BGColor: TColorBox;
     cb_LogFontColor: TColorBox;
     cb_LogColor: TColorBox;
+    btn_UnIgnore: TBitBtn;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -202,7 +203,6 @@ type
     procedure lv_HotKeysSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
     procedure btn_IgnoreClick(Sender: TObject);
-    procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btn_SourceFontClick(Sender: TObject);
     procedure cb_cf0Change(Sender: TObject);
     procedure cb_cf1Change(Sender: TObject);
@@ -217,8 +217,11 @@ type
     procedure cb_BGColorChange(Sender: TObject);
     procedure cb_LogFontColorChange(Sender: TObject);
     procedure cb_LogColorChange(Sender: TObject);
+    procedure btn_UnIgnoreClick(Sender: TObject);
+    procedure clb_PackagePriorityClickCheck(Sender: TObject);
   private
   public
+    TagChanged: boolean;
     procedure ReloadPreview;
   end;
 
@@ -358,7 +361,8 @@ var
   tmp: string;
 begin
   if (InputQuery('Add package', 'Enter the package name', tmp)) then begin
-    clb_PackagePriority.Items.Add(LowerCase(tmp));
+    tmp := LowerCase(tmp);
+    if (clb_PackagePriority.Items.IndexOf(tmp) = -1) then clb_PackagePriority.Items.Add(tmp);
   end;
 end;
 
@@ -367,6 +371,7 @@ var
   i: integer;
   li: TListItem;
 begin
+  TagChanged := false;
   lb_Settings.Items.Clear;
   for i := 0 to pc_Settings.PageCount-1 do begin
     lb_Settings.Items.Add(pc_Settings.Pages[i].Caption);
@@ -465,7 +470,8 @@ var
   tmp: string;
 begin
   if (InputQuery('Add package', 'Enter the package name', tmp)) then begin
-    lb_IgnorePackages.Items.Add(LowerCase(tmp));
+    tmp := LowerCase(tmp);
+    if (lb_IgnorePackages.Items.IndexOf(tmp) = -1) then lb_IgnorePackages.Items.Add(tmp);
   end;
 end;
 
@@ -594,14 +600,9 @@ end;
 procedure Tfrm_Settings.btn_IgnoreClick(Sender: TObject);
 begin
   if (clb_PackagePriority.ItemIndex = -1) then exit;
-  lb_IgnorePackages.Items.Add(clb_PackagePriority.Items[clb_PackagePriority.ItemIndex]);
+  if (lb_IgnorePackages.Items.IndexOf(clb_PackagePriority.Items[clb_PackagePriority.ItemIndex]) = -1)
+    then lb_IgnorePackages.Items.Add(clb_PackagePriority.Items[clb_PackagePriority.ItemIndex]);
   clb_PackagePriority.Items.Delete(clb_PackagePriority.ItemIndex);
-end;
-
-procedure Tfrm_Settings.FormClose(Sender: TObject;
-  var Action: TCloseAction);
-begin
-  Action := caFree;
 end;
 
 procedure Tfrm_Settings.btn_SourceFontClick(Sender: TObject);
@@ -693,6 +694,19 @@ end;
 procedure Tfrm_Settings.cb_LogColorChange(Sender: TObject);
 begin
   lb_LogLayout.Color := cb_LogColor.Selected;
+end;
+
+procedure Tfrm_Settings.btn_UnIgnoreClick(Sender: TObject);
+begin
+  if (lb_IgnorePackages.ItemIndex = -1) then exit;
+  if (clb_PackagePriority.Items.IndexOf(lb_IgnorePackages.Items[lb_IgnorePackages.ItemIndex]) = -1)
+    then clb_PackagePriority.Items.Add(lb_IgnorePackages.Items[lb_IgnorePackages.ItemIndex]);
+  lb_IgnorePackages.Items.Delete(lb_IgnorePackages.ItemIndex);
+end;
+
+procedure Tfrm_Settings.clb_PackagePriorityClickCheck(Sender: TObject);
+begin
+  TagChanged := true;
 end;
 
 initialization

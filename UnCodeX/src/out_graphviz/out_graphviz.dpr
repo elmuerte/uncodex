@@ -1,11 +1,11 @@
 {-----------------------------------------------------------------------------
- Unit Name: out_wikifier
+ Unit Name: unit_graphviz
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
- Purpose:   Converts the UScript class info to UnrealWiki format
+ Purpose:   create a dot file
 -----------------------------------------------------------------------------}
 
-library out_wikifier;
+library out_graphviz;
 
 { Important note about DLL memory management: ShareMem must be the
   first unit in your library's USES clause AND your project's (select
@@ -23,30 +23,30 @@ uses
   Classes,
   unit_uclasses in '..\unit_uclasses.pas',
   unit_outputdefs in '..\unit_outputdefs.pas',
-  unit_wiki in 'unit_wiki.pas' {frm_Wikifier};
+  unit_selector in 'unit_selector.pas' {frm_GraphViz},
+  unit_deplist in 'unit_deplist.pas';
 
 {$R *.res}
 
 // return true if succesfull
 function UCX_Details(var Info: TUCXOutputDetails): boolean; stdcall
 begin
-  Info.AName := 'Class Wikifier';
-  Info.ADescription := 'Converts the class details to UnrealWiki source';
-  Info.ASingleClass := true;
+  Info.AName := 'GraphViz';
+  Info.ADescription := 'Create a DOT file to be used with GraphViz';
+  Info.ASingleClass := false;
   result := true;
 end;
 
 // return true if succesfull
 function UCX_Output(var Info: TUCXOutputInfo): boolean; stdcall
 begin
-  if (info.ASelectedClass <> nil) then begin
-    frm_Wikifier := Tfrm_Wikifier.Create(nil);
-    frm_Wikifier.Wikify(info.ASelectedClass);
-    frm_Wikifier.ShowModal;
-    frm_Wikifier.Free;
-  end;
-  info.WaitForTerminate := false;
-  result := true;
+  frm_GraphViz := Tfrm_GraphViz.Create(nil);
+  frm_GraphViz.GInfo := info;
+  frm_GraphViz.Init;
+  frm_GraphViz.ShowModal;
+  frm_GraphViz.Free;
+  Info.WaitForTerminate := false;
+  result := false;
 end;
 
 exports

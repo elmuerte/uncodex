@@ -1609,7 +1609,10 @@ begin
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toString) then begin
-        replacement := '<font class="source_string">'+p.TokenString+'</font>';
+        replacement := p.TokenString;
+        replacement := StringReplace(replacement, '<', '&lt;', [rfReplaceAll]);
+        replacement := StringReplace(replacement, '>', '&gt;', [rfReplaceAll]);
+        replacement := '<font class="source_string">'+replacement+'</font>';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toComment) then begin

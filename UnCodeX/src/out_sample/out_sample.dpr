@@ -18,7 +18,7 @@ library out_sample;
   using PChar or ShortString parameters. }
 
 uses
-  ShareMem,
+  FastShareMem in '..\FastShareMem.pas',
   SysUtils,
   Classes,
   Windows,

@@ -524,7 +524,7 @@ end;
 
 procedure Tfrm_UnCodeX.WMAppBar(var Msg : TMessage);
 begin
-  log(IntToStr(Msg.WParam));
+  // TODO: what was this for again ?
 end;
 
 procedure Tfrm_UnCodeX.WMNCLBUTTONDOWN(var Msg: TWMNCLBUTTONDOWN);
@@ -869,15 +869,17 @@ end;
 procedure Tfrm_UnCodeX.miCustomOutputClick(sender: TObject);
 var
   selected: TTreeNode;
+  selectedclass: TUClass;
 begin
-  selected := nil;
+  selectedclass := nil;
   if (OutputModules.Values[OutputModules.Names[(Sender as TMenuItem).Tag]] = BoolToStr(true)) then begin
     if (ActiveControl.ClassType <> TTreeView) then exit;
     selected := (ActiveControl as TTreeview).Selected;
     if (Selected = nil) then exit;
     if (TObject(Selected.Data).ClassType <> TUClass) then exit;
+    selectedclass := TUClass(Selected.Data);
   end;
-  CallCustomOutputModule(OutputModules.Names[(Sender as TMenuItem).Tag], TUClass(Selected.Data));
+  CallCustomOutputModule(OutputModules.Names[(Sender as TMenuItem).Tag], selectedclass);
 end;
 
 procedure Tfrm_UnCodeX.CallCustomOutputModule(module: string; selectedclass: TUClass = nil);
@@ -1187,7 +1189,8 @@ procedure Tfrm_UnCodeX.ac_SettingsExecute(Sender: TObject);
 var
   ini: TMemIniFile;
   data: TStringList;
-  i: integer;
+  i, j: integer;
+  newtag: boolean;
 begin
   with Tfrm_Settings.Create(nil) do begin
     lb_Paths.Items := SourcePaths;
@@ -1349,7 +1352,64 @@ begin
         Data.Free;
         ini.Free;
       end;
+      if (TagChanged) then begin
+        StatusReport('Retagging packages/classes ...');
+        tv_Packages.Items.BeginUpdate;
+        tv_Classes.Items.BeginUpdate;
+        TreeUpdated := true;
+        for i := 0 to PackageList.Count-1 do begin
+          Application.ProcessMessages;
+          if (clb_PackagePriority.Items.IndexOf(LowerCase(PackageList[i].name)) > -1) then
+            newtag := clb_PackagePriority.Checked[clb_PackagePriority.Items.IndexOf(LowerCase(PackageList[i].name))]
+            else newtag := false;
+          PackageList[i].tagged := newtag;
+          for j := 0 to PackageList[i].classes.Count-1 do begin
+            Application.ProcessMessages;
+            PackageList[i].classes[j].tagged := newtag;
+            if (PackageList[i].classes[j].treenode <> nil) then begin
+              if (newtag) then begin
+                TTreeNode(PackageList[i].classes[j].treenode).ImageIndex := ICON_CLASS_TAGGED;
+                TTreeNode(PackageList[i].classes[j].treenode).SelectedIndex := ICON_CLASS_TAGGED;
+                TTreeNode(PackageList[i].classes[j].treenode).StateIndex := ICON_CLASS_TAGGED;
+              end
+              else begin
+                TTreeNode(PackageList[i].classes[j].treenode).ImageIndex := ICON_CLASS;
+                TTreeNode(PackageList[i].classes[j].treenode).SelectedIndex := ICON_CLASS;
+                TTreeNode(PackageList[i].classes[j].treenode).StateIndex := ICON_CLASS;
+              end;
+            end;
+          end;
+          if (PackageList[i].treenode <> nil) then begin
+            if (newtag) then begin
+              TTreeNode(PackageList[i].treenode).ImageIndex := ICON_PACKAGE_TAGGED;
+              TTreeNode(PackageList[i].treenode).SelectedIndex := ICON_PACKAGE_TAGGED;
+              TTreeNode(PackageList[i].treenode).StateIndex := ICON_PACKAGE_TAGGED;
+            end
+            else begin
+              TTreeNode(PackageList[i].treenode).ImageIndex := ICON_PACKAGE;
+              TTreeNode(PackageList[i].treenode).SelectedIndex := ICON_PACKAGE;
+              TTreeNode(PackageList[i].treenode).StateIndex := ICON_PACKAGE;
+            end;
+            for j := 0 to TTreeNode(PackageList[i].treenode).Count-1 do begin
+              if (newtag) then begin
+                TTreeNode(PackageList[i].treenode).Item[j].ImageIndex := ICON_CLASS_TAGGED;
+                TTreeNode(PackageList[i].treenode).Item[j].SelectedIndex := ICON_CLASS_TAGGED;
+                TTreeNode(PackageList[i].treenode).Item[j].StateIndex := ICON_CLASS_TAGGED;
+              end
+              else begin
+                TTreeNode(PackageList[i].treenode).Item[j].ImageIndex := ICON_CLASS;
+                TTreeNode(PackageList[i].treenode).Item[j].SelectedIndex := ICON_CLASS;
+                TTreeNode(PackageList[i].treenode).Item[j].StateIndex := ICON_CLASS;
+              end;
+            end;
+          end;
+        end;
+        StatusReport('Done retagging');
+        tv_Packages.Items.EndUpdate;
+        tv_Classes.Items.EndUpdate;
+      end;
     end;
+    Free;
   end;
 end;
 
@@ -1881,24 +1941,24 @@ end;
 
 procedure Tfrm_UnCodeX.ac_VTRightExecute(Sender: TObject);
 begin
-  if (mi_Right.Checked) then begin
-    mi_Left.Checked := false;
-    mi_Left.OnClick(Sender);
+  UnregisterAppBar;
+  if (ac_VTRight.Checked) then begin
+    ac_VTLeft.Checked := false;
     abd.uEdge := ABE_RIGHT;
-    RegisterAppBar
-  end
-  else UnregisterAppBar;
+    RegisterAppBar;
+  end;
+  Refresh;
 end;
 
 procedure Tfrm_UnCodeX.ac_VTLeftExecute(Sender: TObject);
 begin
-  if (mi_Left.Checked) then begin
-    mi_Right.Checked := false;
-    mi_Right.OnClick(Sender);
+  UnregisterAppBar;
+  if (ac_VTLeft.Checked) then begin
+    ac_VTRight.Checked := false;
     abd.uEdge := ABE_LEFT;
-    RegisterAppBar
-  end
-  else UnregisterAppBar;
+    RegisterAppBar;
+  end;
+  Refresh;
 end;
 
 procedure Tfrm_UnCodeX.ac_VSavePositionExecute(Sender: TObject);

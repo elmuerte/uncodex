@@ -67,7 +67,11 @@ begin
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toString) then begin
-        replacement := '{\cf1'+p.TokenString+'}'; // cf1 = string
+        replacement := p.TokenString;
+        replacement := StringReplace(replacement, '\', '\\', [rfReplaceAll]);
+        replacement := StringReplace(replacement, '{', '\{', [rfReplaceAll]);
+        replacement := StringReplace(replacement, '}', '\}', [rfReplaceAll]);
+        replacement := '{\cf1'+replacement+'}'; // cf1 = string
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toComment) then begin

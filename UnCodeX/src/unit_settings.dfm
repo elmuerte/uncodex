@@ -12,7 +12,6 @@ object frm_Settings: Tfrm_Settings
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
-  OnClose = FormClose
   OnCreate = FormCreate
   DesignSize = (
     671
@@ -43,7 +42,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_SourceSnoop
+    ActivePage = ts_PackagePriority
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -297,6 +296,7 @@ object frm_Settings: Tfrm_Settings
           Top = 16
           Width = 385
           Height = 343
+          OnClickCheck = clb_PackagePriorityClickCheck
           Anchors = [akLeft, akTop, akRight, akBottom]
           BevelKind = bkSoft
           BorderStyle = bsNone
@@ -394,6 +394,28 @@ object frm_Settings: Tfrm_Settings
           ParentFont = False
           TabOrder = 2
           OnClick = btn_DelIgnoreClick
+          Glyph.Data = {
+            7E000000424D7E000000000000003E0000002800000010000000100000000100
+            010000000000400000000000000000000000020000000000000000000000FF00
+            FF00FFFF0000FFFF0000EFFD0000C7FF0000C3FB0000E3F70000F1E70000F8CF
+            0000FC1F0000FE3F0000FC1F0000F8CF0000E1E70000C3F30000C7FD0000FFFF
+            0000}
+        end
+        object btn_UnIgnore: TBitBtn
+          Left = 400
+          Top = 80
+          Width = 27
+          Height = 25
+          Hint = 'Unignore the selected package'
+          Anchors = [akTop, akRight]
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 3
+          OnClick = btn_UnIgnoreClick
           Glyph.Data = {
             F6000000424DF600000000000000760000002800000010000000100000000100
             0400000000008000000000000000000000001000000000000000000000000000

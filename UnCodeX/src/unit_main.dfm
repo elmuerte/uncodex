@@ -1,5 +1,5 @@
 object frm_UnCodeX: Tfrm_UnCodeX
-  Left = 282
+  Left = 232
   Top = 114
   HelpType = htKeyword
   ActiveControl = tv_Classes
