@@ -99,9 +99,13 @@ begin
   Log('Moving file "'+filename+'" to "'+dest+'"');
   FillChar(fos, sizeof(fos), 0);
   fos.wFunc := FO_MOVE;
+  SetLength(filename,Length(filename)+1);
+	filename[Length(filename)] := #0;
   fos.pFrom := PChar(filename);
+  SetLength(dest,Length(dest)+1);
+	dest[Length(dest)] := #0;
   fos.pTo := PChar(dest);
-  fos.fFlags := FOF_ALLOWUNDO or FOF_NOCONFIRMATION;
+  fos.fFlags := FOF_ALLOWUNDO or FOF_NOCONFIRMATION or FOF_NOERRORUI;
   result := ShFileOperation(fos) = 0;
 end;
 
@@ -112,9 +116,13 @@ begin
   Log('Renaming file "'+filename+'" to "'+dest+'"');
   FillChar(fos, sizeof(fos), 0);
   fos.wFunc := FO_RENAME;
+  SetLength(filename,Length(filename)+1);
+	filename[Length(filename)] := #0;
   fos.pFrom := PChar(filename);
+  SetLength(dest,Length(dest)+1);
+	dest[Length(dest)] := #0;
   fos.pTo := PChar(dest);
-  fos.fFlags := FOF_ALLOWUNDO or FOF_NOCONFIRMATION;
+  fos.fFlags := FOF_ALLOWUNDO or FOF_NOCONFIRMATION or FOF_NOERRORUI;
   result := ShFileOperation(fos) = 0;
 end;
 
@@ -226,7 +234,7 @@ begin
         TreeUpdated := true;
         uclass.name := ed_NewClass.Text;
         uclass.filename := ed_NewClass.Text+UCEXT;
-        TTreeNode(uclass.treenode).Text := uclass.name;
+        if (uclass.treenode <> nil) then TTreeNode(uclass.treenode).Text := uclass.name;
         TTreeNode(uclass.treenode2).Text := uclass.name;
         for i := 0 to uclass.children.Count-1 do begin
           LogClass('Class '+uclass.children[i].FullName+' needs to be updated', uclass.children[i]);

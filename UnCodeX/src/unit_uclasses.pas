@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   definitions for Unreal Classes
- $Id: unit_uclasses.pas,v 1.31 2004-08-09 08:08:03 elmuerte Exp $
+ $Id: unit_uclasses.pas,v 1.32 2004-08-09 13:25:15 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -103,7 +103,6 @@ type
   TUStruct = class(TUObject)
     parent:     string;
     modifiers:  string;
-    data:       string;
     properties: TUPropertyList;
     constructor Create;
     destructor Destroy; override;

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   class properties window
- $Id: unit_tags.pas,v 1.17 2004-07-28 21:31:44 elmuerte Exp $
+ $Id: unit_tags.pas,v 1.18 2004-08-09 13:25:15 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -43,8 +43,11 @@ type
     procedure FormDblClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure fr_Mainmi_Editexternalcomment1Click(Sender: TObject);
+    procedure FormActivate(Sender: TObject);
   private
     FAsWindow: boolean;
+    MyLastBuildTime, MyLastAnalyseTime: TDateTime;
+    MyClass: string;
     procedure WMActivate(var Message: TWMActivate); message WM_Activate;
   public
     isWindow: boolean;
@@ -105,7 +108,9 @@ begin
     exit;
   end;
   Caption := fr_Main.uclass.package.name+'.'+fr_Main.uclass.name;
-
+  MyClass := fr_Main.uclass.name;
+  MyLastBuildTime := LastBuildTime;
+  MyLastAnalyseTime := LastAnalyseTime;
   result := fr_Main.LoadClass;
 end;
 
@@ -177,6 +182,17 @@ procedure Tfrm_Tags.fr_Mainmi_Editexternalcomment1Click(Sender: TObject);
 begin
   fr_Main.mi_Editexternalcomment1Click(Sender);
 
+end;
+
+procedure Tfrm_Tags.FormActivate(Sender: TObject);
+begin
+	if (LastBuildTime > MyLastBuildTime) then begin
+    fr_Main.uclass := ClassList.Find(MyClass);
+    LoadClass;
+  end
+  else if (LastAnalyseTime > MyLastAnalyseTime) then begin
+    LoadClass;
+  end;
 end;
 
 end.
