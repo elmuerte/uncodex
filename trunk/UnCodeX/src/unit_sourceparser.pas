@@ -51,7 +51,8 @@ type
     function CopySkipToEOF(DoCopy: Boolean): string;
     procedure UpdateOutStream(StartPos: PChar);
   public
-    constructor Create(Stream, OutStream: TStream);
+    TabIsWS: boolean;
+    constructor Create(Stream, OutStream: TStream; TabIsWhiteSpace: boolean = true);
     destructor Destroy; override;
     procedure CheckToken(T: Char);
     procedure CheckTokenSymbol(const S: string);
@@ -95,8 +96,9 @@ implementation
 const
   ParseBufSize = 4096;
 
-constructor TSourceParser.Create(Stream, OutStream: TStream);
+constructor TSourceParser.Create(Stream, OutStream: TStream; TabIsWhiteSpace: boolean = true);
 begin
+  TabIsWS := TabIsWhiteSpace;
   FStream := Stream;
   FOutStream := OutStream;
   GetMem(FBuffer, ParseBufSize);
@@ -527,6 +529,8 @@ begin
           Start := FSourcePtr;
           Continue;
         end;
+      #9:
+        if (not TabIsWS) then Break;
       #10:
         begin
           //Inc(FSourceLine);

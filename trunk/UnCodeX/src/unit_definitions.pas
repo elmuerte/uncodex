@@ -30,7 +30,7 @@ type
 
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '100';
+  APPVERSION = '101';
 
   PATHDELIM = '\';
   WILDCARD = '*.*';
@@ -151,6 +151,7 @@ initialization
   Keywords.Items['return'] := '-';
   Keywords.Items['showcategories'] := '-';
   Keywords.Items['simulated'] := '-';
+  Keywords.Items['singular'] := '-';
   Keywords.Items['skip'] := '-';
   Keywords.Items['spawn'] := '-';
   Keywords.Items['state'] := '-';

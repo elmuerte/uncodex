@@ -533,6 +533,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
   end
   object ae_AppEvent: TApplicationEvents
+    OnException = ae_AppEventException
     OnHint = ae_AppEventHint
     Left = 8
     Top = 136

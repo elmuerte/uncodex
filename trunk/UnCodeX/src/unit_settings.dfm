@@ -42,7 +42,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_PackagePriority
+    ActivePage = ts_HTMLOutput
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -466,6 +466,13 @@ object frm_Settings: Tfrm_Settings
           Height = 13
           Caption = 'Target extention (leave blank for the default)'
         end
+        object Label11: TLabel
+          Left = 8
+          Top = 136
+          Width = 235
+          Height = 13
+          Caption = 'Tabs to spaces (0 = template default; -1 = disable)'
+        end
         object ed_HTMLOutputDir: TEdit
           Left = 8
           Top = 32
@@ -517,6 +524,30 @@ object frm_Settings: Tfrm_Settings
           BevelKind = bkSoft
           BorderStyle = bsNone
           TabOrder = 4
+        end
+        object ed_TabsToSpaces: TEdit
+          Left = 8
+          Top = 152
+          Width = 401
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          TabOrder = 5
+          Text = '0'
+        end
+        object ud_TabsToSpaces: TUpDown
+          Left = 409
+          Top = 152
+          Width = 15
+          Height = 21
+          Anchors = [akTop, akRight]
+          Associate = ed_TabsToSpaces
+          Min = -1
+          Max = 255
+          Position = 0
+          TabOrder = 6
+          Wrap = False
         end
       end
     end
