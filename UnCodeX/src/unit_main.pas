@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.144 2004-12-30 09:40:21 elmuerte Exp $
+  $Id: unit_main.pas,v 1.145 2005-01-12 18:22:59 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -2882,6 +2882,7 @@ begin
   if (not IsA(lb_Log.Items.Objects[lb_Log.ItemIndex], TLogEntry)) then exit;
 
   entry := TLogEntry(lb_Log.Items.Objects[lb_Log.ItemIndex]);
+  if (entry.filename = '') then exit; // no file; don't bother
   OpenSourceInline(entry.filename, entry.line-1, entry.pos, TUClass(entry.obj));
 end;
 
