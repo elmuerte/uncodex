@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.145 2005-01-12 18:22:59 elmuerte Exp $
+  $Id: unit_main.pas,v 1.146 2005-03-03 18:46:46 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -1049,7 +1049,9 @@ end;
 
 procedure Tfrm_UnCodeX.OpenSourceInline(filename: string; line, caret: integer; uclass: TUClass);
 var
+  tmp: string;
   tmp2: array[0..255] of char;
+  n: integer;
 begin
   SelectedUClass := uclass;
   if (fr_Props.Visible) then begin
@@ -1064,8 +1066,10 @@ begin
     
     if (line < 0) then exit;
     tmp2[0] := #255;
-    re_SourceSnoop.Perform(EM_GETLINE, line, integer(@tmp2));
-    AddBrowserHistory(uclass, filename, line+1, tmp2);
+    n := line;
+    re_SourceSnoop.Perform(EM_GETLINE, n, integer(@tmp2));
+    tmp := copy(tmp2, 1, 255);
+    AddBrowserHistory(uclass, filename, line+1, tmp);
     //re_SourceSnoop.Perform(EM_LINESCROLL, 0, -1*re_SourceSnoop.Lines.Count);
     //re_SourceSnoop.Perform(EM_LINESCROLL, 0, line);
     line := re_SourceSnoop.Perform(EM_LINEINDEX, line, 0); // get line index
