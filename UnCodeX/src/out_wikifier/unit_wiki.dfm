@@ -132,6 +132,19 @@ object frm_Wikifier: Tfrm_Wikifier
     473)
   PixelsPerInch = 96
   TextHeight = 13
+  object Label1: TLabel
+    Left = 200
+    Top = 6
+    Width = 287
+    Height = 13
+    Caption = 'No comments? you may want to reanalyse the selected class'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBtnShadow
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+  end
   object re_WikiCode: TRichEdit
     Left = 0
     Top = 25

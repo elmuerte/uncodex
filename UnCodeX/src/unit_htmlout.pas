@@ -27,7 +27,7 @@ type
   THTMLoutConfig = record
     PackageList: TUPackageList;
     ClassList: TUClassList;
-    ClassTree: TTreeView;
+    ClassTree: TTreeNodes;
     outputdir, TemplateDir: string;
     CreateSource: boolean;
     TargetExtention: string;
@@ -51,7 +51,7 @@ type
     
     PackageList: TUPackageList;
     ClassList: TUClassList;
-    ClassTree: TTreeView;
+    ClassTree: TTreeNodes;
     status: TStatusReport;
     ini: TMemIniFile;
     procedure parseTemplate(input, output: TStream; replace: TReplacement; data: TObject = nil);
@@ -186,10 +186,10 @@ begin
   TypeCache.Items['byte'] := '-';
   TypeCache.Items['class'] := '-';
   TypeCache.Items['name'] := '-';
-  for i := 0 to ClassTree.Items.Count-1 do begin
-    if (not TypeCache.Exists(LowerCase(ClassTree.Items[i].Text))) then
-      TypeCache.Items[LowerCase(ClassTree.Items[i].Text)] := ClassLink(TUClass(ClassTree.Items[i].data))
-      else Log('Type already cached '+ClassTree.Items[i].Text);
+  for i := 0 to ClassTree.Count-1 do begin
+    if (not TypeCache.Exists(LowerCase(ClassTree[i].Text))) then
+      TypeCache.Items[LowerCase(ClassTree[i].Text)] := ClassLink(TUClass(ClassTree[i].data))
+      else Log('Type already cached '+ClassTree[i].Text);
   end;
 
   if (not Self.Terminated) then htmlIndex;
@@ -690,8 +690,8 @@ begin
       log('Orphan detected: '+TUClass(data).package.name+'.'+TUClass(data).name);
       exit;
     end;
-    for i := 0 to TUClass(data).treenode.count-1 do begin
-      uclass := TUClass(TUClass(data).treenode[i].Data);
+    for i := 0 to TTreeNode(TUClass(data).treenode).count-1 do begin
+      uclass := TUClass(TTreeNode(TUClass(data).treenode)[i].Data);
       if (uclass <> nil) then begin
         if (replacement <> '') then replacement := replacement+', ';
         replacement := replacement+'<a href="'+ClassLink(uclass)+'">'+uclass.name+'</a>'
@@ -1400,7 +1400,7 @@ begin
   if (result) then exit;
   if (CompareText(replacement, 'classtree') = 0) then begin
     replacement := '';
-    node := ClassTree.Items.GetFirstNode;
+    node := ClassTree.GetFirstNode;
     while (node <> nil) do begin
       replacement := replacement+'<a href="'+ClassLink(TUClass(node.data))+'" name="'+node.Text+'">'+node.Text+'</a>'+#13#10;
       ProcTreeNode(replacement, node, '');

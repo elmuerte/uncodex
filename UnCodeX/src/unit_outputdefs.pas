@@ -13,7 +13,7 @@ uses
   Classes, unit_uclasses;
 
 type
-  TStatusReport = procedure(msg: string; progress: byte = 255) of Object;
+  TStatusReport = procedure(msg: string; progress: byte = 255);
 
   TUCXOutputInfo = record
     // input

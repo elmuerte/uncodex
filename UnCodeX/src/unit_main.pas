@@ -279,7 +279,6 @@ type
     procedure CallCustomOutputModule(module: string; selectedclass: TUClass = nil);
   public
     statustext : string; // current status text
-    procedure StatusReport(msg: string; progress: byte = 255);
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
     procedure OpenSourceLine(uclass: TUClass; line, caret: integer);    
   end;
@@ -296,6 +295,7 @@ type
   // logging
   procedure Log(msg: string);
   procedure LogClass(msg: string; uclass: TUClass = nil);
+  procedure StatusReport(msg: string; progress: byte = 255);
 
 var
   frm_UnCodeX: Tfrm_UnCodeX;
@@ -402,17 +402,18 @@ begin
 end;
 
 { Logging -- END }
-{ Tfrm_UnCodeX }
-{ Custom methods }
 
 // update status
-procedure Tfrm_UnCodeX.StatusReport(msg: string; progress: byte = 255);
+procedure StatusReport(msg: string; progress: byte = 255);
 begin
-  statustext := msg;
-  if (progress <> 255) then pb_Scan.Position := progress;
+  frm_UnCodeX.statustext := msg;
+  if (progress <> 255) then frm_UnCodeX.pb_Scan.Position := progress;
   // redirect status if set
   if (StatusHandle <> -1) then SendStatusMsg(msg, cxstStatus, progress);
 end;
+
+{ Tfrm_UnCodeX }
+{ Custom methods }
 
 // Can create a new thread
 function Tfrm_UnCodeX.ThreadCreate: boolean;
@@ -935,7 +936,7 @@ var
   i: integer;
 begin
   hh_Help := THookHelpSystem.Create(ExtractFilePath(ParamStr(0))+'UnCodeX-help.chm', '', htHHAPI);
-  Caption := APPTITLE+' - '+APPVERSION;
+  Caption := APPTITLE+' - version '+APPVERSION;
   Application.Title := Caption;
   if (ConfigFile = '') then ConfigFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ini';
   if (StateFile = '') then StateFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ucx';
@@ -1131,8 +1132,9 @@ begin
     tv_Classes.Items.Clear;
     PackageList.Clear;
     ClassList.Clear;
-    runningthread := TPackageScanner.Create(SourcePaths, tv_Packages, tv_Classes,
-          statusReport, PackageList, ClassList, PackagePriority, IgnorePackages);
+    runningthread := TPackageScanner.Create(SourcePaths, tv_Packages.Items,
+          tv_Classes.items, statusReport, PackageList, ClassList,
+          PackagePriority, IgnorePackages);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
   end;
@@ -1167,7 +1169,7 @@ begin
     lb_Log.Items.Clear;
     htmlconfig.PackageList := PackageList;
     htmlconfig.ClassList := ClassList;
-    htmlconfig.ClassTree := tv_Classes;
+    htmlconfig.ClassTree := tv_Classes.Items;
     htmlconfig.outputdir := HTMLOutputDir;
     htmlconfig.TemplateDir := TemplateDir;
     htmlconfig.CreateSource := true; // TODO: make configurable

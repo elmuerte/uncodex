@@ -45,7 +45,7 @@ uses unit_definitions;
 
 procedure Tfrm_About.FormCreate(Sender: TObject);
 begin
-  lbl_Version.Caption := APPVERSION;
+  lbl_Version.Caption := 'version '+APPVERSION;
   img_Icons.Picture.Assign(Application.Icon);
 end;
 

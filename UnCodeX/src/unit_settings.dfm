@@ -930,6 +930,7 @@ object frm_Settings: Tfrm_Settings
           Width = 105
           Height = 22
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
+          Anchors = [akTop, akRight]
           ItemHeight = 16
           TabOrder = 5
           OnChange = cb_FontColorChange
@@ -940,6 +941,7 @@ object frm_Settings: Tfrm_Settings
           Width = 105
           Height = 22
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
+          Anchors = [akTop, akRight]
           ItemHeight = 16
           TabOrder = 6
           OnChange = cb_BGColorChange
@@ -950,6 +952,7 @@ object frm_Settings: Tfrm_Settings
           Width = 105
           Height = 22
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
+          Anchors = [akTop, akRight]
           ItemHeight = 16
           TabOrder = 7
           OnChange = cb_LogFontColorChange
@@ -960,6 +963,7 @@ object frm_Settings: Tfrm_Settings
           Width = 105
           Height = 22
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
+          Anchors = [akTop, akRight]
           ItemHeight = 16
           TabOrder = 8
           OnChange = cb_LogColorChange

@@ -10,7 +10,7 @@ unit unit_uclasses;
 interface
 
 uses
-  Classes, Contnrs, SysUtils, ComCtrls;
+  Classes, Contnrs, SysUtils;
 
 type
   TUPackage = class;
@@ -141,7 +141,7 @@ type
     structs:    TUStructList;
     states:     TUstateList;
     functions:  TUFunctionList;
-    treenode:   TTreeNode;
+    treenode:   TObject;
     filetime:   integer;
     defaultproperties: string;
     comment:    string;
@@ -164,7 +164,7 @@ type
     classes:    TUClassList;
     priority:   integer;
     path:       string;
-    treenode:   TTreeNode;
+    treenode:   TObject;
     comment:    string;
     tagged:     boolean;
     constructor Create;
