@@ -5,10 +5,10 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, unit_outputdefs, unit_uclasses, Buttons, unit_deplist,
-  ComCtrls, ExtCtrls, Hashes;
+  ComCtrls, ExtCtrls, Hashes, ImgList;
 
 const
-  DLLVERSION = '011 Beta';
+  DLLVERSION = '100';
 
 type
   Tfrm_GraphViz = class(TForm)
@@ -31,6 +31,7 @@ type
     cl_Color: TColorBox;
     cb_OnlyPackages: TCheckBox;
     btn_SelectAll: TBitBtn;
+    il_Tags: TImageList;
     procedure FormCreate(Sender: TObject);
     procedure btn_CreateClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -48,7 +49,6 @@ type
     plist: TGraphUPAckageList;
     olist: TOrphanList;
     deplist: TDepList;
-    TypeHash: TObjectHash;
     ClassHash: TObjectHash;
     procedure CreateDeps(vars,funcs: boolean);
     procedure CreateDotFile(filename: string);
@@ -76,7 +76,7 @@ end;
 
 procedure Tfrm_GraphViz.CreateDeps(vars,funcs: boolean);
 var
-  i,j,k: integer;
+  i,j,k,l: integer;
   dep: TDependency;
   orphan: TOrphan;
   tmp, tmp2: string;
@@ -85,18 +85,8 @@ begin
   olist.Clear;
   GInfo.AStatusReport('Creating type hash ...', 0);
   for i := 0 to GInfo.AClassList.Count-1 do begin
-    ClassHash[LowerCase(GInfo.AClassList[i].name)] := GInfo.AClassList[i];
-  end;
-  if (vars or funcs) then begin
-    {if (TypeHash.ItemCount = 0) then begin
-        for j := 0 to GInfo.AClassList[i].enums.Count-1 do begin
-          TypeHash.Items[GInfo.AClassList[i].enums[j].name] := GInfo.AClassList[i];
-        end;
-        for j := 0 to GInfo.AClassList[i].structs.Count-1 do begin
-          TypeHash.Items[GInfo.AClassList[i].structs[j].name] := GInfo.AClassList[i];
-        end;
-      end;
-    end;}
+    if (not ClassHash.Exists(LowerCase(GInfo.AClassList[i].name))) then
+      ClassHash[LowerCase(GInfo.AClassList[i].name)] := GInfo.AClassList[i];
   end;
   for i := 0 to plist.Count-1 do begin
     GInfo.AStatusReport('Calculating dependencies for: '+plist[i].name, round((i+1)/plist.Count*100));
@@ -127,9 +117,13 @@ begin
       end;
       if (vars) then begin
         for k := 0 to plist[i].classes[j].properties.Count-1 do begin
-          if (ClassHash.Exists(LowerCase(plist[i].classes[j].properties[k].ptype))) then begin
-            dep := TDependency.Create(plist[i].classes[j],
-              TUClass(ClassHash[LowerCase(plist[i].classes[j].properties[k].ptype)]), false);
+          tmp := LowerCase(plist[i].classes[j].properties[k].ptype);
+          l := Pos('.', tmp);
+          if (l > 0) then begin
+            Delete(tmp, l, MaxInt);
+          end;
+          if (ClassHash.Exists(tmp)) then begin
+            dep := TDependency.Create(plist[i].classes[j], TUClass(ClassHash[tmp]), false);
             if (dep.source <> dep.depends) then begin
               deplist.Add(dep);
               orphan := TOrphan.Create(dep.depends);
@@ -139,7 +133,26 @@ begin
         end;
       end;
       if (funcs) then begin
-        // TODO:
+        for k := 0 to plist[i].classes[j].functions.Count-1 do begin
+          // first the return type
+          tmp := LowerCase(plist[i].classes[j].functions[k].return);
+          l := Pos('.', tmp);
+          if (l > 0) then begin
+            Delete(tmp, l, MaxInt);
+          end;
+          if (tmp <> '') then begin
+            if (ClassHash.Exists(tmp)) then begin
+              dep := TDependency.Create(plist[i].classes[j], TUClass(ClassHash[tmp]), false);
+              if (dep.source <> dep.depends) then begin
+                deplist.Add(dep);
+                orphan := TOrphan.Create(dep.depends);
+                olist.Add(orphan);
+              end;
+            end;
+          end;
+          // now the arguments
+          // ??
+        end;
       end;
     end;
   end;
@@ -188,7 +201,7 @@ begin
       for i := 0 to plist.Count-1 do begin
         sl.Add('  subgraph cluster_'+plist[i].name+' {');
         sl.Add('    label="'+plist[i].name+'";');
-        sl.Add('    color="'+ColorToDot(plist.colors[i])+'";');
+        if (plist.colors[i] <> IntToStr(clNone)) then sl.Add('    color="'+ColorToDot(plist.colors[i])+'";');
         if (plist.colors[i] <> IntToStr(clNone)) then sl.Add('    node [color="'+ColorToDot(plist.colors[i])+'"];');
         for j := 0 to plist[i].classes.count-1 do begin
          sl.Add('    '+plist[i].name+'_'+plist[i].classes[j].name+' [label="'+plist[i].classes[j].name+'"];');
@@ -239,11 +252,12 @@ begin
     {$ELSE}
     li.SubItems.Add(IntToStr(clNone));
     {$ENDIF}
+    if (GInfo.APackageList[i].tagged) then li.ImageIndex := 0
+      else li.ImageIndex := 1;
     li.Data := GInfo.APackageList[i];
   end;
 end;
 
-{ ------------------- }
 
 procedure Tfrm_GraphViz.FormCreate(Sender: TObject);
 begin
@@ -251,7 +265,6 @@ begin
   plist := TGraphUPAckageList.Create(false);
   olist := TOrphanList.Create(true);
   deplist := TDepList.Create(true);
-  TypeHash := TObjectHash.Create;
   ClassHash := TObjectHash.Create(false);
 end;
 
@@ -281,7 +294,6 @@ begin
   plist.Free;
   olist.Free;
   deplist.Free;
-  TypeHash.Free;
   ClassHash.Free;
 end;
 
@@ -380,7 +392,7 @@ begin
       clr[0] := Random($FF);
       clr[1] := Random($FF);
       clr[2] := Random($FF);
-      while (((clr[0]+clr[1]+clr[2]) div 3) < $4f) do begin
+      while (((clr[0]+clr[1]+clr[2]) div 3) < $6f) do begin
         clr[0] := Random($FF);
         clr[1] := Random($FF);
         clr[2] := Random($FF);

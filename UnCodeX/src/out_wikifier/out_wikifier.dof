@@ -4,8 +4,8 @@ Version=6.0
 [Compiler]
 A=8
 B=0
-C=1
-D=1
+C=0
+D=0
 E=0
 F=0
 G=1
@@ -13,7 +13,7 @@ H=1
 I=1
 J=0
 K=0
-L=1
+L=0
 M=0
 N=1
 O=1
@@ -26,7 +26,7 @@ U=0
 V=1
 W=0
 X=1
-Y=1
+Y=0
 Z=1
 ShowHints=1
 ShowWarnings=1
@@ -66,8 +66,8 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=1
 MinorVer=0
-Release=0
-Build=2
+Release=1
+Build=0
 Debug=0
 PreRelease=0
 Special=0
@@ -79,7 +79,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Michiel 'El Muerte' Hendriks
 FileDescription=Class wikifier
-FileVersion=1.0.0.2
+FileVersion=1.0.1.0
 InternalName=out_wikifier
 LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
 LegalTrademarks=
@@ -88,16 +88,20 @@ ProductName=UnCodeX
 ProductVersion=1.0.0.0
 Comments=http://wiki.beyondunreal.com/wiki/UnCodeX
 
+[Excluded Packages]
+e:\program files\borland\delphi6\Projects\Bpl\dclrx6.bpl=RX Library Controls and Tools
+e:\program files\borland\delphi6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 
 [HistoryLists\hlUnitOutputDirectory]
 Count=5
-Item0=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_graphviz
-Item1=E:\Program Files\Borland\Projects\UnCodeX\Dcu\ucxc
-Item2=E:\Program Files\Borland\Projects\UnCodeX\DCU
-Item3=E:\Program Files\Borland\Projects\UnCodeX\DCU\out_wikifier
+Item0=E:\Program Files\Borland\Projects\UnCodeX\DCU\out_wikifier
+Item1=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_graphviz
+Item2=E:\Program Files\Borland\Projects\UnCodeX\Dcu\ucxc
+Item3=E:\Program Files\Borland\Projects\UnCodeX\DCU
 Item4=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_sample
 
 [HistoryLists\hlOutputDirectorry]
