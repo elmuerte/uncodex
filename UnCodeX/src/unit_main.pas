@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.98 2004-05-08 12:06:27 elmuerte Exp $
+ $Id: unit_main.pas,v 1.99 2004-05-10 14:36:58 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -236,6 +236,9 @@ type
     btn_Sep6: TToolButton;
     btn_CProp: TToolButton;
     btn_PProp: TToolButton;
+    mi_Donate: TMenuItem;
+    mi_N21: TMenuItem;
+    mi_N31: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -344,6 +347,7 @@ type
     procedure ac_DefPropsExecute(Sender: TObject);
     procedure ac_RenameClassExecute(Sender: TObject);
     procedure mi_SortListClick(Sender: TObject);
+    procedure mi_DonateClick(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -3160,6 +3164,11 @@ procedure Tfrm_UnCodeX.mi_SortListClick(Sender: TObject);
 begin
 	lb_Log.Sorted := true;
   lb_Log.Sorted := false;
+end;
+
+procedure Tfrm_UnCodeX.mi_DonateClick(Sender: TObject);
+begin
+  hh_Help.HelpTopic('donation.html');
 end;
 
 initialization
