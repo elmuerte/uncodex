@@ -95,9 +95,7 @@ begin
       end;
     end
     else if (LowerCase(ParamStr(j)) = '-hide') then begin
-      // FIXME:
-      //Visible := false;
-      //Application.ShowMainForm := false;
+      Application.ShowMainForm := false;
     end
     else if (LowerCase(ParamStr(j)) = '-config') then begin
       Inc(j);
@@ -145,7 +143,8 @@ begin
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-  Application.CreateForm(Tfrm_About, frm_About);
-  Application.Run;
+    Application.CreateForm(Tfrm_About, frm_About);
+    if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+    Application.Run;
   end;
 end.
