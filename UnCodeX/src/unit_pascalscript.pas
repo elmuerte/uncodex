@@ -6,7 +6,7 @@
     Purpose:
         Global PascalScript routines and functionality
 
-    $Id: unit_pascalscript.pas,v 1.10 2004-10-20 14:19:29 elmuerte Exp $
+    $Id: unit_pascalscript.pas,v 1.11 2004-11-29 14:46:10 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -98,7 +98,6 @@ begin
     { Misc }
     ps.AddFunction(@Log, 'procedure Log(msg: string);');
     ps.AddFunction(@LogClass, 'procedure LogClass(msg: string; uclass: TUClass);');
-
 end;
 
 end.

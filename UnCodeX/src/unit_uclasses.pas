@@ -6,7 +6,7 @@
     Purpose:
         Class definitions for UnrealScript elements
 
-    $Id: unit_uclasses.pas,v 1.40 2004-11-27 10:47:39 elmuerte Exp $
+    $Id: unit_uclasses.pas,v 1.41 2004-11-29 14:46:10 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -38,7 +38,7 @@ uses
 
 const
     // used for output module compatibility testing
-    UCLASSES_REV: LongInt = 2;  
+    UCLASSES_REV: LongInt = 3;  
 
 type
     TUCommentType = (ctSource, ctExtern, ctInherited);
@@ -46,8 +46,7 @@ type
     TUClass = class;
     TUPackage = class;
     TUFunctionList = class;
-
-    
+                                        
     TDefinitionList = class(TObject)
         fowner:     TUClass;
         defines:    TStringList;
@@ -72,10 +71,17 @@ type
 
     // general Unreal Object
     TUObject = class(TObject)
-        name:       string;
-        srcline:    integer;
-        comment:    string;
+        name:           string;
+        comment:        string;
         CommentType:    TUCommentType;
+    end;
+
+    // used for declarations in classes(e.g. functions, variables)
+    TUDeclaration = class(TUObject)
+        srcline:        integer;
+        definedIn:      string; // set to the filename this variable was
+                                // declared in if not in the class source file
+                                // itself (e.g. via the #include macro).
     end;
 
     // general Unreal Object List
@@ -84,7 +90,7 @@ type
         function Find(name: string): TUObject;
     end;
 
-    TUConst = class(TUObject)
+    TUConst = class(TUDeclaration)
         value:  string;
     end;
 
@@ -98,7 +104,7 @@ type
         property Items[Index: Integer]: TUConst read GetItem write SetItem; default;
     end;
 
-    TUProperty = class(TUObject)
+    TUProperty = class(TUDeclaration)
         ptype:      string;
         modifiers:  string;
         tag:        string;
@@ -115,7 +121,7 @@ type
         property Items[Index: Integer]: TUProperty read GetItem write SetItem; default;
     end;
 
-    TUEnum = class(TUObject)
+    TUEnum = class(TUDeclaration)
         options:    string;
     end;
 
@@ -129,7 +135,7 @@ type
         property Items[Index: Integer]: TUEnum read GetItem write SetItem; default;
     end;
 
-    TUStruct = class(TUObject)
+    TUStruct = class(TUDeclaration)
         parent:     string;
         modifiers:  string;
         properties: TUPropertyList;
@@ -147,7 +153,7 @@ type
         property Items[Index: Integer]: TUStruct read GetItem write SetItem; default;
     end;
 
-    TUState = class(TUObject)
+    TUState = class(TUDeclaration)
         extends:    string;
         modifiers:  string;
         functions:  TUFunctionList;
@@ -167,7 +173,7 @@ type
 
     TUFunctionType = (uftFunction, uftEvent, uftOperator, uftPreOperator, uftPostOperator, uftDelegate);
 
-    TUFunction = class(TUObject)
+    TUFunction = class(TUDeclaration)
         ftype:      TUFunctionType;
         return:     string;
         modifiers:  string;
@@ -238,11 +244,12 @@ type
     TUPackage = class(TUObject)
         classes:    TUClassList;
         priority:   integer;
-        path:       string;
+        path:       string; // class path
         treenode:   TObject;
         tagged:     boolean;
         constructor Create;
         destructor Destroy; override;
+        function PackageDir: string; // returns the actual package dir
     end;
 
     TUPackageList = class(TUObjectList)
@@ -577,6 +584,11 @@ end;
 destructor TUPackage.Destroy;
 begin
     classes.Free;
+end;
+
+function TUPackage.PackageDir: string;
+begin
+  result := ExtractFilePath(path);
 end;
 
 { TUPackageList }

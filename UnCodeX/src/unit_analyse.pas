@@ -6,7 +6,7 @@
     Purpose:
         UnrealScript class analyser
 
-    $Id: unit_analyse.pas,v 1.51 2004-11-27 10:47:38 elmuerte Exp $
+    $Id: unit_analyse.pas,v 1.52 2004-11-29 14:46:09 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -53,6 +53,8 @@ type
         ClassHash: TObjectHash;
         macroIfCnt: integer;
         includeParsers: TObjectList;
+        includeFiles: TStringList;
+        incFilename: string;
         procedure AnalyseClass();
         function pConst: TUConst;
         function pVar: TUProperty;
@@ -69,7 +71,7 @@ type
         function ExecuteSingle: integer;
         function GetSecondaryComment(ref :string): string;
         procedure pMacro(Sender: TUCParser);
-        procedure pInclude(filename: string);
+        procedure pInclude(relfilename: string);
     public
         constructor Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false; myClassList: TObjectHash = nil); overload;
         constructor Create(uclass: TUClass; status: TStatusReport; onlynew: boolean = false; myClassList: TObjectHash = nil); overload;
@@ -320,6 +322,7 @@ begin
     UseOverWriteStruct := false;
     uclass.filetime := currenttime;
     includeParsers := TObjectList.Create(false);
+    includeFiles := TStringList.Create;
     fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
     p := TUCParser.Create(fs);
     try
@@ -345,6 +348,7 @@ begin
         p.Free;
         fs.Free;
         includeParsers.Free;
+        includeFiles.Free;
     end;
 end;
 
@@ -448,12 +452,15 @@ end;
 
 // const <name> = <value>;
 function TClassAnalyser.pConst: TUConst;
+var
+    tmp: string;
 begin
     guard('pConst '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
     result := TUConst.Create;
     result.comment := trim(p.GetCopyData);
     result.name := p.TokenString;
     result.srcline := p.SourceLine;
+    result.definedIn := incFilename;
     p.NextToken; // =
     p.GetCopyData();
     p.FullCopy := true;
@@ -464,9 +471,9 @@ begin
         result.Free;
         raise EOFException.CreateFmt(EOFExceptionFmt, ['pConst', uclass.name, p.SourceLine, '']);
     end;
-    result.value := p.GetCopyData();
-    Delete(result.value, length(result.value), 1); // strip ;
-    result.value := trim(result.value);
+    tmp := p.GetCopyData();
+    Delete(tmp, length(tmp), 1); // strip ;
+    result.value := trim(tmp);
     p.FullCopy := false;
     p.FCIgnoreComments := false;
     p.NextToken; // = ;
@@ -493,6 +500,7 @@ begin
     result.tag := pBrackets(true);
     result.comment := trim(p.GetCopyData);
     result.srcline := p.SourceLine;
+    result.definedIn := incFilename;
     while (p.Token <> ';') do begin
         if (p.Token = toEOF) then begin
             result.Free;
@@ -558,15 +566,15 @@ begin
         end;
     end;
     result.ptype := prev;
-    result.name := last;
-    i := Pos(',', result.name);
+    i := Pos(',', last);
     while (i > 0) do begin
         nprop := TUProperty.Create;
         nprop.comment := trim(result.comment);
         nprop.srcline := result.srcline;
+        nprop.definedIn := Result.definedIn;
         nprop.ptype := result.ptype;
         nprop.modifiers := result.modifiers;
-        nprop.name := Copy(result.name, 1, i-1);
+        nprop.name := Copy(last, 1, i-1);
         nprop.tag := result.tag;
         if (UseOverWriteStruct) then begin
             if (nprop.comment = '') then begin
@@ -582,9 +590,11 @@ begin
             end;
             uclass.properties.Add(nprop);
         end;
-        Delete(result.name, 1, i);
-        i := Pos(',', result.name);
+        // TODO: fix
+        Delete(last, 1, i);
+        i := Pos(',', last);
     end;
+    result.name := last;
     if (UseOverWriteStruct) then begin
         // package.class.struct.name
         if (result.comment = '') then begin
@@ -612,6 +622,7 @@ begin
     result.comment := trim(p.GetCopyData);
     result.name := p.TokenString;
     result.srcline := p.SourceLine;
+    result.definedIn := incFilename;
     p.NextToken; // {
     p.NextToken; // first element
     while (p.Token <> '}') do begin
@@ -641,6 +652,7 @@ begin
     result.comment := trim(p.GetCopyData);
     result.name := p.TokenString;
     result.srcline := p.SourceLine;
+    result.definedIn := incFilename;
     while (p.Token <> '{') do begin
         if (p.Token = toEOF) then begin
             result.Free;
@@ -794,6 +806,7 @@ begin
     if (p.Token <> ';') then pCurlyBrackets()
     else p.NextToken; // = } or ;
     result.state := currentState;
+    result.definedIn := incFilename;
     if (currentState <> nil) then begin
         // package.class.name state
         if (result.comment = '') then begin
@@ -819,6 +832,7 @@ begin
     result.comment := trim(p.GetCopyData);
     result.srcline := p.SourceLine;
     result.modifiers := modifiers;
+    result.definedIn := incFilename;
     p.NextToken; // name
     pBrackets;
     result.name := p.TokenString;
@@ -929,28 +943,32 @@ begin
     else if (macro = 'INCLUDE') then begin
         LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Include file '+trim(args), uclass);
         uclass.includes.Values[IntToStr(p.SourceLine-1)] := trim(args);
-        args := iFindFile(ExpandFileName(ExtractFilePath(uclass.package.path)+args));
-        if (FileExists(args)) then begin
-            pInclude(args);
-        end
-        else begin
-            LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Invalid include file: '+args, uclass);
-        end;
+        pInclude(args);
     end
     else begin
         LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Unsupported macro '+macro, uclass);
     end;
 end;
 
-procedure TClassAnalyser.pInclude(filename: string);
+procedure TClassAnalyser.pInclude(relfilename: string);
 var
     fs: TFileStream;
+    filename: string;
 begin
     guard('pInclude '+filename);
+
+    filename := iFindFile(ExpandFileName(ExtractFilePath(uclass.package.path)+relfilename));
+    if (not FileExists(filename)) then begin
+        LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Invalid include file: '+relfilename, uclass);
+        exit;
+    end;
+
     includeParsers.Add(p);
+    includeFiles.Add(incFilename);
     fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
     p := TUCParser.Create(fs);
     try
+        incFilename := relfilename;
         p.ProcessMacro := pMacro;
         AnalyseClass;
     finally
@@ -958,6 +976,8 @@ begin
         fs.Free;
         p := TUCParser(includeParsers.Last);
         includeParsers.Remove(p);
+        incFilename := includeFiles[includeFiles.count-1];
+        includeFiles.Delete(includeFiles.count-1);
     end;
     unguard;
 end;

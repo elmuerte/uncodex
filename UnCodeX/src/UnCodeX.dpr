@@ -6,7 +6,7 @@
     Purpose:
         Program unit for the GUI
 
-    $Id: UnCodeX.dpr,v 1.51 2004-11-06 15:07:44 elmuerte Exp $
+    $Id: UnCodeX.dpr,v 1.52 2004-11-29 14:46:09 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -88,6 +88,32 @@ var
     HasPrevInst:    boolean = false;
     PrevInst:       HWND;
     RedirectData:   TRedirectStruct;
+
+const    
+    CMD_HELP =  'Commandline options:'+#13+#10+
+                '-config'#9#9#9'loads a diffirent config file (next argument)'+#13+#10+
+                '-batch'#9#9#9'start UnCodeX in batch processing mode, the next'+#13+#10+
+                #9#9#9'arguments must contain the batch order, '+#13+#10+
+                #9#9#9'which can be on of the following:'+#13+#10+
+                #9'rebuild'#9#9'rebuild class tree'+#13+#10+
+                #9'analyse'#9#9'analyse all classes'+#13+#10+
+                #9'analysemodified'#9'analyse only modified classes'+#13+#10+
+                #9'findnew'#9#9'find new classes in existing packages'+#13+#10+
+                #9'createhtml'#9'create HTML output'+#13+#10+
+                #9'htmlhelp'#9#9'create MS HTML Help file'+#13+#10+
+                #9'close'#9#9'close UnCodeX'+#13+#10+
+                #9'ext:<name>'#9'call an custom output module'+#13+#10+
+                #9'ps:<name>'#9'execute a PascalScript'+#13+#10+
+                #9'--'#9#9'end of batch commands'+#13+#10+
+                '-find'#9#9#9'find a class'+#13+#10+
+                '-fts'#9#9#9'show full text search dialog'+#13+#10+
+                '-help'#9#9#9'display this message'+#13+#10+
+                '-hide'#9#9#9'hides UnCodeX'+#13+#10+
+                '-handle'#9#9#9'Window handle'+#13+#10+
+                '-nosplash'#9#9'Do not display splash screen'+#13+#10+
+                '-open'#9#9#9'find and open a class'+#13+#10+
+                '-reuse'#9#9#9'reuse a previous window'+#13+#10+
+                '-tags'#9#9#9'display class properties';    
 
 function StringHash(input: string): integer;
 var
