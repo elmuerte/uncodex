@@ -6,7 +6,7 @@
     Purpose:
         UnCodeX Commandline Utility Client
 
-    $Id: ucxcu.dpr,v 1.11 2004-11-17 08:57:22 elmuerte Exp $
+    $Id: ucxcu.dpr,v 1.12 2004-11-20 12:18:44 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -43,7 +43,9 @@ uses
   unit_copyparser in '..\unit_copyparser.pas',
   unit_definitions in '..\unit_definitions.pas',
   unit_htmlout in '..\unit_htmlout.pas',
+  {$IFDEF MSWINDOWS}
   unit_mshtmlhelp in '..\unit_mshtmlhelp.pas',
+  {$ENDIF}
   {$IFDEF LINUX}
   Libc,
   {$ENDIF}
