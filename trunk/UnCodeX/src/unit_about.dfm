@@ -206,4 +206,34 @@ object frm_About: Tfrm_About
     TabOrder = 2
     Text = 'http://wiki.beyondunreal.com/wiki/UnCodeX'
   end
+  object btn_EmailGo: TBitBtn
+    Left = 303
+    Top = 81
+    Width = 17
+    Height = 17
+    Caption = '8'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Marlett'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 3
+    OnClick = btn_EmailGoClick
+  end
+  object btn_HPGo: TBitBtn
+    Left = 304
+    Top = 121
+    Width = 16
+    Height = 17
+    Caption = '8'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Marlett'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 4
+    OnClick = btn_HPGoClick
+  end
 end
