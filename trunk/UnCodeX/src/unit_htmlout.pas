@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.37 2003-11-22 10:45:34 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.38 2003-11-26 21:15:36 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -53,12 +53,12 @@ type
   THTMLoutConfig = record
     PackageList: TUPackageList;
     ClassList: TUClassList;
-    ClassTree: TObject; //!TODO: remove
     outputdir, TemplateDir: string;
     CreateSource: boolean;
     TabsToSpaces: integer;
     TargetExtention: string;
     CPP: string;
+    DefaultTitle: string;
   end;
 
   // General replace function
@@ -80,6 +80,7 @@ type
     StructCache: Hashes.TStringHash;
     FunctionCache: Hashes.TStringHash;
     CPPPipe: TCLPipe;
+    ConfDefaultTitle: string;
     
     PackageList: TUPackageList;
     ClassList: TUClassList;
@@ -216,6 +217,7 @@ begin
   Self.CreateSource := config.CreateSource;
   Self.TabsToSpaces := config.TabsToSpaces;
   Self.CPP := config.CPP;
+  Self.ConfDefaultTitle := config.DefaultTitle;
   TargetExtention := config.TargetExtention;
   TypeCache := Hashes.TStringHash.Create;
   ConstCache := Hashes.TStringHash.Create;
@@ -346,7 +348,8 @@ function THTMLOutput.replaceDefault(var replacement: string; data: TObject = nil
 begin
   result := false;
   if (CompareText(replacement, 'default_title') = 0) then begin
-    replacement := ini.ReadString('titles', 'DefaultTitle', default_title);
+    if (ConfDefaultTitle <> '') then replacement := ConfDefaultTitle
+    else replacement := ini.ReadString('titles', 'DefaultTitle', default_title);
     result := true;
   end
   else if (CompareText(replacement, 'create_time') = 0) then begin
@@ -1902,6 +1905,14 @@ begin
   end
 end;
 
+function GlossaryListSort(List: TStringList; Index1, Index2: Integer): Integer;
+begin
+  result := AnsiCompareText(List[index1], List[index2]);
+  if (result = 0) then begin
+    result := AnsiCompareText(TGlossaryItem(List.Objects[Index1]).classname, TGlossaryItem(List.Objects[Index2]).classname);
+  end;
+end;
+
 procedure THTMLOutput.htmlGlossary;
 var
   template, target: TFileStream;
@@ -1970,7 +1981,7 @@ begin
       end;
       if (Self.Terminated) then break;
     end;
-    gl.Sort;
+    gl.CustomSort(GlossaryListSort);
     // create table -- end
     gli.glossay := gl;
     for i := Low(glossaryitems) to high(glossaryitems) do begin
