@@ -6,7 +6,7 @@
     Purpose:
         UnrealScript class analyser
 
-    $Id: unit_analyse.pas,v 1.49 2004-11-07 14:59:15 elmuerte Exp $
+    $Id: unit_analyse.pas,v 1.50 2004-11-10 09:25:35 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -121,6 +121,7 @@ const
 
 var
     FunctionModifiers: TStringList;
+    DEBUG_MACRO_EVAL: boolean = false;
 
 // unquote an unrealscript string
 function UnQuoteString(input: string): string;
@@ -177,6 +178,7 @@ var
     stime:  TDateTime;
     j:      integer;
 begin
+    DEBUG_MACRO_EVAL := FindCmdLineSwitch('debug', ['-'], true);
     stime := Now();
     if (classes = nil) then begin
         Status('Analysing class '+uclass.name+' ...');
@@ -203,7 +205,9 @@ begin
     Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds');
 end;
 
-{procedure TClassAnalyser.ExecuteList;
+{
+ Old ordned anaylsing
+procedure TClassAnalyser.ExecuteList;
 var
     i, j: integer;
 begin
@@ -864,14 +868,31 @@ begin
             Delete(args, 1, i);
         end;
         uclass.defs.define(macro, args);
-        //log(macro+'='+args);
+        if (DEBUG_MACRO_EVAL) then LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': define '+macro+' = '+args, uclass);
     end
     else if (macro = 'IF') then begin
         if (macroIfCnt > 0) then Inc(macroIfCnt)
         else begin
-            log('eval: '+args);
-            if (not uclass.defs.Eval(args)) then begin
-                log(' = false');
+            if (DEBUG_MACRO_EVAL) then LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': eval: '+args, uclass);
+            try
+                if (not uclass.defs.Eval(args)) then begin
+                    if (DEBUG_MACRO_EVAL) then log(' = false');
+                    macroIfCnt := 1;
+                    while (macroIfCnt > 0) do begin
+                        p.SkipToken;
+                    end;
+                end;
+            except
+                on e:Exception do LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" : '+e.Message, uclass);
+            end;
+        end; // do eval
+    end
+    else if (macro = 'IFDEF') then begin
+        if (macroIfCnt > 0) then Inc(macroIfCnt)
+        else begin
+            if (DEBUG_MACRO_EVAL) then LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': if defined: '+args, uclass);
+            if (not uclass.defs.IsDefined(args)) then begin
+                if (DEBUG_MACRO_EVAL) then log(' = false');
                 macroIfCnt := 1;
                 while (macroIfCnt > 0) do begin
                     p.SkipToken;
