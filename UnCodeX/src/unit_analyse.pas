@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.34 2004-04-13 07:01:15 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.35 2004-05-07 13:19:50 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -70,6 +70,10 @@ type
     procedure Execute; override;
   end;
 
+  EOFException = class(Exception)
+
+  end;
+
 var
   TreeUpdated: boolean = false;
 
@@ -107,6 +111,8 @@ const
   RES_SUCCESS = 0;
   RES_REMOVED = 1;
   RES_ERROR = 2;
+
+  EOFExceptionFmt = 'EOF reached in %s of %s (#%d) %s';
 
 var
 	FunctionModifiers: TStringList;
@@ -149,11 +155,18 @@ begin
     try
 	    ExecuteSingle;
     except
-			on E: Exception do begin
-      	Log('Unhandled exception in class '+uclass.name+': '+E.Message);
-        Log('History:');
+    	on E: EOFException do begin
+        LogClass('End of file reached while parsing '+uclass.filename+': '+E.Message, uclass);
+        LogClass('History:', uclass);
       	for j := 0 to GuardStack.Count-1 do begin
-					log('    '+GuardStack[j]);
+					LogClass('    '+GuardStack[j], uclass);
+      	end;
+      end;
+			on E: Exception do begin
+      	LogClass('Unhandled exception in class '+uclass.name+': '+E.Message, uclass);
+        LogClass('History:', uclass);
+      	for j := 0 to GuardStack.Count-1 do begin
+					LogClass('    '+GuardStack[j], uclass);
       	end;
       end;
     end;
@@ -175,12 +188,20 @@ begin
         RES_SUCCESS, RES_ERROR:	Inc(i);
       end;
     except
+    	on E: EOFException do begin
+      	Inc(i);
+        LogClass('End of file reached while parsing '+uclass.filename+': '+E.Message, uclass);
+        LogClass('History:', uclass);
+      	for j := 0 to GuardStack.Count-1 do begin
+					LogClass('    '+GuardStack[j], uclass);
+      	end;
+      end;
       on E: Exception do begin
       	Inc(i);
-      	Log('Unhandled exception in class '+uclass.name+': '+E.Message);
-        Log('History:');
+      	LogClass('Unhandled exception in class '+uclass.name+': '+E.Message, uclass);
+        LogClass('History:', uclass);
       	for j := 0 to GuardStack.Count-1 do begin
-					log('    '+GuardStack[j]);
+					LogClass('    '+GuardStack[j], uclass);
       	end;
       end;
     end;
@@ -343,7 +364,11 @@ begin
   p.FullCopy := true;
   p.FCIgnoreComments := true;
   p.NextToken;
-  while (p.Token <> ';') do p.NextToken;
+  while ((p.Token <> ';') and (p.Token <> toEOF)) do p.NextToken;
+  if (p.Token = toEOF) then begin
+		result.Free;
+    raise EOFException.CreateFmt(EOFExceptionFmt, ['pConst', uclass.name, p.SourceLine, '']);
+  end;
   result.value := p.GetCopyData();
   Delete(result.value, length(result.value), 1); // strip ;
   result.value := trim(result.value);
@@ -369,6 +394,10 @@ begin
   result.comment := trim(p.GetCopyData);
   result.srcline := p.SourceLine;
   while (p.Token <> ';') do begin
+  	if (p.Token = toEOF) then begin
+			result.Free;
+  	  raise EOFException.CreateFmt(EOFExceptionFMT, ['pVar', uclass.name, p.SourceLine, result.modifiers]);
+	  end;
     if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
     result.modifiers := result.modifiers+prev;
     
@@ -450,6 +479,10 @@ begin
   p.NextToken; // {
   p.NextToken; // first element
   while (p.Token <> '}') do begin
+  	if (p.Token = toEOF) then begin
+			result.Free;
+  	  raise EOFException.CreateFmt(EOFExceptionFmt, ['pEnum', uclass.name, p.SourceLine, result.options]);
+	  end;
     result.options := result.options+p.TokenString;
     p.NextToken;
   end;
@@ -469,6 +502,10 @@ begin
   result.name := p.TokenString;
   result.srcline := p.SourceLine;
   while (p.Token <> '{') do begin
+  	if (p.Token = toEOF) then begin
+			result.Free;
+  	  raise EOFException.CreateFmt(EOFExceptionFmt, ['pStruct', uclass.name, p.SourceLine, result.modifiers]);
+	  end;
     if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
     result.modifiers := result.modifiers+prev;
     prev := last;
@@ -501,7 +538,11 @@ begin
   OverWriteUstruct := result;
   UseOverWriteStruct := true;
   p.NextToken; // = {
-  while ((p.Token <> '}') and (p.token <> toEOF) and (not Self.Terminated)) do begin
+  while ((p.Token <> '}') and (not Self.Terminated)) do begin
+  	if (p.Token = toEOF) then begin
+			result.Free;
+  	  raise EOFException.CreateFmt(EOFExceptionFmt, ['pStruct_variables', uclass.name, p.SourceLine, '']);
+	  end;
     if (p.TokenSymbolIs(KEYWORD_var)) then begin
       p.NextToken;
       pVar();
@@ -554,10 +595,9 @@ begin
     last := last+pBrackets;
   end;
   if (p.token = toEOF) then begin
-    log('EOF reached in pFunc of '+uclass.name+'('+IntToStr(p.SourceLine)+') '+result.modifiers);
+    //log('EOF reached in pFunc of '+uclass.name+'('+IntToStr(p.SourceLine)+') '+result.modifiers);
     result.Free;
-    Exception.Create('EOF reached');
-    exit;
+    raise EOFException.CreateFmt(EOFExceptionFmt, ['pFunc', uclass.name, p.SourceLine, result.modifiers]);
   end;
   if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
   result.modifiers := result.modifiers+last;
