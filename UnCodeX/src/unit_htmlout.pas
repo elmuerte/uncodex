@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.75 2005-03-31 16:41:48 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.76 2005-04-02 20:37:03 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -62,7 +62,7 @@ type
   THTMLoutConfig = record
     PackageList: TUPackageList;
     ClassList: TUClassList;
-    outputdir, TemplateDir: string;
+    OutputDir, TemplateDir: string;
     CreateSource: boolean;
     TabsToSpaces: integer;
     TargetExtention: string;

@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.154 2005-03-31 16:41:48 elmuerte Exp $
+  $Id: unit_main.pas,v 1.155 2005-04-02 20:37:03 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -638,6 +638,7 @@ begin
   if (StatusHandle <> -1) then SendStatusMsg(msg, cxstStatus, progress);
 end;
 
+//TODO: useless
 function FontStylesToInt(style: TFontStyles): cardinal;
 begin
   result := 0;

@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Package properties viewer\editor
 
-  $Id: unit_pkgprops.pas,v 1.9 2005-04-02 11:42:11 elmuerte Exp $
+  $Id: unit_pkgprops.pas,v 1.10 2005-04-02 20:37:03 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -62,7 +62,7 @@ var
 
 implementation
 
-uses unit_definitions, unit_analyse;
+uses unit_definitions, unit_analyse, unit_main;
 
 {$R *.dfm}
 
@@ -81,7 +81,7 @@ begin
       ini.ReadSectionValues('Package_Description', mm_Desc.Lines);
       if (mm_Desc.Lines.Count = 0) then begin
         mm_Desc.Lines.Text := pkg.comment;
-        cb_ExternalDescription.Checked := true;
+        cb_ExternalDescription.Checked := mm_Desc.Lines.count > 0;
       end;
       Caption := pkg.name+' - '+pkg.name+PKGCFG;
       if (ShowModal = mrOk) then begin
@@ -107,14 +107,26 @@ begin
           end;
         end;
         ini.UpdateFile;
-
-        if (cb_ExternalDescription.Checked) then begin
-          //TODO: save external comment
-        end;
-
       end;
     finally
       ini.Free;
+    end;
+
+    if (cb_ExternalDescription.Checked) then begin
+      if (GPDF <> '') then begin
+        ini := TMemIniFile.Create(GPDF);
+        sl := TStringList.Create;
+        try
+          ini.EraseSection(pkg.name);
+          ini.GetStrings(sl);
+          sl.Add('['+pkg.name+']');
+          sl.AddStrings(mm_Desc.Lines);
+          ini.SetStrings(sl);
+        finally;
+          sl.Free;
+          ini.Free;
+        end;
+      end;
     end;
   end;
 end;
