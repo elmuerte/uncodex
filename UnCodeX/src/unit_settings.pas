@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   program settings window
- $Id: unit_settings.pas,v 1.31 2003-11-27 17:01:55 elmuerte Exp $
+ $Id: unit_settings.pas,v 1.32 2004-03-07 13:57:29 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -172,7 +172,7 @@ type
     cb_LogFontColor: TColorBox;
     cb_LogColor: TColorBox;
     btn_UnIgnore: TBitBtn;
-    Label11: TLabel;
+    lbl_TabsToSpaces: TLabel;
     ed_TabsToSpaces: TEdit;
     ud_TabsToSpaces: TUpDown;
     bvl_Sep1: TBevel;

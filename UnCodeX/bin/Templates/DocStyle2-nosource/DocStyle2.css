@@ -258,6 +258,10 @@ FONT.source_keyword {
 	font-weight: bold;
 }
 
+FONT.source_keyword2 {
+	font-weight: bold;
+}
+
 FONT.source_name {
 	color: #660000;
 }
@@ -298,3 +302,7 @@ TD.source {
 	border: none;	
 }
 
+.hidden {
+	visibility: hidden;
+	position: absolute;
+}
