@@ -304,6 +304,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     OnEndDock = re_SourceSnoopEndDock
     OnMouseMove = re_SourceSnoopMouseMove
     OnMouseUp = re_SourceSnoopMouseUp
+    GutterWidth = 50
   end
   object tv_Classes: TTreeView
     Left = 108
