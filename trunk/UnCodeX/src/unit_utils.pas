@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   General function/utils that require Forms
- $Id: unit_utils.pas,v 1.4 2003-11-04 19:35:28 elmuerte Exp $
+ $Id: unit_utils.pas,v 1.5 2003-12-15 20:05:54 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -186,6 +186,8 @@ var
   R, R2: TRect;
   TmpCaption: String;
 begin
+	Canvas.Font.Name := 'Arial';
+
   R := ClientRect;
   with Canvas do begin
     Brush.Style := bsSolid;
@@ -193,7 +195,7 @@ begin
     Pen.Color   := clBtnShadow;
     Pen.Width   := 1;
     Rectangle(R.Top, R.Left, R.Left+18, R.Bottom);
-    Canvas.Font.Name := 'Marlett';
+    //Canvas.Font.Name := 'Marlett';
     Canvas.Font.Style := [fsBold];
     Canvas.Font.Color := clWindowText;
     R2 := Rect(R.Left+1, R.Top+2, R.Left+18, R.Bottom-2);
@@ -201,7 +203,6 @@ begin
     DrawText(Canvas.Handle, PChar(TmpCaption), 1, R2, DT_LEFT or DT_NOPREFIX or DT_VCENTER or DT_CENTER or DrawTextBiDiModeFlagsReadingOnly);
   end;
 
-  Canvas.Font.Name := 'Arial';
   Canvas.Font.Style := [fsBold];
   Canvas.Font.Color := clWindowText;
   Canvas.Brush.Color := Color;
