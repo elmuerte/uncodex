@@ -6,7 +6,7 @@
   Purpose:
     Replacement docktree
 
-  $Id: unit_ucxdocktree.pas,v 1.8 2004-12-08 09:25:40 elmuerte Exp $
+  $Id: unit_ucxdocktree.pas,v 1.9 2004-12-19 16:39:50 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -34,15 +34,20 @@ unit unit_ucxdocktree;
 interface
 
 uses
-  Types, Controls, Messages, Windows;
+  Types, Controls, Messages, Windows, Graphics;
 
 type
   TOnChangeVisibility = procedure(client: TControl; visible: boolean; var CanChange: boolean) of object;
+  TOnDockStartDrag = procedure(client: TControl; var CanDrag: boolean) of object;
 
   TUCXDockTree = class(TDockTree)
   private
     FOldWindowProc: TWndMethod;
     procedure NewWindowProc(var Message: TMessage);
+  protected
+    procedure PaintDockFrame(Canvas: TCanvas; Control: TControl;
+      const ARect: TRect); override;
+    function HitTest(const MousePos: TPoint; out HTFlag: Integer): TControl; override;
   public
     constructor Create(DockSite: TWinControl); override;
     destructor Destroy; override;
@@ -50,6 +55,8 @@ type
 
 var
   OnChangeVisibility: TOnChangeVisibility;
+  OnStartDockDrag: TOnDockStartDrag;
+
 
 implementation
 
@@ -77,7 +84,7 @@ var
   client: TControl;
   HitTestValue: Integer;
 begin
-  if (Message.Msg = CM_DOCKNOTIFICATION) then begin
+  {if (Message.Msg = CM_DOCKNOTIFICATION) then begin
     with TCMDockNotification(Message) do begin
       if (NotifyRec.ClientMsg = CM_VISIBLECHANGED) then begin
         CanChange := true;
@@ -88,12 +95,14 @@ begin
     end;
   end
   // fix dragging
-  else if (Message.Msg = WM_LBUTTONDOWN) then begin
+  else} if (Message.Msg = WM_LBUTTONDOWN) then begin
     P := SmallPointToPoint(TWMMouse(Message).Pos);
     client := HitTest(P, HitTestValue);
     if (client <> nil) then begin
       if HitTestValue = HTCAPTION then begin
-        client.BeginDrag(False);
+        CanChange := true;
+        if (Assigned(OnStartDockDrag)) then OnStartDockDrag(client, CanChange);
+        if (CanChange) then client.BeginDrag(False);
       end
       else FOldWindowProc(Message);
     end
@@ -103,16 +112,13 @@ begin
   else if (Message.Msg = WM_LBUTTONUP) then begin
     P := SmallPointToPoint(TWMMouse(Message).Pos);
     client := HitTest(P, HitTestValue);
-    if (client <> nil) and (HitTestValue = HTCLOSE) then begin
-      CanChange := true;
-      if (Assigned(OnChangeVisibility)) then OnChangeVisibility(client, false, CanChange);
-      if (not CanChange) then begin
-        TWMMouse(Message).XPos := -1;
-        TWMMouse(Message).YPos := -1;
-      end;
-      FOldWindowProc(Message)
+    if (client <> nil) and (HitTestValue = HTCAPTION) then begin
+      // workaround for double click close button (internalhittest)
     end
     else FOldWindowProc(Message);
+  end
+  else if (Message.Msg = WM_LBUTTONDBLCLK) then begin
+    // don't do anything
   end
   {
   // disable floating
@@ -122,6 +128,44 @@ begin
   en
   }
   else FOldWindowProc(Message);
+end;
+
+procedure TUCXDockTree.PaintDockFrame(Canvas: TCanvas; Control: TControl; const ARect: TRect);
+
+  procedure DrawGrabberLine(Left, Top, Right, Bottom: Integer);
+  begin
+    with Canvas do
+    begin
+      Pen.Color := clBtnHighlight;
+      MoveTo(Right, Top);
+      LineTo(Left, Top);
+      LineTo(Left, Bottom);
+      Pen.Color := clBtnShadow;
+      LineTo(Right, Bottom);
+      LineTo(Right, Top-1);
+    end;
+  end;
+
+begin
+  with ARect do begin
+    if (DockSite.Align in [alTop, alBottom]) then
+    begin
+      DrawGrabberLine(Left+3, Top+1, Left+5, Bottom-2);
+      DrawGrabberLine(Left+6, Top+1, Left+8, Bottom-2);
+    end
+    else
+    begin
+      DrawGrabberLine(Left+2, Top+3, Right-2, Top+5);
+      DrawGrabberLine(Left+2, Top+6, Right-2, Top+8);
+    end;
+    //Canvas.TextOut(Left, Top, Control.Name);
+  end;
+end;
+
+function TUCXDockTree.HitTest(const MousePos: TPoint; out HTFlag: Integer): TControl;
+begin
+  result := inherited HitTest(MousePos, HTFlag);
+  if (HTFlag = HTCLOSE) then HTFlag := HTCAPTION; 
 end;
 
 end.

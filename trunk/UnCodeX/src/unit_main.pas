@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.136 2004-12-19 12:34:56 elmuerte Exp $
+  $Id: unit_main.pas,v 1.137 2004-12-19 16:39:50 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -428,6 +428,7 @@ type
     procedure InlineSearchComplete;
     procedure ShowDockPanel(DockHost: TControl; MakeVisible: Boolean; Client: TControl);
     procedure OnDockVisChange(client: TControl; visible: boolean; var CanChange: boolean);
+    procedure OnDockDragStart(client: TControl; var CanDrag: boolean);
     // other
     procedure DeleteClass(uclass: TUClass; recurse: boolean = false);
     procedure SourceSnoopOpen(uclass: TUClass; udecl: TUDeclaration; upackage: TUPackage = nil);
@@ -693,7 +694,15 @@ var
   res: boolean;
   node: TTreeNode;
 begin
-  if (not FileExists(StateFile)) then exit;
+  if (not FileExists(StateFile)) then begin
+    if (not tv_Packages.Visible) then begin
+      // required for some reason
+      // when it's docked hidden things go wrong
+      tv_Packages.Items.Add(nil, 'dummy');
+      tv_Packages.Items.Clear;
+    end;
+    exit;
+  end;
   StatusReport('Loading state from '+StateFile);
   tmr_StatusText.OnTimer(nil);
   Application.ProcessMessages;
@@ -1437,25 +1446,28 @@ var
   makeHeight, makeWidth: integer;
   APanel: TPanel;
 begin
+  if (client <> nil) then Client.Visible := MakeVisible; // update client
+
   APanel := nil;
   if (DockHost <> nil) then
     if (DockHost.ClassType = TPanel) then
       APanel := TPanel(DockHost);
 
-  if (APanel = nil) then begin
-    if MakeVisible and (Client <> nil) then Client.Show;
-    exit;
-  end;
+  // no panel, just make client visible or not
+  if (APanel = nil) then exit;
 
-  //Don't try to hide a panel which has visible dock clients.
   if not MakeVisible then begin
-    if (Client = nil) then begin
+    if (client = nil) then begin
+      // client undocked
       if (APanel.VisibleDockClientCount > 1) then Exit;
     end
-    else if (not Client.Visible and (APanel.VisibleDockClientCount >= 1)) then Exit
-    else if (APanel.VisibleDockClientCount > 1) then Exit;
+    else begin
+      // client hidden
+      if (APanel.VisibleDockClientCount > 0) then Exit;
+    end;
   end;
 
+  // update splitters
   if APanel.Align = alLeft then
     splLeft.Visible := MakeVisible
   else if APanel.Align = alRight then
@@ -1465,16 +1477,21 @@ begin
   else if APanel.Align = alBottom then
     splBottom.Visible := MakeVisible;
 
-  makeHeight := 0;
-  makeWidth := 0;
-  if (client <> nil) then begin
-    if (Client.TBDockHeight > 0) then makeHeight := clamp(30, Client.TBDockHeight, ClientHeight div 4);
-    if (Client.LRDockWidth > 0) then makeWidth := clamp(30, Client.LRDockWidth, ClientWidth div 4);
-  end;
-  if (makeHeight = 0) then makeHeight := ClientHeight div 4;
-  if (makeWidth = 0) then makeWidth := ClientWidth div 4;
+  if (MakeVisible) then begin
+    if (APanel.VisibleDockClientCount > 1) then begin
+      APanel.DockManager.ResetBounds(false);
+      exit;
+    end;
+    // find desired height\weight
+    makeHeight := 0;
+    makeWidth := 0;
+    if (client <> nil) then begin
+      if (Client.TBDockHeight > 0) then makeHeight := clamp(30, Client.TBDockHeight, ClientHeight div 4);
+      if (Client.LRDockWidth > 0) then makeWidth := clamp(30, Client.LRDockWidth, ClientWidth div 4);
+    end;
+    if (makeHeight = 0) then makeHeight := ClientHeight div 4;
+    if (makeWidth = 0) then makeWidth := ClientWidth div 4;
 
-  if MakeVisible then begin
     if APanel.Align = alLeft then begin
       if (makeWidth > pnlCenter.Width) then makeWidth := pnlCenter.Width-splLeft.MinSize;
       if (makeWidth < splLeft.MinSize) then makeWidth := splLeft.MinSize;
@@ -1492,11 +1509,10 @@ begin
       end;
     end
     else if APanel.Align = alBottom then begin
-      if (APanel.Height < makeHeight) then begin
+    if (APanel.Height < makeHeight) then begin
         APanel.Height := makeHeight;
         APanel.Top := pb_Scan.Top-APanel.Height-1;
-
-        splBottom.Top := APanel.Top - splBottom.Height-1;
+       splBottom.Top := APanel.Top - splBottom.Height-1;
       end;
     end
     else if APanel.Align = alTop then begin
@@ -1512,25 +1528,34 @@ begin
     else if (APanel.Align = alTop) or (APanel.Align = alBottom) then
       APanel.Height := 0;
   end;
-
-  if MakeVisible and (Client <> nil) then Client.Show
-  else if not MakeVisible and (Client <> nil) then Client.Hide;
 end;
 
 procedure Tfrm_UnCodeX.OnDockVisChange(client: TControl; visible: boolean; var CanChange: boolean);
 begin
   if (client = tv_Classes) then CanChange := visible = true
-  else if (client = tv_Packages) then ac_VPackageTree.Checked := visible
-  else if (client = lb_Log) then ac_VLog.Checked := visible
-  else if (client = re_SourceSnoop) then begin
-    ac_VSourceSnoop.Checked := visible;
-    mi_Browse.Visible := visible;
-  end
-  else if (client = fr_Props) then ac_PropInspector.Checked := visible;
-  
-  if (client.HostDockSite <> nil) then begin
-    ShowDockPanel(client.HostDockSite, visible, client);
+  {else if (client = tv_Packages) then begin
+    //ac_VPackageTree.Checked := visible
+    tv_Packages.Visible := false;
+    ac_VPackageTree.Execute
   end;
+  else if (client = lb_Log) then //ac_VLog.Checked := visible
+    ac_VLog.Execute
+  else if (client = re_SourceSnoop) then begin
+    //ac_VSourceSnoop.Checked := visible;
+    //mi_Browse.Visible := visible;
+    ac_VSourceSnoop.Execute;
+  end
+  else if (client = fr_Props) then //ac_PropInspector.Checked := visible;
+    ac_PropInspector.Execute;}
+  
+  {if (client.HostDockSite <> nil) then begin
+    ShowDockPanel(client.HostDockSite, visible, client);
+  end;}
+end;
+
+procedure Tfrm_UnCodeX.OnDockDragStart(client: TControl; var CanDrag: boolean);
+begin
+  CanDrag := client <> tv_Classes;
 end;
 
 { Other stuff }
@@ -1836,37 +1861,35 @@ begin
     ac_VPackageTree.Checked := ini.ReadBool('Layout', 'PackageTree', ac_VPackageTree.Checked);
     ac_VLog.Checked := ini.ReadBool('Layout', 'Log', ac_VLog.Checked);
     ac_VSourceSnoop.Checked := ini.ReadBool('Layout', 'SourceSnoop', ac_VSourceSnoop.Checked);
-    re_SourceSnoop.Visible := ac_VSourceSnoop.Checked;
-    mi_Browse.Visible := re_SourceSnoop.Visible;
+    mi_Browse.Visible := ac_VSourceSnoop.Checked;
     ac_PropInspector.Checked := ini.ReadBool('Layout', 'PropertyInspector', ac_PropInspector.Checked);
-    fr_Props.Visible := ac_PropInspector.Checked;
 
     { load dock settings }
-    ini.ReadBinaryStream('dckTop.DockManager', 'data', dockData);
-    if (dockData.Size > 0) then dckTop.DockManager.LoadFromStream(dockData);
-    dckTop.Height := ini.ReadInteger('dckTop.DockManager', 'height', dckTop.Height);
-    dockData.Clear;
-
-    ini.ReadBinaryStream('dckBottom.DockManager', 'data', dockData);
-    if (dockData.Size > 0) then dckBottom.DockManager.LoadFromStream(dockData);
-    dckBottom.Height := ini.ReadInteger('dckBottom.DockManager', 'height', dckBottom.Height);
-    dckBottom.Top := pb_Scan.Top-dckBottom.Height;
-    splBottom.Top := dckBottom.Top-1;
-    dockData.Clear;
-
-    ini.ReadBinaryStream('dckLeft.DockManager', 'data', dockData);
-    if (dockData.Size > 0) then dckLeft.DockManager.LoadFromStream(dockData);
-    dckLeft.Width := ini.ReadInteger('dckLeft.DockManager', 'width', dckLeft.Width);
-    dockData.Clear;
-
-    ini.ReadBinaryStream('dckRight.DockManager', 'data', dockData);
-    if (dockData.Size > 0) then dckRight.DockManager.LoadFromStream(dockData);
-    dckRight.Width := ini.ReadInteger('dckRight.DockManager', 'width', dckRight.Width);
-    dockData.Clear;
-
     ini.ReadBinaryStream('pnlCenter.DockManager', 'data', dockData);
     if (dockData.Size > 0) then pnlCenter.DockManager.LoadFromStream(dockData);
     dockData.Clear;
+
+    ini.ReadBinaryStream('dckTop.DockManager', 'data', dockData);
+    if (dockData.Size > 0) then dckTop.DockManager.LoadFromStream(dockData);
+    dockData.Clear;
+    dckTop.Height := ini.ReadInteger('dckTop.DockManager', 'height', dckTop.Height);
+
+    ini.ReadBinaryStream('dckBottom.DockManager', 'data', dockData);
+    if (dockData.Size > 0) then dckBottom.DockManager.LoadFromStream(dockData);
+    dockData.Clear;
+    dckBottom.Height := ini.ReadInteger('dckBottom.DockManager', 'height', dckBottom.Height);
+    dckBottom.Top := pb_Scan.Top-dckBottom.Height;
+    splBottom.Top := dckBottom.Top-1;
+
+    ini.ReadBinaryStream('dckLeft.DockManager', 'data', dockData);
+    if (dockData.Size > 0) then dckLeft.DockManager.LoadFromStream(dockData);
+    dockData.Clear;
+    dckLeft.Width := ini.ReadInteger('dckLeft.DockManager', 'width', dckLeft.Width);
+
+    ini.ReadBinaryStream('dckRight.DockManager', 'data', dockData);
+    if (dockData.Size > 0) then dckRight.DockManager.LoadFromStream(dockData);
+    dockData.Clear;
+    dckRight.Width := ini.ReadInteger('dckRight.DockManager', 'width', dckRight.Width);
 
     { find dock hosts }
     if (tv_Classes.HostDockSite = nil) then begin
@@ -1889,6 +1912,11 @@ begin
       dckHost := (FindComponent(ini.ReadString('DockHosts', 'fr_Props', 'pnlCenter')) as TPanel);
       fr_Props.ManualDock(dckHost);
     end;
+
+    if (not ac_VPackageTree.Checked) then tv_Packages.Visible := false;
+    if (not ac_VLog.Checked) then lb_Log.Visible := false;
+    if (not ac_VSourceSnoop.Checked) then re_SourceSnoop.Visible := false;
+    if (not ac_PropInspector.Checked) then fr_Props.Visible := false;
 
     ABWidth := ini.ReadInteger('Layout', 'ABWidth', 150);
     ac_VAutoHide.Checked := ini.ReadBool('Layout', 'AutoHide', false);
@@ -2099,6 +2127,7 @@ end;
 procedure Tfrm_UnCodeX.FormCreate(Sender: TObject);
 begin
   OnChangeVisibility := OnDockVisChange;
+  OnStartDockDrag := OnDockDragStart;
   
   Mouse.DragImmediate := false;
   Mouse.DragThreshold := 5;
@@ -2914,16 +2943,15 @@ end;
 
 procedure Tfrm_UnCodeX.ac_VPackageTreeExecute(Sender: TObject);
 begin
-  tv_Packages.Visible := mi_PackageTree.Checked;
+  //tv_Packages.Visible := mi_PackageTree.Checked;
+  ShowDockPanel(tv_Packages.HostDockSite, mi_PackageTree.Checked, tv_Packages);
   if (not tv_Packages.Visible) then
     if (ActiveControl = nil) then ActiveControl := tv_Classes;
-  ShowDockPanel(tv_Packages.HostDockSite, tv_Packages.Visible, nil);
 end;
 
 procedure Tfrm_UnCodeX.ac_VLogExecute(Sender: TObject);
 begin
-  lb_Log.Visible := mi_Log.Checked;
-  ShowDockPanel(lb_Log.Parent, lb_Log.Visible, nil);
+  ShowDockPanel(lb_Log.HostDockSite, mi_Log.Checked, lb_Log);
 end;
 
 procedure Tfrm_UnCodeX.ac_VStayOnTopExecute(Sender: TObject);
@@ -3069,9 +3097,8 @@ end;
 
 procedure Tfrm_UnCodeX.ac_VSourceSnoopExecute(Sender: TObject);
 begin
-  re_SourceSnoop.Visible := mi_SourceSnoop.Checked;
-  mi_Browse.Visible := re_SourceSnoop.Visible;
-  ShowDockPanel((re_SourceSnoop.Parent as TPanel), re_SourceSnoop.Visible, nil);
+  mi_Browse.Visible := mi_SourceSnoop.Checked;
+  ShowDockPanel(re_SourceSnoop.HostDockSite, mi_SourceSnoop.Checked, re_SourceSnoop);
   if (mi_SourceSnoop.Checked and not DoInit) then ac_SourceSnoop.Execute;
 end;
 
@@ -3373,10 +3400,10 @@ procedure Tfrm_UnCodeX.mi_PackageNameDrawItem(Sender: TObject;
 var
   capt: string;
 begin
-  ACanvas.Brush.Color := clInactiveCaptionText;
+  ACanvas.Brush.Color := clGradientInactiveCaption;
   ACanvas.FillRect(ARect);
   ACanvas.Font.Style := [fsBold];
-  ACanvas.Font.Color := clCaptionText;
+  ACanvas.Font.Color := clInactiveCaptionText;
   capt := (Sender as TMenuItem).Caption;
   capt := StringReplace(capt, '&', '', []);
   ACanvas.TextRect(ARect, ARect.Left + 5, ARect.Top+(ARect.Bottom-ARect.Top-ACanvas.TextHeight(capt)) div 2, capt);
@@ -3410,16 +3437,15 @@ procedure Tfrm_UnCodeX.dckLeftDockDrop(Sender: TObject;
 begin
   if (Sender as TPanel).VisibleDockClientCount > 0 then ShowDockPanel(Sender as TPanel, True, Source.Control)
   else if (visible) then ShowDockPanel(Sender as TPanel, True, Source.Control);
-
   if (visible) then (Sender as TPanel).DockManager.ResetBounds(True);
 end;
 
 procedure Tfrm_UnCodeX.dckLeftUnDock(Sender: TObject; Client: TControl;
   NewTarget: TWinControl; var Allow: Boolean);
 begin
-  Allow := (NewTarget <> nil);
+  Allow := (NewTarget <> nil); // prevent floating
   if (not Allow) then exit;
-  if (Sender as TPanel).VisibleDockClientCount = 1 then ShowDockPanel(Sender as TPanel, False, Client);
+  if (visible) then ShowDockPanel(Sender as TPanel, False, nil);
 end;
 
 procedure Tfrm_UnCodeX.ac_PropInspectorExecute(Sender: TObject);
@@ -3462,13 +3488,17 @@ end;
 procedure Tfrm_UnCodeX.pnlCenterUnDock(Sender: TObject; Client: TControl;
   NewTarget: TWinControl; var Allow: Boolean);
 begin
-  Allow := (NewTarget <> nil);
+  Allow := (NewTarget <> nil) and (Client <> tv_Classes);
+  if (visible) then (Sender as TPanel).DockManager.ResetBounds(True);
 end;
 
 procedure Tfrm_UnCodeX.pnlCenterDockDrop(Sender: TObject;
   Source: TDragDockObject; X, Y: Integer);
 begin
-  if (visible) then Source.Control.Show;
+  if (visible) then begin
+    Source.Control.Show;
+    (Sender as TPanel).DockManager.ResetBounds(True);
+  end;
 end;
 
 procedure Tfrm_UnCodeX.ac_SwitchTreeExecute(Sender: TObject);
