@@ -3,7 +3,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
   Top = 114
   HelpType = htKeyword
   AutoScroll = False
-  AutoSize = True
   ClientHeight = 570
   ClientWidth = 658
   Color = clBtnFace
