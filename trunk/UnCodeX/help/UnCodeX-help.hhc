@@ -26,6 +26,10 @@
 		<param name="Local" value="commandline.html">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Coding guidelines">
+		<param name="Local" value="guidelines.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="Windows">
 		</OBJECT>
 	<UL>
