@@ -226,7 +226,7 @@ end;
 function TClassAnalyser.pConst: TUConst;
 begin
   result := TUConst.Create;
-  result.comment := p.GetCopyData;
+  result.comment := trim(p.GetCopyData);
   result.name := p.TokenString;
   result.srcline := p.SourceLine;
   p.NextToken; // =
@@ -247,7 +247,7 @@ var
 begin
   result := TUProperty.Create;
   result.tag := pBrackets(true);
-  result.comment := p.GetCopyData;
+  result.comment := trim(p.GetCopyData);
   result.srcline := p.SourceLine;
   while (p.Token <> ';') do begin
     if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
@@ -304,7 +304,7 @@ begin
   i := Pos(',', result.name);
   while (i > 0) do begin
     nprop := TUProperty.Create;
-    nprop.comment := result.comment;
+    nprop.comment := trim(result.comment);
     nprop.srcline := result.srcline;
     nprop.ptype := result.ptype;
     nprop.modifiers := result.modifiers;
@@ -321,7 +321,7 @@ end;
 function TClassAnalyser.pEnum: TUEnum;
 begin
   result := TUEnum.Create;
-  result.comment := p.GetCopyData;
+  result.comment := trim(p.GetCopyData);
   result.name := p.TokenString;
   result.srcline := p.SourceLine;
   p.NextToken; // {
@@ -340,7 +340,7 @@ var
   last, prev: string;
 begin
   Result := TUStruct.Create;
-  result.comment := p.GetCopyData;
+  result.comment := trim(p.GetCopyData);
   result.name := p.TokenString;
   result.srcline := p.SourceLine;
   while (p.Token <> '{') do begin
@@ -429,7 +429,7 @@ begin
   else if (p.TokenSymbolIs('postoperator')) then result.ftype := uftPostoperator
   else if (p.TokenSymbolIs('delegate')) then result.ftype := uftDelegate
   else result.ftype := uftFunction;
-  result.comment := p.GetCopyData;
+  result.comment := trim(p.GetCopyData);
   p.NextToken;
   pBrackets; // possible operator precendence
   result.return := p.TokenString; // optional return
@@ -488,7 +488,7 @@ end;
 function TClassAnalyser.pState(modifiers: string): TUState;
 begin
   result := TUState.Create;
-  result.comment := p.GetCopyData;
+  result.comment := trim(p.GetCopyData);
   result.srcline := p.SourceLine;
   result.modifiers := modifiers;
   p.NextToken; // name
@@ -523,7 +523,7 @@ begin
       bHadClass := true;
       p.NextToken;
       uclass.name := p.TokenString;
-      uclass.comment := p.GetCopyData;
+      uclass.comment := trim(p.GetCopyData);
       p.NextToken;
       if (p.TokenSymbolIs('extends') or p.TokenSymbolIs('expands')) then begin
         p.NextToken;

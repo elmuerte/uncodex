@@ -105,6 +105,7 @@ const
   classtree_filename = 'classtree.';
   glossary_filename = 'glossary_A.';
   SOURCEPRE = 'Source_';
+  IGNORE_KEYWORD = '@ignore';
 
 implementation
 
@@ -578,8 +579,11 @@ begin
     target := TStringStream.Create('');
     try
       for i := 0 to TUPackage(data).classes.Count-1 do begin
-        template.Position := 0;
-        parseTemplate(template, target, replaceClass, TUPackage(data).classes[i]);
+        // ignore class when comment = @ignore
+        if (CompareText(TUPackage(data).classes[i].comment, IGNORE_KEYWORD) <> 0) then begin
+          template.Position := 0;
+          parseTemplate(template, target, replaceClass, TUPackage(data).classes[i]);
+        end;
         if (Self.Terminated) then break;
       end;
       replacement := target.DataString;
@@ -599,16 +603,19 @@ begin
   template := TFileStream.Create(templatedir+'class.html', fmOpenRead or fmShareDenyWrite);
   try
     for i := 0 to ClassList.Count-1 do begin
-      Status('Creating '+ClassLink(ClassList[i]), round(curPos/maxPos*100));
-      curPos := curPos+1;
-      currentClass := ClassList[i];
-      target := TFileStream.Create(htmloutputdir+PATHDELIM+ClassLink(ClassList[i]), fmCreate);
-      try
-        template.Position := 0;
-        parseTemplate(template, target, replaceClass, ClassList[i]);
-        if (Self.Terminated) then break;
-      finally
-        target.Free;
+      // ignore class when comment = @ignore
+      if (CompareText(ClassList[i].comment, IGNORE_KEYWORD) <> 0) then begin
+        Status('Creating '+ClassLink(ClassList[i]), round(curPos/maxPos*100));
+        curPos := curPos+1;
+        currentClass := ClassList[i];
+        target := TFileStream.Create(htmloutputdir+PATHDELIM+ClassLink(ClassList[i]), fmCreate);
+        try
+          template.Position := 0;
+          parseTemplate(template, target, replaceClass, ClassList[i]);
+          if (Self.Terminated) then break;
+        finally
+          target.Free;
+        end;
       end;
     end;
   finally
@@ -699,8 +706,11 @@ begin
     for i := 0 to TTreeNode(TUClass(data).treenode).count-1 do begin
       uclass := TUClass(TTreeNode(TUClass(data).treenode)[i].Data);
       if (uclass <> nil) then begin
-        if (replacement <> '') then replacement := replacement+', ';
-        replacement := replacement+'<a href="'+ClassLink(uclass)+'">'+uclass.name+'</a>'
+        // ignore class when comment = @ignore
+        if (CompareText(uclass.comment, IGNORE_KEYWORD) <> 0) then begin
+          if (replacement <> '') then replacement := replacement+', ';
+          replacement := replacement+'<a href="'+ClassLink(uclass)+'">'+uclass.name+'</a>'
+        end;
       end;
       if (Self.Terminated) then break;
     end;
@@ -714,8 +724,11 @@ begin
     target := TStringStream.Create('');
     try
       for i := 0 to TUClass(data).consts.Count-1 do begin
-        template.Position := 0;
-        parseTemplate(template, target, replaceClassConst, TUClass(data).consts[i]);
+        // ignore const when comment = @ignore
+        if (CompareText(TUClass(data).consts[i].comment, IGNORE_KEYWORD) <> 0) then begin
+          template.Position := 0;
+          parseTemplate(template, target, replaceClassConst, TUClass(data).consts[i]);
+        end;
         if (Self.Terminated) then break;
       end;
       replacement := target.DataString;
@@ -739,8 +752,11 @@ begin
           if (not ConstCache.Exists(tmp)) then begin
             parseTemplate(template, target, replaceClass, up);
             for i := 0 to up.consts.Count-1 do begin
-              if (i > 0) then target.WriteString(', ');
-              target.WriteString('<a href="'+ClassLink(up)+'#'+up.consts[i].name+'">'+up.consts[i].name+'</a>');
+              // ignore const when comment = @ignore
+              if (CompareText(up.consts[i].comment, IGNORE_KEYWORD) <> 0) then begin
+                if (i > 0) then target.WriteString(', ');
+                target.WriteString('<a href="'+ClassLink(up)+'#'+up.consts[i].name+'">'+up.consts[i].name+'</a>');
+              end;
             end;
             replacement := replacement+target.DataString;
             ConstCache.Items[tmp] := target.DataString; // add to cache
@@ -770,8 +786,11 @@ begin
     TUClass(data).properties.Sort;
     try
       for i := 0 to TUClass(data).properties.Count-1 do begin
-        template.Position := 0;
-        parseTemplate(template, target, replaceClassVar, TUClass(data).properties[i]);
+        // ignore var when comment = @ignore
+        if (CompareText(TUClass(data).properties[i].comment, IGNORE_KEYWORD) <> 0) then begin
+          template.Position := 0;
+          parseTemplate(template, target, replaceClassVar, TUClass(data).properties[i]);
+        end;
         if (Self.Terminated) then break;
       end;
       replacement := target.DataString;
@@ -796,8 +815,11 @@ begin
             up.properties.Sort;
             parseTemplate(template, target, replaceClass, up);
             for i := 0 to up.properties.Count-1 do begin
-              if (i > 0) then target.WriteString(', ');
-              target.WriteString('<a href="'+ClassLink(up)+'#'+up.properties[i].name+'">'+up.properties[i].name+'</a>');
+              // ignore var when comment = @ignore
+              if (CompareText(up.properties[i].comment, IGNORE_KEYWORD) <> 0) then begin
+                if (i > 0) then target.WriteString(', ');
+                target.WriteString('<a href="'+ClassLink(up)+'#'+up.properties[i].name+'">'+up.properties[i].name+'</a>');
+              end;                
             end;
             replacement := replacement+target.DataString;
             VarCache.Items[tmp] := target.DataString; // add to cache
@@ -826,8 +848,11 @@ begin
     target := TStringStream.Create('');
     try
       for i := 0 to TUClass(data).enums.Count-1 do begin
-        template.Position := 0;
-        parseTemplate(template, target, replaceClassEnum, TUClass(data).enums[i]);
+        // ignore enum when comment = @ignore
+        if (CompareText(TUClass(data).enums[i].comment, IGNORE_KEYWORD) <> 0) then begin
+          template.Position := 0;
+          parseTemplate(template, target, replaceClassEnum, TUClass(data).enums[i]);
+        end;
         if (Self.Terminated) then break;
       end;
       replacement := target.DataString;
@@ -851,8 +876,11 @@ begin
           if (not EnumCache.Exists(tmp)) then begin
             parseTemplate(template, target, replaceClass, up);
             for i := 0 to up.enums.Count-1 do begin
-              if (i > 0) then target.WriteString(', ');
-              target.WriteString('<a href="'+ClassLink(up)+'#'+up.enums[i].name+'">'+up.enums[i].name+'</a>');
+              // ignore enum when comment = @ignore
+              if (CompareText(up.enums[i].comment, IGNORE_KEYWORD) <> 0) then begin
+                if (i > 0) then target.WriteString(', ');
+                target.WriteString('<a href="'+ClassLink(up)+'#'+up.enums[i].name+'">'+up.enums[i].name+'</a>');
+              end;
             end;
             replacement := replacement+target.DataString;
             EnumCache.Items[tmp] := target.DataString; // add to cache
@@ -881,8 +909,11 @@ begin
     target := TStringStream.Create('');
     try
       for i := 0 to TUClass(data).structs.Count-1 do begin
-        template.Position := 0;
-        parseTemplate(template, target, replaceClassStruct, TUClass(data).structs[i]);
+        // ignore struct when comment = @ignore
+        if (CompareText(TUClass(data).structs[i].comment, IGNORE_KEYWORD) <> 0) then begin
+          template.Position := 0;
+          parseTemplate(template, target, replaceClassStruct, TUClass(data).structs[i]);
+        end;
         if (Self.Terminated) then break;
       end;
       replacement := target.DataString;
@@ -906,8 +937,11 @@ begin
           if (not StructCache.Exists(tmp)) then begin
             parseTemplate(template, target, replaceClass, up);
             for i := 0 to up.structs.Count-1 do begin
-              if (i > 0) then target.WriteString(', ');
-              target.WriteString('<a href="'+ClassLink(up)+'#'+up.structs[i].name+'">'+up.structs[i].name+'</a>');
+              // ignore struct when comment = @ignore
+              if (CompareText(up.structs[i].comment, IGNORE_KEYWORD) <> 0) then begin
+                if (i > 0) then target.WriteString(', ');
+                target.WriteString('<a href="'+ClassLink(up)+'#'+up.structs[i].name+'">'+up.structs[i].name+'</a>');
+              end;
             end;
             replacement := replacement+target.DataString;
             StructCache.Items[tmp] := target.DataString; // add to cache
@@ -936,8 +970,11 @@ begin
     target := TStringStream.Create('');
     try
       for i := 0 to TUClass(data).functions.Count-1 do begin
-        template.Position := 0;
-        parseTemplate(template, target, replaceClassFunction, TUClass(data).functions[i]);
+        // ignore function when comment = @ignore
+        if (CompareText(TUClass(data).functions[i].comment, IGNORE_KEYWORD) <> 0) then begin
+          template.Position := 0;
+          parseTemplate(template, target, replaceClassFunction, TUClass(data).functions[i]);
+        end;
         if (Self.Terminated) then break;
       end;
       replacement := target.DataString;
@@ -963,9 +1000,12 @@ begin
             last := '';
             for i := 0 to up.functions.Count-1 do begin
               if (CompareText(last,up.functions[i].name) <> 0) then begin
-                if (i > 0) then target.WriteString(', ');
-                target.WriteString('<a href="'+ClassLink(up)+'#'+HTMLChars(up.functions[i].name)+'">'+HTMLChars(up.functions[i].name)+'</a>');
-                last := up.functions[i].name;
+                // ignore function when comment = @ignore
+                if (CompareText(up.functions[i].comment, IGNORE_KEYWORD) <> 0) then begin
+                  if (i > 0) then target.WriteString(', ');
+                  target.WriteString('<a href="'+ClassLink(up)+'#'+HTMLChars(up.functions[i].name)+'">'+HTMLChars(up.functions[i].name)+'</a>');
+                  last := up.functions[i].name;
+                end;
               end;
             end;
             replacement := replacement+target.DataString;
@@ -1389,6 +1429,8 @@ procedure THTMLOutput.ProcTreeNode(var replacement: string; node: TTreeNode; bas
 var
   i: integer;
 begin
+  // ignore class when comment = @ignore
+  if (CompareText(TUClass(node.data).comment, IGNORE_KEYWORD) = 0) then exit;
   Status('Creating '+classtree_filename+' class: '+node.Text);
   for i := 0 to node.Count-1 do begin
     replacement := replacement+basestring+TNODE+'<a href="'+ClassLink(TUClass(node.Item[i].data))+'" name="'+node.Item[i].Text+'">'+node.Item[i].Text+'</a>'+#13#10;
@@ -1435,36 +1477,48 @@ begin
   try
     // create table
     for i := 0 to ClassList.Count-1 do begin
+      // ignore class when comment = @ignore
+      if (CompareText(classlist[i].comment, IGNORE_KEYWORD) = 0) then continue;
       gi := TGlossaryItem.Create;
       cgi := gi;
       gi.classname := classlist[i].name;
       gi.link := ClassLink(classlist[i]);
       gl.AddObject(classlist[i].name, gi);
       for j := 0 to ClassList[i].consts.Count-1 do begin
+        // ignore class when comment = @ignore
+        if (CompareText(ClassList[i].consts[j].comment, IGNORE_KEYWORD) = 0) then continue;
         gi := TGlossaryItem.Create;
         gi.classname := cgi.classname;
         gi.link := cgi.link+'#'+classlist[i].consts[j].name;
         gl.AddObject(classlist[i].consts[j].name, gi);
       end;
       for j := 0 to ClassList[i].properties.Count-1 do begin
+        // ignore class when comment = @ignore
+        if (CompareText(ClassList[i].properties[j].comment, IGNORE_KEYWORD) = 0) then continue;
         gi := TGlossaryItem.Create;
         gi.classname := cgi.classname;
         gi.link := cgi.link+'#'+classlist[i].properties[j].name;
         gl.AddObject(classlist[i].properties[j].name, gi);
       end;
       for j := 0 to ClassList[i].enums.Count-1 do begin
+        // ignore class when comment = @ignore
+        if (CompareText(ClassList[i].enums[j].comment, IGNORE_KEYWORD) = 0) then continue;
         gi := TGlossaryItem.Create;
         gi.classname := cgi.classname;
         gi.link := cgi.link+'#'+classlist[i].enums[j].name;
         gl.AddObject(classlist[i].enums[j].name, gi);
       end;
       for j := 0 to ClassList[i].structs.Count-1 do begin
+        // ignore class when comment = @ignore
+        if (CompareText(ClassList[i].structs[j].comment, IGNORE_KEYWORD) = 0) then continue;
         gi := TGlossaryItem.Create;
         gi.classname := cgi.classname;
         gi.link := cgi.link+'#'+classlist[i].structs[j].name;
         gl.AddObject(classlist[i].structs[j].name, gi);
       end;
       for j := 0 to ClassList[i].functions.Count-1 do begin
+        // ignore class when comment = @ignore
+        if (CompareText(ClassList[i].functions[j].comment, IGNORE_KEYWORD) = 0) then continue;
         gi := TGlossaryItem.Create;
         gi.classname := cgi.classname;
         gi.link := cgi.link+'#'+classlist[i].functions[j].name;
@@ -1566,6 +1620,8 @@ begin
   template2 := TFileStream.Create(templatedir+'sourcecode-2.html', fmOpenRead or fmShareDenyWrite);
   try
     for i := 0 to ClassList.Count-1 do begin
+      // ignore class when comment = @ignore
+      if (CompareText(ClassList[i].comment, IGNORE_KEYWORD) = 0) then continue;
       Status('Creating source '+ClassLink(ClassList[i]), round(curPos/maxPos*100));
       curPos := curPos+1;
       currentClass := ClassList[i];
