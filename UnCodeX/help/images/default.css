@@ -51,15 +51,15 @@ SPAN.title {
 SPAN.title_high {
 	color: #E1FFFF;
 	position: absolute;	
-	left: -2px;
-	top: -2px;
+	left: -1px;
+	top: -1px;
 }
 
 SPAN.title_low {
 	color: #004E4F;
 	position: absolute;
-	left: 2px;
-	top: 2px;
+	left: 1px;
+	top: 1px;
 }
 
 DIV.content {
