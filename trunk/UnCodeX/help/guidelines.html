@@ -74,6 +74,29 @@ To add descriptions to declarations (structs/vars/functions/...) include the spe
 <b>native</b>(250) <b>static</b> <b>final</b> <b>function</b> <b>int</b> Max ( <b>int</b> A, <b>int</b> B );
 </pre>
 
+<a name="external"></a><h2>External descriptions</h2>
+since you can't change the code maybe by somebody else (e.g. Epic), you can't add descriptions for declarations in the source code. For this it's possible to declare the descriptions in an external comment file. This file has the following format:
+<pre>
+[&lt;package name&gt;.&lt;class name&gt;.&lt;member name&gt;]
+&lt;descriptions&gt;
+</pre>
+&lt;member name&gt; would be the name of the function, variable, constant, etc.<br />
+For example thw above example would be:
+<pre>
+[Core.Object.Max]
+Return the highest of both variables
+</pre>
+The comment may contain newlines.<br />
+There are a few additional cases. To comment the variables of a struct use the following:
+<pre>
+[&lt;package name&gt;.&lt;class name&gt;.&lt;struct name&gt;.&lt;member name&gt;]
+</pre>
+And to give a seperate comment to functions defined in different states use the following:
+<pre>
+[&lt;package name&gt;.&lt;class name&gt;.&lt;function name&gt; &lt;state name&gt;]
+</pre>
+
+
 <h1>Special comments</h1>
 <h2>@ignore</h2>
 If you want to ingore a class or declaration in the HTML output just add a comment with the only text: @ignore
