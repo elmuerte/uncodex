@@ -26,6 +26,8 @@ type
     procedure FormDblClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure lv_PropertiesClick(Sender: TObject);
+    procedure lv_PropertiesInfoTip(Sender: TObject; Item: TListItem;
+      var InfoTip: String);
   private
     procedure WMActivate(var Message: TWMActivate); message WM_Activate;
   public
@@ -71,11 +73,26 @@ begin
   end;
 end;
 
+function ShiftString(input: string; piece: integer = 1; delims: string = ' '): string;
+var
+  i: integer;
+begin
+  while (piece > 0) do begin
+    i := LastDelimiter(delims, input);
+    Result := copy(input, i+1, MaxInt);
+    Delete(input, i, MaxInt);
+    Dec(piece);
+  end;
+end;
+
+{ Tfrm_Tags }
+
 function Tfrm_Tags.LoadClass: boolean;
 var
   i, j: integer;
   pclass : TUClass;
   li: TListItem;
+  return: string;
 begin
   if (uclass = nil) then begin
     Self.Free;
@@ -100,6 +117,7 @@ begin
         else li.SubItems.Add(pclass.consts[i].name);
       li.SubItems.Add(IntToStr(pclass.consts[i].srcline));
       li.SubItems.Add(IntToStr(j));
+      li.SubItems.Add(pclass.consts[i].name+' = '+pclass.consts[i].value);
       li.Data := pclass;
       li.ImageIndex := 0;
     end;
@@ -120,6 +138,7 @@ begin
         else li.SubItems.Add(pclass.properties[i].name);
       li.SubItems.Add(IntToStr(pclass.properties[i].srcline));
       li.SubItems.Add(IntToStr(j));
+      li.SubItems.Add(pclass.properties[i].ptype+' '+pclass.properties[i].name);
       li.Data := pclass;
       li.ImageIndex := 1;
     end;
@@ -140,6 +159,7 @@ begin
         else li.SubItems.Add(pclass.enums[i].name);
       li.SubItems.Add(IntToStr(pclass.enums[i].srcline));
       li.SubItems.Add(IntToStr(j));
+      li.SubItems.Add(pclass.enums[i].name+' = '+pclass.enums[i].options);
       li.Data := pclass;
       li.ImageIndex := 2;
     end;
@@ -160,6 +180,7 @@ begin
         else li.SubItems.Add(pclass.structs[i].name);
       li.SubItems.Add(IntToStr(pclass.structs[i].srcline));
       li.SubItems.Add(IntToStr(j));
+      li.SubItems.Add(li.SubItems[0]);
       li.Data := pclass;
       li.ImageIndex := 3;
     end;
@@ -180,6 +201,20 @@ begin
         else li.SubItems.Add(pclass.functions[i].name);
       li.SubItems.Add(IntToStr(pclass.functions[i].srcline));
       li.SubItems.Add(IntToStr(j));
+      if ((pclass.functions[i].ftype = uftFunction) or (pclass.functions[i].ftype = uftEvent)) then begin
+        if (pclass.functions[i].return = '') then return := ''
+          else return := pclass.functions[i].return+' = ';
+        li.SubItems.Add(return+pclass.functions[i].name+' ('+pclass.functions[i].params+' )');
+      end
+      else if (pclass.functions[i].ftype = uftPreOperator) then begin
+        li.SubItems.Add(pclass.functions[i].return+' = '+pclass.functions[i].name+' '+ShiftString(pclass.functions[i].params, 2));
+      end
+      else if (pclass.functions[i].ftype = uftPostOperator) then begin
+        li.SubItems.Add(pclass.functions[i].return+' = '+ShiftString(pclass.functions[i].params, 2)+' '+pclass.functions[i].name);
+      end
+      else if (pclass.functions[i].ftype = uftOperator) then begin
+        li.SubItems.Add(pclass.functions[i].return+' = '+ShiftString(ShiftString(pclass.functions[i].params, 2, ','), 3)+' '+pclass.functions[i].name+' '+ShiftString(pclass.functions[i].params, 2));
+      end;
       li.Data := pclass;
       if (pclass.functions[i].ftype = uftFunction) then li.ImageIndex := 4
       else if (pclass.functions[i].ftype = uftEvent) then li.ImageIndex := 5
@@ -194,8 +229,6 @@ begin
   if (Visible) then lv_Properties.Columns[1].Width := lv_Properties.ClientWidth-lv_Properties.Columns[0].Width
   else if (lv_Properties.Items.Count > lv_Properties.VisibleRowCount) then lv_Properties.Columns[1].Width := lv_Properties.ClientWidth-lv_Properties.Columns[0].Width-GetSystemMetrics(SM_CXVSCROLL);
   lv_Properties.Columns.EndUpdate;
-
-  Caption := IntToStr(lv_Properties.Columns[1].Width);
   result := true;
 end;
 
@@ -294,8 +327,17 @@ end;
 
 procedure Tfrm_Tags.lv_PropertiesClick(Sender: TObject);
 begin
-  if (lv_Properties.Selected.Caption <> '-') then
+  if (lv_Properties.Selected.Caption <> '-') then begin
     Clipboard.SetTextBuf(PChar(lv_Properties.Selected.SubItems[0]));
+  end;
+end;
+
+procedure Tfrm_Tags.lv_PropertiesInfoTip(Sender: TObject; Item: TListItem;
+  var InfoTip: String);
+begin
+  if (Item.Caption = '-') then InfoTip := '';
+  if (Item.SubItems.Count < 4) then exit;
+  InfoTip := Item.SubItems[3];
 end;
 
 end.

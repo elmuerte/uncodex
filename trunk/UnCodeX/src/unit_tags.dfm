@@ -53,19 +53,26 @@ object frm_Tags: Tfrm_Tags
       item
         Caption = 'Depth'
         Width = 0
+      end
+      item
+        Caption = 'HintText'
+        Width = 0
       end>
     ColumnClick = False
     HideSelection = False
     IconOptions.WrapText = False
     ReadOnly = True
     RowSelect = True
+    ParentShowHint = False
     ShowColumnHeaders = False
+    ShowHint = True
     SmallImages = il_Types
     TabOrder = 0
     ViewStyle = vsReport
     OnClick = lv_PropertiesClick
     OnCustomDrawItem = lv_PropertiesCustomDrawItem
     OnDblClick = lv_PropertiesDblClick
+    OnInfoTip = lv_PropertiesInfoTip
   end
   object ed_InheritanceLevel: TEdit
     Left = 96

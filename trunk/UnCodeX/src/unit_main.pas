@@ -12,6 +12,8 @@ const
   WM_APPBAR                      = WM_USER+$100;
   UM_APP_ID_CHECK                = WM_APP + 101;
   UM_RESTORE_APPLICATION         = WM_APP + 102;
+  TV_ALWAYSEXPAND                = 0;
+  TV_NOEXPAND                    = 1;
 
 type
   Tfrm_UnCodeX = class(TForm)
@@ -196,6 +198,12 @@ type
     procedure mi_Help2Click(Sender: TObject);
     procedure ac_HelpExecute(Sender: TObject);
     procedure ac_AnalyseModifiedExecute(Sender: TObject);
+    procedure tv_ClassesExpanding(Sender: TObject; Node: TTreeNode;
+      var AllowExpansion: Boolean);
+    procedure tv_ClassesKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure tv_ClassesMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -391,6 +399,8 @@ begin
       tv_Packages.Items.AlphaSort(true);
       ClassList.Sort;
       tv_Classes.Items.AlphaSort(true);
+      tv_Classes.Tag := TV_ALWAYSEXPAND;
+      tv_Packages.Tag := TV_ALWAYSEXPAND;
       if (ExpandObject and (tv_Classes.Items.Count > 0)) then
         tv_Classes.Items.GetFirstNode.Expand(false);
       StatusReport('State loaded');
@@ -1230,6 +1240,7 @@ end;
 procedure Tfrm_UnCodeX.mi_ExpandallClick(Sender: TObject);
 begin
   if (ActiveControl.ClassType = TTreeView) then begin
+    Tag := TV_ALWAYSEXPAND;
     (ActiveControl as TTreeView).FullExpand;
   end;
 end;
@@ -1237,6 +1248,7 @@ end;
 procedure Tfrm_UnCodeX.mi_CollapseallClick(Sender: TObject);
 begin
   if (ActiveControl.ClassType = TTreeView) then begin
+    Tag := TV_ALWAYSEXPAND;
     (ActiveControl as TTreeView).FullCollapse;
   end;
 end;
@@ -1359,6 +1371,7 @@ begin
         if (CSprops[2]) then res := AnsiCompareText(items[i].Text, searchclass) = 0
           else res := AnsiContainsText(items[i].Text, searchclass);
         if (res) then begin
+          Tag := TV_ALWAYSEXPAND;
           Select(items[i]);
           if (OpenFind) then ac_OpenClass.Execute;
           if (OpenTags) then ac_Tags.Execute;
@@ -1462,8 +1475,6 @@ begin
     if (htOnItem in ht) or (htNowhere in ht) then begin
       ac_OpenClass.Execute;
     end;
-    if (Selected.Expanded) then Selected.Collapse(false)
-      else Selected.Expand(false)
   end;
 end;
 
@@ -1611,6 +1622,38 @@ begin
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
   end;
+end;
+
+procedure Tfrm_UnCodeX.tv_ClassesExpanding(Sender: TObject;
+  Node: TTreeNode; var AllowExpansion: Boolean);
+var
+  pt: TPoint;
+  ht: THitTests;
+begin
+  if (Sender.ClassType <> TTreeView) then exit;
+  with (Sender as TTreeView) do begin
+    if (Tag = TV_ALWAYSEXPAND) then begin
+      AllowExpansion := true;
+      exit;
+    end;
+    pt := ScreenToClient(Mouse.CursorPos);
+    ht := GetHitTestInfoAt(Pt.X, Pt.y);
+    if (htOnItem in ht) or (htNowhere in ht) then begin
+      AllowExpansion := false;
+    end;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.tv_ClassesKeyDown(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  (Sender as TComponent).Tag := TV_ALWAYSEXPAND;
+end;
+
+procedure Tfrm_UnCodeX.tv_ClassesMouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+  (Sender as TComponent).Tag := TV_NOEXPAND;
 end;
 
 end.

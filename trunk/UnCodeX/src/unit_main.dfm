@@ -74,7 +74,11 @@ object frm_UnCodeX: Tfrm_UnCodeX
     RowSelect = True
     SortType = stText
     TabOrder = 2
+    OnCollapsing = tv_ClassesExpanding
     OnDblClick = tv_ClassesDblClick
+    OnExpanding = tv_ClassesExpanding
+    OnKeyDown = tv_ClassesKeyDown
+    OnMouseDown = tv_ClassesMouseDown
   end
   object tv_Packages: TTreeView
     Left = 0
@@ -93,7 +97,11 @@ object frm_UnCodeX: Tfrm_UnCodeX
     RowSelect = True
     SortType = stText
     TabOrder = 1
+    OnCollapsing = tv_ClassesExpanding
     OnDblClick = tv_ClassesDblClick
+    OnExpanding = tv_ClassesExpanding
+    OnKeyDown = tv_ClassesKeyDown
+    OnMouseDown = tv_ClassesMouseDown
   end
   object sb_Status: TStatusBar
     Left = 0

@@ -41,7 +41,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_ProgramOptions
+    ActivePage = ts_IgnorePackages
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -340,7 +340,7 @@ object frm_Settings: Tfrm_Settings
           Top = 16
           Width = 27
           Height = 25
-          Anchors = [akRight, akBottom]
+          Anchors = [akTop, akRight]
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -364,7 +364,7 @@ object frm_Settings: Tfrm_Settings
           Top = 48
           Width = 27
           Height = 25
-          Anchors = [akRight, akBottom]
+          Anchors = [akTop, akRight]
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -11

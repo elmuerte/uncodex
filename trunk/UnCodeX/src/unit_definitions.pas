@@ -17,6 +17,17 @@ type
     NewHandle: integer;
   end;
 
+  TPropertyHintWindow = class(THintWindow)
+    constructor Create(AOwner: TComponent); override;
+    function CalcHintRect(MaxWidth: Integer; const AHint: string; AData: Pointer): TRect; override;
+  public
+    procedure ActivateHint(Rect: TRect; const AHint: string); override;
+  protected
+    procedure Paint; override;
+  published
+    property Caption;
+  end;
+
   function StrRepeat(line: string; count: integer): string;
 
   function SearchQuery(const ACaption, APrompt: string; var value: string; var checkvalue: array of boolean;
@@ -25,7 +36,7 @@ type
   
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '054 Beta';
+  APPVERSION = '055 Beta';
 
   PATHDELIM = '\';
   WILDCARD = '*.*';
@@ -187,4 +198,60 @@ begin
   result := SearchQuery(ACaption, APrompt, value, tmpb, history, tmps);
 end;
 
+{ TPropertyHintWindow }
+
+constructor TPropertyHintWindow.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  Color := clWindow;
+  Canvas.Brush.Color := Color;
+end;
+
+procedure TPropertyHintWindow.Paint;
+var
+  R: TRect;
+begin
+  R := ClientRect;
+  with Canvas do begin
+    Brush.Style := bsSolid;
+    Brush.Color := clHighlight;
+    Pen.Color   := clHighlightText;
+    Pen.Width   := 1;
+    Rectangle(R.Top, R.Left, R.Left+18, R.Bottom);
+    Canvas.Font.Name := 'Marlett';
+    Canvas.Font.Style := [fsBold];
+    Canvas.Font.Color := clHighlightText;
+    Canvas.TextOut(((R.Left + 18 - Canvas.TextWidth('s')) div 2), (R.Bottom div 2) - (Canvas.Textheight('s') div 2), '?');
+  end;
+
+  Canvas.Font.Name := 'Arial';
+  Canvas.Font.Style := [fsBold];
+  Canvas.Font.Color := clWindowText;
+  Color := clWindow;
+  Canvas.Brush.Color := Color;
+
+  Canvas.Brush.Style := bsClear;
+  R.Top := R.Top+2;
+  R.Left := R.Left+24;
+  DrawText(Canvas.Handle, PChar(Caption), -1, R, DT_LEFT or DT_NOPREFIX or
+    DT_WORDBREAK or DrawTextBiDiModeFlagsReadingOnly or DT_VCENTER);
+end;
+
+procedure TPropertyHintWindow.ActivateHint(Rect: TRect; const AHint: string);
+begin
+  inherited;
+end;
+
+function TPropertyHintWindow.CalcHintRect(MaxWidth: Integer; const AHint: string; AData: Pointer): TRect;
+begin
+  Result := Rect(0, 0, MaxWidth, 0);
+  DrawText(Canvas.Handle, PChar(AHint), -1, Result, DT_CALCRECT or DT_LEFT or
+    DT_WORDBREAK or DT_NOPREFIX or DrawTextBiDiModeFlagsReadingOnly);
+  Inc(Result.Right, 6+24);
+  Inc(Result.Bottom, 2);
+end;
+
+initialization
+  Application.HintColor := clWindow;
+  HintWindowClass := TPropertyHintWindow;
 end.
