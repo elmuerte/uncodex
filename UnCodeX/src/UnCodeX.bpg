@@ -9,7 +9,8 @@ MAKE = $(ROOT)\bin\make.exe -$(MAKEFLAGS) -f$**
 DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
-PROJECTS = UnCodeX.exe out_sample.dll out_wikifier.dll ucxc.exe out_graphviz.dll
+PROJECTS = UnCodeX.exe out_sample.dll out_wikifier.dll ucxc.exe \
+  out_graphviz.dll ucxcpp.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -27,6 +28,9 @@ ucxc.exe: ucxc\ucxc.dpr
   $(DCC)
 
 out_graphviz.dll: unit_graphviz\out_graphviz.dpr
+  $(DCC)
+
+ucxcpp.exe: ucxcpp\ucxcpp.dpr
   $(DCC)
 
 

@@ -40,7 +40,8 @@ uses
   unit_rtfhilight in 'unit_rtfhilight.pas',
   unit_richeditex in 'unit_richeditex.pas',
   unit_utils in 'unit_utils.pas',
-  unit_searchform in 'unit_searchform.pas' {frm_SearchForm};
+  unit_searchform in 'unit_searchform.pas' {frm_SearchForm},
+  unit_clpipe in 'unit_clpipe.pas';
 
 {$R *.res}
 

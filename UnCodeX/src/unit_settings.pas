@@ -164,6 +164,12 @@ type
     Label11: TLabel;
     ed_TabsToSpaces: TEdit;
     ud_TabsToSpaces: TUpDown;
+    bvl_Sep1: TBevel;
+    ed_InlineSearchTimeout: TEdit;
+    lbl_InlineSearchTimeout: TLabel;
+    ud_InlineSearchTimeout: TUpDown;
+    lbl_CPP: TLabel;
+    ed_CPPApp: TEdit;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);

@@ -171,6 +171,7 @@ type
     mi_N17: TMenuItem;
     mi_ClearHilight: TMenuItem;
     mi_FindSelection: TMenuItem;
+    tmr_InlineSearch: TTimer;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -242,6 +243,8 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure ae_AppEventException(Sender: TObject; E: Exception);
     procedure tv_ClassesKeyPress(Sender: TObject; var Key: Char);
+    procedure tmr_InlineSearchTimer(Sender: TObject);
+    procedure tv_ClassesExit(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -279,6 +282,9 @@ type
     procedure LoadOutputModules;
     procedure miCustomOutputClick(sender: TObject);
     procedure CallCustomOutputModule(module: string; selectedclass: TUClass = nil);
+    // inline search
+    procedure InlineSearchNext(skipcurrent: boolean = false);
+    procedure InlineSearchPrevious(skipcurrent: boolean = false);
   public
     statustext : string; // current status text
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
@@ -313,9 +319,8 @@ var
   ClassList: TUClassList;
   // class search vars
   SearchConfig: TClassSearch;
-  InlineSearch: string; 
-  {searchclass: string;
-  CSprops: array[0..2] of boolean;}
+  IsInlineSearch: boolean;
+  InlineSearch: string;
   OpenFind: boolean = false; // only on startup
   OpenTags: boolean = false; // only on startup
   // batch vars
@@ -341,7 +346,7 @@ var
   AnalyseModified: boolean;
   LoadCustomOutputModules: boolean = true;
   // HTML out
-  HTMLOutputDir, TemplateDir, HTMLTargetExt: string;
+  HTMLOutputDir, TemplateDir, HTMLTargetExt, CPPApp: string;
   TabsToSpaces: integer;
   // HTML Help out
   HHCPath, HTMLHelpFile, HHTitle: string;
@@ -926,6 +931,47 @@ begin
 end;
 
 { Custom output modules -- END }
+
+{ Inline search }
+
+procedure Tfrm_UnCodeX.InlineSearchNext(skipcurrent: boolean = false);
+var
+  tv: TTreeView;
+  i,j: integer;
+begin
+  if (InlineSearch = '') then exit;
+  if (ActiveControl.ClassType <> TTreeView) then ActiveControl := tv_Classes;
+  tv := TTreeView(ActiveControl);
+  j := tv.Selected.AbsoluteIndex;
+  if (skipcurrent) then Inc(j);
+  for i := j to tv.Items.Count-1 do begin
+    if (CompareText(Copy(tv.Items[i].Text, 1, Length(inlinesearch)), inlinesearch) = 0) then begin
+      tv.Select(tv.Items[i]);
+      exit;
+    end
+  end;
+end;
+
+procedure Tfrm_UnCodeX.InlineSearchPrevious(skipcurrent: boolean = false);
+var
+  tv: TTreeView;
+  i,j: integer;
+begin
+  if (InlineSearch = '') then exit;
+  if (ActiveControl.ClassType <> TTreeView) then ActiveControl := tv_Classes;
+  tv := TTreeView(ActiveControl);
+  j := tv.Selected.AbsoluteIndex;
+  if (skipcurrent) then Inc(j);
+  for i := j downto 0 do begin
+    if (CompareText(Copy(tv.Items[i].Text, 1, Length(inlinesearch)), inlinesearch) = 0) then begin
+      tv.Select(tv.Items[i]);
+      exit;
+    end
+  end;
+end;
+
+{ Inline search -- END
+
 { Custom methods -- END}
 { Auto generated methods }
 
@@ -965,8 +1011,9 @@ begin
     ac_VToolbar.Checked := ini.ReadBool('Layout', 'Toolbar', true);
     mi_Toolbar.OnClick(Sender);
     ac_VPackageTree.Checked := ini.ReadBool('Layout', 'PackageTree', true);
-    mi_PackageTree.OnClick(Sender);
     tv_Packages.Width := ini.ReadInteger('Layout', 'PackageTreeWidth', tv_Packages.Width);
+    if (spl_Main1.MinSize > tv_Packages.Width) then tv_Packages.Width := spl_Main1.MinSize;
+    mi_PackageTree.OnClick(Sender);
     //ac_ClassTree.Checked := ini.ReadBool('Layout', 'ClassTree', true);
     //mi_ClassTree.OnClick(Sender);
     lb_Log.Height := ini.ReadInteger('Layout', 'LogHeight', lb_Log.Height);
@@ -974,6 +1021,7 @@ begin
     mi_Log.OnClick(Sender);
     ac_VSourceSnoop.Checked := ini.ReadBool('Layout', 'SourceSnoop', false);
     re_SourceSnoop.Width := ini.ReadInteger('Layout', 'SourceSnoopWidth', re_SourceSnoop.Width);
+    if (spl_Main3.MinSize > re_SourceSnoop.Width) then re_SourceSnoop.Width := spl_Main3.MinSize;
     mi_SourceSnoop.OnClick(Sender);
     ac_VStayOnTop.Checked := ini.ReadBool('Layout', 'StayOnTop', false);
     if (ac_VStayOnTop.Checked) then FormStyle := fsStayOnTop;
@@ -1029,6 +1077,7 @@ begin
     TemplateDir := ini.ReadString('Config', 'TemplateDir', ExtractFilePath(ParamStr(0))+'Templates'+PATHDELIM+'UnrealWiki');
     HTMLTargetExt := ini.ReadString('Config', 'HTMLTargetExt', '');
     TabsToSpaces := ini.ReadInteger('Config', 'TabsToSpaces', 0);
+    CPPApp := ini.ReadString('Config', 'CPP', '');
     HHCPath := ini.ReadString('Config', 'HHCPath', '');
     HTMLHelpFile := ini.ReadString('Config', 'HTMLHelpFile', ExtractFilePath(ParamStr(0))+'UnCodeX.chm');
     HHTitle := ini.ReadString('Config', 'HHTitle', '');
@@ -1044,6 +1093,7 @@ begin
     if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ConfigFile)+StateFile;
     LoadCustomOutputModules := ini.ReadBool('config', 'LoadOutputModules', LoadCustomOutputModules);
     ClassPropertiesWindow := ini.ReadBool('config', 'ClassPropertiesWindow', ClassPropertiesWindow);
+    tmr_InlineSearch.Interval := ini.ReadInteger('config', 'InlineSearchTimeout', (tmr_InlineSearch.Interval div 1000)) * 1000;
     { Program configuration -- END }
     for i := 0 to al_Main.ActionCount-1 do begin
       TAction(al_Main.Actions[i]).ShortCut := TextToShortCut(ini.ReadString('HotKeys', TAction(al_Main.Actions[i]).Caption, ShortCutToText(TAction(al_Main.Actions[i]).ShortCut)));
@@ -1185,6 +1235,7 @@ begin
     htmlconfig.CreateSource := true; // TODO: make configurable
     htmlconfig.TargetExtention := HTMLTargetExt;
     htmlconfig.TabsToSpaces := TabsToSpaces;
+    htmlconfig.CPP := CPPApp;
     runningthread := THTMLoutput.Create(htmlconfig, StatusReport);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
@@ -1211,6 +1262,7 @@ begin
     ed_TemplateDir.Text := TemplateDir;
     ed_HTMLTargetExt.Text := HTMLTargetExt;
     ud_TabsToSpaces.Position := TabsToSpaces;
+    ed_CPPApp.Text := CPPApp;
     { HTML Help }
     ed_WorkshopPath.Text := HHCPath;
     ed_HTMLHelpOutput.Text := HTMLHelpFile;
@@ -1243,12 +1295,14 @@ begin
     ud_DefInheritDepth.Position := DefaultInheritanceDepth;
     cb_LoadCustomModules.Checked := LoadCustomOutputModules;
     cb_CPAsWindow.Checked := ClassPropertiesWindow;
+    ud_InlineSearchTimeout.Position := tmr_InlineSearch.Interval div 1000;
     if (ShowModal = mrOk) then begin
       { HTML output }
       HTMLOutputDir := ed_HTMLOutputDir.Text;
       TemplateDir := ed_TemplateDir.Text;
       HTMLTargetExt := ed_HTMLTargetExt.Text;
       TabsToSpaces := ud_TabsToSpaces.Position;
+      CPPApp := ed_CPPApp.Text;
       { HTML Help }
       HHCPath := ed_WorkshopPath.Text;
       HTMLHelpFile := ed_HTMLHelpOutput.Text;
@@ -1271,6 +1325,7 @@ begin
       DefaultInheritanceDepth := ud_DefInheritDepth.Position;
       LoadCustomOutputModules := cb_LoadCustomModules.Checked;
       ClassPropertiesWindow := cb_CPAsWindow.Checked;
+      tmr_InlineSearch.Interval := ud_InlineSearchTimeout.Position * 1000;
       { Source paths }
       SourcePaths.Clear;
       SourcePaths.AddStrings(lb_Paths.Items);
@@ -1301,6 +1356,7 @@ begin
         data.Add('TemplateDir='+TemplateDir);
         data.Add('HTMLTargetExt='+HTMLTargetExt);
         data.Add('TabsToSpaces='+IntToStr(TabsToSpaces));
+        data.Add('CPP='+CPPApp);
         data.Add('HHCPath='+HHCPath);
         data.Add('HTMLHelpFile='+HTMLHelpFile);
         data.Add('HHTitle='+HHTitle);
@@ -1315,6 +1371,7 @@ begin
         data.Add('DefaultInheritanceDepth='+IntToStr(DefaultInheritanceDepth));
         data.Add('LoadOutputModules='+IntToStr(Ord(LoadCustomOutputModules)));
         data.Add('ClassPropertiesWindow='+IntToStr(Ord(ClassPropertiesWindow)));
+        data.Add('InlineSearchTimeout='+IntToStr(tmr_InlineSearch.Interval div 1000));
 
         data.Add('[Layout]');
         data.Add('Log.Font.Name='+lb_Log.Font.Name);
@@ -1441,6 +1498,8 @@ begin
   if (ActiveControl.ClassType <> TTreeView) then begin
     ActiveControl := tv_Classes;
   end;
+  InlineSearch := '';
+  IsInlineSearch := false;
   SearchConfig.caption := 'Find a class';
   SearchConfig.text := 'Enter the name of the class you want to find';
   SearchConfig.isRegex := FTSRegexp;
@@ -1701,6 +1760,11 @@ var
   i,j: integer;
   res: boolean;
 begin
+  if (InlineSearch <> '') then begin
+    tmr_InlineSearch.Enabled := false;
+    InlineSearchNext(true);
+    exit;
+  end;
   if (not SearchConfig.Wrapped) then begin
     ac_FindClass.Execute;
     exit;
@@ -2024,13 +2088,22 @@ end;
 procedure Tfrm_UnCodeX.tv_ClassesKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
+  if (IsInlineSearch and (Key = 8)) then Key := 0;
   (Sender as TComponent).Tag := TV_ALWAYSEXPAND;
 end;
 
 procedure Tfrm_UnCodeX.tv_ClassesMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  tn: TTreeNode;
 begin
   (Sender as TComponent).Tag := TV_NOEXPAND;
+  if (Button = mbRight) then begin
+    with (Sender as TTreeView) do begin
+      tn := GetNodeAt(X, Y);
+      if (tn <> nil) then Select(tn);
+    end;
+  end;
 end;
 
 procedure Tfrm_UnCodeX.ac_SourceSnoopExecute(Sender: TObject);
@@ -2175,28 +2248,53 @@ end;
 
 procedure Tfrm_UnCodeX.tv_ClassesKeyPress(Sender: TObject; var Key: Char);
 begin
-  {if (Key = #27) then begin
-    Key := #0; // reset key
-    SearchConfig.query := '';
+  if (Key = #27) then begin  // ESC
+    if (IsInlineSearch) then begin
+      Key := #0; // reset key
+      tmr_InlineSearch.OnTimer(Sender)
+    end;
   end
-  else if(Key = #8) then begin
-    Key := #0; // reset key
-    Delete(SearchConfig.query, Length(SearchConfig.query), 1);
-    // find previous
+  else if(Key = #8) then begin // Backspace
+    if (IsInlineSearch) then begin
+      tmr_InlineSearch.Enabled := false;
+      tmr_InlineSearch.Enabled := true;
+      Key := #0; // reset key
+      Delete(InlineSearch, Length(InlineSearch), 1);
+      if (InlineSearch = '') then begin
+        tmr_InlineSearch.OnTimer(Sender);
+        exit;
+      end;
+      StatusReport('Inline search for: '+inlinesearch);
+      tmr_StatusText.OnTimer(Sender);
+      InlineSearchPrevious;
+    end;
   end
   else if ((Key >= #32) and (Key < #127)) then begin
-    SearchConfig.Wrapped := true;
-    SearchConfig.isRegex := false;
-    SearchConfig.isBodySearch := false;
-    SearchConfig.isStrict := false;
-    SearchConfig.isFromTop := false;
-    SearchConfig.query := SearchConfig.query+Key;
+    tmr_InlineSearch.Enabled := false;
+    tmr_InlineSearch.Enabled := true;
+    if (not IsInlineSearch) then begin
+      IsInlineSearch := true;
+      inlinesearch := '';
+    end;
+    inlinesearch := inlinesearch+Key;
     Key := #0; // reset key
-    ac_FindNext.Execute;
+    StatusReport('Inline search for: '+inlinesearch);
+    tmr_StatusText.OnTimer(Sender);
+    InlineSearchNext;
   end;
-  if (SearchConfig.query = '') then StatusReport('')
-  else StatusReport('Searching for: '+SearchConfig.query);
-  tmr_StatusText.OnTimer(Sender);}
+end;
+
+procedure Tfrm_UnCodeX.tmr_InlineSearchTimer(Sender: TObject);
+begin
+  IsInlineSearch := false;
+  StatusReport('Inline search cancelled');
+  tmr_StatusText.OnTimer(Sender);
+  tmr_InlineSearch.Enabled := false;
+end;
+
+procedure Tfrm_UnCodeX.tv_ClassesExit(Sender: TObject);
+begin
+  if (IsInlineSearch) then tmr_InlineSearch.OnTimer(Sender);
 end;
 
 initialization

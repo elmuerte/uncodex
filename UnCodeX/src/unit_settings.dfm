@@ -1,6 +1,6 @@
 object frm_Settings: Tfrm_Settings
   Left = 254
-  Top = 180
+  Top = 182
   Width = 679
   Height = 405
   Caption = 'Settings'
@@ -473,6 +473,15 @@ object frm_Settings: Tfrm_Settings
           Height = 13
           Caption = 'Tabs to spaces (0 = template default; -1 = disable)'
         end
+        object lbl_CPP: TLabel
+          Left = 8
+          Top = 176
+          Width = 353
+          Height = 13
+          Caption = 
+            'Comment PreProcessor (leave empty for template default, or none ' +
+            'for none)'
+        end
         object ed_HTMLOutputDir: TEdit
           Left = 8
           Top = 32
@@ -548,6 +557,13 @@ object frm_Settings: Tfrm_Settings
           Position = 0
           TabOrder = 6
           Wrap = False
+        end
+        object ed_CPPApp: TEdit
+          Left = 8
+          Top = 192
+          Width = 393
+          Height = 21
+          TabOrder = 7
         end
       end
     end
@@ -1049,10 +1065,25 @@ object frm_Settings: Tfrm_Settings
         end
         object Label1: TLabel
           Left = 8
-          Top = 120
+          Top = 176
           Width = 210
           Height = 13
           Caption = 'Default inheritance depth for class properties'
+        end
+        object bvl_Sep1: TBevel
+          Left = 8
+          Top = 160
+          Width = 417
+          Height = 9
+          Anchors = [akLeft, akTop, akRight]
+          Shape = bsBottomLine
+        end
+        object lbl_InlineSearchTimeout: TLabel
+          Left = 8
+          Top = 120
+          Width = 157
+          Height = 13
+          Caption = 'Inline search timeout (in seconds)'
         end
         object ed_StateFilename: TEdit
           Left = 8
@@ -1082,7 +1113,7 @@ object frm_Settings: Tfrm_Settings
         end
         object ed_DefInheritanceDepth: TEdit
           Left = 8
-          Top = 136
+          Top = 192
           Width = 401
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -1093,7 +1124,7 @@ object frm_Settings: Tfrm_Settings
         end
         object ud_DefInheritDepth: TUpDown
           Left = 409
-          Top = 136
+          Top = 192
           Width = 16
           Height = 21
           Anchors = [akTop, akRight]
@@ -1117,11 +1148,36 @@ object frm_Settings: Tfrm_Settings
         end
         object cb_CPAsWindow: TCheckBox
           Left = 8
-          Top = 160
+          Top = 216
           Width = 177
           Height = 17
           Caption = 'Open class properties as window'
           TabOrder = 6
+        end
+        object ed_InlineSearchTimeout: TEdit
+          Left = 8
+          Top = 136
+          Width = 401
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          TabOrder = 7
+          Text = '5'
+        end
+        object ud_InlineSearchTimeout: TUpDown
+          Left = 409
+          Top = 136
+          Width = 16
+          Height = 21
+          Anchors = [akTop, akRight]
+          Associate = ed_InlineSearchTimeout
+          Min = 1
+          Max = 255
+          Position = 5
+          TabOrder = 8
+          Thousands = False
+          Wrap = False
         end
       end
     end

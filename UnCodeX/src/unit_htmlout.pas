@@ -11,7 +11,7 @@ interface
 
 uses
   Windows, Classes, SysUtils, ComCtrls, unit_uclasses, StrUtils, Hashes,
-  IniFiles, unit_outputdefs;
+  IniFiles, unit_outputdefs, unit_clpipe;
 
 type
   TGlossaryItem = class(TObject)
@@ -32,6 +32,7 @@ type
     CreateSource: boolean;
     TabsToSpaces: integer;
     TargetExtention: string;
+    CPP: string;
   end;
 
   // General replace function
@@ -44,12 +45,15 @@ type
     TemplateDir: string;
     CreateSource: boolean;
     TabsToSpaces: integer;
+    CPP: string;
+    IsCPP: boolean;
     TypeCache: Hashes.TStringHash;
     ConstCache: Hashes.TStringHash;
     VarCache: Hashes.TStringHash;
     EnumCache: Hashes.TStringHash;
     StructCache: Hashes.TStringHash;
     FunctionCache: Hashes.TStringHash;
+    CPPPipe: TCLPipe;
     
     PackageList: TUPackageList;
     ClassList: TUClassList;
@@ -89,6 +93,7 @@ type
     function ProcComment(input: string): string;
     procedure SourceCode;
     procedure parseCode(input, output: TStream);
+    function CommentPreprocessor(input: string): string;
   public
     constructor Create(config: THTMLoutConfig; status: TStatusReport);
     destructor Destroy; override;
@@ -142,6 +147,7 @@ begin
   Self.TemplateDir := Config.TemplateDir+PATHDELIM;
   Self.CreateSource := config.CreateSource;
   Self.TabsToSpaces := config.TabsToSpaces;
+  Self.CPP := config.CPP;
   TargetExtention := config.TargetExtention;
   TypeCache := Hashes.TStringHash.Create;
   ConstCache := Hashes.TStringHash.Create;
@@ -156,11 +162,21 @@ begin
   // 0 = use template default
   // -1 = disable
   if (TabsToSpaces = 0) then TabsToSpaces := ini.ReadInteger('Settings', 'TabsToSpaces', TabsToSpaces);
+  if (Self.CPP = '') then Self.CPP := TemplateDir+Ini.ReadString('Setting', 'CPP', '');
+  if (CompareText(trim(Self.CPP), 'none') = 0) then Self.CPP := '';
+  if (CPP <> '') then begin
+    if (FileExists(CPP)) then begin
+      CPPPipe := TCLPipe.Create(Self.CPP);
+      IsCPP := CPPPipe.Open;
+    end
+    else Log('Comment Preprocessor "'+CPP+'" not found');
+  end;
   inherited Create(true);
 end;
 
 destructor THTMLOutput.Destroy;
 begin
+  if (IsCPP and (CPPPipe <> nil)) then CPPPipe.Destroy; 
   //TypeCache.Free; <-- will crash the system
   TypeCache.Clear;
   ConstCache.Clear;
@@ -210,6 +226,7 @@ begin
   if (ini.ReadBool('Settings', 'CreateGlossary', true) and (not Self.Terminated)) then htmlGlossary; // iglossery
   if (not Self.Terminated) then CopyFiles;
   if (ini.ReadBool('Settings', 'SourceCode', true) and (not Self.Terminated) and CreateSource) then SourceCode; //
+  if (IsCPP and (CPPPipe <> nil)) then CPPPipe.Close;
   Status('Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds');
 end;
 
@@ -437,7 +454,7 @@ begin
       ini := TMemIniFile.Create(TUPackage(data).path+PATHDELIM+'uncodex.ini');
       try
         ini.ReadSectionValues('package_description', lst);
-        replacement := lst.Text;
+        replacement := CommentPreprocessor(lst.Text);
       finally
         lst.Free;
         ini.Free;
@@ -691,6 +708,7 @@ begin
   else if (CompareText(replacement, 'class_comment') = 0) then begin
     if (Copy(TUClass(data).comment, 1, 2) = '//') then replacement := ProcComment(TUClass(data).comment)
     else replacement := TUClass(data).comment;
+    replacement := CommentPreprocessor(replacement);
     result := true;
   end
   else if (CompareText(replacement, 'class_source') = 0) then begin
@@ -1079,7 +1097,7 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'const_comment') = 0) then begin
-    replacement := TUConst(data).comment;
+    replacement := CommentPreprocessor(TUConst(data).comment);
     result := true;
   end
   else if (CompareText(replacement, 'has_comment_?') = 0) then begin
@@ -1118,7 +1136,7 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'var_comment') = 0) then begin
-    replacement := TUProperty(data).comment;
+    replacement := CommentPreprocessor(TUProperty(data).comment);
     result := true;
   end
   else if (CompareText(replacement, 'has_comment_?') = 0) then begin
@@ -1157,7 +1175,7 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'enum_comment') = 0) then begin
-    replacement := TUEnum(data).comment;
+    replacement := CommentPreprocessor(TUEnum(data).comment);
     result := true;
   end
   else if (CompareText(replacement, 'has_comment_?') = 0) then begin
@@ -1204,7 +1222,7 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'struct_comment') = 0) then begin
-    replacement := TUStruct(data).comment;
+    replacement := CommentPreprocessor(TUStruct(data).comment);
     result := true;
   end
   else if (CompareText(replacement, 'has_comment_?') = 0) then begin
@@ -1273,7 +1291,7 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'function_comment') = 0) then begin
-    replacement := TUFunction(data).comment;
+    replacement := CommentPreprocessor(TUFunction(data).comment);
     result := true;
   end
   else if (CompareText(replacement, 'function_init') = 0) then begin
@@ -1767,6 +1785,16 @@ begin
     p.Free;
     ms.Free;
   end;
+end;
+
+function THTMLOutput.CommentPreprocessor(input: string): string;
+begin
+  if (input = '') then exit;
+  if (not IsCPP) then begin
+    result := input;
+    exit;
+  end;
+  result := CPPPipe.Pipe(input);
 end;
 
 { THTMLOutput -- END }

@@ -55,7 +55,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Cursor = crHSplit
     Align = alRight
     AutoSnap = False
-    MinSize = 50
+    MinSize = 100
     ResizeStyle = rsUpdate
     Visible = False
   end
@@ -72,13 +72,13 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Indent = 19
     PopupMenu = pm_ClassTree
     ReadOnly = True
-    RightClickSelect = True
     RowSelect = True
     SortType = stText
     TabOrder = 2
     OnChange = tv_ClassesChange
     OnCollapsing = tv_ClassesExpanding
     OnDblClick = tv_ClassesDblClick
+    OnExit = tv_ClassesExit
     OnExpanding = tv_ClassesExpanding
     OnKeyDown = tv_ClassesKeyDown
     OnKeyPress = tv_ClassesKeyPress
@@ -97,15 +97,16 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Indent = 19
     PopupMenu = pm_ClassTree
     ReadOnly = True
-    RightClickSelect = True
     RowSelect = True
     SortType = stText
     TabOrder = 1
     OnChange = tv_ClassesChange
     OnCollapsing = tv_ClassesExpanding
     OnDblClick = tv_ClassesDblClick
+    OnExit = tv_ClassesExit
     OnExpanding = tv_ClassesExpanding
     OnKeyDown = tv_ClassesKeyDown
+    OnKeyPress = tv_ClassesKeyPress
     OnMouseDown = tv_ClassesMouseDown
   end
   object sb_Status: TStatusBar
@@ -1925,5 +1926,12 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
     Left = 8
     Top = 200
+  end
+  object tmr_InlineSearch: TTimer
+    Enabled = False
+    Interval = 5000
+    OnTimer = tmr_InlineSearchTimer
+    Left = 40
+    Top = 168
   end
 end
