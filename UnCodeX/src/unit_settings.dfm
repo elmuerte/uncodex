@@ -3,8 +3,10 @@ object frm_Settings: Tfrm_Settings
   Top = 152
   Width = 670
   Height = 405
+  AlphaBlendValue = 128
   Caption = 'Settings'
   Color = clBtnFace
+  TransparentColorValue = clBtnFace
   Constraints.MinHeight = 400
   Constraints.MinWidth = 670
   Font.Charset = DEFAULT_CHARSET
