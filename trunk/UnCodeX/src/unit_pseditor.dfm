@@ -3,6 +3,7 @@ object frm_PSEditor: Tfrm_PSEditor
   Top = 171
   Width = 783
   Height = 540
+  BorderIcons = [biSystemMenu, biMaximize]
   Caption = 'PascalScript Editor'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -883,6 +884,7 @@ object frm_PSEditor: Tfrm_PSEditor
     end
     object ac_New: TAction
       Caption = 'New'
+      Hint = 'New file'
       ImageIndex = 29
       ShortCut = 16462
       OnExecute = ac_NewExecute
@@ -896,12 +898,14 @@ object frm_PSEditor: Tfrm_PSEditor
     end
     object ac_Save: TAction
       Caption = 'Save'
+      Hint = 'Save the current script'
       ImageIndex = 22
       ShortCut = 16467
       OnExecute = ac_SaveExecute
     end
     object ac_Load: TAction
       Caption = 'Load'
+      Hint = 'Load a script'
       ImageIndex = 21
       ShortCut = 16463
       OnExecute = ac_LoadExecute
