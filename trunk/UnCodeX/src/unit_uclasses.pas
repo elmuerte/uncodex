@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.47 2005-03-13 09:25:20 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.48 2005-03-20 08:57:56 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -38,7 +38,7 @@ uses
 
 const
   // used for output module compatibility testing
-  UCLASSES_REV: LongInt = 3;
+  UCLASSES_REV: LongInt = 4;
 
 type
   TUCommentType = (ctSource, ctExtern, ctInherited);
@@ -120,6 +120,7 @@ type
   public
     procedure Sort;
     function Find(name: string): TUProperty;
+    function FindEx(name: string): TUProperty;
     procedure SortOnTag;
     property Items[Index: Integer]: TUProperty read GetItem write SetItem; default;
   end;
@@ -384,6 +385,24 @@ end;
 function TUPropertyList.Find(name: string): TUProperty;
 begin
   result := TUProperty(inherited Find(name));
+end;
+
+// same as Find() except this one ignored variable dimensions in the name
+function TUPropertyList.FindEx(name: string): TUProperty;
+var
+  i, n: integer;
+  tmp: string;
+begin
+  result := nil;
+  for i := 0 to Count-1 do begin
+    tmp := TUObject(Items[i]).name;
+    n := Pos('[', tmp);
+    if (n > 0) then System.Delete(tmp, n, maxint);
+    if (CompareText(tmp, name)= 0) then begin
+      result := TUProperty(Items[i]);
+      exit;
+    end;
+  end;
 end;
 
 function TUPropertyListCompareTag(Item1, Item2: Pointer): integer;

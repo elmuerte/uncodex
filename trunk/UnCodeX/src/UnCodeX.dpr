@@ -6,7 +6,7 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.57 2005-03-18 08:42:20 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.58 2005-03-20 08:57:55 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -34,7 +34,9 @@ program UnCodeX;
 
 uses
   FastShareMem in 'FastShareMem.pas',
+  {$IFDEF DETECT_MEM_LEAK}
   MemCheck in 'MemCheck.pas',
+  {$ENDIF}
   Windows,
   Messages,
   SysUtils,

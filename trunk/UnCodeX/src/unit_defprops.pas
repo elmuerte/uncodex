@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class defaultproperties browser.
 
-  $Id: unit_defprops.pas,v 1.7 2004-12-08 09:25:37 elmuerte Exp $
+  $Id: unit_defprops.pas,v 1.8 2005-03-20 08:57:55 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -35,17 +35,29 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  ComCtrls, unit_uclasses;
+  ComCtrls, unit_uclasses, ExtCtrls, StdCtrls;
 
 type
   Tfrm_DefPropsBrowser = class(TForm)
-    lv_Props: TListView;
+    lb_Properties: TListBox;
+    spl_Main: TSplitter;
+    gb_Property: TGroupBox;
+    lv_SelProperty: TListView;
+    Label1: TLabel;
+    ed_EffValue: TEdit;
+    Label2: TLabel;
+    ed_DefIn: TEdit;
+    Label3: TLabel;
+    ed_type: TEdit;
     procedure FormShow(Sender: TObject);
+    procedure lb_PropertiesClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   protected
     uclass: TUClass;
   public
     procedure LoadDefProps;
-    procedure AddVariable(vname,vclass,vvalue: string);
+    procedure AddVariable(vname,vvalue: string; dclass: TUClass);
   end;
 
   procedure ShowDefaultProperties(ucls: TUClass);
@@ -54,6 +66,8 @@ var
   frm_DefPropsBrowser: Tfrm_DefPropsBrowser;
 
 implementation
+
+uses unit_definitions;
 
 {$R *.dfm}
 
@@ -65,14 +79,16 @@ begin
   end;
 end;
 
-procedure Tfrm_DefPropsBrowser.AddVariable(vname,vclass,vvalue: string);
+procedure Tfrm_DefPropsBrowser.AddVariable(vname,vvalue: string; dclass: TUClass);
 var
-  li: TListItem;
+  i: integer;
 begin
-  li := lv_Props.Items.Add;
-  li.Caption := vname;
-  li.SubItems.Add(vvalue);
-  li.SubItems.Add(vclass);
+  i := lb_Properties.Items.IndexOf(vname);
+  if (i = -1) then begin
+    i := lb_Properties.Items.Add(vname);
+    lb_Properties.Items.Objects[i] := TStringList.Create;
+  end;
+  TStringList(lb_Properties.Items.Objects[i]).AddObject(vvalue, dclass);
 end;
 
 procedure Tfrm_DefPropsBrowser.LoadDefProps;
@@ -80,32 +96,99 @@ var
   i: integer;
   sl: TStringList;
   pclass: TUClass;
+  s: string;
 begin
   pclass := uclass;
   sl := TStringList.Create;
-  lv_Props.Items.Clear;
-  lv_Props.Items.BeginUpdate;
+  lb_Properties.Items.BeginUpdate;
   try
     while (pclass <> nil) do begin
       sl.Clear;
       sl.Text := pclass.defaultproperties;
-      for i := 0 to sl.Count-1 do begin
-        if (trim(sl.Names[i]) <> '') then begin
-          AddVariable(trim(sl.Names[i]), pclass.FullName, sl.Values[sl.Names[i]]);
+      i := 0;
+      while (i < sl.Count) do begin
+        s := trim(sl.Names[i]);
+        // if begin object -> remove
+        if (SameText('begin ', Copy(s, 1, 6))) then begin
+          repeat
+            Inc(i);
+            s := trim(sl.Names[i]);
+          until (SameText('end ', Copy(s, 1, 4)) or (i >= sl.Count-1));
+          Inc(i);
+          continue;
         end;
+        if (s <> '') then begin
+          AddVariable(s, sl.Values[sl.Names[i]], pclass);
+        end;
+        Inc(i);
       end;
       pclass := pclass.parent;
     end;
   finally
     sl.Free;
-    lv_Props.Items.EndUpdate;
+    lb_Properties.Items.EndUpdate;
   end;
 end;
 
 procedure Tfrm_DefPropsBrowser.FormShow(Sender: TObject);
 begin
+  Caption := Caption+': '+uclass.FullName;
   Application.ProcessMessages;
   LoadDefProps;
+end;
+
+procedure Tfrm_DefPropsBrowser.lb_PropertiesClick(Sender: TObject);
+var
+  i: integer;
+  li: TListItem;
+  pclass: TUClass;
+  prop: TUProperty;
+  shortname: string;
+begin
+  if (lb_Properties.ItemIndex = -1) then exit;
+  gb_Property.Caption := lb_Properties.Items[lb_Properties.ItemIndex];
+  lv_SelProperty.Items.BeginUpdate;
+  lv_SelProperty.Items.Clear;
+  with lb_Properties.Items.Objects[lb_Properties.ItemIndex] as TStringList do begin
+    for i := 0 to Count-1 do begin
+      li := lv_SelProperty.Items.Add;
+      li.Caption := Strings[i];
+      if (i = 0) then ed_EffValue.Text := Strings[i];
+      li.SubItems.Add(TUClass(Objects[i]).FullName);
+      li.Data := Objects[i];
+    end;
+  end;
+  lv_SelProperty.Items.EndUpdate;
+  pclass := uclass;
+  shortname := gb_Property.Caption;
+  shortname := GetToken(shortname, '[', true);
+  shortname := GetToken(shortname, '(', true);
+  ed_type.Text := '';
+  ed_DefIn.Text := '';
+  while (pclass <> nil) do begin
+    prop := pclass.properties.FindEx(shortname);
+    if (prop <> nil) then begin
+      ed_type.Text := prop.ptype;
+      ed_DefIn.Text := pclass.FullName;
+      break;
+    end;
+    pclass := pclass.parent;
+  end;
+end;
+
+procedure Tfrm_DefPropsBrowser.FormDestroy(Sender: TObject);
+var
+  i: integer;
+begin
+  for i := 0 to lb_Properties.Count-1 do begin
+    TStringList(lb_Properties.Items.Objects[i]).Free;
+  end;
+end;
+
+procedure Tfrm_DefPropsBrowser.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  Action := caFree;
 end;
 
 end.
