@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   program settings window
- $Id: unit_settings.pas,v 1.34 2004-04-02 10:33:26 elmuerte Exp $
+ $Id: unit_settings.pas,v 1.35 2004-04-13 07:01:15 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -604,7 +604,10 @@ end;
 procedure Tfrm_Settings.btn_OpenResultCmdClick(Sender: TObject);
 begin
   od_BrowseExe.FileName := ed_OpenResultCmd.Text;
-  if (od_BrowseExe.Execute) then ed_OpenResultCmd.Text := od_BrowseExe.FileName;
+  if (od_BrowseExe.Execute) then begin
+		if (Pos(' ', od_BrowseExe.FileName) > 0) then ed_OpenResultCmd.Text := '"'+od_BrowseExe.FileName+'"'
+    else ed_OpenResultCmd.Text := od_BrowseExe.FileName;
+  end;
 end;
 
 procedure Tfrm_Settings.btn_OpenResultPlaceHolderClick(Sender: TObject);

@@ -65,7 +65,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 433
     Height = 378
-    ActivePage = ts_PackagePriority
+    ActivePage = ts_Command
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -1550,6 +1550,7 @@ object frm_Settings: Tfrm_Settings
           Width = 201
           Height = 305
           Hint = 'Press delete to remove the selected keyword'
+          Anchors = [akLeft, akTop, akBottom]
           ItemHeight = 13
           Sorted = True
           TabOrder = 0
@@ -1562,7 +1563,7 @@ object frm_Settings: Tfrm_Settings
           Width = 193
           Height = 305
           Hint = 'Press delete to remove the selected keyword'
-          Anchors = [akLeft, akTop, akRight]
+          Anchors = [akLeft, akTop, akRight, akBottom]
           ItemHeight = 13
           Sorted = True
           TabOrder = 1

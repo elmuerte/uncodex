@@ -616,6 +616,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
     object mi_DefProps: TMenuItem
       Action = ac_DefProps
+      Visible = False
     end
     object mi_Properties: TMenuItem
       Action = ac_PackageProps
