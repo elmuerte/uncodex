@@ -12,6 +12,19 @@
 </div>
 
 <div class="content">
+<h2>Changes since 053:</h2>
+<ul>
+<li>Fixed occasional uppercase chars in the HTML output filenames
+<li>Added support for package comments. To use them create a file called 'uncodex.ini' in the package directory and add the following text:
+<pre>
+[package_description]
+some descriptive text about this packages
+can cover multiple lines, you don't need to use normal a normal convention used in .ini.
+That is, you don't have to use name=value pairs for this part
+</pre>
+<li>Updated HTML templates to include class and package comments on the overview pages
+</ul>
+
 <h2>Changes since 052:</h2>
 <ul>
 <li>Improved the class properties window display
