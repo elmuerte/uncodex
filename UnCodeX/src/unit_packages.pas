@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript package scanner, search for UnrealScript classes
 
-  $Id: unit_packages.pas,v 1.43 2004-12-24 11:05:09 elmuerte Exp $
+  $Id: unit_packages.pas,v 1.44 2005-04-06 10:10:52 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -39,7 +39,7 @@ uses
   {$IFDEF USE_TREEVIEW}
   ComCtrls,
   {$ENDIF}
-  unit_uclasses, unit_outputdefs, IniFiles, Hashes;
+  unit_uclasses, unit_outputdefs, unit_ucxIniFiles, Hashes;
 
 type
   TPackageScannerConfig = record
@@ -70,7 +70,7 @@ type
     IgnorePackages: TStringList;
     ClassHash: TObjectHash;
     DuplicateHash: TStringHash;
-    PDF: TMemIniFile;
+    PDF: TUCXIniFile;
     procedure ScanPackages;
     {$IFDEF USE_TREEVIEW}
     procedure CreateClassTree(classlist: TUClassList; parent: TUClass = nil;
@@ -196,7 +196,7 @@ begin
   Self.FreeOnTerminate := true;
   Self.ClassHash := rec.CHash;
   try
-    if (FileExists(rec.PDFile)) then Self.PDF := TMemIniFile.Create(rec.PDFile);
+    if (FileExists(rec.PDFile)) then Self.PDF := TUCXIniFile.Create(rec.PDFile);
   except
     log('Failed loading PackageDescriptionFile: '+rec.PDFile, ltError);
     Self.PDF := nil;
@@ -239,7 +239,7 @@ var
   UClass: TUClass;
   UPackage: TUPackage;
   knownpackages: TStringList;
-  ini: TMemIniFile;
+  ini: TUCXIniFile;
   lst: TStringList;
   tmp: string;
   pathpkgcount: integer;
@@ -281,9 +281,9 @@ begin
                   tmp := iFindFile(UPackage.path+PATHDELIM+UPackage.name+PKGCFG);
                   if (FileExists(tmp)) then begin
                     lst := TStringList.Create;
-                    ini := TMemIniFile.Create(tmp);
+                    ini := TUCXIniFile.Create(tmp);
                     try
-                      ini.ReadSectionValues('package_description', lst);
+                      ini.ReadSectionRaw('package_description', lst);
                       UPackage.comment := lst.Text;
                     finally
                       lst.Free;
@@ -295,9 +295,9 @@ begin
                     tmp := iFindFile(paths[i]+PATHDELIM+sr.name+PATHDELIM+UCXPACKAGEINFO);
                     if ( FileExists(tmp)) then begin
                       lst := TStringList.Create;
-                      ini := TMemIniFile.Create(tmp);
+                      ini := TUCXIniFile.Create(tmp);
                       try
-                        ini.ReadSectionValues('package_description', lst);
+                        ini.ReadSectionRaw('package_description', lst);
                         UPackage.comment := lst.Text;
                       finally
                         lst.Free;
@@ -311,7 +311,7 @@ begin
                       // get from package description file
                       lst := TStringList.Create;
                       try
-                        PDF.ReadSectionValues(UPackage.name, lst);
+                        PDF.ReadSectionRaw(UPackage.name, lst);
                         UPackage.comment := lst.Text;
                       finally
                         lst.Free;

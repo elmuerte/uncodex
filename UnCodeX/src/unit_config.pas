@@ -6,7 +6,7 @@
   Purpose:
     Contains the configuration of UnCodeX
 
-  $Id: unit_config.pas,v 1.6 2005-04-05 07:58:07 elmuerte Exp $
+  $Id: unit_config.pas,v 1.7 2005-04-06 10:10:48 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -265,6 +265,30 @@ begin
   FreeAndNil(ClassList);
 end;
 
+function TriBoolToString(bool: TTriBool): string;
+begin
+  case bool of
+    tbMaybe: result := 'Maybe';
+    tbFalse: result := 'False';
+    tbTrue: result := 'True';
+  end;
+end;
+
+function StringToTriBool(bool: string; default: TTriBool = tbMaybe): TTriBool;
+begin
+  result := default;
+  if (bool = '') then exit;
+  case StrToIntDef(bool, -2) of
+    -1: result := tbMaybe;
+    0: result := tbFalse;
+    1: result := tbTrue;
+  else
+    if (SameText(bool, 'Maybe')) then result := tbMaybe
+    else if (SameText(bool, 'False')) then result := tbFalse
+    else if (SameText(bool, 'true')) then result := tbTrue;
+  end;
+end;
+
 procedure TUCXConfig.LoadFromIni;
 var
   sl: TStringList;
@@ -300,6 +324,7 @@ procedure TUCXConfig.SaveToIni(filename: string = '');
 begin
   if (filename = '') then filename := ConfigFile;
   ini := TUCXIniFile.Create(filename);
+  ini.DelayedUpdate := true;
   try
     ConfigVersion := CURRENT_CONFIG_VERSION;
     InternalSaveToIni;
@@ -326,7 +351,7 @@ begin
   end;
   ini.ReadStringArray('Include', 'Post', IncludeConfig.Post, true);
 
-  ini.ReadStringArray('Packages', 'EditPackage', PackagesPriority);
+  ini.ReadStringArray('Packages', 'EditPackages', PackagesPriority);
   sl := TStringList.Create;
   try
     ini.ReadStringArray('Packages', 'Tag', sl);
@@ -342,13 +367,13 @@ begin
 
   with HTMLOutput do begin
     OutputDir := ini.ReadString('HTMLOutput', 'OutputDir', OutputDir);
-    TemplateDir := ini.ReadString('HTMLOutput', 'OutputDir', OutputDir);
-    CreateSource := TTriBool(ini.ReadInteger('HTMLOutput', 'CreateSource', ord(CreateSource)));
+    TemplateDir := ini.ReadString('HTMLOutput', 'TemplateDir', TemplateDir);
+    CreateSource := StringToTriBool(ini.ReadString('HTMLOutput', 'CreateSource', ''), CreateSource);
     TabsToSpaces := ini.ReadInteger('HTMLOutput', 'TabsToSpaces', TabsToSpaces);
     TargetExtention := ini.ReadString('HTMLOutput', 'TargetExtention', TargetExtention);
     CPP := ini.ReadString('HTMLOutput', 'CommentPreProcessor', CPP);
     DefaultTitle := ini.ReadString('HTMLOutput', 'DefaultTitle', DefaultTitle);
-    GZCompress := TTriBool(ini.ReadInteger('HTMLOutput', 'GZCompress', ord(GZCompress)));
+    GZCompress := StringToTriBool(ini.ReadString('HTMLOutput', 'GZCompress', ''), GZCompress);
   end;
   with HTMLHelp do begin
     Compiler := ini.ReadString('HTMLHelp', 'Compiler', Compiler);
@@ -367,7 +392,7 @@ var
 begin
   ini.WriteInteger('Configuration', 'Version', CURRENT_CONFIG_VERSION);
 
-  ini.WriteStringArray('Packages', 'EditPackage', PackagesPriority);
+  ini.WriteStringArray('Packages', 'EditPackages', PackagesPriority);
   ini.DeleteKey('Packages', 'Tag');
   for i := 0 to PackagesPriority.Count-1 do begin
     if (PackagesPriority.Objects[i] <> nil) then ini.AddToStringArray('Packages', 'Tag', PackagesPriority[i]);
@@ -376,13 +401,13 @@ begin
   ini.WriteStringArray('Sources', 'Path', SourcePaths);
   with HTMLOutput do begin
     ini.WriteString('HTMLOutput', 'OutputDir', OutputDir);
-    ini.WriteString('HTMLOutput', 'OutputDir', OutputDir);
-    ini.WriteInteger('HTMLOutput', 'CreateSource', ord(CreateSource));
+    ini.WriteString('HTMLOutput', 'TemplateDir', TemplateDir);
+    ini.WriteString('HTMLOutput', 'CreateSource', TriBoolToString(CreateSource));
     ini.WriteInteger('HTMLOutput', 'TabsToSpaces', TabsToSpaces);
     ini.WriteString('HTMLOutput', 'TargetExtention', TargetExtention);
     ini.WriteString('HTMLOutput', 'CommentPreProcessor', CPP);
     ini.WriteString('HTMLOutput', 'DefaultTitle', DefaultTitle);
-    ini.WriteInteger('HTMLOutput', 'GZCompress', ord(GZCompress));
+    ini.WriteString('HTMLOutput', 'GZCompress', TriBoolToString(GZCompress));
   end;
   with HTMLHelp do begin
     ini.WriteString('HTMLHelp', 'Compiler', Compiler);
@@ -409,7 +434,7 @@ begin
   HTMLOutput.TargetExtention := ini.ReadString('Config', 'HTMLTargetExt', HTMLOutput.TargetExtention);
   HTMLOutput.CPP := ini.ReadString('Config', 'CPP', HTMLOutput.CPP);
   HTMLOutput.DefaultTitle := ini.ReadString('Config', 'HTMLDefaultTitle', HTMLOutput.DefaultTitle);
-  HTMLOutput.GZCompress := TTriBool(ini.ReadInteger('Config', 'GZCompress', Ord(HTMLOutput.GZCompress)));
+  HTMLOutput.GZCompress := StringToTriBool(ini.ReadString('Config', 'GZCompress', ''), HTMLOutput.GZCompress);
   HTMLHelp.Compiler := ini.ReadString('Config', 'HHCPath', HTMLHelp.Compiler)+PATHDELIM+'HHC.EXE';
   HTMLHelp.OutputFile := ini.ReadString('Config', 'HTMLHelpFile', HTMLHelp.OutputFile);
   HTMLHelp.Title := ini.ReadString('Config', 'HHTitle', HTMLHelp.Title);
@@ -701,6 +726,7 @@ begin
     ini.ReadStringArray('GUI.Search', 'ftshistory', ftshistory);
   end;
   StateFile := ini.ReadString('GUI.General', 'StateFile', StateFile);
+  if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ini.filename)+StateFile;
   NewClassTemplate := ini.ReadString('GUI.General', 'NewClassTemplate', NewClassTemplate);
 end;
 
@@ -726,6 +752,8 @@ begin
 end;
 
 procedure TUCXGUIConfig.InternalSaveToIni;
+var
+  tmp: string;
 begin
   inherited InternalSaveToIni;
   with Startup do begin
@@ -808,7 +836,9 @@ begin
     ini.WriteStringArray('GUI.Search', 'history', history);
     ini.WriteStringArray('GUI.Search', 'ftshistory', ftshistory);
   end;
-  ini.WriteString('GUI.General', 'StateFile', StateFile);
+  tmp := StateFile;
+  if (SameText(ExtractFilePath(tmp), ExtractFilePath(ini.FileName))) then tmp := ExtractFileName(tmp);
+  ini.WriteString('GUI.General', 'StateFile', tmp);
   ini.WriteString('GUI.General', 'NewClassTemplate', NewClassTemplate);
 end;
 

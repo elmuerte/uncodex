@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Class property inpector frame
 
-  $Id: unit_props.pas,v 1.31 2005-04-04 21:31:57 elmuerte Exp $
+  $Id: unit_props.pas,v 1.32 2005-04-06 10:10:53 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -36,7 +36,7 @@ interface
 uses 
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   Menus, ImgList, StdCtrls, Buttons, ComCtrls, unit_uclasses, Clipbrd,
-  ExtCtrls, Tabs, Inifiles;
+  ExtCtrls, Tabs;
 
 type
   Tfr_Properties = class(TFrame)
@@ -102,7 +102,7 @@ type
 implementation
 
 uses unit_main, unit_analyse, unit_definitions, unit_utils,
-  unit_ucxdocktree;
+  unit_ucxdocktree, unit_ucxinifiles;
 
 {$R *.dfm}
 
@@ -523,7 +523,7 @@ end;
 
 procedure Tfr_Properties.mi_Editexternalcomment1Click(Sender: TObject);
 var
-  ini: TMemIniFile;
+  ini: TUCXIniFile;
   ref, comment: string;
   pclass: TUClass;
   uobj: TUObject;
@@ -540,7 +540,7 @@ begin
     exit;
   end;
   
-  ini := TMemIniFile.Create(config.Comments.Declarations);
+  ini := TUCXIniFile.Create(config.Comments.Declarations);
   ref := pclass.FullName+'.'+uobj.name;
   if (uobj.ClassType = TUFunction) then begin
     if (TUFunction(uobj).state <> nil) then ref := ref+' '+TUFunction(uobj).state.name;
@@ -554,11 +554,7 @@ begin
     end;
     comment := uobj.comment;
     if (MInputQuery('Comment for '+ref, 'Please enter a comment (HTML can be used)', comment)) then begin
-      ini.EraseSection(ref);
-      ini.GetStrings(lst);
-      lst.Add('['+ref+']');
-      lst.Add(comment);
-      ini.SetStrings(lst);
+      //ini.WriteSectionRaw(ref, comment); //TODO: fix this
       ini.UpdateFile;
       if ((uobj.comment = '') or (uobj.CommentType = ctExtern)) then begin
         uobj.comment := comment;

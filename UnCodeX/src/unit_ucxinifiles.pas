@@ -11,7 +11,7 @@
     Changes to the original code include:
     - configurable delayed file update
 
-  $Id: unit_ucxinifiles.pas,v 1.3 2005-04-05 07:58:08 elmuerte Exp $
+  $Id: unit_ucxinifiles.pas,v 1.4 2005-04-06 10:10:54 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -35,7 +35,7 @@ unit unit_ucxinifiles;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils {$IFDEF FPC}, StrUtils{$ENDIF};
 
 type
   TIniFileKey = class

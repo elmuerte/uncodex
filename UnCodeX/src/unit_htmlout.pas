@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.77 2005-04-03 07:23:26 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.78 2005-04-06 10:10:48 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -35,7 +35,7 @@ unit unit_htmlout;
 interface
 
 uses
-  Classes, SysUtils, unit_uclasses, StrUtils, Hashes, DateUtils, IniFiles,
+  Classes, SysUtils, unit_uclasses, StrUtils, Hashes, DateUtils, unit_ucxinifiles,
   unit_outputdefs, unit_clpipe, unit_copyparser, unit_definitions
   {$IFDEF HTMLOUT_PASCALSCRIPT}
   , uPSComponent
@@ -97,7 +97,7 @@ type
     PackageList: TUPackageList;
     ClassList: TUClassList;
     status: TStatusReport;
-    ini: TMemIniFile;
+    ini: TUCXIniFile;
 
     {$IFDEF HTMLOUT_PASCALSCRIPT}
     psComp: TPSScript;
@@ -325,10 +325,7 @@ begin
   try
 	Status('Working ...', 0);
 
-	ini := TMemIniFile.Create(iFindFile(TemplateDir+'template.ini'));
-	{$IFNDEF FPC}
-	ini.CaseSensitive := false;
-	{$ENDIF}
+	ini := TUCXIniFile.Create(iFindFile(TemplateDir+'template.ini'));
 	MaxInherit := ini.ReadInteger('Settings', 'MaxInherit', MaxInt);
 	if (TargetExtention = '') then TargetExtention := ini.ReadString('Settings', 'TargetExt', 'html');
   if (GZCompress = tbMaybe) then GZCompress := TTriBool(ini.ReadInteger('Settings', 'GZCompress', 0));
@@ -357,13 +354,13 @@ begin
         CPPPipe := TCLPipe.Create(Self.CPP);
         IsCPP := CPPPipe.Open;
       end
-      else Log('Comment Preprocessor "'+CPP+'" not found');
+      else Log('Comment Preprocessor "'+CPP+'" not found', ltWarn);
     end;
     GlossaryElipse := ini.ReadString('Settings', 'GlossaryElipse', ASCII_GLOSSARY_ELIPSE);
     TreeNone := ini.ReadString('Settings', 'TreeNone', ASCII_TREE_NONE);
     TreeT := ini.ReadString('Settings', 'TreeT', ASCII_TREE_T);
-	TreeL := ini.ReadString('Settings', 'TreeL', ASCII_TREE_L);
-	TreeI := ini.ReadString('Settings', 'TreeI', ASCII_TREE_I);
+	  TreeL := ini.ReadString('Settings', 'TreeL', ASCII_TREE_L);
+	  TreeI := ini.ReadString('Settings', 'TreeI', ASCII_TREE_I);
 
     curPos := 0;
     maxPos := (PackageList.Count*2)+ClassList.Count;
@@ -385,7 +382,7 @@ begin
     for i := 0 to ClassList.Count-1 do begin
       if (not TypeCache.Exists(LowerCase(ClassList[i].Name))) then
         TypeCache.Items[LowerCase(ClassList[i].Name)] := ClassLink(ClassList[i])
-        else Log('Type already cached '+ClassList[i].Name);
+        else Log('Type already cached '+ClassList[i].Name, ltWarn);
     end;
 
     if (not Self.Terminated) then CopyFiles;
@@ -407,10 +404,10 @@ begin
     Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds');
   except
     on E: Exception do begin
-      Log('Unhandled exception: '+E.Message);
-      Log('History:');
+      Log('Unhandled exception: '+E.Message, ltError);
+      Log('History:',ltError);
       for i := 0 to GuardStack.Count-1 do begin
-        log('     '+GuardStack[i]);
+        log('     '+GuardStack[i], ltError);
       end;
     end;
   end;
@@ -575,7 +572,7 @@ begin
   else if (IsReplacement(replacement, 'include:')) then begin
     tmp := Copy(replacement, Length('include:')+1, MaxInt);
     if (not FileExists(TemplateDir+tmp)) then begin
-      Log('Can''t include file: '+tmp);
+      Log('Can''t include file: '+tmp, ltError);
     end
     else begin
       //Log('Including '+replacement+' AS IS');
@@ -606,13 +603,16 @@ begin
   guard('htmlIndex');
   Status('Creating '+root_filename);
   template := TFileStream.Create(templatedir+'index.html', fmOpenRead or fmShareDenyWrite);
-  target := CreateOutputStream(htmloutputdir+PATHDELIM+root_filename, true);
-  currentFile := 'index.'+TargetExtention;
   try
-    parseTemplate(template, target, replaceIndex);
+    target := CreateOutputStream(htmloutputdir+PATHDELIM+root_filename, true);
+    currentFile := 'index.'+TargetExtention;
+    try
+      parseTemplate(template, target, replaceIndex);
+    finally
+      CloseOutputStream(target);
+    end
   finally
     template.Free;
-    CloseOutputStream(target);
   end;
   unguard;
 end;
@@ -630,13 +630,16 @@ begin
   guard('htmlOverview');
   Status('Creating '+overview_filename+TargetExtention);
   template := TFileStream.Create(templatedir+'overview.html', fmOpenRead or fmShareDenyWrite);
-  target := CreateOutputStream(htmloutputdir+PATHDELIM+overview_filename+TargetExtention);
-  currentFile := overview_filename+TargetExtention;
   try
-    parseTemplate(template, target, replaceOverview);
+    target := CreateOutputStream(htmloutputdir+PATHDELIM+overview_filename+TargetExtention);
+    currentFile := overview_filename+TargetExtention;
+    try
+      parseTemplate(template, target, replaceOverview);
+    finally
+      CloseOutputStream(target);
+    end;
   finally
     template.Free;
-    CloseOutputStream(target);
   end;
   unguard;
 end;
@@ -677,13 +680,16 @@ begin
   guard('htmlPackagesList');
   Status('Creating '+packages_list_filename+TargetExtention);
   template := TFileStream.Create(templatedir+'packages_list.html', fmOpenRead or fmShareDenyWrite);
-  target := CreateOutputStream(htmloutputdir+PATHDELIM+packages_list_filename+TargetExtention);
-  currentFile := packages_list_filename+TargetExtention;
   try
-    parseTemplate(template, target, replacePackagesList);
+    target := CreateOutputStream(htmloutputdir+PATHDELIM+packages_list_filename+TargetExtention);
+    currentFile := packages_list_filename+TargetExtention;
+    try
+      parseTemplate(template, target, replacePackagesList);
+    finally
+      CloseOutputStream(target);
+    end;
   finally
     template.Free;
-    CloseOutputStream(target);
   end;
   unguard;
 end;
@@ -764,13 +770,16 @@ begin
   guard('htmlClassesList');
   Status('Creating '+classes_list_filename+TargetExtention);
   template := TFileStream.Create(templatedir+'classes_list.html', fmOpenRead or fmShareDenyWrite);
-  target := CreateOutputStream(htmloutputdir+PATHDELIM+classes_list_filename+TargetExtention);
-  currentFile := classes_list_filename+TargetExtention;
   try
-    parseTemplate(template, target, replaceClassesList);
+    target := CreateOutputStream(htmloutputdir+PATHDELIM+classes_list_filename+TargetExtention);
+    currentFile := classes_list_filename+TargetExtention;
+    try
+      parseTemplate(template, target, replaceClassesList);
+    finally
+      CloseOutputStream(target);
+    end;
   finally
     template.Free;
-    CloseOutputStream(target);
   end;
   unguard;
 end;
@@ -2422,19 +2431,15 @@ end;
 
 procedure THTMLOutput.CopyFiles;
 var
-  tmp: string;
   sl: TStringList;
   i: integer;
 begin
   guard('CopyFiles');
   sl := TStringList.Create;
   try
-    ini.ReadSectionValues('CopyFiles', sl);
+    ini.ReadStringArray('CopyFiles', 'File', sl);
     for i := 0 to sl.Count-1 do begin
-      tmp := sl[i];
-      Delete(tmp, 1, Pos('=', tmp));
-      Log('Copy template file '+tmp);
-      CopyFile(TemplateDir+tmp, HTMLOutputDir+PATHDELIM+tmp);
+      CopyFile(TemplateDir+sl[i], HTMLOutputDir+PATHDELIM+sl[i]);
     end;
   finally
     sl.Free;

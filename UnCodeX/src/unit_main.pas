@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.159 2005-04-05 07:58:07 elmuerte Exp $
+  $Id: unit_main.pas,v 1.160 2005-04-06 10:10:50 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -37,7 +37,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls,
   Forms, Dialogs, ComCtrls, Menus, StdCtrls, unit_packages, ExtCtrls,
-  unit_uclasses, IniFiles, ShellApi, AppEvnts, ImgList, ActnList, StrUtils,
+  unit_uclasses, ShellApi, AppEvnts, ImgList, ActnList, StrUtils,
   Clipbrd, hh, hh_funcs, ToolWin, richedit, unit_richeditex, unit_searchform,
   Buttons, DdeMan, unit_props, uPSComponent, uPSComponent_Default,
   IFSI_unit_uclasses, unit_pascalscript_ex, unit_definitions, unit_config;
@@ -455,6 +455,7 @@ type
   public
     statustext: string; // current status text
     SearchConfig: TSearchConfig; //TODO: make interface to this
+    BaseCaption: string;
     procedure NextBatchCommand;
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
     procedure OpenSourceLine(filename: string; line, caret: integer; uclass: TUClass);
@@ -1071,12 +1072,12 @@ begin
   if (CmdStack.Count = 0) then begin
     Screen.Cursor := crDefault;
     IsBatching := false;
-    Caption := APPTITLE+' - version '+APPVERSION;
+    Caption := BaseCaption;
     exit;
   end;
   Screen.Cursor := crAppStart;
   cmd := CmdStack[0];
-  Caption := APPTITLE+' - version '+APPVERSION+' - Batch process: '+cmd;
+  Caption := BaseCaption+' - Batch process: '+cmd;
   CmdStack.Delete(0);
   if (cmd = 'rebuild') then ac_RecreateTree.Execute
   else if (cmd = 'analyse') then ac_AnalyseAll.Execute
@@ -1092,7 +1093,7 @@ begin
       Log(IntToStr(ClassOrphanCount)+' orphans found', ltWarn);
       MessageDlg(IntToStr(ClassOrphanCount)+' orphan classes found.'+#13+#10+'Check the log for more information.', mtWarning, [mbOK], 0);
       IsBatching := false;
-      Caption := APPTITLE+' - version '+APPVERSION;
+      Caption := BaseCaption;
       exit;
     end
     else NextBatchCommand;
@@ -1901,7 +1902,6 @@ begin
   ac_CreateSubClass.Enabled := FileExists(config.NewClassTemplate);
   SetExtCommentFile(config.Comments.Declarations);
 
-  if (ExtractFilePath(config.StateFile) = '') then config.StateFile := ExtractFilePath(ConfigFile)+config.StateFile; //TODO: fix this?
   tmr_InlineSearch.Interval := config.Layout.InlineSearchTimeout * 1000;
 
   for i := 0 to al_Main.ActionCount-1 do begin
@@ -1992,23 +1992,22 @@ begin
   Mouse.DragImmediate := false;
   Mouse.DragThreshold := 5;
   hh_Help := THookHelpSystem.Create(ExtractFilePath(ParamStr(0))+'UnCodeX-help.chm', '', htHHAPI);
-  Caption := APPTITLE;
-  if (ConfigFile = '') then ConfigFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ini'
-  else Caption := Caption+' ['+ExtractFileName(ConfigFile)+']';
+  BaseCaption := APPTITLE;
   Config := TUCXGUIConfig.Create(ConfigFile);
+  if (ConfigFile = '') then ConfigFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ini'
+  else begin
+    BaseCaption := BaseCaption+' ['+ExtractFileName(ConfigFile)+']';
+    config.StateFile := ExtractFilePath(ConfigFile)+ChangeFileExt(ExtractFilename(ConfigFile), '.ucx');
+  end;
+  Caption := BaseCaption;
   Config.LoadFromIni;
-  
-  Caption := Caption+' - version '+APPVERSION;
-  Application.Title := Caption;
+
+  Application.Title := Caption+' - version '+APPVERSION;
   if (DEBUGBUILD) then Application.Title := Application.Title+' (debug)';
   InitialStartup := not FileExists(ConfigFile);
-  { StringLists }
   OutputModules := TStringList.Create;
-  { StringLists -- END }
-
   LoadSettings;
-  if (config.StateFile = '') then config.StateFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ucx'; //TODO: change
-
+  if (config.StateFile = '') then config.StateFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ucx';
   if (config.Plugins.LoadDLLs) then begin
     LoadOutputModules;
     LoadPascalScripts;
@@ -2112,21 +2111,9 @@ begin
 end;
 
 procedure Tfrm_UnCodeX.ac_CreateHTMLfilesExecute(Sender: TObject);
-{var
-  htmlconfig: THTMLOutConfig;}
 begin
   if (ThreadCreate) then begin
     ClearLog;
-    {htmlconfig.PackageList := config.PackageList;
-    htmlconfig.ClassList := config.ClassList;
-    htmlconfig.outputdir := HTMLOutputDir;
-    htmlconfig.TemplateDir := TemplateDir;
-    htmlconfig.CreateSource := tbMaybe; // TODO: make configurable
-    htmlconfig.TargetExtention := HTMLTargetExt;
-    htmlconfig.TabsToSpaces := TabsToSpaces;
-    htmlconfig.CPP := CPPApp;
-    htmlconfig.DefaultTitle := HTMLdefaultTitle;
-    htmlconfig.GZCompress := GZCompress; //TODO: make configurable}
     runningthread := THTMLoutput.Create(config.HTMLOutput, StatusReport);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
@@ -2154,6 +2141,7 @@ begin
     ed_CPPApp.Text := config.HTMLOutput.CPP;
     ed_HTMLDefaultTitle.Text := config.HTMLOutput.defaultTitle;
     cb_GZCompress.ItemIndex := Ord(config.HTMLOutput.GZCompress)+1;
+    cb_CreateSource.ItemIndex := Ord(config.HTMLOutput.CreateSource)+1;
     { HTML Help }
     ed_WorkshopPath.Text := config.HTMLHelp.Compiler;
     ed_HTMLHelpOutput.Text := config.HTMLHelp.OutputFile;
@@ -2199,6 +2187,7 @@ begin
       config.HTMLOutput.CPP := ed_CPPApp.Text;
       config.HTMLOutput.defaultTitle := ed_HTMLDefaultTitle.Text;
       config.HTMLOutput.GZCompress := TTriBool(cb_GZCompress.ItemIndex-1);
+      config.HTMLOutput.CreateSource := TTriBool(cb_CreateSource.ItemIndex-1);
       { HTML Help }
       config.HTMLHelp.Compiler := ed_WorkshopPath.Text;
       ac_HTMLHelp.Enabled := FileExists(config.HTMLHelp.Compiler);

@@ -6,7 +6,7 @@
   Purpose:
     Program settings dialog
 
-  $Id: unit_settings.pas,v 1.48 2005-03-31 16:41:49 elmuerte Exp $
+  $Id: unit_settings.pas,v 1.49 2005-04-06 10:10:53 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -39,7 +39,7 @@ uses
   FileCtrl,
   {$ENDIF}
   {$WARN UNIT_PLATFORM ON}
-  ComCtrls, Menus, ExtCtrls, IniFiles, CheckLst, ActnList, unit_richeditex;
+  ComCtrls, Menus, ExtCtrls, CheckLst, ActnList, unit_richeditex;
 
 type
   Tfrm_Settings = class(TForm)
@@ -211,6 +211,8 @@ type
     mi_Resultfilename1: TMenuItem;
     lbl_GZCompress: TLabel;
     cb_GZCompress: TComboBox;
+    lbl_CreateSource: TLabel;
+    cb_CreateSource: TComboBox;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -305,7 +307,7 @@ var
 
 implementation
 
-uses unit_main, unit_rtfhilight, unit_definitions;
+uses unit_main, unit_rtfhilight, unit_definitions, unit_ucxinifiles;
 
 {$R *.dfm}
 
@@ -341,23 +343,15 @@ end;
 
 procedure Tfrm_Settings.ImportPackageList(filename: string);
 var
-  ini: TMemIniFile;
+  ini: TUCXIniFile;
   sl: TStringList;
-  i, j: integer;
-  tmp: string;
 begin
-  ini := TMemIniFile.Create(FileName);
+  ini := TUCXIniFile.Create(FileName);
   sl := TStringList.Create;
   try
     ini.ReadSectionValues('Editor.EditorEngine', sl);
-    for i := 0 to sl.Count-1 do begin
-      tmp := sl[i];
-      j := Pos('=', tmp);
-      if (LowerCase(Copy(tmp, 1, j-1)) = 'editpackages') then begin
-        Delete(tmp, 1, j);
-        clb_PackagePriority.Items.Add(tmp);
-      end;
-    end;
+    ini.ReadStringArray('Editor.EditorEngine', 'editpackages', sl);
+    clb_PackagePriority.Items.Assign(sl);
   finally
     sl.Free;
     ini.Free;
