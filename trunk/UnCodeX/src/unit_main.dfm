@@ -604,8 +604,18 @@ object frm_UnCodeX: Tfrm_UnCodeX
         ImageIndex = 23
         OnClick = mi_Help2Click
       end
+      object mi_N31: TMenuItem
+        Caption = '-'
+      end
       object mi_License: TMenuItem
         Action = ac_License
+      end
+      object mi_Donate: TMenuItem
+        Caption = 'Donate!'
+        OnClick = mi_DonateClick
+      end
+      object mi_N21: TMenuItem
+        Caption = '-'
       end
       object mi_About: TMenuItem
         Action = ac_About

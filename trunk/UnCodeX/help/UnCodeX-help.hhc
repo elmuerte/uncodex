@@ -11,15 +11,18 @@
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="Welcome to UnCodeX">
 		<param name="Local" value="index.html">
+		<param name="ImageNumber" value="17">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="Credits">
 		<param name="Local" value="credits.html">
+		<param name="ImageNumber" value="17">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="Version history">
 		<param name="Local" value="versionhistory.html">
 		<param name="New" value="1">
+		<param name="ImageNumber" value="18">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="Commandline options">
@@ -28,6 +31,12 @@
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="Coding guidelines">
 		<param name="Local" value="guidelines.html">
+		<param name="ImageNumber" value="37">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Donation">
+		<param name="Local" value="donation.html">
+		<param name="ImageNumber" value="15">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="Windows">
