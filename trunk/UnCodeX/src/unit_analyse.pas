@@ -334,7 +334,7 @@ var
   bcount: integer;
   last: string;
 const
-  OPERATOR_NAMES: set of char = ['+', '-', '!', '<', '>', '=', '~', '*', '|', '^'];
+  OPERATOR_NAMES: set of char = ['+', '-', '!', '<', '>', '=', '~', '*', '|', '^', '&'];
 begin
   bcount := 0;
   result := TUFunction.Create;
@@ -411,6 +411,7 @@ begin
     // todo params
     result.params := result.params+' '+p.TokenString;
     p.NextToken;
+    result.params := result.params+pAngleBrackets
   end;
   p.NextToken; // )
   if (p.Token <> ';') then begin
