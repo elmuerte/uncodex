@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.50 2005-03-27 20:10:52 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.51 2005-03-28 09:56:20 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -229,12 +229,14 @@ type
     filetime:           integer; // used for checking for changed files
     defaultproperties:  record
       srcline:          integer; // start of the default properties block in the source
+      definedIn:        string;
       data:             string; // AS IS
     end;
     replication:        record
       srcline:          integer; // start of the replication block in the source
+      definedIn:        string;
       symbols:          TStringList; // symbol=index
-      expressions:       TStringList; // expression (DO NOT SORT)
+      expressions:      TStringList; // expression (DO NOT SORT)
     end;
     //TODO: replication
     //  - per statement a list of replicated symbols?
