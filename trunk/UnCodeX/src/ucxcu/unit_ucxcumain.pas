@@ -6,11 +6,11 @@
   Purpose:
     Main code for the commandline utility
 
-  $Id: unit_ucxcumain.pas,v 1.18 2005-03-16 21:28:11 elmuerte Exp $
+  $Id: unit_ucxcumain.pas,v 1.19 2005-03-17 14:14:46 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
-  Copyright (C) 2003, 2004  Michiel Hendriks
+  Copyright (C) 2003-2005  Michiel Hendriks
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -50,7 +50,7 @@ var
   Verbose: byte = 1;
   ConfigFile: string;
   sourcepaths, packagepriority, ignorepackages: TStringList;
-  PackageDescFile, ExtCommentFile: string;
+  PackageDescFile, ExtCommentFile, UEini: string;
   // HTML output config:
   HTMLOutputDir, TemplateDir, HTMLTargetExt, CPPApp: string;
   TabsToSpaces: integer;
@@ -98,10 +98,6 @@ var
   i: integer;
   sl: TStringList;
 begin
-  if (not FileExists(ConfigFile)) then begin
-    Warning('Config file does not exist: '+ConfigFile);
-    exit;
-  end;
   ini := TMemIniFile.Create(ConfigFile);
   sl := TStringList.Create;
   try
@@ -179,10 +175,19 @@ begin
       Logging := true;
     end;
   end;
-  if (CmdOption('uc', tmp)) then begin
-    tmp := ExpandFileName(tmp);
-    if (FileExists(tmp)) then begin
-      ini := TMemIniFile.Create(tmp);
+
+  tmp := '';
+  if (not HasCmdOption('uc')) then begin
+    // check if the current directory is a engine dir
+    if (FileExists(GetCurrentDir()+PathDelim+'System'+PathDelim+'Default.ini')) then
+      tmp := GetCurrentDir()+PathDelim+'System'+PathDelim+'Default.ini'
+    else if (FileExists(GetCurrentDir()+PathDelim+'Default.ini')) then
+      tmp := GetCurrentDir()+PathDelim+'Default.ini';
+  end;
+  if (CmdOption('uc', tmp) or (tmp <> '')) then begin
+    UEini := ExpandFileName(tmp);
+    if (FileExists(UEini)) then begin
+      ini := TMemIniFile.Create(UEini);
       lst := TStringList.Create;
       try
         ini.ReadSectionValues('Editor.EditorEngine', lst);
@@ -200,9 +205,15 @@ begin
         lst.Free;
       end;
     end
-    else Warning('Unreal System Config file does not exist: '+tmp);
+    else begin
+      Warning('Unreal System Config file does not exist: '+UEini);
+      UEini := '';
+    end;
   end;
+
   CmdOption('o', HTMLOutputDir);
+  HTMLOutputDir := ExpandFileName(HTMLOutputDir);
+
   if (CmdOption('p', tmp)) then begin
     lst := TStringList.Create;
     try
@@ -239,6 +250,11 @@ begin
     sourcepaths.Add(ExcludeTrailingPathDelimiter(ExpandFileName(tmp)));
     i := i+1;
   end;
+  // add current dir
+  if (sourcepaths.Count = 0) then begin
+    if (UEini <> '') then sourcepaths.Add(ExtractFilePath(ExcludeTrailingPathDelimiter(ExtractFilePath(UEini))))
+  end;
+
   CmdOption('t', TemplateDir);
   CmdOption('d', PackageDescFile);
   CmdOption('e', ExtCommentFile);

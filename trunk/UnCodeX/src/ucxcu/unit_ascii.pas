@@ -6,11 +6,11 @@
   Purpose:
     General commandline routines
 
-  $Id: unit_ascii.pas,v 1.17 2005-01-16 07:23:53 elmuerte Exp $
+  $Id: unit_ascii.pas,v 1.18 2005-03-17 14:14:46 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
-  Copyright (C) 2003, 2004  Michiel Hendriks
+  Copyright (C) 2003-2005  Michiel Hendriks
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -66,7 +66,7 @@ const
   PB_TODO   = '.'; // 25% block
   {$ENDIF}
   PB_NONE   = ' ';
-  VERSION   = '013 Beta';
+  VERSION   = '014 Beta';
 
 var
   lastsp: integer = -1;
@@ -116,25 +116,26 @@ begin
   writeln(#9'-c <filename>'  +#9'Set configuration file (uncodex.ini used by default)');
   writeln(#9'-d <filename>'  +#9'Package description file');
   writeln(#9'-e <filename>'  +#9'External comment file');
-  writeln(#9'-h'#9            +#9'This message');
+  writeln(#9'-h'#9           +#9'This message');
   writeln(#9'-l <filename>'  +#9'Log to file <filename>, logging disablled by default');
-  writeln(#9'-m'#9            +#9'Create MS HTML Help file');
-  writeln(#9'-mc <path>'      +#9'Path to the MS HTML Help compiler');
+  writeln(#9'-m'#9           +#9'Create MS HTML Help file');
+  writeln(#9'-mc <path>'     +#9'Path to the MS HTML Help compiler');
   writeln(#9'-me'#9          +#9'Delete HTML output directory after the MS HTML Help');
-  writeln(#9#9                +#9'has been created');
-  writeln(#9'-mo <filename>'  +#9'MS HTML Help output filename. If this is not set');
-  writeln(#9#9                +#9'no MS HTML HELP file will be generated');
-  writeln(#9'-nc'#9          +#9'Don''t read the configuration file');
+  writeln(#9#9               +#9'has been created');
+  writeln(#9'-mo <filename>' +#9'MS HTML Help output filename. If this is not set');
+  writeln(#9#9               +#9'no MS HTML HELP file will be generated');
+  writeln(#9'-nc'#9          +#9'Don''t read the (default) configuration file');
   writeln(#9'-o <path>'      +#9'Output directory for the HTML files');
-  writeln(#9'-p <...>'        +#9'Comma seperated list of package names (exclusive)');
+  writeln(#9'-p <...>'       +#9'Comma seperated list of package names (exclusive)');
   writeln(#9'-pa <...>'      +#9'Comma seperated list of package names (additional)');
-  writeln(#9'-s <path>'      +#9'Source path (multiple allowed)');
+  writeln(#9'-s <path>'      +#9'Source path (multiple allowed). If none specified');
+  writeln(#9#9               +#9'the current directory will be used.');
   writeln(#9'-t <path>'      +#9'Path to the template directory');
-  writeln(#9'-uc <filename>'  +#9'UnrealEngine system ini file');
-  writeln(#9'-v'#9            +#9'Be verbose (default)');
+  writeln(#9'-uc <filename>' +#9'UnrealEngine system ini file');
+  writeln(#9'-v'#9           +#9'Be verbose (default)');
   writeln(#9'-vv'#9          +#9'Be very verbose');
-  writeln(#9'-V'#9            +#9'Print version and quit');
-  writeln(#9'-q'#9            +#9'Be quite');
+  writeln(#9'-V'#9           +#9'Print version and quit');
+  writeln(#9'-q'#9           +#9'Be quite');
 
   writeln('');
   writeln('Commandline switches will override settings defined in the');
