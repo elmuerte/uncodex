@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.48 2005-03-20 08:57:56 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.49 2005-03-20 20:25:56 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -46,11 +46,11 @@ type
   TUClass = class;
   TUPackage = class;
   TUFunctionList = class;
-                    
+
   TDefinitionList = class(TObject)
     fowner:   TUClass;
     defines:  TStringList;
-    curToken:   string;
+    curToken: string;
     procedure _nextToken(var line: string);
     function _expr(var line: string): boolean;
     function _orx(var line: string): boolean;
@@ -186,8 +186,8 @@ type
     modifiers:  string;
     params:     string;
     state:      TUState;
-    args:       TUPropertyList; // parsed argument list (NOT USED)
-    locals:     TUPropertyList; // local variable delcrations (NOT USED)
+    args:       TUPropertyList; // parsed argument list (CURRENTLY NOT USED)
+    locals:     TUPropertyList; // local variable delcrations (CURRENTLY NOT USED)
     constructor Create;
     destructor Destroy; override;
     function declaration: string; override;
@@ -228,9 +228,18 @@ type
     treenode2:          TObject; // the second tree node (PackageTree)
     filetime:           integer; // used for checking for changed files
     defaultproperties:  string; // AS IS
+    //TODO: replication
+    //  - per statement a list of replicated symbols?
+    //  - hash list for replicated symbols (to entry in statement list)
+    //  - function AddReplication(expresion, symbols)
+    //    function IsReplicated(symbol)
+    //    function GetReplication(symbol)
+    //  - store AS IS? parse on the fly?
+    // repSymbols:    TStringList
+    // repExpression: TStringList
     tagged:             boolean;
     children:           TUClassList; // not owned, don't free, don't save
-    deps:               TUClassList; // dependency list, not owned, don't free (NOT USED)
+    deps:               TUClassList; // dependency list, not owned, don't free (CURRENTLY NOT USED)
     defs:               TDefinitionList;
     includes:           TStringList; // #include files: "line no.=file"
     constructor Create;
@@ -642,7 +651,7 @@ end;
 function TUClass.declaration: string;
 begin
   case InterfaceType of
-    itNone:   result := 'class';
+    itNone:     result := 'class';
     itTribesV:  result := 'interface';
   end;
   result := result + ' ' + name;
@@ -784,15 +793,15 @@ end;
 {
   EBNF:
 
-EXPR    ::= ORX
-ORX     ::= ANDX ( '||' ORX )*
-ANDX    ::= UNARYX ( '&&' ANDX )*
+EXPR      ::= ORX
+ORX       ::= ANDX ( '||' ORX )*
+ANDX      ::= UNARYX ( '&&' ANDX )*
 UNARYX    ::= ( '!' )? OPERAND
 OPERAND   ::= LVALUE | '(' EXPR ')'
 LVALUE    ::= integer | IDENTIFIER
 
   supported operators:
-  && || ()
+  && || () !
 
   symbols will be resolved to integers (if undefined => 0)
 }
