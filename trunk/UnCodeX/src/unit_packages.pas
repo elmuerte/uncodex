@@ -6,7 +6,7 @@
     Purpose:
         UnrealScript package scanner, search for UnrealScript classes
 
-    $Id: unit_packages.pas,v 1.33 2004-10-20 14:19:29 elmuerte Exp $
+    $Id: unit_packages.pas,v 1.34 2004-11-06 15:07:44 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -154,7 +154,7 @@ begin
                     p.NextToken;
                     result := TUClass.Create;
                     result.name := p.TokenString;
-                    result.isInterface := true;
+                    result.InterfaceType := itTribesV;
                     logclass('Found interface class: '+result.name, result);
                 end;
             end;
@@ -451,7 +451,7 @@ begin
                 classlist[i].parent := parent;
                 if (parent <> nil) then parent.children.Add(classlist[i]);
                 {$IFDEF USE_TREEVIEW}
-                if (classlist[i].isInterface) then begin
+                if (classlist[i].InterfaceType = itTribesV) then begin
                     if (InterfaceNode = nil) then begin
                         InterfaceNode := classtree.AddChild(nil, 'Interfaces');
                     end;

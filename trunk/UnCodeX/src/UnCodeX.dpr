@@ -6,7 +6,7 @@
     Purpose:
         Program unit for the GUI
 
-    $Id: UnCodeX.dpr,v 1.50 2004-10-20 14:19:27 elmuerte Exp $
+    $Id: UnCodeX.dpr,v 1.51 2004-11-06 15:07:44 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -33,54 +33,54 @@ program UnCodeX;
 {%File 'defines.inc'}
 
 uses
-    FastShareMem in 'FastShareMem.pas',
-    Windows,
-    Messages,
-    SysUtils,
-    Forms,
-    Dialogs,
-    Classes,
-    unit_main in 'unit_main.pas' {frm_UnCodeX},
-    unit_packages in 'unit_packages.pas',
-    unit_parser in 'unit_parser.pas',
-    unit_htmlout in 'unit_htmlout.pas',
-    unit_uclasses in 'unit_uclasses.pas',
-    unit_settings in 'unit_settings.pas' {frm_Settings},
-    unit_definitions in 'unit_definitions.pas',
-    unit_analyse in 'unit_analyse.pas',
-    unit_copyparser in 'unit_copyparser.pas',
-    Hashes in 'Hashes.pas',
-    unit_treestate in 'unit_treestate.pas',
-    unit_about in 'unit_about.pas' {frm_About},
-    unit_mshtmlhelp in 'unit_mshtmlhelp.pas',
-    unit_fulltextsearch in 'unit_fulltextsearch.pas',
-    RegExpr in 'RegExpr.pas',
-    unit_tags in 'unit_tags.pas' {frm_Tags},
-    hh_funcs in 'hh_funcs.pas',
-    hh in 'hh.pas',
-    unit_outputdefs in 'unit_outputdefs.pas',
-    unit_sourceparser in 'unit_sourceparser.pas',
-    unit_rtfhilight in 'unit_rtfhilight.pas',
-    unit_richeditex in 'unit_richeditex.pas',
-    unit_utils in 'unit_utils.pas',
-    unit_searchform in 'unit_searchform.pas' {frm_SearchForm},
-    unit_clpipe in 'unit_clpipe.pas',
-    unit_license in 'unit_license.pas' {frm_License},
-    unit_splash in 'unit_splash.pas' {frm_Splash},
-    unit_props in 'unit_props.pas' {fr_Properties: TFrame},
-    unit_ucxdocktree in 'unit_ucxdocktree.pas',
-    unit_ucops in 'unit_ucops.pas' {frm_CreateNewClass},
-    unit_pkgprops in 'unit_pkgprops.pas' {frm_PackageProps},
-    unit_moveclass in 'unit_moveclass.pas' {frm_MoveClass},
-    unit_defprops in 'unit_defprops.pas' {frm_DefPropsBrowser},
-    unit_renameclass in 'unit_renameclass.pas' {frm_RenameClass},
-    unit_rungame in 'unit_rungame.pas' {frm_Run},
-    unit_multilinequery in 'unit_multilinequery.pas' {frm_MultiLineQuery},
-    unit_pascalscript in 'unit_pascalscript.pas',
-    unit_pascalscript_gui in 'unit_pascalscript_gui.pas',
-    unit_pseditor in 'unit_pseditor.pas' {frm_PSEditor},
-    unit_pascalscript_ex in 'unit_pascalscript_ex.pas',
-    IFSI_unit_uclasses in 'IFSI_unit_uclasses.pas';
+  FastShareMem in 'FastShareMem.pas',
+  Windows,
+  Messages,
+  SysUtils,
+  Forms,
+  Dialogs,
+  Classes,
+  unit_main in 'unit_main.pas' {frm_UnCodeX},
+  unit_packages in 'unit_packages.pas',
+  unit_parser in 'unit_parser.pas',
+  unit_htmlout in 'unit_htmlout.pas',
+  unit_uclasses in 'unit_uclasses.pas',
+  unit_settings in 'unit_settings.pas' {frm_Settings},
+  unit_definitions in 'unit_definitions.pas',
+  unit_analyse in 'unit_analyse.pas',
+  unit_copyparser in 'unit_copyparser.pas',
+  Hashes in 'Hashes.pas',
+  unit_treestate in 'unit_treestate.pas',
+  unit_about in 'unit_about.pas' {frm_About},
+  unit_mshtmlhelp in 'unit_mshtmlhelp.pas',
+  unit_fulltextsearch in 'unit_fulltextsearch.pas',
+  RegExpr in 'RegExpr.pas',
+  unit_tags in 'unit_tags.pas' {frm_Tags},
+  hh_funcs in 'hh_funcs.pas',
+  hh in 'hh.pas',
+  unit_outputdefs in 'unit_outputdefs.pas',
+  unit_sourceparser in 'unit_sourceparser.pas',
+  unit_rtfhilight in 'unit_rtfhilight.pas',
+  unit_richeditex in 'unit_richeditex.pas',
+  unit_utils in 'unit_utils.pas',
+  unit_searchform in 'unit_searchform.pas' {frm_SearchForm},
+  unit_clpipe in 'unit_clpipe.pas',
+  unit_license in 'unit_license.pas' {frm_License},
+  unit_splash in 'unit_splash.pas' {frm_Splash},
+  unit_props in 'unit_props.pas' {fr_Properties: TFrame},
+  unit_ucxdocktree in 'unit_ucxdocktree.pas',
+  unit_ucops in 'unit_ucops.pas' {frm_CreateNewClass},
+  unit_pkgprops in 'unit_pkgprops.pas' {frm_PackageProps},
+  unit_moveclass in 'unit_moveclass.pas' {frm_MoveClass},
+  unit_defprops in 'unit_defprops.pas' {frm_DefPropsBrowser},
+  unit_renameclass in 'unit_renameclass.pas' {frm_RenameClass},
+  unit_rungame in 'unit_rungame.pas' {frm_Run},
+  unit_multilinequery in 'unit_multilinequery.pas' {frm_MultiLineQuery},
+  unit_pascalscript in 'unit_pascalscript.pas',
+  unit_pascalscript_gui in 'unit_pascalscript_gui.pas',
+  unit_pseditor in 'unit_pseditor.pas' {frm_PSEditor},
+  unit_pascalscript_ex in 'unit_pascalscript_ex.pas',
+  IFSI_unit_uclasses in 'IFSI_unit_uclasses.pas';
 
 {$R *.res}
 
@@ -203,9 +203,9 @@ begin
         Application.Initialize;
         Application.Title := 'UnCodeX';
         Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-        Application.CreateForm(Tfrm_About, frm_About);
-        Application.CreateForm(Tfrm_License, frm_License);
-        if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+  Application.CreateForm(Tfrm_About, frm_About);
+  Application.CreateForm(Tfrm_License, frm_License);
+  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
         Application.Run;
     end
     else if (frm_Splash <> nil) then frm_Splash.Close;
