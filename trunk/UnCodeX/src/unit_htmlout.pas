@@ -538,6 +538,14 @@ begin
     replacement := DateTimeToStr(FileDateToDateTime(TUClass(data).filetime));
     result := true;
   end
+  else if (CompareText(replacement, 'class_defaultproperties') = 0) then begin
+    replacement := TUClass(data).defaultproperties;
+    result := true;
+  end
+  else if (CompareText(replacement, 'class_comment') = 0) then begin
+    replacement := TUClass(data).comment;
+    result := true;
+  end
   else if (CompareText(replacement, 'class_children') = 0) then begin
     replacement := '';
     if (TUClass(data).treenode = nil) then begin
@@ -881,6 +889,10 @@ begin
     replacement := IntToStr(TUConst(data).srcline);
     result := true;
   end
+  else if (CompareText(replacement, 'const_comment') = 0) then begin
+    replacement := TUConst(data).comment;
+    result := true;
+  end
 end;
 
 function THTMLOutput.replaceClassVar(var replacement: string; data: TObject = nil): boolean;
@@ -905,6 +917,10 @@ begin
   end
   else if (CompareText(replacement, 'var_srcline') = 0) then begin
     replacement := IntToStr(TUProperty(data).srcline);
+    result := true;
+  end
+  else if (CompareText(replacement, 'var_comment') = 0) then begin
+    replacement := TUProperty(data).comment;
     result := true;
   end
 end;
@@ -933,6 +949,10 @@ begin
     replacement := IntToStr(TUEnum(data).srcline);
     result := true;
   end
+  else if (CompareText(replacement, 'enum_comment') = 0) then begin
+    replacement := TUEnum(data).comment;
+    result := true;
+  end
 end;
 
 function THTMLOutput.replaceClassStruct(var replacement: string; data: TObject = nil): boolean;
@@ -959,11 +979,15 @@ begin
     replacement := TUStruct(data).data;
     replacement := StringReplace(replacement, '{', '{<blockquote>', [rfReplaceAll]);
     replacement := StringReplace(replacement, '}', '</blockquote>}', [rfReplaceAll]);
-    replacement := StringReplace(replacement, ';', ';<br>'+#13#10, [rfReplaceAll]);
+    replacement := StringReplace(replacement, #10, #10+'<br>', [rfReplaceAll]);
     result := true;
   end
   else if (CompareText(replacement, 'struct_srcline') = 0) then begin
     replacement := IntToStr(TUStruct(data).srcline);
+    result := true;
+  end
+  else if (CompareText(replacement, 'struct_comment') = 0) then begin
+    replacement := TUStruct(data).comment;
     result := true;
   end
 end;
@@ -999,6 +1023,10 @@ begin
   end
   else if (CompareText(replacement, 'function_srcline') = 0) then begin
     replacement := IntToStr(TUFunction(data).srcline);
+    result := true;
+  end
+  else if (CompareText(replacement, 'function_comment') = 0) then begin
+    replacement := TUFunction(data).comment;
     result := true;
   end
 end;
