@@ -135,6 +135,7 @@ type
     ed_DefInheritanceDepth: TEdit;
     ud_DefInheritDepth: TUpDown;
     cb_LoadCustomModules: TCheckBox;
+    btn_Ignore: TBitBtn;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -180,6 +181,7 @@ type
     procedure btn_HelpClick(Sender: TObject);
     procedure lv_HotKeysSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
+    procedure btn_IgnoreClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -541,6 +543,13 @@ begin
   if (Item = nil) then exit;
   ed_HotKey.Text := Item.Caption;
   hk_HotKey.HotKey := TextToShortCut(Item.SubItems[0]);
+end;
+
+procedure Tfrm_Settings.btn_IgnoreClick(Sender: TObject);
+begin
+  if (clb_PackagePriority.ItemIndex = -1) then exit;
+  lb_IgnorePackages.Items.Add(clb_PackagePriority.Items[clb_PackagePriority.ItemIndex]);
+  clb_PackagePriority.Items.Delete(clb_PackagePriority.ItemIndex);
 end;
 
 end.

@@ -195,7 +195,11 @@ begin
     while (p.Token <> toEOF) do begin
       if (p.Token = '%') then begin
         replacement := p.SkipToToken('%');
-        if (replace(replacement, data)) then begin
+        if (replacement = '') then begin // %% = %
+          replacement := '%';
+          p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+        end
+        else if (replace(replacement, data)) then begin
           p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
         end
         else begin // put back old
@@ -945,6 +949,11 @@ begin
     replacement := TUConst(data).comment;
     result := true;
   end
+  else if (CompareText(replacement, 'has_comment_?') = 0) then begin
+    if (TUConst(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '')
+    else replacement := '';
+    result := true;
+  end
 end;
 
 function THTMLOutput.replaceClassVar(var replacement: string; data: TObject = nil): boolean;
@@ -973,6 +982,11 @@ begin
   end
   else if (CompareText(replacement, 'var_comment') = 0) then begin
     replacement := TUProperty(data).comment;
+    result := true;
+  end
+  else if (CompareText(replacement, 'has_comment_?') = 0) then begin
+    if (TUProperty(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '')
+    else replacement := '';
     result := true;
   end
 end;
@@ -1005,6 +1019,11 @@ begin
     replacement := TUEnum(data).comment;
     result := true;
   end
+  else if (CompareText(replacement, 'has_comment_?') = 0) then begin
+    if (TUEnum(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '')
+    else replacement := '';
+    result := true;
+  end
 end;
 
 function THTMLOutput.replaceClassStruct(var replacement: string; data: TObject = nil): boolean;
@@ -1030,6 +1049,7 @@ begin
   else if (CompareText(replacement, 'struct_data_indent') = 0) then begin
     replacement := TUStruct(data).data;
     replacement := StringReplace(replacement, '{', '{<blockquote>', [rfReplaceAll]);
+    replacement := StringReplace(replacement, '<blockquote>'+#10, '<blockquote>', [rfReplaceAll]);
     replacement := StringReplace(replacement, '}', '</blockquote>}', [rfReplaceAll]);
     replacement := StringReplace(replacement, #10, #10+'<br>', [rfReplaceAll]);
     result := true;
@@ -1040,6 +1060,11 @@ begin
   end
   else if (CompareText(replacement, 'struct_comment') = 0) then begin
     replacement := TUStruct(data).comment;
+    result := true;
+  end
+  else if (CompareText(replacement, 'has_comment_?') = 0) then begin
+    if (TUStruct(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '')
+    else replacement := '';
     result := true;
   end
 end;
@@ -1099,6 +1124,11 @@ begin
   end
   else if (CompareText(replacement, 'function_comment') = 0) then begin
     replacement := TUFunction(data).comment;
+    result := true;
+  end
+  else if (CompareText(replacement, 'has_comment_?') = 0) then begin
+    if (TUFunction(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '')
+    else replacement := '';
     result := true;
   end
 end;
