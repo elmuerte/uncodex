@@ -66,7 +66,7 @@ object frm_Run: Tfrm_Run
     Top = 93
     Width = 575
     Height = 356
-    ActivePage = TabSheet1
+    ActivePage = ts_URL
     Anchors = [akLeft, akTop, akRight, akBottom]
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clMenuText
@@ -75,7 +75,7 @@ object frm_Run: Tfrm_Run
     Font.Style = [fsBold]
     ParentFont = False
     Style = tsFlatButtons
-    TabIndex = 3
+    TabIndex = 2
     TabOrder = 0
     object ts_Commandline: TTabSheet
       Caption = 'Commandline'
