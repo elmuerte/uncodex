@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Unreal Package scanner, searches for classes in directories
- $Id: unit_packages.pas,v 1.14 2003-11-24 11:25:52 elmuerte Exp $
+ $Id: unit_packages.pas,v 1.15 2003-11-25 22:08:03 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -116,7 +116,7 @@ var
 begin
   stime := GetTickCount();
   ScanPackages();
-  Status('Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds, '+IntToStr(classlist.Count)+' classes')
+  Status('Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds, '+IntToStr(classlist.Count)+' classes');
 end;
 
 procedure TPackageScanner.ScanPackages;

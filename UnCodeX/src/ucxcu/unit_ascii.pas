@@ -22,7 +22,8 @@ const
   PB_END = ']';
   PB_DONE = #219; // full bock
   PB_TODO = #176; // 25% block
-  VERSION = '003 Alpha';
+  PB_NONE = ' ';
+  VERSION = '004 Alpha';
 
 var
   lastsp: integer;
@@ -32,6 +33,7 @@ var
   sp: integer;
 begin
   if (showvalue) then size := size - 5;
+  if ((progress < 0) or (progress > 100)) then exit;
   sp := round(progress / (100 / size));
   if (sp = lastsp) then exit;
   write(#13+text);
