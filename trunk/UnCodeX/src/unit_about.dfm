@@ -5,7 +5,7 @@ object frm_About: Tfrm_About
   BorderStyle = bsDialog
   BorderWidth = 5
   Caption = 'About ...'
-  ClientHeight = 278
+  ClientHeight = 292
   ClientWidth = 322
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -18,14 +18,14 @@ object frm_About: Tfrm_About
   OnCreate = FormCreate
   DesignSize = (
     322
-    278)
+    292)
   PixelsPerInch = 96
   TextHeight = 13
   object bvl_Border: TBevel
     Left = 0
     Top = 0
     Width = 49
-    Height = 278
+    Height = 292
     Align = alLeft
     Shape = bsFrame
   end
@@ -122,7 +122,7 @@ object frm_About: Tfrm_About
     Left = 56
     Top = 144
     Width = 265
-    Height = 134
+    Height = 148
     Alignment = taCenter
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelKind = bkSoft
@@ -137,7 +137,8 @@ object frm_About: Tfrm_About
       ''
       'Uses Andrey Sorokin'#39's TRegExpr'
       'Uses Ciaran McCreesh'#39's Hashes Library'
-      'Uses The Helpware Group'#39's HTML Help API Unit')
+      'Uses The Helpware Group'#39's HTML Help API Unit'
+      'Uses Emil M. Santos'#39's FastShareMem')
     ParentColor = True
     ReadOnly = True
     TabOrder = 0

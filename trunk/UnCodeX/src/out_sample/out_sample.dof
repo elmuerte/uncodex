@@ -61,18 +61,13 @@ Launcher=
 UseLauncher=0
 DebugCWD=
 
-[Language]
-ActiveLang=
-ProjectLang=
-RootDir=
-
 [Version Info]
 IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=1
 MinorVer=0
 Release=0
-Build=6
+Build=7
 Debug=0
 PreRelease=0
 Special=0
@@ -84,7 +79,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Michiel 'El Muerte' Hendriks
 FileDescription=sample output module
-FileVersion=1.0.0.6
+FileVersion=1.0.0.7
 InternalName=out_sample
 LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
 LegalTrademarks=
@@ -98,11 +93,12 @@ Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 
 [HistoryLists\hlUnitOutputDirectory]
-Count=4
-Item0=E:\Program Files\Borland\Projects\UnCodeX\Dcu\ucxc
-Item1=E:\Program Files\Borland\Projects\UnCodeX\DCU
-Item2=E:\Program Files\Borland\Projects\UnCodeX\DCU\out_wikifier
-Item3=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_sample
+Count=5
+Item0=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_graphviz
+Item1=E:\Program Files\Borland\Projects\UnCodeX\Dcu\ucxc
+Item2=E:\Program Files\Borland\Projects\UnCodeX\DCU
+Item3=E:\Program Files\Borland\Projects\UnCodeX\DCU\out_wikifier
+Item4=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_sample
 
 [HistoryLists\hlOutputDirectorry]
 Count=1
