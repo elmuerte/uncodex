@@ -4,8 +4,8 @@ Version=6.0
 [Compiler]
 A=8
 B=0
-C=0
-D=0
+C=1
+D=1
 E=0
 F=0
 G=1
@@ -13,7 +13,7 @@ H=1
 I=1
 J=0
 K=0
-L=0
+L=1
 M=0
 N=1
 O=1
@@ -26,7 +26,7 @@ U=0
 V=1
 W=0
 X=1
-Y=0
+Y=1
 Z=1
 ShowHints=1
 ShowWarnings=1
@@ -45,28 +45,28 @@ ExeDescription=
 
 [Directories]
 OutputDir=E:\Program Files\Borland\Projects\UnCodeX\Bin
-UnitOutputDir=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_graphviz
+UnitOutputDir=E:\Program Files\Borland\Projects\UnCodeX\Dcu\ucxcpp
 PackageDLLOutputDir=
 PackageDCPOutputDir=
 SearchPath=
-Packages=vcl;rtl;dbrtl;adortl;vcldb;vclx;bdertl;vcldbx;ibxpress;dsnap;cds;bdecds;qrpt;teeui;teedb;tee;dss;teeqr;visualclx;dsnapcrba;dsnapcon;VclSmp;vclshlctrls;vclie;xmlrtl;inet;inetdbbde;inetdbxpress;inetdb;nmfast;webdsnap;websnap;soaprtl;dbexpress;dbxcds;indy;dclOffice2k;visualdbclx;TAC2comps
+Packages=vcl;rtl;dbrtl;adortl;vcldb;vclx;bdertl;vcldbx;ibxpress;dsnap;cds;bdecds;qrpt;teeui;teedb;tee;dss;teeqr;visualclx;dsnapcrba;dsnapcon;VclSmp;vclshlctrls;vclie;xmlrtl;inet;inetdbbde;inetdbxpress;inetdb;webdsnap;websnap;soaprtl;dbexpress;dbxcds;indy;dclOffice2k;visualdbclx;nmfast;TAC2comps
 Conditionals=
 DebugSourceDirs=
 UsePackages=0
 
 [Parameters]
 RunParams=
-HostApplication=E:\Program Files\Borland\Projects\UnCodeX\Bin\UnCodeX.exe
+HostApplication=
 Launcher=
 UseLauncher=0
 DebugCWD=
 
 [Version Info]
-IncludeVerInfo=1
+IncludeVerInfo=0
 AutoIncBuild=0
 MajorVer=1
 MinorVer=0
-Release=1
+Release=0
 Build=0
 Debug=0
 PreRelease=0
@@ -78,15 +78,15 @@ CodePage=1252
 
 [Version Info Keys]
 CompanyName=
-FileDescription=DOT file creator
-FileVersion=1.0.1.0
-InternalName=out_graphviz
-LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
+FileDescription=
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
 LegalTrademarks=
-OriginalFilename=out_graphviz.dll
-ProductName=UnCodeX
+OriginalFilename=
+ProductName=
 ProductVersion=1.0.0.0
-Comments=http://wiki.beyondunreal.com/wiki/UnCodeX
+Comments=
 
 [Excluded Packages]
 e:\program files\borland\delphi6\Projects\Bpl\dclrx6.bpl=RX Library Controls and Tools
@@ -97,12 +97,13 @@ Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 
 [HistoryLists\hlUnitOutputDirectory]
-Count=5
-Item0=E:\Program Files\Borland\Projects\UnCodeX\DCU
-Item1=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_graphviz
-Item2=E:\Program Files\Borland\Projects\UnCodeX\Dcu\ucxc
-Item3=E:\Program Files\Borland\Projects\UnCodeX\DCU\out_wikifier
-Item4=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_sample
+Count=6
+Item0=E:\Program Files\Borland\Projects\UnCodeX\Dcu\ucxcpp
+Item1=E:\Program Files\Borland\Projects\UnCodeX\DCU
+Item2=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_graphviz
+Item3=E:\Program Files\Borland\Projects\UnCodeX\Dcu\ucxc
+Item4=E:\Program Files\Borland\Projects\UnCodeX\DCU\out_wikifier
+Item5=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_sample
 
 [HistoryLists\hlOutputDirectorry]
 Count=1
