@@ -98,6 +98,34 @@ ps_uclasses_TUState.html
 ps_uclasses_TUStruct.html
 ps_var.html
 ps_var_gui.html
+ps_classes_TStrings.html
+ps_classes_TBits.html
+ps_classes_TCollection.html
+ps_classes_TCollectionItem.html
+ps_classes_TComponent.html
+ps_classes_TCustomMemoryStream.html
+ps_classes_TFileStream.html
+ps_classes_THandleStream.html
+ps_classes_TList.html
+ps_classes_TMemIniFile.html
+ps_classes_TMemoryStream.html
+ps_classes_TObject.html
+ps_classes_TObjectList.html
+ps_classes_TOwnedCollection.html
+ps_classes_TParser.html
+ps_classes_TPersistent.html
+ps_classes_TResourceStream.html
+ps_classes_TStream.html
+ps_classes_TStringList.html
+ps_funcs_string.html
+ps_funcs_actions.html
+ps_funcs_DateTime.html
+ps_funcs_dialogs.html
+ps_funcs_exec.html
+ps_funcs_fs.html
+ps_funcs_math.html
+ps_funcs_misc.html
+ps_funcs_programs.html
 
 [INFOTYPES]
 

@@ -1,0 +1,36 @@
+<html>
+<head>
+	<title>UnCodeX - Pascal Script - TCollection</title>
+	<link href="default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">TCollection</div>
+</div>
+
+<div class="content">
+<h1>TCollection</h1>
+<pre>
+TCollection = class(TPersistant);
+	Constructor CREATE( ITEMCLASS : TCOLLECTIONITEMCLASS);
+	Function OWNER : TPERSISTENT;
+	Function ADD : TCOLLECTIONITEM;
+	Procedure BEGINUPDATE;
+	Procedure CLEAR;
+	Procedure DELETE( INDEX : INTEGER);
+	Procedure ENDUPDATE;
+	Function FINDITEMID( ID : INTEGER) : TCOLLECTIONITEM;
+	Function INSERT( INDEX : INTEGER) : TCOLLECTIONITEM;
+	property Count: Integer;
+	property ItemClass: TCollectionItemClass;
+	property Items[Index: Integer]: TCollectionItem;
+  end;
+</pre>
+
+</div>
+</div>
+</body>
+</html>

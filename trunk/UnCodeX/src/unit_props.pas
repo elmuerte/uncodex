@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   property inspector frame
- $Id: unit_props.pas,v 1.14 2004-08-09 13:25:15 elmuerte Exp $
+ $Id: unit_props.pas,v 1.15 2004-08-24 19:42:31 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -86,6 +86,12 @@ begin
   end;
 end;
 
+function MakeHint(hnt: string): string;
+begin
+  result := StringReplace(hnt, '<', '&lt;', [rfReplaceAll]);
+  result := StringReplace(result, '>', '&gt;', [rfReplaceAll]);
+end;
+
 function Tfr_Properties.LoadClass: boolean;
 var
   i, j: integer;
@@ -121,7 +127,7 @@ begin
         else} li.SubItems.AddObject(pclass.consts[i].name, pclass.consts[i]);
       li.SubItems.Add(IntToStr(pclass.consts[i].srcline));
       li.SubItems.Add(IntToStr(j));
-      li.SubItems.Add(pclass.consts[i].name+' = '+pclass.consts[i].value);
+      li.SubItems.Add(MakeHint(pclass.consts[i].name+' = '+pclass.consts[i].value));
       li.SubItems.Add(pclass.consts[i].comment);
       li.Data := pclass;
       li.ImageIndex := 0;
@@ -159,7 +165,7 @@ begin
         else} li.SubItems.AddObject(pclass.properties[i].name, pclass.properties[i]);
       li.SubItems.Add(IntToStr(pclass.properties[i].srcline));
       li.SubItems.Add(IntToStr(j));
-      li.SubItems.Add(pclass.properties[i].ptype+' '+pclass.properties[i].name);
+      li.SubItems.Add(MakeHint(pclass.properties[i].ptype+' '+pclass.properties[i].name));
       li.SubItems.Add(pclass.properties[i].comment);
       li.Data := pclass;
       li.ImageIndex := 1;
@@ -187,7 +193,7 @@ begin
         else} li.SubItems.AddObject(pclass.enums[i].name, pclass.enums[i]);
       li.SubItems.Add(IntToStr(pclass.enums[i].srcline));
       li.SubItems.Add(IntToStr(j));
-      li.SubItems.Add(pclass.enums[i].name+' = '+StringReplace(pclass.enums[i].options, ',', ', ', [rfReplaceAll]));
+      li.SubItems.Add(MakeHint(pclass.enums[i].name+' = '+StringReplace(pclass.enums[i].options, ',', ', ', [rfReplaceAll])));
       li.SubItems.Add(pclass.enums[i].comment);
       li.Data := pclass;
       li.ImageIndex := 2;
@@ -215,7 +221,7 @@ begin
         else} li.SubItems.AddObject(pclass.structs[i].name, pclass.structs[i]);
       li.SubItems.Add(IntToStr(pclass.structs[i].srcline));
       li.SubItems.Add(IntToStr(j));
-      li.SubItems.Add(pclass.structs[i].name);
+      li.SubItems.Add(MakeHint(pclass.structs[i].name));
       li.SubItems.Add(pclass.structs[i].comment);
       li.Data := pclass;
       li.ImageIndex := 3;
@@ -244,7 +250,7 @@ begin
       li.SubItems.Add(IntToStr(j));
       if (pclass.delegates[i].return = '') then return := ''
         else return := pclass.delegates[i].return+' = ';
-      li.SubItems.Add(return+pclass.delegates[i].name+'( '+pclass.delegates[i].params+' )');
+      li.SubItems.Add(MakeHint(return+pclass.delegates[i].name+'( '+pclass.delegates[i].params+' )'));
       li.SubItems.Add(pclass.delegates[i].comment);
       li.Data := pclass;
       li.ImageIndex := 7 // delegate is an event
@@ -280,17 +286,17 @@ begin
       if ((pclass.functions[i].ftype = uftFunction) or (pclass.functions[i].ftype = uftEvent) or (pclass.functions[i].ftype = uftDelegate)) then begin
         if (pclass.functions[i].return = '') then return := ''
           else return := pclass.functions[i].return+' = ';
-        li.SubItems.Add(return+pclass.functions[i].name+'( '+pclass.functions[i].params+' )');
+        li.SubItems.Add(MakeHint(return+pclass.functions[i].name+'( '+pclass.functions[i].params+' )'));
         //li.SubItems.Add(pclass.functions[i].name+'('+pclass.functions[i].params+')');
       end
       else if (pclass.functions[i].ftype = uftPreOperator) then begin
-        li.SubItems.Add(pclass.functions[i].return+' = '+pclass.functions[i].name+' '+ShiftString(pclass.functions[i].params, 2));
+        li.SubItems.Add(MakeHint(pclass.functions[i].return+' = '+pclass.functions[i].name+' '+ShiftString(pclass.functions[i].params, 2)));
       end
       else if (pclass.functions[i].ftype = uftPostOperator) then begin
-        li.SubItems.Add(pclass.functions[i].return+' = '+ShiftString(pclass.functions[i].params, 2)+' '+pclass.functions[i].name);
+        li.SubItems.Add(MakeHint(pclass.functions[i].return+' = '+ShiftString(pclass.functions[i].params, 2)+' '+pclass.functions[i].name));
       end
       else if (pclass.functions[i].ftype = uftOperator) then begin
-        li.SubItems.Add(pclass.functions[i].return+' = '+ShiftString(ShiftString(pclass.functions[i].params, 2, ','), 3)+' '+pclass.functions[i].name+' '+ShiftString(pclass.functions[i].params, 2));
+        li.SubItems.Add(MakeHint(pclass.functions[i].return+' = '+ShiftString(ShiftString(pclass.functions[i].params, 2, ','), 3)+' '+pclass.functions[i].name+' '+ShiftString(pclass.functions[i].params, 2)));
       end;
       li.SubItems.Add(pclass.functions[i].comment);
       li.Data := pclass;
@@ -312,8 +318,10 @@ begin
 	if ((Item.Caption = '-') or (Item.Caption = '+')) then InfoTip := '';
   if (Item.Caption = '=') then InfoTip := Item.SubItems[1];
   if (Item.SubItems.Count < 5) then exit;
-  InfoTip := Item.SubItems[3];
-  if (Item.SubItems[4] <> '') then InfoTip := InfoTip+#13#10#13#10+StringReplace(Item.SubItems[4], #9, '', [rfReplaceAll]);
+  InfoTip := '<div style="padding-left: 20px; text-indent: -18px; margin-left: -2px"><code>'+Item.SubItems[3]+'</code></div>';
+  if (Item.SubItems[4] <> '') then InfoTip :=
+		InfoTip+'<div style="background-color: ButtonFace; padding: 2px; margin-top: 5px; margin-left: -2px">'+
+    StringReplace(Item.SubItems[4], #9, '', [rfReplaceAll])+'</div>';
 end;
 
 procedure Tfr_Properties.lv_PropertiesClick(Sender: TObject);
