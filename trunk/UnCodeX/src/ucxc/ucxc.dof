@@ -93,13 +93,15 @@ Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 
 [HistoryLists\hlUnitOutputDirectory]
-Count=5
-Item0=E:\Program Files\Borland\Projects\UnCodeX\DCU
-Item1=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_graphviz
-Item2=E:\Program Files\Borland\Projects\UnCodeX\Dcu\ucxc
-Item3=E:\Program Files\Borland\Projects\UnCodeX\DCU\out_wikifier
-Item4=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_sample
+Count=6
+Item0=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_graphviz
+Item1=E:\Program Files\Borland\Projects\UnCodeX\DCU\out_wikifier
+Item2=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_sample
+Item3=E:\Program Files\Borland\Projects\UnCodeX\Dcu\ucxcpp
+Item4=E:\Program Files\Borland\Projects\UnCodeX\DCU
+Item5=E:\Program Files\Borland\Projects\UnCodeX\Dcu\ucxc
 
 [HistoryLists\hlOutputDirectorry]
-Count=1
+Count=2
 Item0=E:\Program Files\Borland\Projects\UnCodeX\Bin
+Item1=E:\Program Files\Borland\Projects\UnCodeX\Bin\out_sample

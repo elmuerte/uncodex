@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.30 2003-06-10 12:00:22 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.31 2003-07-10 07:46:53 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_htmlout;
@@ -61,6 +61,7 @@ type
     ClassTree: TTreeNodes;
     status: TStatusReport;
     ini: TMemIniFile;
+
     procedure parseTemplate(input, output: TStream; replace: TReplacement; data: TObject = nil);
     function replaceDefault(var replacement: string; data: TObject = nil): boolean;
     procedure htmlIndex; // creates index.html
@@ -112,6 +113,11 @@ const
   glossary_filename = 'glossary_A.';
   SOURCEPRE = 'Source_';
   IGNORE_KEYWORD = '@ignore';
+  ASCII_GLOSSARY_ELIPSE = '... ';
+  ASCII_TREE_NONE = '    ';
+  ASCII_TREE_T = '+-- ';
+  ASCII_TREE_L = '+-- ';
+  ASCII_TREE_I = '|   ';
 
 implementation
 
@@ -122,6 +128,11 @@ var
   currentClass: TUClass;
   curPos, maxPos: integer;
   TargetExtention: string;
+  GlossaryElipse: string;
+  TreeNone: string;
+  TreeT: string;
+  TreeL: string;
+  TreeI: string;
 
 function ClassLink(uclass: TUClass): string;
 begin
@@ -163,7 +174,10 @@ begin
   // 0 = use template default
   // -1 = disable
   if (TabsToSpaces = 0) then TabsToSpaces := ini.ReadInteger('Settings', 'TabsToSpaces', TabsToSpaces);
-  if (Self.CPP = '') then Self.CPP := TemplateDir+Ini.ReadString('Setting', 'CPP', '');
+  if (Self.CPP = '') then begin
+    Self.CPP := Ini.ReadString('Setting', 'CPP', '');
+    if (Self.CPP <> '') then Self.CPP := TemplateDir+Self.CPP;
+  end;
   if (CompareText(trim(Self.CPP), 'none') = 0) then Self.CPP := '';
   if (CPP <> '') then begin
     if (FileExists(CPP)) then begin
@@ -172,6 +186,11 @@ begin
     end
     else Log('Comment Preprocessor "'+CPP+'" not found');
   end;
+  GlossaryElipse := ini.ReadString('Settings', 'GlossaryElipse', ASCII_GLOSSARY_ELIPSE);
+  TreeNone := ini.ReadString('Settings', 'TreeNone', ASCII_TREE_NONE);
+  TreeT := ini.ReadString('Settings', 'TreeT', ASCII_TREE_T);
+  TreeL := ini.ReadString('Settings', 'TreeL', ASCII_TREE_L);
+  TreeI := ini.ReadString('Settings', 'TreeI', ASCII_TREE_I);
   inherited Create(true);
 end;
 
@@ -647,8 +666,8 @@ begin
     result := CreateClassTree(uclass.parent, level);
   end;
   if (level > 0) then begin
-    result := result+DupeString(' ', (Level-1)*4)+'|'+#10;
-    result := result+DupeString(' ', (Level-1)*4)+'+-- ';
+    result := result+DupeString(TreeNone, (Level-1))+TreeI+#10;
+    result := result+DupeString(TreeNone, (Level-1))+TreeL;
   end;
   result := result+'<a href="package_'+LowerCase(uclass.package.name)+'.'+TargetExtention+'">'+uclass.package.name+'</a>.<a href="'+ClassLink(uclass)+'">'+uclass.name+'</a>'+#10;
   Inc(level);
@@ -1439,23 +1458,20 @@ begin
   end;
 end;
 
-const
-  TLINE = '|   ';
-  TNODE = '+-- ';
-  TBLANK ='    ';
-
 procedure THTMLOutput.ProcTreeNode(var replacement: string; node: TTreeNode; basestring: string);
 var
   i: integer;
+  tmp: string;
 begin
   // ignore class when comment = @ignore
   if (CompareText(TUClass(node.data).comment, IGNORE_KEYWORD) = 0) then exit;
   Status('Creating '+classtree_filename+' class: '+node.Text);
   for i := 0 to node.Count-1 do begin
-    replacement := replacement+basestring+TNODE+'<a href="'+ClassLink(TUClass(node.Item[i].data))+'" name="'+node.Item[i].Text+'">'+node.Item[i].Text+'</a>'+#13#10;
+    if (i < node.Count-1) then tmp := TreeT else tmp := TreeL;
+    replacement := replacement+basestring+tmp+'<a href="'+ClassLink(TUClass(node.Item[i].data))+'" name="'+node.Item[i].Text+'">'+node.Item[i].Text+'</a>'+#13#10;
     if (i < node.Count-1)
-      then ProcTreeNode(replacement, node.Item[i], basestring+TLINE)
-      else ProcTreeNode(replacement, node.Item[i], basestring+TBLANK);
+      then ProcTreeNode(replacement, node.Item[i], basestring+TreeI)
+      else ProcTreeNode(replacement, node.Item[i], basestring+TreeNone);
   end;
 end;
 
@@ -1593,7 +1609,7 @@ begin
         end;
       end;
       if (CompareText(lastname, gl[i]) = 0) then begin
-        replacement := replacement+'... <a href="'+TGlossaryItem(gl.Objects[i]).link+'">'+TGlossaryItem(gl.Objects[i]).classname+'</a><br>';
+        replacement := replacement+GlossaryElipse+'<a href="'+TGlossaryItem(gl.Objects[i]).link+'">'+TGlossaryItem(gl.Objects[i]).classname+'</a><br>';
       end
       else begin
         replacement := replacement+'<a href="'+TGlossaryItem(gl.Objects[i]).link+'">'+gl[i]+'</a><br>'+#13#10;
