@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.62 2005-03-13 09:25:20 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.63 2005-03-20 20:25:55 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -72,6 +72,7 @@ type
     function GetSecondaryComment(ref :string): string;
     procedure pMacro(Sender: TUCParser);
     procedure pInclude(relfilename: string);
+    procedure pReplication;
   public
     constructor Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false; myClassList: TObjectHash = nil); overload;
     constructor Create(uclass: TUClass; status: TStatusReport; onlynew: boolean = false; myClassList: TObjectHash = nil); overload;
@@ -1012,6 +1013,14 @@ begin
   unguard;
 end;
 
+//TODO: implement
+procedure TClassAnalyser.pReplication;
+begin
+  p.NextToken;
+  pCurlyBrackets();
+  continue;
+end;
+
 procedure TClassAnalyser.AnalyseClass;
 {var
   bHadClass: boolean;}
@@ -1107,9 +1116,7 @@ begin
       continue;
     end;
     if (p.TokenSymbolIs(KEYWORD_replication)) then begin
-      //TODO: process replication block
-      p.NextToken;
-      pCurlyBrackets();
+      pReplication();
       continue;
     end;
     if (p.TokenSymbolIs(KEYWORD_cpptext)) then begin
