@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   definitions for Unreal Classes
- $Id: unit_uclasses.pas,v 1.30 2004-08-02 19:58:58 elmuerte Exp $
+ $Id: unit_uclasses.pas,v 1.31 2004-08-09 08:08:03 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -51,6 +51,8 @@ type
 
   // general Unreal Object List
   TUObjectList = class(TObjectList)
+  public
+  	function Find(name: string): TUObject;
   end;
 
   TUConst = class(TUObject)
@@ -63,6 +65,7 @@ type
     procedure SetItem(Index: Integer; AObject: TUConst);
   public
     procedure Sort;
+    function Find(name: string): TUConst;
     property Items[Index: Integer]: TUConst read GetItem write SetItem; default;
   end;
 
@@ -78,6 +81,7 @@ type
     procedure SetItem(Index: Integer; AObject: TUProperty);
   public
     procedure Sort;
+    function Find(name: string): TUProperty;
     procedure SortOnTag;
     property Items[Index: Integer]: TUProperty read GetItem write SetItem; default;
   end;
@@ -92,6 +96,7 @@ type
     procedure SetItem(Index: Integer; AObject: TUEnum);
   public
     procedure Sort;
+    function Find(name: string): TUEnum;
     property Items[Index: Integer]: TUEnum read GetItem write SetItem; default;
   end;
 
@@ -110,6 +115,7 @@ type
     procedure SetItem(Index: Integer; AObject: TUStruct);
   public
     procedure Sort;
+    function Find(name: string): TUStruct;
     property Items[Index: Integer]: TUStruct read GetItem write SetItem; default;
   end;
 
@@ -127,6 +133,7 @@ type
     procedure SetItem(Index: Integer; AObject: TUState);
   public
     procedure Sort;
+    function Find(name: string): TUState;
     property Items[Index: Integer]: TUState read GetItem write SetItem; default;
   end;
 
@@ -150,6 +157,7 @@ type
     procedure SetItem(Index: Integer; AObject: TUFunction);
   public
     procedure Sort;
+    function Find(name: string; state: string = ''): TUFunction;
     property Items[Index: Integer]: TUFunction read GetItem write SetItem; default;
   end;
 
@@ -189,6 +197,7 @@ type
     procedure SetItem(Index: Integer; AObject: TUClass);
   public
     procedure Sort;
+    function Find(name: string): TUClass;
     property Items[Index: Integer]: TUClass read GetItem write SetItem; default;
   end;
 
@@ -209,10 +218,26 @@ type
   public
     procedure Sort;
     procedure AlphaSort;
+    function Find(name: string): TUPackage;
     property Items[Index: Integer]: TUPackage read GetItem write SetItem; default;
   end;
 
 implementation
+
+{ }
+
+function TUObjectList.Find(name: string): TUObject;
+var
+	i: integer;
+begin
+	result := nil;
+	for i := 0 to Count-1 do begin
+		if (CompareText(TUObject(Items[i]).name, name)= 0) then begin
+			result := TUObject(Items[i]);
+      exit;
+    end;
+  end;
+end;
 
 { TUConstList }
 function TUConstListCompare(Item1, Item2: Pointer): integer;
@@ -223,6 +248,11 @@ end;
 procedure TUConstList.Sort;
 begin
   inherited Sort(TUConstListCompare);
+end;
+
+function TUConstList.Find(name: string): TUConst;
+begin
+	result := TUConst(inherited Find(name));
 end;
 
 function TUConstList.GetItem(Index: Integer): TUConst;
@@ -246,6 +276,11 @@ begin
   inherited Sort(TUEnumListCompare);
 end;
 
+function TUEnumList.Find(name: string): TUEnum;
+begin
+  result := TUEnum(inherited Find(name));
+end;
+
 function TUEnumList.GetItem(Index: Integer): TUEnum;
 begin
   result := TUEnum(inherited GetItem(Index));
@@ -265,6 +300,11 @@ end;
 procedure TUPropertyList.Sort;
 begin
   inherited Sort(TUPropertyListCompare);
+end;
+
+function TUPropertyList.Find(name: string): TUProperty;
+begin
+  result := TUProperty(inherited Find(name));
 end;
 
 function TUPropertyListCompareTag(Item1, Item2: Pointer): integer;
@@ -311,6 +351,11 @@ begin
   inherited Sort(TUStructListCompare);
 end;
 
+function TUStructList.Find(name: string): TUStruct;
+begin
+  result := TUStruct(inherited Find(name));
+end;
+
 function TUStructList.GetItem(Index: Integer): TUStruct;
 begin
   result := TUStruct(inherited GetItem(Index));
@@ -341,6 +386,11 @@ end;
 procedure TUStateList.Sort;
 begin
   inherited Sort(TUStateListCompare);
+end;
+
+function TUStateList.Find(name: string): TUState;
+begin
+  result := TUState(inherited Find(name));
 end;
 
 function TUStateList.GetItem(Index: Integer): TUState;
@@ -378,6 +428,31 @@ end;
 procedure TUFunctionList.Sort;
 begin
   inherited Sort(TUFunctionListCompare);
+end;
+
+function TUFunctionList.Find(name: string; state: string = ''): TUFunction;
+var
+	i: integer;
+begin
+	result := nil;
+	for i := 0 to Count-1 do begin
+		if (CompareText(Items[i].name, name) = 0) then begin
+    	// no state
+    	if (state = '') then begin
+      	if (Items[i].state = nil) then begin
+					result := Items[i];
+  		    exit;
+        end;
+      end
+      // state
+      else if (Items[i].state <> nil) then begin
+      	if (CompareText(Items[i].state.name, state) = 0) then begin
+          result := Items[i];
+  		    exit;
+        end;
+      end;
+    end;
+  end;
 end;
 
 function TUFunctionList.GetItem(Index: Integer): TUFunction;
@@ -439,6 +514,11 @@ begin
   inherited Sort(TUClassListCompare);
 end;
 
+function TUClassList.Find(name: string): TUClass;
+begin
+  result := TUClass(inherited Find(name));
+end;
+
 function TUClassList.GetItem(Index: Integer): TUClass;
 begin
   result := TUClass(inherited GetItem(Index));
@@ -471,6 +551,11 @@ end;
 procedure TUPackageList.Sort;
 begin
   inherited Sort(TUPackageListCompare);
+end;
+
+function TUPackageList.Find(name: string): TUPackage;
+begin
+  result := TUPackage(inherited Find(name));
 end;
 
 function TUPackageListAlphaCompare(Item1, Item2: Pointer): integer;
