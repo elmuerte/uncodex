@@ -21,25 +21,32 @@ const
   PB_BEGIN = '[';
   PB_END = ']';
   PB_DONE = #219; // full bock
+  PB_HALF = #178; // 50% block
   PB_TODO = #176; // 25% block
   PB_NONE = ' ';
-  VERSION = '005 Alpha';
+  VERSION = '007 Beta';
 
 var
-  lastsp: integer;
+  lastsp: integer = -1;
+  lasthalf: byte = 0;
 
 procedure DrawProgressBar(progress: integer; size: integer = 20; showvalue: boolean = true; text: string = '');
 var
   sp: integer;
+  half: integer;
 begin
   if (showvalue) then size := size - 5;
   if ((progress < 0) or (progress > 100)) then exit;
-  sp := round(progress / (100 / size));
-  if (sp = lastsp) then exit;
+  sp := trunc(progress / (100 / size));
+  half := round(progress / (100 / size))-sp;
+  if ((sp = lastsp) and (half = lasthalf)) then exit;
+  lastsp := sp;
+  lasthalf := half;
   write(#13+text);
   write(PB_BEGIN);
   write(StrRepeat(PB_DONE, sp));
-  write(StrRepeat(PB_TODO, size - sp));
+  if (half > 0) then write(PB_HALF);
+  write(StrRepeat(PB_TODO, size - sp - half));
   write(PB_END);
   if (showvalue) then write(format(' %3d%%', [progress]));
 end;
@@ -48,6 +55,7 @@ procedure PrintBanner;
 begin
   writeln('------------------------------------------------------------');
   writeln(' UnCodeX Commandline Utility (ucxcu) version '+VERSION);
+  writeln(' Engine version: '+APPTITLE+' '+APPVERSION+' '+APPPLATFORM);
   writeln(' (c) 2003 Michiel ''El Muerte'' Hendriks');
   writeln(' http://wiki.beyondunreal.com/wiki/UnCodeX');
   writeln('------------------------------------------------------------');
@@ -56,7 +64,8 @@ end;
 
 procedure PrintVersion;
 begin
-  writeln('ucxcu version '+VERSION);
+  writeln('ucxcu version:  '+VERSION);
+  writeln('engine version: '+APPTITLE+' '+APPVERSION+' '+APPPLATFORM);
 end;
 
 procedure PrintHelp;
@@ -64,6 +73,7 @@ begin
   writeln('Accepted commandline switches:');
   writeln(#9'-c <filename>'   +#9'Set configuration file (uncodex.ini used by default)');
   writeln(#9'-h'#9            +#9'This message');
+  writeln(#9'-l <filename>'   +#9'Log to file <filename>, logging disablled by default');
   writeln(#9'-m'#9			      +#9'Create MS HTML Help file');
   writeln(#9'-mc <path>'      +#9'Path to the MS HTML Help compiler');
   writeln(#9'-me'#9           +#9'Delete HTML output directory after the MS HTML Help');

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.24 2003-11-22 10:45:34 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.25 2003-12-03 10:31:23 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -29,7 +29,7 @@ unit unit_analyse;
 interface
 
 uses
-  Windows, SysUtils, Classes, unit_uclasses, unit_parser, unit_outputdefs;
+  SysUtils, Classes, DateUtils, unit_uclasses, unit_parser, unit_outputdefs;
 
 type
   TClassAnalyser = class(TThread)
@@ -40,7 +40,7 @@ type
     classes: TUClassList;
     uclass: TUClass;
     OverWriteUstruct: TUstruct; // if set enums and vars will be added to this
-    UseOverWriteStruct: bool;
+    UseOverWriteStruct: boolean;
     fs: TFileStream;
     p: TUCParser;
     status: TStatusReport;
@@ -120,15 +120,15 @@ end;
 
 procedure TClassAnalyser.Execute;
 var
-  stime: Cardinal;
+  stime: TDateTime;
 begin
-  stime := GetTickCount();
+  stime := Now();
   if (classes = nil) then begin
     Status('Analysing class '+uclass.name+' ...');
     ExecuteSingle;
   end
   else ExecuteList;
-  Status('Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds');
+  Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds');
 end;
 
 procedure TClassAnalyser.ExecuteList;
@@ -148,7 +148,7 @@ var
   filename: string;
   currenttime: Integer;
 begin
-  filename := uclass.package.path+PATHDELIM+CLASSDIR+PATHDELIM+uclass.filename;
+  filename := uclass.package.path+PATHDELIM+uclass.filename;
   if (not FileExists(filename)) then begin
     Log('Cant''t open file: '+filename);
     exit;

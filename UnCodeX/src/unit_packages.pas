@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Unreal Package scanner, searches for classes in directories
- $Id: unit_packages.pas,v 1.16 2003-11-27 17:01:55 elmuerte Exp $
+ $Id: unit_packages.pas,v 1.17 2003-12-03 10:31:23 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -34,7 +34,7 @@ unit unit_packages;
 interface
 
 uses
-  Windows, SysUtils, Classes,
+  SysUtils, Classes, DateUtils,
   {$IFDEF __USE_TREEVIEW}
   ComCtrls,
   {$ENDIF}
@@ -115,11 +115,11 @@ end;
 
 procedure TPackageScanner.Execute;
 var
-  stime: Cardinal;
+  stime: TDateTime;
 begin
-  stime := GetTickCount();
+  stime := Now();
   ScanPackages();
-  Status('Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds, '+IntToStr(classlist.Count)+' classes');
+  Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds, '+IntToStr(classlist.Count)+' classes');
 end;
 
 procedure TPackageScanner.ScanPackages;
@@ -134,6 +134,7 @@ var
   knownpackages: TStringList;
   ini: TMemIniFile;
   lst: TStringList;
+  tmp: string;
 begin
   {$IFDEF __USE_TREEVIEW}
   packagetree.BeginUpdate;
@@ -148,12 +149,12 @@ begin
       if FindFirst(paths[i]+PATHDELIM+WILDCARD, faDirectory, sr) = 0 then begin
         repeat
           if ((sr.Name <> '.') and (sr.Name <> '..')) then begin
-            if (DirectoryExists(paths[i]+PATHDELIM+sr.name+PATHDELIM+CLASSDIR) and
+            if (iFindDir(paths[i]+PATHDELIM+sr.name+PATHDELIM+CLASSDIR, tmp) and
               (IgnorePackages.IndexOf(sr.Name) = -1)) then begin
               if (knownpackages.IndexOf(LowerCase(sr.Name)) = -1) then begin
                 UPackage := TUPackage.Create;
                 UPackage.name := sr.Name;
-                UPackage.path := paths[i]+PATHDELIM+sr.name;
+                UPackage.path := tmp;
                 UPackage.priority := PackagePriority.IndexOf(LowerCase(UPackage.name));
                 if (UPackage.priority = -1) then begin
                   log('Scanner: (Warning) Unprioritised package: '+sr.Name);
@@ -214,11 +215,11 @@ begin
       end;
       {$ENDIF}
       Status('Scanning package '+Packagelist[i].name, round((i+1) / Packagelist.Count * 100));
-      if FindFirst(Packagelist[i].path+PATHDELIM+CLASSDIR+PATHDELIM+SOURCECARD, faAnyFile, sr) = 0 then begin
+      if FindFirst(Packagelist[i].path+PATHDELIM+SOURCECARD, faAnyFile, sr) = 0 then begin
         repeat
-          Status('Parsing file '+Packagelist[i].path+PATHDELIM+CLASSDIR+PATHDELIM+sr.Name);
+          Status('Parsing file '+Packagelist[i].path+PATHDELIM+sr.Name);
           try
-            uclass := GetClassName(Packagelist[i].path+PATHDELIM+CLASSDIR+PATHDELIM+sr.Name);
+            uclass := GetClassName(Packagelist[i].path+PATHDELIM+sr.Name);
           except
             on E: Exception do log('Parser: error: '+E.Message);
           end;
