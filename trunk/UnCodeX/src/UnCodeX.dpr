@@ -8,7 +8,7 @@
 program UnCodeX;
 
 uses
-  ShareMem, // used for the output modules
+  ShareMem,
   Windows,
   Messages,
   SysUtils,
@@ -33,7 +33,8 @@ uses
   unit_tags in 'unit_tags.pas' {frm_Tags},
   hh_funcs in 'hh_funcs.pas',
   hh in 'hh.pas',
-  unit_outputdefs in 'unit_outputdefs.pas';
+  unit_outputdefs in 'unit_outputdefs.pas',
+  unit_sourceparser in 'unit_sourceparser.pas';
 
 {$R *.res}
 

@@ -208,7 +208,10 @@ begin
         Inc(P);
         while true do begin
           case P^ of
-            #0, #10, #13: Error(SInvalidString);
+            #0, #10, #13: begin
+                            Break;
+                            //Error(SInvalidString);
+                          end;
             '\':  Inc(P);
             '"':  begin
                     Inc(P);
@@ -224,7 +227,10 @@ begin
         Inc(P);
         while true do begin
           case P^ of
-            #0, #10, #13: Error(SInvalidString);
+            #0, #10, #13: begin
+                            Break;
+                            //Error(SInvalidString);
+                          end;
             '\':  Inc(P);
             '''':  begin
                     Inc(P);
