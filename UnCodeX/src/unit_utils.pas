@@ -6,7 +6,7 @@
   Purpose:
     Utility functions that have a GUI dependency
 
-  $Id: unit_utils.pas,v 1.14 2004-12-08 09:25:40 elmuerte Exp $
+  $Id: unit_utils.pas,v 1.15 2004-12-25 12:00:06 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -265,6 +265,7 @@ begin
       Value := mm_Input.Lines.Text;
       result := true;
     end;
+    Free;
   end;
 end;
 
