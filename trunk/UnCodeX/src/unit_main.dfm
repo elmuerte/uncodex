@@ -1133,6 +1133,20 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Caption = 'Find new classes'
       OnExecute = ac_FindNewClassesExecute
     end
+    object ac_GoToReplication: TAction
+      Category = 'Source Snoop'
+      Caption = 'Replication'
+      Enabled = False
+      Hint = 'Go to the replication block'
+      OnExecute = ac_GoToReplicationExecute
+    end
+    object ac_GoToDefaultproperties: TAction
+      Category = 'Source Snoop'
+      Caption = 'Defaultproperties'
+      Enabled = False
+      Hint = 'Go to the defaultproperties block'
+      OnExecute = ac_GoToDefaultpropertiesExecute
+    end
   end
   object il_Small: TImageList
     Left = 40
@@ -2337,6 +2351,15 @@ object frm_UnCodeX: Tfrm_UnCodeX
     AutoPopup = False
     Left = 72
     Top = 72
+    object mi_Replication1: TMenuItem
+      Action = ac_GoToReplication
+    end
+    object mi_Defaultproperties1: TMenuItem
+      Action = ac_GoToDefaultproperties
+    end
+    object N3: TMenuItem
+      Caption = '-'
+    end
     object mi_FindSelection: TMenuItem
       Caption = 'Find selection'
       OnClick = mi_FindSelectionClick

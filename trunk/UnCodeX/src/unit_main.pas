@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.149 2005-03-25 16:01:28 elmuerte Exp $
+  $Id: unit_main.pas,v 1.150 2005-03-28 09:56:20 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -266,6 +266,11 @@ type
     mi_FindNew: TMenuItem;
     mi_Clear: TMenuItem;
     il_LogEntries: TImageList;
+    mi_Replication1: TMenuItem;
+    mi_Defaultproperties1: TMenuItem;
+    N3: TMenuItem;
+    ac_GoToReplication: TAction;
+    ac_GoToDefaultproperties: TAction;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -385,6 +390,8 @@ type
   procedure mi_ClearClick(Sender: TObject);
     procedure lb_LogDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
+    procedure ac_GoToReplicationExecute(Sender: TObject);
+    procedure ac_GoToDefaultpropertiesExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -447,7 +454,7 @@ type
     procedure NextBatchCommand;
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
     procedure OpenSourceLine(filename: string; line, caret: integer; uclass: TUClass);
-    procedure OpenSourceInline(filename: string; line, caret: integer; uclass: TUClass = nil);
+    procedure OpenSourceInline(filename: string; line, caret: integer; uclass: TUClass = nil; nohighlight: boolean = false);
   end;
 
   // status redirecting
@@ -1047,7 +1054,7 @@ begin
   end;
 end;
 
-procedure Tfrm_UnCodeX.OpenSourceInline(filename: string; line, caret: integer; uclass: TUClass);
+procedure Tfrm_UnCodeX.OpenSourceInline(filename: string; line, caret: integer; uclass: TUClass = nil; nohighlight: boolean = false);
 var
   tmp: string;
   tmp2: array[0..255] of char;
@@ -1075,11 +1082,13 @@ begin
     line := re_SourceSnoop.Perform(EM_LINEINDEX, line, 0); // get line index
     re_SourceSnoop.Perform(EM_SETSEL, line, line);
     re_SourceSnoop.Perform(EM_SCROLLCARET, 0, 0);
-    re_SourceSnoop.ClearBgColor();
-    //re_SourceSnoop.SelStart := line;
-    re_SourceSnoop.SelLength := re_SourceSnoop.Perform(EM_LINELENGTH, line, 0);
-    re_SourceSnoop.SetSelBgColor(clBtnFace);
-    re_SourceSnoop.SelLength := 0;
+    if (not nohighlight) then begin
+      re_SourceSnoop.ClearBgColor();
+      //re_SourceSnoop.SelStart := line;
+      re_SourceSnoop.SelLength := re_SourceSnoop.Perform(EM_LINELENGTH, line, 0);
+      re_SourceSnoop.SetSelBgColor(clBtnFace);
+      re_SourceSnoop.SelLength := 0;
+    end;
   end;
 end;
 
@@ -1657,6 +1666,8 @@ begin
   ms := TMemoryStream.Create;
   try
     RTFHilightUScript(fs, ms, uclass);
+    ac_GoToReplication.Enabled := uclass.replication.srcline > 0;
+    ac_GoToDefaultproperties.Enabled := uclass.defaultproperties.srcline > 0;
     re_SourceSnoop.Lines.Clear;
     re_SourceSnoop.WordWrap := false;
     re_SourceSnoop.ScrollBars := ssBoth;
@@ -1682,6 +1693,8 @@ begin
   re_SourceSnoop.uclass := nil;
   try
     RTFHilightUPackage(ms, upackage);
+    ac_GoToReplication.Enabled := false;
+    ac_GoToDefaultproperties.Enabled := false;
     re_SourceSnoop.Lines.Clear;
     re_SourceSnoop.WordWrap := true;
     re_SourceSnoop.ScrollBars := ssVertical;
@@ -3198,6 +3211,7 @@ var
   tr: TEXTRANGE;
   tmp: array[0..256] of char;
   tmpc: TUClass;
+  tmps: string;
 begin
   pt := Point(X, Y);
   curpos := re_SourceSnoop.Perform(EM_CHARFROMPOS, 0, Integer(@pt));
@@ -3208,10 +3222,24 @@ begin
     if (unit_rtfhilight.ClassesHash.Exists(LowerCase(tmp)) and (not (ssCtrl in Shift))) then begin
       tmpc := TUClass(unit_rtfhilight.ClassesHash[LowerCase(tmp)]);
       if (tmpc <> nil) then begin
-        re_SourceSnoop.Hint := tmpc.FullName+' '+tmpc.FullFileName;
+        re_SourceSnoop.Hint := tmpc.FullName+' - '+tmpc.FullFileName;
+        re_SourceSnoop.ShowHint := true;
         re_SourceSnoop.Cursor := crHandPoint;
+        Application.ActivateHint(Mouse.CursorPos);
         exit;
       end;
+    end
+    else if ((LowerCase(tmp) = '#include') and (not (ssCtrl in Shift))) then begin
+      tmp[256] := #0;
+      re_SourceSnoop.Perform(EM_GETLINE, re_SourceSnoop.Perform(EM_LINEFROMCHAR, curpos, 0), integer(@tmp));
+      tmps := trim(copy(tmp, 1, 255));
+      GetToken(tmps, ' ');
+      tmps := GetToken(tmps, ' ', true);
+      re_SourceSnoop.Hint := 'Open include file: '+tmps;
+      re_SourceSnoop.ShowHint := true;
+      re_SourceSnoop.Cursor := crHandPoint;
+      Application.ActivateHint(Mouse.CursorPos);
+      exit;
     end
     else begin
       if (SelectedUClass <> nil) then re_SourceSnoop.Hint := re_SourceSnoop.filename
@@ -3219,6 +3247,7 @@ begin
     end;
   end;
   re_SourceSnoop.Cursor := crDefault;
+  re_SourceSnoop.ShowHint := false;
 end;
 
 procedure Tfrm_UnCodeX.mi_ClearHilightClick(Sender: TObject);
@@ -3248,6 +3277,7 @@ var
   tr: TEXTRANGE;
   tmp: array[0..256] of char;
   tmp2: array[0..255] of char;
+  tmps: string;
   i, realline: integer;
 begin
   if (Button = mbRight) then begin
@@ -3261,11 +3291,24 @@ begin
     tr.chrg.cpMax := re_SourceSnoop.Perform(EM_FINDWORDBREAK, WB_RIGHT, curpos);
     tr.lpstrText := tmp;
     if (re_SourceSnoop.Perform(EM_GETTEXTRANGE, 0, integer(@tr)) > 0) then begin
+      if (LowerCase(tmp) = '#include') then begin
+        realline := re_SourceSnoop.Perform(EM_LINEFROMCHAR, curpos, 0);
+        tmp[256] := #0;
+        re_SourceSnoop.Perform(EM_GETLINE, realline, integer(@tmp));
+        tmps := trim(copy(tmp, 1, 255));
+        if (re_SourceSnoop.uclass <> nil) then AddBrowserHistory(re_SourceSnoop.uclass, re_SourceSnoop.filename, realline+1, tmps);
+        GetToken(tmps, ' ');
+        tmps := GetToken(tmps, ' ', true); // to make sure everything after it is gone
+        tmps := iFindFile(ExpandFileName(re_SourceSnoop.uclass.package.PackageDir+tmps));
+        OpenSourceInline(tmps, 0, 0, re_SourceSnoop.uclass, true);
+        exit;
+      end;
       if (tmp <> '') then begin
         realline := re_SourceSnoop.Perform(EM_LINEFROMCHAR, curpos, 0);
         tmp2[0] := #255;
         re_SourceSnoop.Perform(EM_GETLINE, realline, integer(@tmp2));
-        if (re_SourceSnoop.uclass <> nil) then AddBrowserHistory(re_SourceSnoop.uclass, re_SourceSnoop.filename, realline+1, tmp2);
+        tmps := trim(copy(tmp, 1, 255));
+        if (re_SourceSnoop.uclass <> nil) then AddBrowserHistory(re_SourceSnoop.uclass, re_SourceSnoop.filename, realline+1, tmps);
         for i := 0 to tv_Classes.Items.Count-1 do begin
           if (AnsiCompareText(tv_Classes.items[i].Text, tmp) = 0) then begin
             tv_Classes.Tag := TV_ALWAYSEXPAND;
@@ -3275,7 +3318,7 @@ begin
         end;
       end;
     end;
-  end;
+  end
 end;
 
 procedure Tfrm_UnCodeX.ae_AppEventException(Sender: TObject; E: Exception);
@@ -3739,6 +3782,30 @@ begin
       il_LogEntries.Draw(Canvas, Rect.Left+1, Rect.Top+1, ord(entry.mt));
     end;
   end;
+end;
+
+procedure Tfrm_UnCodeX.ac_GoToReplicationExecute(Sender: TObject);
+var
+  tmp: string;
+begin
+  if (re_SourceSnoop.uclass = nil) then exit;
+  if (re_SourceSnoop.uclass.replication.definedIn = '') then
+    tmp := re_SourceSnoop.uclass.FullFileName
+  else
+    tmp := iFindFile(ExpandFileName(re_SourceSnoop.uclass.package.PackageDir+re_SourceSnoop.uclass.replication.definedIn));
+  OpenSourceInLine(tmp, re_SourceSnoop.uclass.replication.srcline-1, 0, re_SourceSnoop.uclass, true);
+end;
+
+procedure Tfrm_UnCodeX.ac_GoToDefaultpropertiesExecute(Sender: TObject);
+var
+  tmp: string;
+begin
+  if (re_SourceSnoop.uclass = nil) then exit;
+  if (re_SourceSnoop.uclass.defaultproperties.definedIn = '') then
+    tmp := re_SourceSnoop.uclass.FullFileName
+  else
+    tmp := iFindFile(ExpandFileName(re_SourceSnoop.uclass.package.PackageDir+re_SourceSnoop.uclass.defaultproperties.definedIn));
+  OpenSourceInLine(tmp, re_SourceSnoop.uclass.defaultproperties.srcline-1, 0, re_SourceSnoop.uclass, true);
 end;
 
 initialization

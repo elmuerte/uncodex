@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.65 2005-03-27 20:10:34 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.66 2005-03-28 09:56:19 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -368,18 +368,17 @@ begin
   bcount := 0;
   if (p.Token = '(') then begin
     Inc(bcount);
-    result := p.TokenString;
+    if (not exclude) then result := p.TokenString;
     p.NextToken;
     while ((bcount > 0) and (p.Token <> toEOF)) do begin
-      if (not ((bcount = 1) and exclude)) then result := result+p.TokenString;
       case (p.Token) of
         '(': Inc(bcount);
         ')': Dec(bcount);
       end;
+      if (not ((bcount = 0) and exclude)) then result := result+p.TokenString;
       if ((bcount = 0) and bLeaveLast) then break;
       p.NextToken;
     end;
-    if (not exclude) then result := result;
   end;
   if (p.Token = toEOF) then result := '';
   unguard;
@@ -1033,6 +1032,8 @@ var
 begin
   guard('pReplication');
   uclass.replication.srcline := p.SourceLine;
+  uclass.replication.definedIn := incFilename;
+  p.NextToken();
   // token {
   assert(p.Token = '{');
   p.NextToken;
@@ -1051,9 +1052,10 @@ begin
     p.FCIgnoreComments := true;
     p.NextToken;
     pBrackets(false, true);
-    p.NextToken; // the last ')' wasn't poped
     p.FullCopy := false;
     p.FCIgnoreComments := false;
+    p.NextToken; // the last ')' wasn't poped
+    
     expr := expr + p.GetCopyData(true);
     expr := StringReplace(expr, #9, '', [rfReplaceAll]);
     expr := StringReplace(expr, #13, '', [rfReplaceAll]);
@@ -1160,6 +1162,7 @@ begin
     end;
     if (p.TokenSymbolIs(KEYWORD_defaultproperties)) then begin
       uclass.defaultproperties.srcline := p.SourceLine;
+      uclass.defaultproperties.definedIn := incFilename;
       p.GetCopyData(true);// preflush
       p.NextToken;
       uclass.defaultproperties.data := p.TokenString;
@@ -1172,7 +1175,6 @@ begin
       continue;
     end;
     if (p.TokenSymbolIs(KEYWORD_replication)) then begin
-      p.NextToken();
       pReplication();
       continue;
     end;

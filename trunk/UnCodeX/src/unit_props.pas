@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Class property inpector frame
 
-  $Id: unit_props.pas,v 1.28 2005-03-27 20:10:52 elmuerte Exp $
+  $Id: unit_props.pas,v 1.29 2005-03-28 09:56:20 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -186,6 +186,7 @@ begin
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(MakeHint(pclass.consts[i].name+' = '+pclass.consts[i].value));
       li.SubItems.Add(pclass.consts[i].comment);
+      li.SubItems.Add('');
       li.Data := pclass;
       li.ImageIndex := 0;
     end;
@@ -233,6 +234,8 @@ begin
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(MakeHint(pclass.properties[i].ptype+' '+pclass.properties[i].name));
       li.SubItems.Add(pclass.properties[i].comment);
+      //TODO: use name without braces
+      li.SubItems.Add(pclass.GetReplication(pclass.properties[i].name));
       li.Data := pclass;
       li.ImageIndex := 1;
     end;
@@ -269,6 +272,7 @@ begin
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(MakeHint(pclass.enums[i].name+' = '+StringReplace(pclass.enums[i].options, ',', ', ', [rfReplaceAll])));
       li.SubItems.Add(pclass.enums[i].comment);
+      li.SubItems.Add('');
       li.Data := pclass;
       li.ImageIndex := 2;
     end;
@@ -305,6 +309,7 @@ begin
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(MakeHint(pclass.structs[i].name));
       li.SubItems.Add(pclass.structs[i].comment);
+      li.SubItems.Add('');
       li.Data := pclass;
       li.ImageIndex := 3;
     end;
@@ -343,6 +348,7 @@ begin
         else return := pclass.delegates[i].return+' = ';
       li.SubItems.Add(MakeHint(return+pclass.delegates[i].name+'( '+pclass.delegates[i].params+' )'));
       li.SubItems.Add(pclass.delegates[i].comment);
+      li.SubItems.Add('');
       li.Data := pclass;
       li.ImageIndex := 7 // delegate is an event
     end;
@@ -396,6 +402,7 @@ begin
         li.SubItems.Add(MakeHint(pclass.functions[i].return+' = '+ShiftString(ShiftString(pclass.functions[i].params, 2, ','), 3)+' '+pclass.functions[i].name+' '+ShiftString(pclass.functions[i].params, 2)));
       end;
       li.SubItems.Add(pclass.functions[i].comment);
+      li.SubItems.Add(pclass.GetReplication(pclass.functions[i].name));
       li.Data := pclass;
       if (pclass.functions[i].ftype = uftFunction) then li.ImageIndex := 4
       else if (pclass.functions[i].ftype = uftEvent) then li.ImageIndex := 5
@@ -435,6 +442,7 @@ begin
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(MakeHint(pclass.states[i].declaration));
       li.SubItems.Add(pclass.states[i].comment);
+      li.SubItems.Add('');
       li.Data := pclass;
       li.ImageIndex := 8;
     end;
@@ -467,11 +475,13 @@ begin
     if ((Item.Caption = '-') or (Item.Caption = '+')) then InfoTip := '';
     if (Item.Caption = '=') then InfoTip := Item.SubItems[1];
   end;
-  if (Item.SubItems.Count < 5) then exit;
+  if (Item.SubItems.Count < 6) then exit;
   InfoTip := '<div style="padding-left: 20px; text-indent: -18px; margin-left: -2px"><code>'+Item.SubItems[3]+'</code></div>';
   if (Item.SubItems[4] <> '') then InfoTip :=
     InfoTip+'<div style="background-color: ButtonFace; padding: 2px; margin-top: 5px; margin-left: -2px">'+
     StringReplace(Item.SubItems[4], #9, '', [rfReplaceAll])+'</div>';
+  if (Item.SubItems[5] <> '') then InfoTip :=
+    InfoTip + '<div style="padding-left: 20px; text-indent: -18px; margin-left: -2px"><em>Replication:</em><br /><code>'+Item.SubItems[5]+'</code></div>';
 end;
 
 procedure Tfr_Properties.lv_PropertiesClick(Sender: TObject);

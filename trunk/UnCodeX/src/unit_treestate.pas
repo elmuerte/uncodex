@@ -6,7 +6,7 @@
   Purpose:
     Loading\saving of the class and package tree views
 
-  $Id: unit_treestate.pas,v 1.33 2005-03-27 20:10:52 elmuerte Exp $
+  $Id: unit_treestate.pas,v 1.34 2005-03-28 09:56:20 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -153,9 +153,11 @@ begin
     Writer.WriteString(uclass.comment);
     Writer.WriteInteger(Ord(uclass.CommentType));
     Writer.WriteInteger(uclass.defaultproperties.srcline);
+    Writer.WriteString(uclass.defaultproperties.definedIn);
     Writer.WriteString(uclass.defaultproperties.data);
     Writer.WriteInteger(Ord(uclass.InterfaceType));
     Writer.WriteInteger(uclass.replication.srcline);
+    Writer.WriteString(uclass.replication.definedIn);
     Writer.WriteInteger(uclass.replication.symbols.Count);
     for i := 0 to uclass.replication.symbols.Count-1 do begin
       Writer.WriteString(uclass.replication.symbols[i]);
@@ -300,11 +302,15 @@ begin
       uclass.filetime := Reader.ReadInteger;
       if (version >= 150) then uclass.comment := Reader.ReadString;
       if (version >= 209) then uclass.CommentType := TUCommentType(Reader.ReadInteger);
-      if (version >= 222) then uclass.defaultproperties.srcline := Reader.ReadInteger;
+      if (version >= 222) then begin
+        uclass.defaultproperties.srcline := Reader.ReadInteger;
+        uclass.defaultproperties.definedIn := Reader.ReadString;
+      end;
       if (version >= 151) then uclass.defaultproperties.data := Reader.ReadString;
       if (version >= 212) then uclass.InterfaceType := TUCInterfaceType(Reader.ReadInteger);
       if (version >= 222) then begin
         uclass.replication.srcline := Reader.ReadInteger;
+        uclass.replication.definedIn := Reader.ReadString;
         m := Reader.ReadInteger;
         for i := 0 to m-1 do begin
           uclass.replication.symbols.Add(Reader.ReadString);
