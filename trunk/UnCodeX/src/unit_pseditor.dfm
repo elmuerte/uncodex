@@ -955,7 +955,6 @@ object frm_PSEditor: Tfrm_PSEditor
     Top = 112
   end
   object pm_Macros: TPopupMenu
-    Images = frm_UnCodeX.il_Small
     Left = 40
     Top = 80
     object N1: TMenuItem

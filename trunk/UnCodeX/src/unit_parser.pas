@@ -7,7 +7,7 @@
         Parser for UnrealScript, used for analysing the unrealscript source.
         Based on TParser by Borland.
 
-    $Id: unit_parser.pas,v 1.25 2004-11-07 14:59:16 elmuerte Exp $
+    $Id: unit_parser.pas,v 1.26 2004-11-27 10:47:39 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -156,7 +156,10 @@ begin
         'A'..'Z', 'a'..'z', '_':
             begin
                 Inc(P);
-                while P^ in ['A'..'Z', 'a'..'z', '0'..'9', '_'] do Inc(P);
+                // accept '.' in the middle: Package.Class or Class.Type
+                // warning: this is only valid for declarations, not for actual code
+                // TODO: move this to analyser
+                while P^ in ['A'..'Z', 'a'..'z', '0'..'9', '_', '.'] do Inc(P);
                 Result := toSymbol;
             end;
         { string }

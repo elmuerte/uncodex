@@ -6,7 +6,7 @@
     Purpose:
         Class definitions for UnrealScript elements
 
-    $Id: unit_uclasses.pas,v 1.39 2004-11-10 09:25:35 elmuerte Exp $
+    $Id: unit_uclasses.pas,v 1.40 2004-11-27 10:47:39 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -218,6 +218,7 @@ type
         children:               TUClassList; // not owned, don't free, don't save
         deps:                   TUClassList; // dependency list, not owned, don't free (NOT USED)
         defs:                   TDefinitionList;
+        includes:               TStringList; // #include files: "line no.=file"
         constructor Create;
         destructor Destroy; override;
         function FullName: string;
@@ -512,6 +513,7 @@ begin
     children := TUClassList.Create(false);
     deps := TUClassList.Create(false);
     defs := TDefinitionList.Create(self);
+    includes := TStringList.Create;
 end;
 
 destructor TUClass.Destroy;
@@ -526,6 +528,7 @@ begin
     children.Free;
     deps.Free;
     defs.Free;
+    includes.Free;
 end;
 
 function TUClass.FullName: string;

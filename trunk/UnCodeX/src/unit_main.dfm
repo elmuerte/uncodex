@@ -2402,6 +2402,10 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Caption = 'Sort'
       OnClick = mi_SortListClick
     end
+    object mi_Clear: TMenuItem
+      Caption = 'Clear log'
+      OnClick = mi_ClearClick
+    end
   end
   object sd_SaveLog: TSaveDialog
     DefaultExt = '*.log'

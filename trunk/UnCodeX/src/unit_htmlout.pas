@@ -6,7 +6,7 @@
     Purpose:
         HTML documentation generator.
 
-    $Id: unit_htmlout.pas,v 1.61 2004-11-19 14:11:58 elmuerte Exp $
+    $Id: unit_htmlout.pas,v 1.62 2004-11-27 10:47:38 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -1001,8 +1001,22 @@ begin
         replacement := TUClass(data).name;
         result := true;
     end
+    else if (CompareText(replacement, 'if:has_modifiers') = 0) then begin
+        if (TUClass(data).modifiers = '') then SkipIf(p);
+        replacement := '';
+        result := true;
+    end
     else if (CompareText(replacement, 'class_modifiers') = 0) then begin
         replacement := TUClass(data).modifiers;
+        result := true;
+    end
+    else if (CompareText(replacement, 'class_modifiers_plain') = 0) then begin
+        replacement := TUClass(data).modifiers;
+        result := true;
+    end
+    else if (CompareText(replacement, 'if:has_parent') = 0) then begin
+        if (TUClass(data).parent = nil) then SkipIf(p);
+        replacement := '';
         result := true;
     end
     else if (CompareText(replacement, 'class_parent') = 0) then begin
@@ -2806,10 +2820,11 @@ begin
     unguard;
 end;
 
-function Min(i,j: integer): integer;
+function MinPos(i,j: integer): integer;
 begin
-    if (i < j) then result := i
-    else result := j;
+    if ((i < j) and (i > 0)) then result := i
+    else if (j > 0) then result := j
+    else result := i;
 end;
 
 function THTMLOutput.CommentPreprocessor(input: string): string;
@@ -2840,10 +2855,10 @@ begin
             // delete up to location
             Delete(input, 1, i-1);
             i := pos('<br', input); // <br /> work around
-            i := Min(pos(' ', input), i);
-            i := Min(pos(#9, input), i);
-            i := Min(pos(#13, input), i);
-            i := Min(pos(#10, input), i);
+            i := MinPos(pos(' ', input), i);
+            i := MinPos(pos(#9, input), i);
+            i := MinPos(pos(#13, input), i);
+            i := MinPos(pos(#10, input), i);
             if (i = 0) then begin
                 i := Length(input)+1;
             end;

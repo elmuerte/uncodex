@@ -6,7 +6,7 @@
     Purpose:
         Main window for the GUI
 
-    $Id: unit_main.pas,v 1.130 2004-11-18 09:06:01 elmuerte Exp $
+    $Id: unit_main.pas,v 1.131 2004-11-27 10:47:39 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -264,6 +264,7 @@ type
         ps_dll: TPSDllPlugin;
         ac_FindNewClasses: TAction;
         mi_FindNew: TMenuItem;
+    mi_Clear: TMenuItem;
         procedure tmr_StatusTextTimer(Sender: TObject);
         procedure FormCreate(Sender: TObject);
         procedure mi_AnalyseclassClick(Sender: TObject);
@@ -380,6 +381,7 @@ type
         procedure ps_MainExecute(Sender: TPSScript);
         procedure ac_PluginRefreshExecute(Sender: TObject);
         procedure ac_FindNewClassesExecute(Sender: TObject);
+    procedure mi_ClearClick(Sender: TObject);
     private
         // AppBar vars
         OldStyleEx: Cardinal;
@@ -3555,6 +3557,11 @@ begin
         runningthread.OnTerminate := ThreadTerminate;
         runningthread.Resume;
     end;
+end;
+
+procedure Tfrm_UnCodeX.mi_ClearClick(Sender: TObject);
+begin
+    lb_Log.Clear;
 end;
 
 initialization

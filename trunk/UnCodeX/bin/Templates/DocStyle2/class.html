@@ -26,15 +26,13 @@
 <div class="spacer"></div>
 
 <h1><a href="%package_link%">%package_name%</a>.%class_name%</h1>
-<b>Extends:</b> %class_parent%<br>
-<b>Modifiers:</b> %class_modifiers%<br>
-<a href="%class_source%"><b>Source code</b></a>
 
-<p>
-%class_comment%
-</p>
+<dl>
+%if:has_parent%<dt>Extends</dt><dd>%class_parent%</dd>%endif%
+%if:has_modifiers%<dt>Modifiers</dt><dd>%class_modifiers%</dd>%endif%
+</dl>
 
-<hr />
+<p>%class_comment%</p>
 
 <pre class="tree">%class_parent_tree%</pre>
 
