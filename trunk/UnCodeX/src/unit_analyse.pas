@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.64 2005-03-23 11:40:48 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.65 2005-03-27 20:10:34 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -63,7 +63,7 @@ type
     function isFunctionModifier(str: string): boolean;
     function pFunc: TUFunction;
     function pState(modifiers: string): TUState;
-    function pBrackets(exclude: boolean = false): string;
+    function pBrackets(exclude: boolean = false; bLeaveLast: boolean = false): string;
     function pSquareBrackets: string;
     function pAngleBrackets: string;
     function pCurlyBrackets(ignoreFirst: boolean = false): string;
@@ -319,6 +319,11 @@ begin
   p := TUCParser.Create(fs);
   try
     p.ProcessMacro := pMacro;
+    uclass.defaultproperties.data := '';
+    uclass.defaultproperties.srcline := 0;
+    uclass.replication.srcline := 0;
+    uclass.replication.symbols.Clear;
+    uclass.replication.expressions.Clear;
     uclass.consts.Clear;
     uclass.properties.Clear;
     uclass.enums.Clear;
@@ -354,19 +359,27 @@ begin
 end;
 
 // Process (...)
-function TClassAnalyser.pBrackets(exclude: boolean = false): string;
+function TClassAnalyser.pBrackets(exclude: boolean = false; bLeaveLast: boolean = false): string;
+var
+  bcount: integer;
 begin
   guard('pBrackets '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   result := '';
+  bcount := 0;
   if (p.Token = '(') then begin
+    Inc(bcount);
+    result := p.TokenString;
     p.NextToken;
-    while ((p.Token <> ')') and (p.Token <> toEOF)) do begin
-      if (result <> '') then result := result+' ';
-      result := result+p.TokenString;
+    while ((bcount > 0) and (p.Token <> toEOF)) do begin
+      if (not ((bcount = 1) and exclude)) then result := result+p.TokenString;
+      case (p.Token) of
+        '(': Inc(bcount);
+        ')': Dec(bcount);
+      end;
+      if ((bcount = 0) and bLeaveLast) then break;
       p.NextToken;
     end;
-    p.NextToken;
-    if (not exclude) then result := '('+result+')';
+    if (not exclude) then result := result;
   end;
   if (p.Token = toEOF) then result := '';
   unguard;
@@ -1013,11 +1026,54 @@ begin
   unguard;
 end;
 
-//TODO: implement
 procedure TClassAnalyser.pReplication;
+var
+  n: integer;
+  expr: string;
 begin
+  guard('pReplication');
+  uclass.replication.srcline := p.SourceLine;
+  // token {
+  assert(p.Token = '{');
   p.NextToken;
-  pCurlyBrackets();
+  while (p.Token <> '}') do begin
+    if (p.token = toEOF) then begin
+      raise EOFException.CreateFmt(EOFExceptionFmt, ['pReplication', uclass.name, p.SourceLine, '']);
+    end;
+    expr := p.TokenString; // (un)reliable
+    p.NextToken;
+    expr := expr + ' '+p.TokenString+ ' '; // if
+    //p.NextToken;
+    //expr := expr + pBrackets(); //TODO: not very nice, doesn't include spaces
+
+    p.GetCopyData(true); // pre flush
+    p.FullCopy := true;
+    p.FCIgnoreComments := true;
+    p.NextToken;
+    pBrackets(false, true);
+    p.NextToken; // the last ')' wasn't poped
+    p.FullCopy := false;
+    p.FCIgnoreComments := false;
+    expr := expr + p.GetCopyData(true);
+    expr := StringReplace(expr, #9, '', [rfReplaceAll]);
+    expr := StringReplace(expr, #13, '', [rfReplaceAll]);
+    expr := StringReplace(expr, #10, ' ', [rfReplaceAll]); 
+
+    n := uclass.AddReplication(expr);
+    while (true) do begin
+      if (p.token = toEOF) then begin
+        raise EOFException.CreateFmt(EOFExceptionFmt, ['pReplication', uclass.name, p.SourceLine, '']);
+      end;
+      uclass.replication.symbols.Values[p.TokenString] := IntToStr(n);
+      p.NextToken; // , or maybe ';'
+      if (p.Token = ';') then break;
+      p.NextToken;
+    end;
+    p.NextToken;
+  end;
+  // token }
+  p.NextToken;
+  unguard;
 end;
 
 procedure TClassAnalyser.AnalyseClass;
@@ -1103,23 +1159,25 @@ begin
       continue;
     end;
     if (p.TokenSymbolIs(KEYWORD_defaultproperties)) then begin
+      uclass.defaultproperties.srcline := p.SourceLine;
       p.GetCopyData(true);// preflush
       p.NextToken;
-      uclass.defaultproperties := p.TokenString;
+      uclass.defaultproperties.data := p.TokenString;
       p.FullCopy := true;
       p.FCIgnoreComments := true;
       pCurlyBrackets();
       p.FullCopy := false;
       p.FCIgnoreComments := false;
-      uclass.defaultproperties := uclass.defaultproperties+p.GetCopyData(true);
+      uclass.defaultproperties.data := uclass.defaultproperties.data+p.GetCopyData(true);
       continue;
     end;
     if (p.TokenSymbolIs(KEYWORD_replication)) then begin
+      p.NextToken();
       pReplication();
       continue;
     end;
     if (p.TokenSymbolIs(KEYWORD_cpptext)) then begin
-    		p.MacroCallBack := false;
+      p.MacroCallBack := false;
       p.NextToken;
       pCurlyBrackets();
       p.MacroCallBack := true;

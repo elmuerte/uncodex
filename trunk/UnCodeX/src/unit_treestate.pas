@@ -6,7 +6,7 @@
   Purpose:
     Loading\saving of the class and package tree views
 
-  $Id: unit_treestate.pas,v 1.32 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_treestate.pas,v 1.33 2005-03-27 20:10:52 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -118,6 +118,7 @@ const
   UCXHeader212  = UCXheader+'212'+UCXHTail;
   UCXHeader213  = UCXheader+'213'+UCXHTail;
   UCXHeader214  = UCXheader+'214'+UCXHTail;
+  UCXHeader222  = UCXheader+'222'+UCXHTail;
 
 procedure TUnCodeXState.SavePackageToStream(upackage: TUPackage; stream: TStream);
 var
@@ -151,8 +152,18 @@ begin
     Writer.WriteInteger(uclass.filetime);
     Writer.WriteString(uclass.comment);
     Writer.WriteInteger(Ord(uclass.CommentType));
-    Writer.WriteString(uclass.defaultproperties);
+    Writer.WriteInteger(uclass.defaultproperties.srcline);
+    Writer.WriteString(uclass.defaultproperties.data);
     Writer.WriteInteger(Ord(uclass.InterfaceType));
+    Writer.WriteInteger(uclass.replication.srcline);
+    Writer.WriteInteger(uclass.replication.symbols.Count);
+    for i := 0 to uclass.replication.symbols.Count-1 do begin
+      Writer.WriteString(uclass.replication.symbols[i]);
+    end;
+    Writer.WriteInteger(uclass.replication.expressions.Count);
+    for i := 0 to uclass.replication.expressions.Count-1 do begin
+      Writer.WriteString(uclass.replication.expressions[i]);
+    end;
 
     Writer.WriteInteger(uclass.defs.Definitions.Count);
     for i := 0 to uclass.defs.Definitions.Count-1 do begin
@@ -289,8 +300,20 @@ begin
       uclass.filetime := Reader.ReadInteger;
       if (version >= 150) then uclass.comment := Reader.ReadString;
       if (version >= 209) then uclass.CommentType := TUCommentType(Reader.ReadInteger);
-      if (version >= 151) then uclass.defaultproperties := Reader.ReadString;
+      if (version >= 222) then uclass.defaultproperties.srcline := Reader.ReadInteger;
+      if (version >= 151) then uclass.defaultproperties.data := Reader.ReadString;
       if (version >= 212) then uclass.InterfaceType := TUCInterfaceType(Reader.ReadInteger);
+      if (version >= 222) then begin
+        uclass.replication.srcline := Reader.ReadInteger;
+        m := Reader.ReadInteger;
+        for i := 0 to m-1 do begin
+          uclass.replication.symbols.Add(Reader.ReadString);
+        end;
+        m := Reader.ReadInteger;
+        for i := 0 to m-1 do begin
+          uclass.replication.expressions.Add(Reader.ReadString);
+        end;
+      end;
 
       if (version >= 213) then begin
         m := Reader.ReadInteger;
@@ -591,6 +614,7 @@ begin
     else if (StrComp(tmp, UCXHeader212) = 0) then fversion := 212
     else if (StrComp(tmp, UCXHeader213) = 0) then fversion := 213
     else if (StrComp(tmp, UCXHeader214) = 0) then fversion := 214
+    else if (StrComp(tmp, UCXHeader222) = 0) then fversion := 222
     else begin
       Log('Unsupported file version, header: '+tmp);
       exit;
@@ -612,7 +636,7 @@ var
   c: cardinal;
 begin
   try
-    stream.WriteBuffer(UCXHeader214, 9);
+    stream.WriteBuffer(UCXHeader222, 9);
     // packages
     c := FPackageList.Count;
     stream.WriteBuffer(c, 4);
