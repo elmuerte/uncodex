@@ -56,5 +56,9 @@
 		<param name="Name" value="Developer">
 		<param name="Local" value="developer.html">
 		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="HTML Templates">
+		<param name="Local" value="templates.html">
+		</OBJECT>
 </UL>
 </BODY></HTML>
