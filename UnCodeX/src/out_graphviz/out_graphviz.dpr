@@ -1,8 +1,9 @@
 {-----------------------------------------------------------------------------
- Unit Name: unit_graphviz
+ Unit Name: out_graphviz
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   create a dot file
+ $Id: out_graphviz.dpr,v 1.4 2003-06-10 12:00:22 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 library out_graphviz;

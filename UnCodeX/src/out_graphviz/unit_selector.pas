@@ -1,3 +1,11 @@
+{-----------------------------------------------------------------------------
+ Unit Name: unit_selector
+ Author:    elmuerte
+ Copyright: 2003 Michiel 'El Muerte' Hendriks
+ Purpose:   GUI
+ $Id: unit_selector.pas,v 1.8 2003-06-10 12:00:22 elmuerte Exp $
+-----------------------------------------------------------------------------}
+
 unit unit_selector;
 
 interface

@@ -3,6 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Full Text Search (+ regular expressions) thread
+ $Id: unit_fulltextsearch.pas,v 1.7 2003-06-10 12:00:22 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_fulltextsearch;

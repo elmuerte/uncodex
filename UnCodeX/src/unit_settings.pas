@@ -3,6 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   program settings window
+ $Id: unit_settings.pas,v 1.25 2003-06-10 12:00:27 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_settings;

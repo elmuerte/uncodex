@@ -3,6 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   we need RichEdit control version 2
+ $Id: unit_richeditex.pas,v 1.9 2003-06-10 12:00:27 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_richeditex;

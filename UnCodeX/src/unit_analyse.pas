@@ -3,6 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
+ $Id: unit_analyse.pas,v 1.19 2003-06-10 12:00:18 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_analyse;

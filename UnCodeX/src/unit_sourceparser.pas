@@ -3,6 +3,7 @@
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
             Based on the TParser class by Borland Software Corporation
+ $Id: unit_sourceparser.pas,v 1.8 2003-06-10 12:00:27 elmuerte Exp $           
 -----------------------------------------------------------------------------}
 
 { *************************************************************************** }

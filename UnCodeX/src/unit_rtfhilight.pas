@@ -3,6 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   UScript to RTF
+ $Id: unit_rtfhilight.pas,v 1.13 2003-06-10 12:00:27 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_rtfhilight;

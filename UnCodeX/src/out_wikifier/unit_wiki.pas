@@ -3,6 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Copy paste window
+ $Id: unit_wiki.pas,v 1.5 2003-06-10 12:00:18 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_wiki;

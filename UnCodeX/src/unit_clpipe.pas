@@ -3,6 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Create a pipe with a commandline application
+ $Id: unit_clpipe.pas,v 1.2 2003-06-10 12:00:18 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_clpipe;

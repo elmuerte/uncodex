@@ -3,6 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   about UnCodeX dialog
+ $Id: unit_about.pas,v 1.5 2003-06-10 12:00:18 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_about;
