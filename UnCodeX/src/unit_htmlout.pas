@@ -1587,8 +1587,11 @@ procedure THTMLOutput.parseCode(input, output: TStream);
 var
   p: TSourceParser;
   replacement, tmp: string;
+  ms: TMemoryStream;
+  i: integer;
 begin
-  p := TSourceParser.Create(input, output);
+  ms := TMemoryStream.Create;
+  p := TSourceParser.Create(input, ms);
   try
     replacement := '<pre class="source"><a name="'+IntToStr(p.SourceLine-1)+'"></a>';
     p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
@@ -1654,8 +1657,22 @@ begin
     end;
     replacement := '</pre>';
     p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+
+    // finalize
+    replacement := '<div class="source"><table class="source"><tr><td class="source_lineno"><font class="source_lineno">';
+    output.WriteBuffer(PChar(replacement)^, Length(replacement));
+    for i := 1 to p.SourceLine do begin
+      replacement := format('%.5d<br>'+#10, [i]);
+      output.WriteBuffer(PChar(replacement)^, Length(replacement));
+    end;
+    replacement := '</font></td><td class="source">';
+    output.WriteBuffer(PChar(replacement)^, Length(replacement));
+    ms.SaveToStream(output);
+    replacement := '</td></tr></table></div>';
+    output.WriteBuffer(PChar(replacement)^, Length(replacement));
   finally
     p.Free;
+    ms.Free;
   end;
 end;
 
