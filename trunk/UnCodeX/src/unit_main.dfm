@@ -34,16 +34,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Cursor = crHSplit
     AutoSnap = False
     Visible = False
-  end
-  object splRight: TSplitter
-    Left = 654
-    Top = 34
-    Width = 4
-    Height = 505
-    Cursor = crHSplit
-    Align = alRight
-    AutoSnap = False
-    Visible = False
+    OnCanResize = splLeftCanResize
   end
   object splTop: TSplitter
     Left = 0
@@ -64,6 +55,18 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Align = alBottom
     AutoSnap = False
     Visible = False
+  end
+  object splRight: TSplitter
+    Left = 654
+    Top = 34
+    Width = 4
+    Height = 505
+    Cursor = crHSplit
+    Align = alRight
+    AutoSnap = False
+    Visible = False
+    OnCanResize = splRightCanResize
+    OnMoved = splRightMoved
   end
   object pnlCenter: TPanel
     Left = 4
@@ -95,6 +98,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     OnChange = tv_ClassesChange
     OnCollapsing = tv_ClassesExpanding
     OnDblClick = tv_ClassesDblClick
+    OnEnter = tv_ClassesEnter
     OnExit = tv_ClassesExit
     OnExpanding = tv_ClassesExpanding
     OnKeyDown = tv_ClassesKeyDown
@@ -277,6 +281,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     TabOrder = 3
     Visible = False
     WordWrap = False
+    OnEndDock = re_SourceSnoopEndDock
     OnMouseMove = re_SourceSnoopMouseMove
     OnMouseUp = re_SourceSnoopMouseUp
   end
@@ -317,6 +322,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     OnChange = tv_ClassesChange
     OnCollapsing = tv_ClassesExpanding
     OnDblClick = tv_ClassesDblClick
+    OnEnter = tv_ClassesEnter
     OnExit = tv_ClassesExit
     OnExpanding = tv_ClassesExpanding
     OnKeyDown = tv_ClassesKeyDown

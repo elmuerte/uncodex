@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   we need RichEdit control version 2
- $Id: unit_richeditex.pas,v 1.12 2003-11-04 19:35:27 elmuerte Exp $
+ $Id: unit_richeditex.pas,v 1.13 2004-02-23 10:39:04 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -47,6 +47,7 @@ type
     procedure ClearBgColor();
     procedure makeurl();
     property GutterWidth: integer read FGutterWidth write FGutterWidth;
+    procedure UpdateWindowRect;
   end;
 
   procedure Register;
@@ -58,6 +59,7 @@ const
 
 var
   FRichEditModule: THandle = 0;
+  OldWordBreakProc: integer;
 
 procedure Register;
 begin
@@ -77,14 +79,17 @@ begin
   case code of
     WB_ISDELIMITER: result := ord(Char(lpch[ichCurrent]) in ADELIM);
     WB_CLASSIFY:    begin
-                      if (Char(lpch[ichCurrent]) in  SPACE) then result := WBF_ISWHITE;
+                      if (Char(lpch[ichCurrent]) in SPACE) then result := WBF_ISWHITE;
+                      if (Char(lpch[ichCurrent]) in DELIM) then result := WBF_BREAKLINE;
                     end;
     WB_LEFT,
+    WB_LEFTBREAK,
     WB_MOVEWORDLEFT:begin
                       while (ichCurrent > 0) and (not (Char(lpch[ichCurrent-1]) in ADELIM)) do dec(ichCurrent);
                       Result := ichCurrent;
                     end;
     WB_RIGHT,
+    WB_RIGHTBREAK,
     WB_MOVEWORDRIGHT:begin
                       while (ichCurrent < cch) and (not (Char(lpch[ichCurrent]) in ADELIM)) do inc(ichCurrent);
                       Result := ichCurrent;
@@ -107,12 +112,10 @@ begin
 end;
 
 procedure TRichEditEx.CreateWnd();
-var
-  R: TRect;
 begin
   inherited;
-  R := RECT( FGutterWidth+5, 0, Self.Width, Self.Height);
-  Perform(EM_SETRECT, 0, Integer(@R));
+  UpdateWindowRect;
+  OldWordBreakProc := Perform(EM_GETWORDBREAKPROC, 0, 0);
   Perform(EM_SETWORDBREAKPROC, 0, LPARAM(@EditWordBreak));
   Perform(EM_EXLIMITTEXT, 0, 512000); // set max text limit to 500kb
 end;
@@ -134,6 +137,14 @@ begin
     Style := Style or HideScrollBars[false] or HideSelections[HideSelection];
     WindowClass.style := WindowClass.style and not (CS_HREDRAW or CS_VREDRAW);
   end;
+end;
+
+procedure TRichEditEx.UpdateWindowRect;
+var
+  R: TRect;
+begin
+	R := RECT( FGutterWidth+5, 0, Self.Width, Self.Height);
+  Perform(EM_SETRECT, 0, Integer(@R));
 end;
 
 procedure TRichEditEx.SetSelBgColor(color: TColor);
