@@ -161,6 +161,10 @@
 				<param name="Local" value="templates_class_inherited.html">
 				</OBJECT>
 		</UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="sourcecode-#.html">
+			<param name="Local" value="templates_sourcecode.html">
+			</OBJECT>
 	</UL>
 </UL>
 </BODY></HTML>

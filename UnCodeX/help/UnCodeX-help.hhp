@@ -60,6 +60,7 @@ templates_template.ini.html
 developer_status.html
 developer_config.html
 developer_commands.html
+templates_sourcecode.html
 
 [INFOTYPES]
 
