@@ -57,6 +57,9 @@ templates_packages_list.html
 templates_packages_list_entry.html
 templates_class.html
 templates_template.ini.html
+developer_status.html
+developer_config.html
+developer_commands.html
 
 [INFOTYPES]
 
