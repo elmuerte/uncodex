@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.139 2004-12-21 08:53:43 elmuerte Exp $
+  $Id: unit_main.pas,v 1.140 2004-12-22 12:25:10 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -1044,8 +1044,9 @@ var
 begin
   SelectedUClass := uclass;
   if (fr_Props.Visible) then begin
-    fr_Props.uclass := SelectedUClass;
-    fr_Props.LoadClass;
+    //TODO: make a sticky button?
+    //fr_Props.uclass := SelectedUClass;
+    //fr_Props.LoadClass;
   end;
   SelectedUPackage := nil;
   if (mi_SourceSnoop.Checked) then begin
