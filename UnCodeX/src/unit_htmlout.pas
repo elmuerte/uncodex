@@ -570,10 +570,11 @@ var
   uclass, up: TUClass;
   template: TFileStream;
   target: TStringStream;
-  tmp: string;
+  tmp, last: string;
 begin
   result := replaceDefault(replacement) or replacePackageOverview(replacement, TUClass(data).package);
   if (result) then exit;
+  currentClass := TUClass(data);
   if (CompareText(replacement, 'class_link') = 0) then begin
     replacement := ClassLink(TUClass(data));
     result := true;
@@ -894,9 +895,13 @@ begin
           tmp := LowerCase(up.package.name+'.'+up.name);
           if (not FunctionCache.Exists(tmp)) then begin
             parseTemplate(template, target, replaceClass, up);
+            last := '';
             for i := 0 to up.functions.Count-1 do begin
-              if (i > 0) then target.WriteString(', ');
-              target.WriteString('<a href="'+ClassLink(up)+'#'+HTMLChars(up.functions[i].name)+'">'+HTMLChars(up.functions[i].name)+'</a>');
+              if (CompareText(last,up.functions[i].name) <> 0) then begin
+                if (i > 0) then target.WriteString(', ');
+                target.WriteString('<a href="'+ClassLink(up)+'#'+HTMLChars(up.functions[i].name)+'">'+HTMLChars(up.functions[i].name)+'</a>');
+                last := up.functions[i].name;
+              end;
             end;
             replacement := replacement+target.DataString;
             FunctionCache.Items[tmp] := target.DataString; // add to cache
@@ -977,6 +982,10 @@ begin
     else replacement := '';
     result := true;
   end
+  else if (CompareText(replacement, 'class_source') = 0) then begin
+    replacement := SOURCEPRE+ClassLink(currentClass);
+    result := true;
+  end
 end;
 
 function THTMLOutput.replaceClassVar(var replacement: string; data: TObject = nil): boolean;
@@ -1012,6 +1021,10 @@ begin
     else replacement := '';
     result := true;
   end
+  else if (CompareText(replacement, 'class_source') = 0) then begin
+    replacement := SOURCEPRE+ClassLink(currentClass);
+    result := true;
+  end
 end;
 
 function THTMLOutput.replaceClassEnum(var replacement: string; data: TObject = nil): boolean;
@@ -1045,6 +1058,10 @@ begin
   else if (CompareText(replacement, 'has_comment_?') = 0) then begin
     if (TUEnum(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '')
     else replacement := '';
+    result := true;
+  end
+  else if (CompareText(replacement, 'class_source') = 0) then begin
+    replacement := SOURCEPRE+ClassLink(currentClass);
     result := true;
   end
 end;
@@ -1088,6 +1105,10 @@ begin
   else if (CompareText(replacement, 'has_comment_?') = 0) then begin
     if (TUStruct(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '')
     else replacement := '';
+    result := true;
+  end
+  else if (CompareText(replacement, 'class_source') = 0) then begin
+    replacement := SOURCEPRE+ClassLink(currentClass);
     result := true;
   end
 end;
@@ -1152,6 +1173,10 @@ begin
   else if (CompareText(replacement, 'has_comment_?') = 0) then begin
     if (TUFunction(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '')
     else replacement := '';
+    result := true;
+  end
+  else if (CompareText(replacement, 'class_source') = 0) then begin
+    replacement := SOURCEPRE+ClassLink(currentClass);
     result := true;
   end
 end;
@@ -1565,8 +1590,8 @@ var
 begin
   p := TSourceParser.Create(input, output);
   try
-    {replacement := '<font class="source_linenr">'+Format('%.5d', [p.SourceLine])+'</font>  ';
-    p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));}
+    replacement := '<a name="'+IntToStr(p.SourceLine-1)+'"></a>';
+    p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
     while (p.Token <> toEOF) do begin
       if (p.Token = '<') then begin
         replacement := '&lt;';
@@ -1581,7 +1606,11 @@ begin
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toComment) then begin
-        replacement := '<font class="source_comment">'+p.TokenString+'</font>';
+        replacement := p.TokenString;
+        replacement := StringReplace(replacement, '<', '&lt;', [rfReplaceAll]);
+        replacement := StringReplace(replacement, '>', '&gt;', [rfReplaceAll]);
+        replacement := '<font class="source_comment">'+replacement+'</font>';
+        replacement := replacement+'<a name="'+IntToStr(p.SourceLine)+'"></a>';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toInteger) then begin
@@ -1597,7 +1626,11 @@ begin
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toMacro) then begin
-        replacement := '<font class="source_macro">'+p.TokenString+'</font>';
+        replacement := p.TokenString;
+        replacement := StringReplace(replacement, '<', '&lt;', [rfReplaceAll]);
+        replacement := StringReplace(replacement, '>', '&gt;', [rfReplaceAll]);
+        replacement := '<font class="source_macro">'+replacement+'</font>';
+        replacement := replacement+'<a name="'+IntToStr(p.SourceLine)+'"></a>';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toSymbol) then begin
@@ -1612,10 +1645,10 @@ begin
         end;
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
-      {else if (p.Token = toEOL) then begin
-        replacement := p.TokenString+'<font class="source_linenr">'+Format('%.5d', [p.SourceLine])+'</font>  ';
+      else if (p.Token = toEOL) then begin
+        replacement := p.TokenString+'<a name="'+IntToStr(p.SourceLine)+'"></a>';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
-      end}
+      end
       else p.CopyTokenToOutput;
       p.SkipToken(true);
     end;

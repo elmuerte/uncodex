@@ -258,13 +258,14 @@ begin
       last := last+'.'+p.TokenString;
       p.NextToken;
     end;
+    last := last+pAngleBrackets;
+    last := last+pSquareBrackets;
     while (p.Token = ',') do begin
       p.NextToken;
       last := last+','+p.TokenString;
       p.NextToken;
+      last := last+pSquareBrackets;
     end;
-    last := last+pSquareBrackets;
-    last := last+pAngleBrackets;
     if (CompareText(last, 'enum') = 0) then begin
       prev := pEnum.name;
       last := p.TokenString;
