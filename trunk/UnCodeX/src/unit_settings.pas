@@ -75,6 +75,23 @@ type
     lb_IgnorePackages: TListBox;
     btn_AddIgnore: TBitBtn;
     btn_DelIgnore: TBitBtn;
+    ts_FullTextSearch: TTabSheet;
+    gb_FullTextSearch: TGroupBox;
+    lbl_OpenResult: TLabel;
+    btn_OpenResultPlaceHolder: TBitBtn;
+    ed_OpenResultCmd: TEdit;
+    btn_OpenResultCmd: TBitBtn;
+    pm_OpenResultPlaceHolders: TPopupMenu;
+    mi_ClassName2: TMenuItem;
+    mi_ClassFile2: TMenuItem;
+    mi_ClassPath2: TMenuItem;
+    mi_N2: TMenuItem;
+    mi_PackageName2: TMenuItem;
+    mi_PackagePath2: TMenuItem;
+    mi_N3: TMenuItem;
+    mi_Resultline1: TMenuItem;
+    mi_Resultposition1: TMenuItem;
+    cb_FTSRegExp: TCheckBox;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -100,6 +117,15 @@ type
     procedure btn_ClientCommandlineClick(Sender: TObject);
     procedure btn_AddIgnoreClick(Sender: TObject);
     procedure btn_DelIgnoreClick(Sender: TObject);
+    procedure btn_OpenResultCmdClick(Sender: TObject);
+    procedure btn_OpenResultPlaceHolderClick(Sender: TObject);
+    procedure mi_ClassName2Click(Sender: TObject);
+    procedure mi_ClassFile2Click(Sender: TObject);
+    procedure mi_ClassPath2Click(Sender: TObject);
+    procedure mi_PackageName2Click(Sender: TObject);
+    procedure mi_PackagePath2Click(Sender: TObject);
+    procedure mi_Resultline1Click(Sender: TObject);
+    procedure mi_Resultposition1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -303,6 +329,55 @@ procedure Tfrm_Settings.btn_DelIgnoreClick(Sender: TObject);
 begin
   if (lb_IgnorePackages.ItemIndex = -1) then exit;
   lb_IgnorePackages.Items.Delete(lb_IgnorePackages.ItemIndex);
+end;
+
+procedure Tfrm_Settings.btn_OpenResultCmdClick(Sender: TObject);
+begin
+  od_BrowseExe.FileName := ed_OpenResultCmd.Text;
+  if (od_BrowseExe.Execute) then ed_OpenResultCmd.Text := od_BrowseExe.FileName;
+end;
+
+procedure Tfrm_Settings.btn_OpenResultPlaceHolderClick(Sender: TObject);
+var
+  pt: TPoint;
+begin
+  pt := btn_OpenResultPlaceHolder.ClientToScreen(Point(0, btn_OpenResultPlaceHolder.Height));
+  pm_OpenResultPlaceHolders.Popup(pt.X, pt.Y);
+end;
+
+procedure Tfrm_Settings.mi_ClassName2Click(Sender: TObject);
+begin
+  ed_OpenResultCmd.Text := ed_OpenResultCmd.Text+' %classname%';
+end;
+
+procedure Tfrm_Settings.mi_ClassFile2Click(Sender: TObject);
+begin
+  ed_OpenResultCmd.Text := ed_OpenResultCmd.Text+' %classfile%';
+end;
+
+procedure Tfrm_Settings.mi_ClassPath2Click(Sender: TObject);
+begin
+  ed_OpenResultCmd.Text := ed_OpenResultCmd.Text+' %classpath%';
+end;
+
+procedure Tfrm_Settings.mi_PackageName2Click(Sender: TObject);
+begin
+  ed_OpenResultCmd.Text := ed_OpenResultCmd.Text+' %packagename%';
+end;
+
+procedure Tfrm_Settings.mi_PackagePath2Click(Sender: TObject);
+begin
+  ed_OpenResultCmd.Text := ed_OpenResultCmd.Text+' %packagepath%';
+end;
+
+procedure Tfrm_Settings.mi_Resultline1Click(Sender: TObject);
+begin
+  ed_OpenResultCmd.Text := ed_OpenResultCmd.Text+' %resultline%';
+end;
+
+procedure Tfrm_Settings.mi_Resultposition1Click(Sender: TObject);
+begin
+  ed_OpenResultCmd.Text := ed_OpenResultCmd.Text+' %resultpos%';
 end;
 
 end.

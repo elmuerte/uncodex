@@ -41,7 +41,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_IgnorePackages
+    ActivePage = ts_FullTextSearch
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -580,6 +580,75 @@ object frm_Settings: Tfrm_Settings
         end
       end
     end
+    object ts_FullTextSearch: TTabSheet
+      Caption = 'Full Text Search'
+      ImageIndex = 7
+      TabVisible = False
+      object gb_FullTextSearch: TGroupBox
+        Left = 0
+        Top = 0
+        Width = 433
+        Height = 368
+        Align = alClient
+        Caption = 'Full Text Search'
+        TabOrder = 0
+        DesignSize = (
+          433
+          368)
+        object lbl_OpenResult: TLabel
+          Left = 8
+          Top = 16
+          Width = 249
+          Height = 13
+          Caption = 'Open result command (leave blank for default action)'
+        end
+        object btn_OpenResultPlaceHolder: TBitBtn
+          Left = 384
+          Top = 32
+          Width = 17
+          Height = 21
+          Anchors = [akTop, akRight]
+          Caption = 'u'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Marlett'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 1
+          OnClick = btn_OpenResultPlaceHolderClick
+        end
+        object ed_OpenResultCmd: TEdit
+          Left = 8
+          Top = 32
+          Width = 377
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          TabOrder = 0
+        end
+        object btn_OpenResultCmd: TBitBtn
+          Left = 400
+          Top = 32
+          Width = 25
+          Height = 21
+          Anchors = [akTop, akRight]
+          Caption = '...'
+          TabOrder = 2
+          OnClick = btn_OpenResultCmdClick
+        end
+        object cb_FTSRegExp: TCheckBox
+          Left = 8
+          Top = 56
+          Width = 417
+          Height = 17
+          Anchors = [akLeft, akTop, akRight]
+          Caption = 'Default regular expression'
+          TabOrder = 3
+        end
+      end
+    end
   end
   object lb_Settings: TListBox
     Left = 0
@@ -636,5 +705,43 @@ object frm_Settings: Tfrm_Settings
     Title = 'Select executable'
     Left = 624
     Top = 72
+  end
+  object pm_OpenResultPlaceHolders: TPopupMenu
+    Left = 624
+    Top = 104
+    object mi_ClassName2: TMenuItem
+      Caption = 'Class name'
+      OnClick = mi_ClassName2Click
+    end
+    object mi_ClassFile2: TMenuItem
+      Caption = 'Class filename'
+      OnClick = mi_ClassFile2Click
+    end
+    object mi_ClassPath2: TMenuItem
+      Caption = 'Full class path'
+      OnClick = mi_ClassPath2Click
+    end
+    object mi_N2: TMenuItem
+      Caption = '-'
+    end
+    object mi_PackageName2: TMenuItem
+      Caption = 'Package name'
+      OnClick = mi_PackageName2Click
+    end
+    object mi_PackagePath2: TMenuItem
+      Caption = 'Package path'
+      OnClick = mi_PackagePath2Click
+    end
+    object mi_N3: TMenuItem
+      Caption = '-'
+    end
+    object mi_Resultline1: TMenuItem
+      Caption = 'Result line'
+      OnClick = mi_Resultline1Click
+    end
+    object mi_Resultposition1: TMenuItem
+      Caption = 'Result position'
+      OnClick = mi_Resultposition1Click
+    end
   end
 end
