@@ -6,7 +6,7 @@
   Purpose:
     Full text search thread. Includes support for regular expressions.
 
-  $Id: unit_fulltextsearch.pas,v 1.18 2004-12-08 09:25:37 elmuerte Exp $
+  $Id: unit_fulltextsearch.pas,v 1.19 2004-12-20 22:22:30 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -109,6 +109,7 @@ begin
   end;
   if (not sc.isFindFirst) then sc.Wrapped := false;
   inherited Create(true);
+  FreeOnTerminate := true;
 end;
 
 destructor TSearchThread.Destroy;
@@ -204,7 +205,8 @@ var
       if (re.Exec(line)) then begin
         Inc(Matches);
         result := true;
-        LogClass(uclass.filename+FTS_LN_BEGIN+IntToStr(linecnt)+FTS_LN_SEP+IntToStr(re.MatchPos[0])+FTS_LN_END+line, uclass);
+        //TODO: useline stuff
+        Log(uclass.filename+FTS_LN_BEGIN+IntToStr(linecnt)+FTS_LN_SEP+IntToStr(re.MatchPos[0])+FTS_LN_END+line, ltSearch, CreateLogEntry(uclass));
       end;
     end
     else begin
@@ -212,7 +214,8 @@ var
       if (i > 0) then begin
         Inc(Matches);
         result := true;
-        LogClass(uclass.filename+FTS_LN_BEGIN+IntToStr(linecnt)+FTS_LN_SEP+IntToStr(i)+FTS_LN_END+line, uclass);
+        //TODO: use line stuff
+        Log(uclass.filename+FTS_LN_BEGIN+IntToStr(linecnt)+FTS_LN_SEP+IntToStr(i)+FTS_LN_END+line, ltSearch, CreateLogEntry(uclass));
       end;
     end;
   end;

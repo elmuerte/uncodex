@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.129 2004-12-19 16:39:49 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.130 2004-12-20 22:22:30 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -38,8 +38,19 @@ uses
   Hashes, unit_uclasses, Classes, IniFiles;
 
 type
-  TLogProc = procedure (msg: string);
-  TLogClassProc = procedure (msg: string; uclass: TUClass = nil);
+  TLogType = (ltInfo, ltWarn, ltError, ltSearch);
+  
+  TLogEntry = class(TObject)
+    mt: TLogType;
+    obj: TObject;
+    filename: string;
+    line, pos: integer;
+  end;
+
+  // Note: if obj is of type TlogEntry is will be taken care of (e.g. clean up)
+  //  you might want to use CreateLogEntry() function;
+  TLogProcEX = procedure (msg: string; mt: TLogType = ltInfo; obj: TObject = nil);
+
   TExternaComment = function(ref: string): string;
 
   // Used for -reuse
@@ -51,6 +62,10 @@ type
     NewHandle: integer;
     OpenFTS: boolean;
   end;
+
+  function CreateLogEntry(filename: string; line: integer = 0; pos: integer = 0;
+    obj: TObject = nil): TLogEntry; overload;
+  function CreateLogEntry(obj: TObject): TLogEntry; overload;
 
   // repeat a string
   function StrRepeat(line: string; count: integer): string;
@@ -126,8 +141,7 @@ const
 var
   Keywords1: Hashes.TStringHash;
   Keywords2: Hashes.TStringHash;
-  Log: TLogProc;
-  LogClass: TLogClassProc;
+  Log: TLogProcEx;
   GuardStack: TStringList;
 
 implementation
@@ -144,6 +158,21 @@ uses
 var
   sl, TmpExtCmt: TStringList;
   ExtCommentIni: TMemIniFile;
+
+
+function CreateLogEntry(filename: string; line: integer = 0; pos: integer = 0; obj: TObject = nil): TLogEntry;
+begin
+  Result := TLogEntry.Create;
+  Result.filename := filename;
+  Result.line := line;
+  Result.pos := line;
+  Result.obj := obj;
+end;
+
+function CreateLogEntry(obj: TObject): TLogEntry;
+begin
+  result := CreateLogEntry('',0,0,obj);
+end;
 
 function StrRepeat(line: string; count: integer): string;
 begin
@@ -166,7 +195,7 @@ var
 begin
   result := ExpandFileNameCase(filename, fcm);
   if (fcm = mkAmbiguous) then begin
-    Log('Warning: two or more matches for '+filename);
+    Log('Warning: two or more matches for '+filename, ltWarn);
   end;
 end;
 {$ENDIF}
@@ -251,10 +280,10 @@ procedure printguard(uclass: TUClass = nil);
 var
   j: integer;
 begin
-  Log('History:');
+  Log('History:', ltError);
   for j := 0 to GuardStack.Count-1 do begin
     if (uclass = nil) then
-      else LogClass('  '+GuardStack[j], uclass);
+      else Log('  '+GuardStack[j], ltError, CreateLogEntry(uclass));
   end;
 end;
 

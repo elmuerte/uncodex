@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.137 2004-12-19 16:39:50 elmuerte Exp $
+  $Id: unit_main.pas,v 1.138 2004-12-20 22:22:31 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -40,7 +40,7 @@ uses
   unit_uclasses, IniFiles, ShellApi, AppEvnts, ImgList, ActnList, StrUtils,
   Clipbrd, hh, hh_funcs, ToolWin, richedit, unit_richeditex, unit_searchform,
   Buttons, DdeMan, unit_props, uPSComponent, uPSComponent_Default,
-  IFSI_unit_uclasses, unit_pascalscript_ex;
+  IFSI_unit_uclasses, unit_pascalscript_ex, unit_definitions;
 
 const
   // custom window messages
@@ -265,6 +265,7 @@ type
     ac_FindNewClasses: TAction;
     mi_FindNew: TMenuItem;
     mi_Clear: TMenuItem;
+    il_LogEntries: TImageList;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -382,6 +383,8 @@ type
     procedure ac_PluginRefreshExecute(Sender: TObject);
     procedure ac_FindNewClassesExecute(Sender: TObject);
   procedure mi_ClearClick(Sender: TObject);
+    procedure lb_LogDrawItem(Control: TWinControl; Index: Integer;
+      Rect: TRect; State: TOwnerDrawState);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -456,8 +459,9 @@ type
   end;
 
   // logging
-  procedure Log(msg: string);
-  procedure LogClass(msg: string; uclass: TUClass = nil);
+  procedure Log(msg: string; mt: TLogType = ltInfo; obj: TObject = nil);
+  procedure ClearLog;
+
   procedure StatusReport(msg: string; progress: byte = 255);
 
 var
@@ -534,7 +538,7 @@ var
 
 implementation
 
-uses unit_settings, unit_analyse, unit_htmlout, unit_definitions,
+uses unit_settings, unit_analyse, unit_htmlout,
   unit_treestate, unit_about, unit_mshtmlhelp, unit_fulltextsearch,
   unit_tags, unit_outputdefs, unit_rtfhilight, unit_utils, unit_license,
   unit_splash, unit_ucxdocktree, unit_ucops, unit_pkgprops, unit_defprops,
@@ -571,20 +575,45 @@ end;
 { Status redirecting -- END }
 { Logging }
 
-procedure Log(msg: string);
+procedure Log(msg: string; mt: TLogType = ltInfo; obj: TObject = nil);
+var
+  entry: TLogEntry;
 begin
+  if (frm_UnCodeX = nil) then exit;
   if (msg='') then exit;
-  frm_UnCodeX.lb_Log.Items.Add(msg);
-  frm_UnCodeX.lb_Log.ItemIndex := frm_UnCodeX.lb_Log.Items.Count-1;
-  if (StatusHandle <> -1) then SendStatusMsg(msg, cxstLog);
+  with frm_UnCodeX.lb_Log do begin
+    if (TLogEntry(obj) = nil) then begin
+      entry := CreateLogEntry(obj);
+    end
+    else entry := TLogEntry(obj);
+
+    if (entry.filename = '') then begin
+      if (TUClass(obj) <> nil) then begin
+        entry.filename := TUClass(obj).filename;
+      end;
+    end;
+    //TODO: TUDeclaration
+
+    entry.mt := mt;
+    Items.AddObject(msg, entry);
+    frm_UnCodeX.lb_Log.ItemIndex := frm_UnCodeX.lb_Log.Items.Count-1;
+    if (StatusHandle <> -1) then SendStatusMsg(msg, cxstLog);
+  end;
 end;
 
-procedure LogClass(msg: string; uclass: TUClass = nil);
+procedure ClearLog;
+var
+  i: integer;
 begin
-  if (msg='') then exit;
-  frm_UnCodeX.lb_Log.Items.AddObject(msg, uclass);
-  frm_UnCodeX.lb_Log.ItemIndex := frm_UnCodeX.lb_Log.Items.Count-1;
-  if (StatusHandle <> -1) then SendStatusMsg(msg, cxstLog);
+  if (frm_UnCodeX = nil) then exit;
+  with frm_UnCodeX.lb_Log do begin
+    for i := 0 to Items.count-1 do begin
+      if (Items.Objects[i] <> nil) then begin
+        if (TLogEntry(Items.Objects[i]) <> nil) then Items.Objects[i].Free;
+      end;
+    end;
+    Items.Clear;
+  end;
 end;
 
 { Logging -- END }
@@ -1268,7 +1297,7 @@ begin
       res := RunModule2;
       if res then begin
         if (twait) then begin
-          lb_Log.Items.Clear;
+          ClearLog;
           runningthread := waitt;
           //runningthread.OnTerminate := ThreadTerminate;
           runningthread.Resume;
@@ -1334,7 +1363,7 @@ begin
     log('Error: UPS file does not exist: '+filename);
     exit;
   end;
-  lb_Log.Items.Clear;
+  ClearLog;
   ps_Main.Script.LoadFromFile(filename);
   result := frm_UnCodeX.ps_Main.Compile;
   for i := 0 to frm_UnCodeX.ps_Main.CompilerMessageCount-1 do begin
@@ -1345,7 +1374,7 @@ begin
     log('UnCodeX PascalScript compile failed!');
     exit;
   end;
-  lb_Log.Items.Clear;
+  ClearLog;
   result := ps_Main.Execute;
   if (not result) then begin
     log(ps_Main.ExecErrorToString);
@@ -2168,7 +2197,7 @@ begin
     with (ActiveControl as TTreeView) do begin
       if (TObject(Selected.Data).ClassType <> TUClass) then exit;
       if (ThreadCreate) then begin
-        lb_Log.Clear;
+        ClearLog;
         LastAnalyseTime := Now;
         runningthread := TClassAnalyser.Create(TUClass(Selected.Data), statusReport);
         runningthread.OnTerminate := ThreadTerminate;
@@ -2190,7 +2219,7 @@ var
   rec: TPackageScannerConfig;
 begin
   if (ThreadCreate) then begin
-    lb_Log.Items.Clear;
+    ClearLog;
     TreeUpdated := true;
 
     SelectedUClass := nil;
@@ -2223,7 +2252,7 @@ end;
 
 procedure Tfrm_UnCodeX.ac_FindOrphansExecute(Sender: TObject);
 begin
-  lb_Log.Items.Clear;
+  ClearLog;
   CountOrphans(ClassList);
   if ClassOrphanCount > 0 then begin
     Log('Stopped batching because of orhpan classes');
@@ -2237,7 +2266,7 @@ end;
 procedure Tfrm_UnCodeX.ac_AnalyseAllExecute(Sender: TObject);
 begin
   if (ThreadCreate) then begin
-    lb_Log.Items.Clear;
+    ClearLog;
     LastAnalyseTime := Now;
 
     fr_Props.uclass := nil;
@@ -2255,7 +2284,7 @@ var
   htmlconfig: THTMLOutConfig;
 begin
   if (ThreadCreate) then begin
-    lb_Log.Items.Clear;
+    ClearLog;
     htmlconfig.PackageList := PackageList;
     htmlconfig.ClassList := ClassList;
     htmlconfig.outputdir := HTMLOutputDir;
@@ -2500,6 +2529,7 @@ end;
 
 procedure Tfrm_UnCodeX.FormDestroy(Sender: TObject);
 begin
+  ClearLog;
   hh_Help.Free;
   HHCloseAll;
   UnregisterAppBar;
@@ -2581,7 +2611,7 @@ begin
     exit;
   end;
   if (ThreadCreate) then begin
-    lb_Log.Items.Clear;
+    ClearLog;
     if (HHTitle <> '') then tmp := HHTitle
     else tmp := HHTitle;
     runningthread := TMSHTMLHelp.Create(HHCPath, HTMLOutputDir, HTMLHelpFile, tmp, PackageList, ClassList, StatusReport);
@@ -2717,7 +2747,7 @@ begin
   with (ActiveControl as TTreeView) do begin
     if (SearchConfig.isFTS) then begin
       if (ThreadCreate) then begin
-        lb_Log.Items.Clear;
+        ClearLog;
         if (not lb_Log.Visible) then ac_VLog.Execute;
         SearchConfig.searchtree := (ActiveControl as TTreeView);
         runningthread := TSearchThread.Create(SearchConfig, StatusReport);
@@ -2776,15 +2806,20 @@ begin
 end;
 
 procedure Tfrm_UnCodeX.lb_LogDblClick(Sender: TObject);
-var
+{var
   i, j: integer;
-  linenr, curpos: string;
+  linenr, curpos: string;}
+var
+  entry: TLogEntry;
 begin
+  //TODO: fix
   if (lb_Log.ItemIndex = -1) then exit;
   if (lb_Log.Items.Objects[lb_Log.ItemIndex] = nil) then exit;
-  if (TObject(lb_Log.Items.Objects[lb_Log.ItemIndex]).ClassType <> TUClass) then exit;
+  if (TObject(lb_Log.Items.Objects[lb_Log.ItemIndex]).ClassType <> TLogEntry) then exit;
 
-  linenr := lb_Log.Items[lb_Log.ItemIndex];
+  entry := TLogEntry(lb_Log.Items.Objects[lb_Log.ItemIndex]);
+
+  {linenr := lb_Log.Items[lb_Log.ItemIndex];
   i := Pos(FTS_LN_BEGIN, linenr);
   j := Pos(FTS_LN_END, linenr);
   linenr := Copy(linenr, i+Length(FTS_LN_BEGIN), j-i-Length(FTS_LN_BEGIN));
@@ -2792,20 +2827,24 @@ begin
   curpos := Copy(linenr, i+Length(FTS_LN_SEP), MaxInt);
   Delete(linenr, i, MaxInt);
 
-  OpenSourceLine(TUClass(lb_Log.Items.Objects[lb_Log.ItemIndex]), StrToIntDef(linenr, 0), StrToIntDef(curpos, 0));
+  OpenSourceLine(TUClass(lb_Log.Items.Objects[lb_Log.ItemIndex]), StrToIntDef(linenr, 0), StrToIntDef(curpos, 0));}
 end;
 
 procedure Tfrm_UnCodeX.lb_LogClick(Sender: TObject);
 var
-  j,k: integer;
-  linenr,
-  curpos: string;
+  {j,k: integer;
+  linenr, curpos: string; }
+  entry: TLogEntry;
 begin
   if (lb_Log.ItemIndex = -1) then exit;
   if (lb_Log.Items.Objects[lb_Log.ItemIndex] = nil) then exit;
-  if (TObject(lb_Log.Items.Objects[lb_Log.ItemIndex]).ClassType <> TUClass) then exit;
+  if (TObject(lb_Log.Items.Objects[lb_Log.ItemIndex]).ClassType <> TLogEntry) then exit;
 
-  if (TUClass(lb_Log.Items.Objects[lb_Log.ItemIndex]) <> nil) then begin
+  entry := TLogEntry(lb_Log.Items.Objects[lb_Log.ItemIndex]);
+  //TODO: fix
+  //OpenSourceInline(entry , nil, j, 0);
+
+  {if (TUClass(lb_Log.Items.Objects[lb_Log.ItemIndex]) <> nil) then begin
     linenr := lb_Log.Items[lb_Log.ItemIndex];
     j := Pos(FTS_LN_BEGIN, linenr);
     if (j > 0) then begin
@@ -2818,7 +2857,7 @@ begin
     end
     else j := -1;
     OpenSourceInline(TUClass(lb_Log.Items.Objects[lb_Log.ItemIndex]), nil, j, 0);
-  end;
+  end;}
 end;
 
 procedure Tfrm_UnCodeX.FormShow(Sender: TObject);
@@ -3017,7 +3056,7 @@ end;
 procedure Tfrm_UnCodeX.ac_AnalyseModifiedExecute(Sender: TObject);
 begin
   if (ThreadCreate) then begin
-    lb_Log.Items.Clear;
+    ClearLog;
     LastAnalyseTime := Now;
     runningthread := TClassAnalyser.Create(ClassList, statusReport, true, unit_rtfhilight.ClassesHash);
     runningthread.OnTerminate := ThreadTerminate;
@@ -3209,7 +3248,7 @@ var
 begin
   if (Assigned(Sender)) then name := Sender.ClassName
   else name := 'unknown';
-  Log('['+name+'] Unhandled exception: ('+e.ClassName+') '+e.Message);
+  Log('['+name+'] Unhandled exception: ('+e.ClassName+') '+e.Message, ltError);
 end;
 
 procedure Tfrm_UnCodeX.tv_ClassesKeyPress(Sender: TObject; var Key: Char);
@@ -3637,7 +3676,7 @@ end;
 procedure Tfrm_UnCodeX.ac_FindNewClassesExecute(Sender: TObject);
 begin
   if (ThreadCreate) then begin
-    lb_Log.Items.Clear;
+    ClearLog;
     runningthread := TNewClassScanner.Create(PackageList, ClassList, StatusReport, ClassesHash);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
@@ -3646,12 +3685,27 @@ end;
 
 procedure Tfrm_UnCodeX.mi_ClearClick(Sender: TObject);
 begin
-  lb_Log.Clear;
+  ClearLog;
+end;
+
+procedure Tfrm_UnCodeX.lb_LogDrawItem(Control: TWinControl; Index: Integer;
+  Rect: TRect; State: TOwnerDrawState);
+var
+  entry: TLogEntry;
+  x: integer;
+begin
+  with TListBox(Control) do begin
+    entry := TLogEntry(items.Objects[index]);
+    x := Canvas.TextHeight(items[index]);
+    Canvas.TextRect(Rect, Rect.Left+2+ItemHeight, Rect.Top+((ItemHeight-x) div 2), TListBox(Control).items[index]);
+    if (entry <> nil) then begin
+      il_LogEntries.Draw(Canvas, Rect.Left+1, Rect.Top+1, ord(entry.mt));
+    end;
+  end;
 end;
 
 initialization
   DefaultDockTreeClass := TUCXDockTree;
   unit_definitions.Log := Log;
-  unit_definitions.LogClass := LogClass;
   unit_analyse.GetExternalComment := unit_definitions.RetExternalComment;
 end.
