@@ -3,7 +3,7 @@
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
             Based on the TParser class by Borland Software Corporation
- $Id: unit_parser.pas,v 1.13 2004-03-08 21:29:22 elmuerte Exp $
+ $Id: unit_parser.pas,v 1.14 2004-03-11 20:55:31 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 { *************************************************************************** }
@@ -47,6 +47,7 @@ type
     function NextTokenTmp: Char;
   public
     FullCopy: boolean;
+    FCIgnoreComments: boolean;
     constructor Create(Stream: TStream);
     destructor Destroy; override;
     function NextToken: Char;
@@ -71,6 +72,7 @@ constructor TUCParser.Create(Stream: TStream);
 begin
   FStream := Stream;
   FullCopy := false;
+  FCIgnoreComments := false;
   CopyInitComment := true;
   FCopyStream := TStringStream.Create('');
   GetMem(FBuffer, ParseBufSize);
@@ -256,7 +258,9 @@ begin
   end;
   FSourcePtr := P;
   FToken := Result;
-  if (FullCopy) then FCopyStream.WriteString(TokenString);
+  if (FullCopy) then begin
+  	if ((not FCIgnoreComments) or (Result <> toComment)) then FCopyStream.WriteString(TokenString);
+  end;
 end;
 
 procedure TUCParser.ReadBuffer;
