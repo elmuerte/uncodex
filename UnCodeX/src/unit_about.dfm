@@ -118,6 +118,20 @@ object frm_About: Tfrm_About
     Height = 13
     Caption = 'Homepage:'
   end
+  object lbl_TimeStamp: TLabel
+    Left = 200
+    Top = 32
+    Width = 69
+    Height = 13
+    Caption = 'lbl_TimeStamp'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clGrayText
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    ParentFont = False
+    Visible = False
+  end
   object mm_LegalShit: TMemo
     Left = 56
     Top = 144

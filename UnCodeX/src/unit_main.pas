@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.52 2003-06-10 12:00:22 elmuerte Exp $
+ $Id: unit_main.pas,v 1.53 2003-06-11 18:56:22 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_main;
@@ -14,7 +14,8 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls,
   Forms, Dialogs, ComCtrls, Menus, StdCtrls, unit_packages, ExtCtrls,
   unit_uclasses, IniFiles, ShellApi, AppEvnts, ImgList, ActnList, StrUtils,
-  Clipbrd, hh, hh_funcs, ToolWin, richedit, unit_richeditex, unit_searchform;
+  Clipbrd, hh, hh_funcs, ToolWin, richedit, unit_richeditex, unit_searchform,
+  Buttons;
 
 const
   // custom window messages
@@ -409,7 +410,7 @@ begin
   if (msg='') then exit;
   frm_UnCodeX.lb_Log.Items.AddObject(msg, uclass);
   frm_UnCodeX.lb_Log.ItemIndex := frm_UnCodeX.lb_Log.Items.Count-1;
-   if (StatusHandle <> -1) then SendStatusMsg(msg, cxstLog);
+  if (StatusHandle <> -1) then SendStatusMsg(msg, cxstLog);
 end;
 
 { Logging -- END }
@@ -978,8 +979,12 @@ end;
 
 // Update the status message on timer
 procedure Tfrm_UnCodeX.tmr_StatusTextTimer(Sender: TObject);
+var
+  tmp: string;
 begin
-  sb_Status.Panels[0].Text := statustext;
+  tmp := statustext;
+  if (runningthread <> nil) then tmp := tmp+' ('+ShortCutToText(ac_Abort.ShortCut)+' to abort)';
+  sb_Status.Panels[0].Text := tmp;
 end;
 
 // Create form and init
@@ -1181,7 +1186,7 @@ end;
 procedure Tfrm_UnCodeX.ae_AppEventHint(Sender: TObject);
 begin
   sb_Status.SimpleText := GetLongHint(Application.Hint);
-  sb_Status.SimplePanel := (sb_Status.SimpleText <> '');
+  sb_Status.SimplePanel := (trim(sb_Status.SimpleText) <> '');
 end;
 
 procedure Tfrm_UnCodeX.ac_RecreateTreeExecute(Sender: TObject);
@@ -1874,6 +1879,7 @@ begin
         re_SourceSnoop.SelStart := k;
         re_SourceSnoop.SelLength := re_SourceSnoop.Perform(EM_LINELENGTH, k, 0);
         re_SourceSnoop.SetSelBgColor(clBtnFace);
+        re_SourceSnoop.SelLength := 0;
       end;
       exit;
     end;
