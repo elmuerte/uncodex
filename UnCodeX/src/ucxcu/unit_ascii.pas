@@ -6,7 +6,7 @@
   Purpose:
     General commandline routines
 
-  $Id: unit_ascii.pas,v 1.15 2004-12-08 09:25:44 elmuerte Exp $
+  $Id: unit_ascii.pas,v 1.16 2004-12-25 14:13:00 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -66,7 +66,7 @@ const
   PB_TODO   = '.'; // 25% block
   {$ENDIF}
   PB_NONE   = ' ';
-  VERSION   = '012 Beta';
+  VERSION   = '013 Beta';
 
 var
   lastsp: integer = -1;
