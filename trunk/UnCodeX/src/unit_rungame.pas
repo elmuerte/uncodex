@@ -6,7 +6,7 @@
     Purpose:
         Run dialog for the game\server
 
-    $Id: unit_rungame.pas,v 1.8 2004-10-20 14:19:29 elmuerte Exp $
+    $Id: unit_rungame.pas,v 1.9 2004-11-07 14:59:16 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -113,7 +113,7 @@ type
         cb_Priority: TComboBox;
         Label2: TLabel;
         btn_Default: TBitBtn;
-        TabSheet1: TTabSheet;
+    ts_Help: TTabSheet;
         mm_Replacements: TMemo;
         procedure FormCreate(Sender: TObject);
         procedure ed_MapChange(Sender: TObject);

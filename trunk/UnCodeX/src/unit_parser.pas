@@ -7,7 +7,7 @@
         Parser for UnrealScript, used for analysing the unrealscript source.
         Based on TParser by Borland.
 
-    $Id: unit_parser.pas,v 1.24 2004-11-06 15:07:44 elmuerte Exp $
+    $Id: unit_parser.pas,v 1.25 2004-11-07 14:59:16 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -64,6 +64,7 @@ type
     public
         FullCopy: boolean;
         FCIgnoreComments: boolean;
+        MacroCallBack: boolean;
         constructor Create(Stream: TStream);
         destructor Destroy; override;
         function NextToken: Char;
@@ -104,6 +105,7 @@ begin
     FSourceLine := 1;
     NextToken;
     CopyInitComment := false;
+    MacroCallBack := true;
 end;
 
 destructor TUCParser.Destroy;
@@ -121,7 +123,7 @@ begin
     repeat
         result := NextTokenTmp;
         if (result = toMacro) then begin
-            if (assigned(FProcessMacro)) then FProcessMacro(self);
+            if (assigned(FProcessMacro) and MacroCallBack) then FProcessMacro(self);
             // macro processed, get the real next token, unless the token already changed
             if (FToken = toMacro) then result := toComment;
         end;
