@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   CTAGS file creation library
- $Id: out_ctags.dpr,v 1.3 2004-05-13 20:03:45 elmuerte Exp $
+ $Id: out_ctags.dpr,v 1.4 2004-05-14 12:16:25 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -52,7 +52,10 @@ begin
   frm_CTAGS := Tfrm_CTAGS.Create(nil);
   frm_CTAGS.Info := info;
   frm_CTAGS.Init;
-  frm_CTAGS.ShowModal;
+  if (info.ABatching) then begin
+    frm_CTAGS.ProcessBatch;
+  end
+  else frm_CTAGS.ShowModal;
   frm_CTAGS.Free;
   Info.WaitForTerminate := false;
   result := false;

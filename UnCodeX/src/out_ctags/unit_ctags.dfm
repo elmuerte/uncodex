@@ -309,7 +309,7 @@ object frm_CTAGS: Tfrm_CTAGS
       Height = 13
       Caption = 'Use line offset for:'
     end
-    object CheckBox1: TCheckBox
+    object cb_OTagged: TCheckBox
       Left = 8
       Top = 32
       Width = 121
@@ -320,7 +320,7 @@ object frm_CTAGS: Tfrm_CTAGS
       State = cbChecked
       TabOrder = 0
     end
-    object CheckBox2: TCheckBox
+    object cb_OUntagged: TCheckBox
       Left = 8
       Top = 48
       Width = 121

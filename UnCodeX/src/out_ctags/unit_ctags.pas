@@ -4,7 +4,7 @@
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   setup dialog + actual file creation
  						http://ctags.sourceforge.net/FORMAT
- $Id: unit_ctags.pas,v 1.3 2004-05-13 20:03:45 elmuerte Exp $
+ $Id: unit_ctags.pas,v 1.4 2004-05-14 12:16:25 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -53,8 +53,8 @@ type
     il_Packages: TImageList;
     gb_Offset: TGroupBox;
     Label1: TLabel;
-    CheckBox1: TCheckBox;
-    CheckBox2: TCheckBox;
+    cb_OTagged: TCheckBox;
+    cb_OUntagged: TCheckBox;
     pnl_SingleClass: TPanel;
     lbl_Single: TLabel;
     ed_Single: TEdit;
@@ -81,6 +81,7 @@ type
     Info: TUCXOutputInfo2;
     procedure Init;
     procedure CreateCTAGSfile;
+    procedure ProcessBatch;
     procedure AddClassToCTAGS(uclass: TUClass; lst: TStrings);
   end;
 
@@ -88,7 +89,7 @@ var
   frm_CTAGS: Tfrm_CTAGS;
 
 const
-  DLLVERSION = '100';
+  DLLVERSION = '101';
 
 implementation
 
@@ -124,6 +125,7 @@ var
   pkg: TUPackage;
   lst: TStringList;
 begin
+	if (not DirectoryExists(extractfilepath(ed_OutputFile.Text))) then exit;
 	lst := TStringList.Create;
   try
   	if (info.ASingleClass) then begin
@@ -147,9 +149,73 @@ begin
 	  lst.Insert(4, '!_TAG_PROGRAM_URL	http://wiki.beyondunreal.com/wiki/UnCodeX	/official site/');
   	lst.Insert(5, '!_TAG_PROGRAM_VERSION	'+DLLVERSION+'	//');
 	  lst.SaveToFile(ed_OutputFile.Text);
+    info.AStatusReport('CTAGS saved to: '+ed_OutputFile.Text);
   finally
 	  lst.Free;
   end;
+end;
+
+// called when called from batching
+procedure Tfrm_CTAGS.ProcessBatch;
+var
+	i,j: integer;
+  lst: TStringList;
+begin
+	// load settings from the commandline
+  i := 0;
+	while (i > ParamCount) do begin
+  	// selected packages
+		if (CompareText('--ct-packages', paramstr(i)) = 0) then begin
+      Inc(i);
+      lst := TStringList.Create;
+      try
+				lst.CommaText := paramstr(i);
+        lst.CaseSensitive := false;
+        for j := 0 to lv_Packages.items.Count-1 do begin
+          lv_Packages.Items[j].Checked := lst.IndexOf(lv_Packages.Items[j].Caption) <> -1;
+        end;
+      finally
+				lst.Free;
+      end;
+    end
+    // only tagged packages
+    else if (CompareText('--ct-tagged', paramstr(i)) = 0) then begin
+      btn_Tagged.Click;
+    end
+    // only untagged packages
+    else if (CompareText('--ct-untagged', paramstr(i)) = 0) then begin
+      btn_UnTagged.Click;
+    end
+    // offset for tagged=t, untagged=u
+    else if (CompareText('--ct-offset', paramstr(i)) = 0) then begin
+      Inc(i);
+      cb_OTagged.Checked := Pos('t', ParamStr(i)) > 0;
+      cb_OUntagged.Checked := Pos('u', ParamStr(i)) > 0;
+    end
+    // include these types
+    else if (CompareText('--ct-include', paramstr(i)) = 0) then begin
+      Inc(i);
+      cb_IVar.Checked := Pos('v', ParamStr(i)) > 0;
+      cb_IConst.Checked := Pos('c', ParamStr(i)) > 0;
+      cb_IFunc.Checked := Pos('f', ParamStr(i)) > 0;
+      cb_IClass.Checked := Pos('C', ParamStr(i)) > 0;
+      cb_IStruct.Checked := Pos('s', ParamStr(i)) > 0;
+      cb_IDelegates.Checked := Pos('d', ParamStr(i)) > 0;
+      cb_IEnum.Checked := Pos('e', ParamStr(i)) > 0;
+    end
+    // the output filename
+    else if (CompareText('--ct-out', paramstr(i)) = 0) then begin
+      Inc(i);
+      ed_OutputFile.Text := ParamStr(i);
+    end;
+
+  	Inc(i);
+  end;
+  if (ed_OutputFile.Text = '') then begin
+		if (sd_Save.Execute) then ed_OutputFile.Text := sd_Save.FileName;
+  end;
+  // run
+  if (ed_OutputFile.Text <> '') then CreateCTAGSfile;
 end;
 
 procedure Tfrm_CTAGS.AddClassToCTAGS(uclass: TUClass; lst: TStrings);

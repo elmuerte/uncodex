@@ -28,6 +28,10 @@ UnCodeX accepts the following commandline options:
 	<td>analyse all classes in the tree</td>
 </tr>
 <tr>
+	<td><pre class="indent">analysemodified</pre></td>
+	<td>analyse only modified classes in the tree</td>
+</tr>
+<tr>
 	<td><pre class="indent">createhtml</pre></td>
 	<td>create all HTML file</td>
 </tr>
@@ -92,6 +96,72 @@ UnCodeX accepts the following commandline options:
 	<td>Show the Full Text Search dialog on startup</td>
 </tr>
 </table>
+
+<h2>CTAGS output module commandline options</h2>
+The following commandline options are accepted by the CTAGS output module:
+<table>
+<tr>
+	<td><pre>--ct-out <i>filename</i></pre></td>
+	<td>The output filename, if no filename is specified you will be prompted for the output file.</td>
+</tr>
+<tr>
+	<td><pre>--ct-include <i>spec</i></pre></td>
+	<td>Types to include in the output file (case sensitive). By default all types are included. The following types are available:</td>
+</tr>
+<tr>
+	<td><pre class="indent">C</pre></td>
+	<td>classes</td>
+</tr>
+<tr>
+	<td><pre class="indent">v</pre></td>
+	<td>variables</td>
+</tr>
+<tr>
+	<td><pre class="indent">c</pre></td>
+	<td>constants</td>
+</tr>
+<tr>
+	<td><pre class="indent">s</pre></td>
+	<td>structs</td>
+</tr>
+<tr>
+	<td><pre class="indent">e</pre></td>
+	<td>enumerations</td>
+</tr>
+<tr>
+	<td><pre class="indent">f</pre></td>
+	<td>functions</td>
+</tr>
+<tr>
+	<td><pre class="indent">d</pre></td>
+	<td>delegates</td>
+</tr>
+<tr>
+	<td><pre>--ct-offset <i>spec</i></pre></td>
+	<td>Use numeric offset for these packages (case sensitive). by default numeric line offsets are only used for tagged packages. The following types are available:</td>
+</tr>
+<tr>
+	<td><pre class="indent">t</pre></td>
+	<td>tagged packages</td>
+</tr>
+<tr>
+	<td><pre class="indent">u</pre></td>
+	<td>untagged packages</td>
+</tr>
+<tr>
+	<td><pre>--ct-untagged</pre></td>
+	<td>select untagged packages only</td>
+</tr>
+<tr>
+	<td><pre>--ct-tagged</pre></td>
+	<td>select tagged packages only</td>
+</tr>
+<tr>
+	<td><pre>--ct-packages <i>list</i></pre></td>
+	<td>comma seperated list of packages to select for output.</td>
+</tr>
+</table>
+
 </div>
 </div>
 </body>
