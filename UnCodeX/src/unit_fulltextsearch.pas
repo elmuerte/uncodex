@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Full Text Search (+ regular expressions) thread
- $Id: unit_fulltextsearch.pas,v 1.11 2004-03-20 20:56:07 elmuerte Exp $
+ $Id: unit_fulltextsearch.pas,v 1.12 2004-03-27 14:14:21 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -118,21 +118,25 @@ var
   uclass: TUClass;
   res: boolean;
 begin
-  stime := GetTickCount();
-  ccount := 0;
-  uclass := GetNextClass();
-  while (uclass <> nil) do begin
-    Status('Searching file '+uclass.filename+' ...', round((ccount+1)/total*100));
-    res := SearchFile(uclass);
-    if (res and config.isFindFirst) then begin
-      break;
-    end;
-		inc(ccount);
-    uclass := GetNextClass();
-    if (Self.Terminated) then break;
+	try
+	  stime := GetTickCount();
+  	ccount := 0;
+	  uclass := GetNextClass();
+  	while (uclass <> nil) do begin
+    	Status('Searching file '+uclass.filename+' ...', round((ccount+1)/total*100));
+	    res := SearchFile(uclass);
+  	  if (res and config.isFindFirst) then begin
+    	  break;
+	    end;
+			inc(ccount);
+    	uclass := GetNextClass();
+	    if (Self.Terminated) then break;
+  	end;
+	  if (Matches = 0) then  Status('Nothing found for '''+RealExpr+'''. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds', 100)
+			else Status(IntToStr(Matches)+' matches found for '''+RealExpr+'''. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds', 100);
+	except
+  	on E: Exception do Log('Unhandled exception: '+E.Message);
   end;
-  if (Matches = 0) then  Status('Nothing found for '''+RealExpr+'''. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds', 100)
-		else Status(IntToStr(Matches)+' matches found for '''+RealExpr+'''. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds', 100);
 end;
 
 function TSearchThread.GetNextClass: TUClass;
