@@ -13,7 +13,7 @@ const aInt		= 123456789;
 const aFloat	= 123.456789;
 const aName     = 'name';
 
-native(123) static final bool Function(out int param1, optional string param2)
+native(123) static final bool Function Test(out int param1, optional string param2)
 {
 	param1 = self.aInt;
 	while (param1 > 0)
