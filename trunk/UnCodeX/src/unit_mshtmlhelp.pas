@@ -6,7 +6,7 @@
   Purpose:
     Creates an MS HTML Help project and compiles it.
 
-  $Id: unit_mshtmlhelp.pas,v 1.19 2004-12-18 23:52:00 elmuerte Exp $
+  $Id: unit_mshtmlhelp.pas,v 1.20 2005-04-05 07:58:08 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -58,9 +58,6 @@ type
     procedure Execute; override;
     destructor Destroy; override;
   end;
-
-const
-  COMPILER = 'HHC.EXE';
 
 implementation
 

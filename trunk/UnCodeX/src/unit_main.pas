@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.158 2005-04-04 21:31:38 elmuerte Exp $
+  $Id: unit_main.pas,v 1.159 2005-04-05 07:58:07 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -387,12 +387,12 @@ type
     procedure ps_MainExecute(Sender: TPSScript);
     procedure ac_PluginRefreshExecute(Sender: TObject);
     procedure ac_FindNewClassesExecute(Sender: TObject);
-  procedure mi_ClearClick(Sender: TObject);
+    procedure mi_ClearClick(Sender: TObject);
     procedure lb_LogDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
     procedure ac_GoToReplicationExecute(Sender: TObject);
     procedure ac_GoToDefaultpropertiesExecute(Sender: TObject);
-  private
+  protected
     // AppBar vars
     OldStyleEx: Cardinal;
     OldStyle: Cardinal;
@@ -402,6 +402,10 @@ type
     abd: APPBARDATA;
     WorkArea: TRect;
     // AppBar vars -- end;
+    // class search vars
+    IsInlineSearch:   boolean;
+    InlineSearch:     string;
+    // class search vars -- end
     function ThreadCreate: boolean;
     procedure ThreadTerminate(Sender: TObject);
     procedure SearchThreadTerminate(Sender: TObject);
@@ -449,7 +453,8 @@ type
     procedure AddBrowserHistory(uclass: TUClass; filename: string; line: integer; hint: string = '');
     procedure BrowseEntry(Sender: TObject);
   public
-    statustext : string; // current status text
+    statustext: string; // current status text
+    SearchConfig: TSearchConfig; //TODO: make interface to this
     procedure NextBatchCommand;
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
     procedure OpenSourceLine(filename: string; line, caret: integer; uclass: TUClass);
@@ -473,9 +478,9 @@ type
 
 var
   frm_UnCodeX:      Tfrm_UnCodeX;
+  InitActivateFix:  Boolean = true; // fix initial form activation
   DoInit:           boolean = true; // perform initialization on startup
   runningthread:    TThread = nil;
-  InitActivateFix:  Boolean = true; // fix initial form activation
   ConfigFile:       string; // current config file
   InitialStartup:   boolean; // is first run
   hh_Help:          THookHelpSystem; // help system
@@ -484,11 +489,6 @@ var
   // UScript data
   SelectedUClass:   TUClass = nil;
   SelectedUPackage: TUPackage = nil;
-  // class search vars
-  SearchConfig,
-  DefaultSC:        TClassSearch;
-  IsInlineSearch:   boolean;
-  InlineSearch:     string;
   OpenFind:         boolean = false; // only on startup
   OpenTags:         boolean = false; // only on startup
   OpenFTS:          boolean = false; // only on startup
@@ -503,39 +503,6 @@ var
   AppInstanceId:    integer = 0;
   LastBuildTime,
   LastAnalyseTime:  TDateTime;
-
-// config vars
-var
-  // general
-  MinimizeOnClose:        boolean = false;
-  ClassPropertiesWindow:  boolean = false;
-  PascalScriptDir:        string;
-  // startup
-  ExpandObject:           boolean;
-  AnalyseModified:        boolean;
-  LoadCustomOutputModules:boolean = true;
-  // HTML out
-  HTMLOutputDir,
-  TemplateDir,
-  HTMLTargetExt,
-  CPPApp,
-  HTMLdefaultTitle:       string;
-  TabsToSpaces:           integer;
-  GZCompress:             TTriBool;
-  // HTML Help out
-  HHCPath,
-  HTMLHelpFile,
-  HHTitle:                string;
-  // Start server
-  ServerCmd,
-  ClientCmd:              string;
-  ServerPrio: integer;
-  // Commandlines
-  CompilerCmd,
-  OpenResultCmd:          string;
-  NewClassTemplate:       string;
-  // class properties
-  DefaultInheritanceDepth:integer = 0;
 
 implementation
 
@@ -666,7 +633,7 @@ end;
 // Running thread terminated, clean up
 procedure Tfrm_UnCodeX.ThreadTerminate(Sender: TObject);
 begin
-  if (IsA(runningthread, TMSHTMLHelp)) then ac_OpenHTMLHelp.Enabled := FileExists(HTMLHelpFile);
+  if (IsA(runningthread, TMSHTMLHelp)) then ac_OpenHTMLHelp.Enabled := FileExists(config.HTMLHelp.OutputFile);
   runningthread := nil;
   {if (OutputModule <> 0) then begin
     FreeLibrary(OutputModule);
@@ -752,7 +719,7 @@ begin
       tv_Classes.Items.AlphaSort(true);
       tv_Classes.Tag := TV_ALWAYSEXPAND;
       tv_Packages.Tag := TV_ALWAYSEXPAND;
-      if (ExpandObject and (tv_Classes.Items.Count > 0)) then begin
+      if (config.Layout.ExpandObject and (tv_Classes.Items.Count > 0)) then begin
         node := tv_Classes.Items.GetFirstNode;
         while (CompareText(node.Text, 'object') <> 0) do begin
           node := node.getNextSibling;
@@ -1009,7 +976,7 @@ begin
     exit;
   end;
 
-  if (OpenResultCmd = '') then begin
+  if (config.Commands.OpenClass = '') then begin
     ExecuteProgram(filename);
     exit;
   end;
@@ -1018,7 +985,7 @@ begin
   try
     lst.Delimiter := ' ';
     lst.QuoteChar := '"';
-    lst.DelimitedText := OpenResultCmd;
+    lst.DelimitedText := config.Commands.OpenClass;
     exe := lst[0];
     lst.Delete(0);
     for i := 0 to lst.Count-1 do begin
@@ -1136,7 +1103,7 @@ begin
   end
   else if (Pos('ups:', cmd) = 1) then begin
     Delete(cmd, 1, 4);
-    if (ExtractFilePath(cmd) = '') then cmd := PascalScriptDir+cmd;
+    if (ExtractFilePath(cmd) = '') then cmd := config.Plugins.PascalScriptPath+cmd;
     ExecutePascalScript(cmd);
     NextBatchCommand;
   end
@@ -1349,7 +1316,7 @@ begin
     for i := mi_PluginDiv2.MenuIndex-1 downto mi_PluginDiv1.MenuIndex+1 do begin
       mi_Output.Delete(i);
     end;
-    if (GetFiles(PascalScriptDir+'*'+UPSEXT, faAnyFile, sl)) then begin
+    if (GetFiles(config.Plugins.PascalScriptPath+'*'+UPSEXT, faAnyFile, sl)) then begin
       for i := 0 to sl.Count-1 do begin
         mi := TMenuItem.Create(mi_Output);
         mi.Caption := ExtractBaseName(sl[i]);
@@ -1704,222 +1671,121 @@ begin
   result := true;
 end;
 
-{procedure Tfrm_UnCodeX.SourceSnoopOpen(uclass: TUClass; udecl: TUDeclaration; upackage: TUPackage = nil);
-var
-  ms: TMemoryStream;
-  fs: TFileStream;
-  filename: string;
-begin
-  if (uclass <> nil) then begin
-    filename := ResolveFilename(uclass, udecl);
-    if (not fileExists(filename)) then begin
-      Log('Could not open file '+filename);
-      exit;
-    end;
-    if (re_SourceSnoop.filename = filename) then exit;
-    re_SourceSnoop.uclass := uclass;
-    re_SourceSnoop.udecl := udecl;
-    re_SourceSnoop.filename := filename;
-    re_SourceSnoop.Hint := filename;
-    fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
-    ms := TMemoryStream.Create;
-    try
-      RTFHilightUScript(fs, ms, uclass);
-      re_SourceSnoop.Lines.Clear;
-      re_SourceSnoop.WordWrap := false;
-      re_SourceSnoop.ScrollBars := ssBoth;
-      ms.Position := 0;
-      re_SourceSnoop.Lines.LoadFromStream(ms);
-    finally
-      ms.Free;
-      fs.Free;
-    end;
-  end;
-end;}
-
 { Settings -- begin}
 
 procedure Tfrm_UnCodeX.SaveSettings;
 var
-  ini: TMemIniFile;
-  data: TStringList;
   i: integer;
 begin
-  ini := TMemIniFile.Create(ConfigFile);
-  data := TStringList.Create;
-  try
-    ini.WriteString('Config', 'HTMLOutputDir', HTMLOutputDir);
-    ini.WriteString('Config', 'TemplateDir', TemplateDir);
-    ini.WriteString('Config', 'HTMLTargetExt', HTMLTargetExt);
-    ini.WriteInteger('Config', 'GZCompress', ord(GZCompress));
-    ini.WriteInteger('Config', 'TabsToSpaces', TabsToSpaces);
-    ini.WriteString('Config', 'CPP', CPPApp);
-    ini.WriteString('Config', 'HTMLDefaultTitle', HTMLdefaultTitle);
-    ini.WriteString('Config', 'HHCPath', HHCPath);
-    ini.WriteString('Config', 'HTMLHelpFile', HTMLHelpFile);
-    ini.WriteString('Config', 'HHTitle', HHTitle);
-    ini.WriteString('Config', 'ServerCmd', ServerCmd);
-    ini.WriteInteger('Config', 'ServerPrio', ServerPrio);
-    ini.WriteString('Config', 'ClientCmd', ClientCmd);
-    ini.WriteString('Config', 'CompilerCmd', CompilerCmd);
-    ini.WriteString('Config', 'OpenResultCmd', OpenResultCmd);
-    ini.WriteString('Config', 'NewClassTemplate', NewClassTemplate);
-    ini.WriteString('Config', 'StateFile', ExtractFileName(config.StateFile));
-    ini.WriteBool('Config', 'AnalyseModified', AnalyseModified);
-    ini.WriteInteger('Config', 'DefaultInheritanceDepth', DefaultInheritanceDepth);
-    ini.WriteBool('Config', 'LoadOutputModules', LoadCustomOutputModules);
-    ini.WriteString('Config', 'PascalScriptDir', PascalScriptDir);
-    ini.WriteBool('Config', 'ClassPropertiesWindow', ClassPropertiesWindow);
-    ini.WriteInteger('Config', 'InlineSearchTimeout', tmr_InlineSearch.Interval div 1000);
-    ini.WriteString('Config', 'PackageDescriptionFile', config.Comments.Packages);
-    ini.WriteString('Config', 'ExternalCommentFile', config.Comments.Declarations);
+  config.Layout.LogWindow.Import(lb_Log);
+  config.Layout.TreeView.Import(tv_Classes);
 
-    ini.WriteString('Layout', 'Log.Font.Name', lb_Log.Font.Name);
-    ini.WriteInteger('Layout', 'Log.Font.Color', lb_Log.Font.Color);
-    ini.WriteInteger('Layout', 'Log.Font.Size', lb_Log.Font.Size);
-    ini.WriteInteger('Layout', 'Log.Color', lb_Log.Color);
-    ini.WriteString('Layout', 'Tree.Font.Name', tv_Classes.Font.Name);
-    ini.WriteInteger('Layout', 'Tree.Font.Color', tv_Classes.Font.Color);
-    ini.WriteInteger('Layout', 'Tree.Font.Size', tv_Classes.Font.Size);
-    ini.WriteInteger('Layout', 'Tree.Color', tv_Classes.Color);
-    ini.WriteBool('Layout', 'ExpandObject', ExpandObject);
-    ini.WriteBool('Layout', 'MinimizeOnClose', MinimizeOnClose);
+  config.SourcePreview.Color := re_SourceSnoop.Color;
+  config.SourcePreview.FontColor := unit_rtfhilight.textfont.Color;
+  config.SourcePreview.FontName := unit_rtfhilight.textfont.Name;
+  config.SourcePreview.FontSize := unit_rtfhilight.textfont.Size;
+  config.SourcePreview.TabSize := unit_rtfhilight.tabs;
+  config.SourcePreview.Keyword1.Color := unit_rtfhilight.fntKeyword1.Color;
+  config.SourcePreview.Keyword1.Style := unit_rtfhilight.fntKeyword1.Style;
+  config.SourcePreview.Keyword2.Color := unit_rtfhilight.fntKeyword2.Color;
+  config.SourcePreview.Keyword2.Style := unit_rtfhilight.fntKeyword2.Style;
+  config.SourcePreview.StringType.Color := unit_rtfhilight.fntString.Color;
+  config.SourcePreview.StringType.Style := unit_rtfhilight.fntString.Style;
+  config.SourcePreview.Number.Color := unit_rtfhilight.fntNumber.Color;
+  config.SourcePreview.Number.Style := unit_rtfhilight.fntNumber.Style;
+  config.SourcePreview.Macro.Color := unit_rtfhilight.fntMacro.Color;
+  config.SourcePreview.Macro.Style := unit_rtfhilight.fntMacro.Style;
+  config.SourcePreview.Comment.Color := unit_rtfhilight.fntComment.Color;
+  config.SourcePreview.Comment.Style := unit_rtfhilight.fntComment.Style;
+  config.SourcePreview.Name.Color := unit_rtfhilight.fntName.Color;
+  config.SourcePreview.Name.Style := unit_rtfhilight.fntName.Style;
+  config.SourcePreview.ClassLink.Color := unit_rtfhilight.fntClassLink.Color;
+  config.SourcePreview.ClassLink.Style := unit_rtfhilight.fntClassLink.Style;
 
-    ini.WriteInteger('Layout', 'Source.Color', re_SourceSnoop.Color);
-    ini.WriteInteger('Layout', 'Source.Keyword1.Color', unit_rtfhilight.fntKeyword1.Color);
-    ini.WriteInteger('Layout', 'Source.Keyword1.Style', FontStylesToInt(unit_rtfhilight.fntKeyword1.Style));
-    ini.WriteInteger('Layout', 'Source.Keyword2.Color', unit_rtfhilight.fntKeyword2.Color);
-    ini.WriteInteger('Layout', 'Source.Keyword2.Style', FontStylesToInt(unit_rtfhilight.fntKeyword2.Style));
-    ini.WriteInteger('Layout', 'Source.String.Color', unit_rtfhilight.fntString.Color);
-    ini.WriteInteger('Layout', 'Source.String.Style', FontStylesToInt(unit_rtfhilight.fntString.Style));
-    ini.WriteInteger('Layout', 'Source.Number.Color', unit_rtfhilight.fntNumber.Color);
-    ini.WriteInteger('Layout', 'Source.Number.Style', FontStylesToInt(unit_rtfhilight.fntNumber.Style));
-    ini.WriteInteger('Layout', 'Source.Macro.Color', unit_rtfhilight.fntMacro.Color);
-    ini.WriteInteger('Layout', 'Source.Macro.Style', FontStylesToInt(unit_rtfhilight.fntMacro.Style));
-    ini.WriteInteger('Layout', 'Source.Comment.Color', unit_rtfhilight.fntComment.Color);
-    ini.WriteInteger('Layout', 'Source.Comment.Style', FontStylesToInt(unit_rtfhilight.fntComment.Style));
-    ini.WriteInteger('Layout', 'Source.Name.Color', unit_rtfhilight.fntName.Color);
-    ini.WriteInteger('Layout', 'Source.Name.Style', FontStylesToInt(unit_rtfhilight.fntName.Style));
-    ini.WriteInteger('Layout', 'Source.ClassLink.Color', unit_rtfhilight.fntClassLink.Color);
-    ini.WriteInteger('Layout', 'Source.ClassLink.Style', FontStylesToInt(unit_rtfhilight.fntClassLink.Style));
-    ini.WriteString('Layout', 'Source.Font.Name', unit_rtfhilight.textfont.Name);
-    ini.WriteInteger('Layout', 'Source.Font.Size', unit_rtfhilight.textfont.Size);
-    ini.WriteInteger('Layout', 'Source.Tabs', unit_rtfhilight.tabs);
-
-    for i := 0 to al_Main.ActionCount-1 do begin
-      ini.WriteString('HotKeys', TAction(al_Main.Actions[i]).Caption, ShortCutToText(TAction(al_Main.Actions[i]).ShortCut));
-    end;
-
-    ini.EraseSection('SourcePaths');
-    ini.EraseSection('PackagePriority');
-    ini.EraseSection('IgnorePackages');
-    ini.GetStrings(data);
-
-    data.Add('[SourcePaths]');
-    for i := 0 to config.SourcePaths.Count-1 do data.Add('Path='+config.SourcePaths[i]);
-
-    data.Add('[PackagePriority]');
-    for i := 0 to config.PackagesPriority.Count-1 do data.Add('Packages='+config.PackagesPriority[i]);
-    for i := 0 to config.PackagesPriority.Count-1 do begin
-      if (config.PackagesPriority.Objects[i] <> nil) then
-        data.Add('Tag='+config.PackagesPriority[i]);
-    end;
-    data.Add('[IgnorePackages]');
-    for i := 0 to config.IgnorePackages.Count-1 do data.Add('Package='+config.IgnorePackages[i]);
-
-    ini.SetStrings(data);
-    ini.UpdateFile;
-  finally
-    Data.Free;
-    ini.Free;
+  config.HotKeys.Clear;
+  for i := 0 to al_Main.ActionCount-1 do begin
+    config.HotKeys.Values[TAction(al_Main.Actions[i]).Caption] := ShortCutToText(TAction(al_Main.Actions[i]).ShortCut);
   end;
+
+  config.SaveToIni();
 end;
 
 procedure Tfrm_UnCodeX.SaveLayoutSettings;
-var
-  ini: TMemIniFile;
-  dockData: TMemoryStream;
 begin
-  ini := TMemIniFile.Create(ConfigFile);
-  dockData := TMemoryStream.Create;
-  try
-    { save dock hosts }
+  { save dock hosts }
 
-    ini.WriteString('DockHosts', 'tv_Classes', tv_Classes.Parent.Name);
-    ini.WriteString('DockHosts', 'tv_Packages', tv_Packages.Parent.Name);
-    ini.WriteString('DockHosts', 'lb_Log', lb_Log.Parent.Name);
-    ini.WriteString('DockHosts', 're_SourceSnoop', re_SourceSnoop.Parent.Name);
-    ini.WriteString('DockHosts', 'fr_Props', fr_Props.Parent.Name);
+  config.DockState.host.Classes := tv_Classes.Parent.Name;
+  config.DockState.host.Packages := tv_Packages.Parent.Name;
+  config.DockState.host.Log := lb_Log.Parent.Name;
+  config.DockState.host.SourcePreview := re_SourceSnoop.Parent.Name;
+  config.DockState.host.PropertyInspector := fr_Props.Parent.Name;
 
-    { save dock maneger settings }
-    dckTop.DockManager.SaveToStream(dockData);
-    dockData.Position := 0;
-    ini.WriteBinaryStream('dckTop.DockManager', 'data', dockData);
-    ini.WriteInteger('dckTop.DockManager', 'height', dckTop.Height);
-    dockData.Clear;
-    dckBottom.DockManager.SaveToStream(dockData);
-    dockData.Position := 0;
-    ini.WriteBinaryStream('dckBottom.DockManager', 'data', dockData);
-    ini.WriteInteger('dckBottom.DockManager', 'height', dckBottom.Height);
-    dockData.Clear;
-    dckLeft.DockManager.SaveToStream(dockData);
-    dockData.Position := 0;
-    ini.WriteBinaryStream('dckLeft.DockManager', 'data', dockData);
-    ini.WriteInteger('dckLeft.DockManager', 'width', dckLeft.Width);
-    dockData.Clear;
-    dckRight.DockManager.SaveToStream(dockData);
-    dockData.Position := 0;
-    ini.WriteBinaryStream('dckRight.DockManager', 'data', dockData);
-    ini.WriteInteger('dckRight.DockManager', 'width', dckRight.Width);
-    dockData.Clear;
-    pnlCenter.DockManager.SaveToStream(dockData);
-    dockData.Position := 0;
-    ini.WriteBinaryStream('pnlCenter.DockManager', 'data', dockData);
+  { save dock maneger settings }
+  config.DockState.data.Top.Clear;
+  dckTop.DockManager.SaveToStream(config.DockState.data.Top);
+  config.DockState.data.Top.Position := 0;
+  config.DockState.size.Top := dckTop.Height;
 
-    { general layout settings }
-    ini.WriteBool('Layout', 'MenuBar', mi_MenuBar.Checked);
-    ini.WriteBool('Layout', 'Toolbar', mi_Toolbar.Checked);
-    ini.WriteBool('Layout', 'PackageTree', mi_PackageTree.Checked);
-    ini.WriteBool('Layout', 'Log', mi_Log.Checked);
-    ini.WriteBool('Layout', 'SourceSnoop', mi_SourceSnoop.Checked);
-    ini.WriteBool('Layout', 'PropertyInspector', mi_PropInspector.Checked);
-    ini.WriteBool('Layout', 'StayOnTop', mi_StayOnTop.Checked);
-    ini.WriteBool('Layout', 'SavePosition', mi_Saveposition.Checked);
-    ini.WriteBool('Layout', 'SaveSize', mi_Savesize.Checked);
-    if (mi_Saveposition.Checked) then begin
-      if (IsAppBar) then begin
-        ini.WriteInteger('Layout', 'Top', OldSize.Top);
-        ini.WriteInteger('Layout', 'Left', OldSize.Left);
-      end
-      else if (WindowState = wsNormal) then begin
-        ini.WriteInteger('Layout', 'Top', Top);
-        ini.WriteInteger('Layout', 'Left', Left);
-      end;
+  config.DockState.data.Bottom.Clear;
+  dckBottom.DockManager.SaveToStream(config.DockState.data.Bottom);
+  config.DockState.data.Bottom.Position := 0;
+  config.DockState.size.Bottom := dckBottom.Height;
+
+  config.DockState.data.Left.Clear;
+  dckLeft.DockManager.SaveToStream(config.DockState.data.Left);
+  config.DockState.data.Left.Position := 0;
+  config.DockState.size.Left := dckLeft.Width;
+
+  config.DockState.data.Right.Clear;
+  dckRight.DockManager.SaveToStream(config.DockState.data.Right);
+  config.DockState.data.Right.Position := 0;
+  config.DockState.size.Right := dckRight.Width;
+
+  config.DockState.data.Center.Clear;
+  pnlCenter.DockManager.SaveToStream(config.DockState.data.Center);
+  config.DockState.data.Center.Position := 0;
+
+  { general layout settings }
+  config.Layout.MenuBar := mi_MenuBar.Checked;
+  config.Layout.Toolbar := mi_Toolbar.Checked;
+  config.Layout.PackageTree := mi_PackageTree.Checked;
+  config.Layout.Log := mi_Log.Checked;
+  config.Layout.SourcePreview := mi_SourceSnoop.Checked;
+  config.Layout.PropertyInspector := mi_PropInspector.Checked;
+  config.Layout.StayOnTop := mi_StayOnTop.Checked;
+  config.Layout.SavePosition := mi_Saveposition.Checked;
+  config.Layout.SaveSize := mi_Savesize.Checked;
+
+  if (mi_Saveposition.Checked) then begin
+    if (IsAppBar) then begin
+      config.Layout.Top := OldSize.Top;
+      config.Layout.Left := OldSize.Left;
+    end
+    else if (WindowState = wsNormal) then begin
+      config.Layout.Top := Top;
+      config.Layout.Left := Left;
     end;
-    if (mi_Savesize.Checked) then begin
-      if (IsAppBar) then begin
-        ini.WriteInteger('Layout', 'Width', OldSize.Right);
-        ini.WriteInteger('Layout', 'Height', OldSize.Bottom);
-      end
-      else if (WindowState = wsMaximized) then begin
-        ini.WriteBool('Layout', 'IsMaximized', true);
-      end
-      else if (WindowState = wsNormal) then begin
-        ini.WriteBool('Layout', 'IsMaximized', false);
-        ini.WriteInteger('Layout', 'Width', Width);
-        ini.WriteInteger('Layout', 'Height', Height);
-      end;
-    end;
-    ini.WriteInteger('Layout', 'ABWidth', config.ApplicationBar.Width);
-    ini.WriteBool('Layout', 'AutoHide', mi_AutoHide.Checked);
-    ini.WriteBool('Layout', 'ABRight', mi_Right.Checked);
-    ini.WriteBool('Layout', 'ABLeft', mi_Left.Checked);
-    SaveSearchConfig(ini, 'search', DefaultSC);
-    ini.UpdateFile;
-  finally
-    ini.Free;
-    dockData.Free;
   end;
+  if (mi_Savesize.Checked) then begin
+    if (IsAppBar) then begin
+      config.Layout.Width := OldSize.Right;
+      config.Layout.Height := OldSize.Bottom;
+    end
+    else if (WindowState = wsMaximized) then begin
+      config.Layout.IsMaximized := true;
+    end
+    else if (WindowState = wsNormal) then begin
+      config.Layout.IsMaximized := false;
+      config.Layout.Width := Width;
+      config.Layout.Height := Height;
+    end;
+  end;
+  config.ApplicationBar.AutoHide := mi_AutoHide.Checked;
+  config.ApplicationBar.Location := abNone;
+  if (mi_Right.Checked) then config.ApplicationBar.Location := abRight
+  else if (mi_Left.Checked) then config.ApplicationBar.Location := abLeft;
+
+  config.SaveToIni();
 end;
 
 procedure Tfrm_UnCodeX.LoadSettings;
@@ -2137,8 +2003,6 @@ begin
   if (DEBUGBUILD) then Application.Title := Application.Title+' (debug)';
   InitialStartup := not FileExists(ConfigFile);
   { StringLists }
-  DefaultSC.ftshistory := TStringList.Create; //TODO: obsolete
-  DefaultSC.history := TStringList.Create; //TODO: obsolete
   OutputModules := TStringList.Create;
   { StringLists -- END }
 
@@ -2149,8 +2013,6 @@ begin
     LoadOutputModules;
     LoadPascalScripts;
   end;
-  config.PackageList := TUPackageList.Create(true); //TODO: obsolete
-  config.ClassList := TUClassList.Create(true); //TODO: obsolete
   UpdateSystemMenu;
   mi_MenuBar.OnClick(Sender); // has to be here or else it won't work
 end;
@@ -2250,12 +2112,12 @@ begin
 end;
 
 procedure Tfrm_UnCodeX.ac_CreateHTMLfilesExecute(Sender: TObject);
-var
-  htmlconfig: THTMLOutConfig;
+{var
+  htmlconfig: THTMLOutConfig;}
 begin
   if (ThreadCreate) then begin
     ClearLog;
-    htmlconfig.PackageList := config.PackageList;
+    {htmlconfig.PackageList := config.PackageList;
     htmlconfig.ClassList := config.ClassList;
     htmlconfig.outputdir := HTMLOutputDir;
     htmlconfig.TemplateDir := TemplateDir;
@@ -2264,8 +2126,8 @@ begin
     htmlconfig.TabsToSpaces := TabsToSpaces;
     htmlconfig.CPP := CPPApp;
     htmlconfig.DefaultTitle := HTMLdefaultTitle;
-    htmlconfig.GZCompress := GZCompress; //TODO: make configurable
-    runningthread := THTMLoutput.Create(htmlconfig, StatusReport);
+    htmlconfig.GZCompress := GZCompress; //TODO: make configurable}
+    runningthread := THTMLoutput.Create(config.HTMLOutput, StatusReport);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
   end;
@@ -2285,25 +2147,25 @@ begin
     end;
     lb_IgnorePackages.Items := config.IgnorePackages;
     { HTML output }
-    ed_HTMLOutputDir.Text := HTMLOutputDir;
-    ed_TemplateDir.Text := TemplateDir;
-    ed_HTMLTargetExt.Text := HTMLTargetExt;
-    ud_TabsToSpaces.Position := TabsToSpaces;
-    ed_CPPApp.Text := CPPApp;
-    ed_HTMLDefaultTitle.Text := HTMLdefaultTitle;
-    cb_GZCompress.ItemIndex := Ord(GZCompress)+1;
+    ed_HTMLOutputDir.Text := config.HTMLOutput.OutputDir;
+    ed_TemplateDir.Text := config.HTMLOutput.TemplateDir;
+    ed_HTMLTargetExt.Text := config.HTMLOutput.TargetExtention;
+    ud_TabsToSpaces.Position := config.HTMLOutput.TabsToSpaces;
+    ed_CPPApp.Text := config.HTMLOutput.CPP;
+    ed_HTMLDefaultTitle.Text := config.HTMLOutput.defaultTitle;
+    cb_GZCompress.ItemIndex := Ord(config.HTMLOutput.GZCompress)+1;
     { HTML Help }
-    ed_WorkshopPath.Text := HHCPath;
-    ed_HTMLHelpOutput.Text := HTMLHelpFile;
-    ed_HHTitle.Text := HHTitle;
+    ed_WorkshopPath.Text := config.HTMLHelp.Compiler;
+    ed_HTMLHelpOutput.Text := config.HTMLHelp.OutputFile;
+    ed_HHTitle.Text := config.HTMLHelp.Title;
     { Run server }
-    ed_ServerCommandline.Text := ServerCmd;
-    cb_ServerPriority.ItemIndex := ServerPrio;
-    ed_ClientCommandline.Text := ClientCmd;
+    ed_ServerCommandline.Text := config.Commands.Server;
+    cb_ServerPriority.ItemIndex := config.Commands.ServerPriority;
+    ed_ClientCommandline.Text := config.Commands.Client;
     { Commandlines }
-    ed_CompilerCommandline.Text := CompilerCmd;
-    ed_OpenResultCmd.Text := OpenResultCmd;
-    ed_NewClassTemplate.Text := NewClassTemplate;
+    ed_CompilerCommandline.Text := config.Commands.Compiler;
+    ed_OpenResultCmd.Text := config.Commands.OpenClass;
+    ed_NewClassTemplate.Text := config.NewClassTemplate;
     { Layout settings }
     lb_LogLayout.Color := lb_Log.Color;
     cb_LogColor.Selected := lb_Log.Color;
@@ -2313,59 +2175,59 @@ begin
     cb_BGColor.Selected := tv_Classes.Color;
     tv_TreeLayout.Font := tv_Classes.Font;
     cb_FontColor.Selected := tv_Classes.Font.Color;
-    cb_ExpandObject.Checked := ExpandObject;
+    cb_ExpandObject.Checked := config.Layout.ExpandObject;
     re_Preview.Color := re_SourceSnoop.Color;
     cb_Background.Selected := re_Preview.Color;
     { Program options }
     ed_StateFilename.Text := ExtractFilename(config.StateFile);
-    cb_MinimzeOnClose.Checked := MinimizeOnClose;
-    cb_ModifiedOnStartup.Checked := AnalyseModified;
-    ud_DefInheritDepth.Position := DefaultInheritanceDepth;
-    cb_LoadCustomModules.Checked := LoadCustomOutputModules;
-    ed_UPSDIR.Text := PascalScriptDir;
-    cb_CPAsWindow.Checked := ClassPropertiesWindow;
-    ud_InlineSearchTimeout.Position := tmr_InlineSearch.Interval div 1000;
+    cb_MinimzeOnClose.Checked := config.Layout.MinimizeOnClose;
+    cb_ModifiedOnStartup.Checked := config.Startup.AnalyseModified;
+    ud_DefInheritDepth.Position := config.PropertyInspector.InheritenceDepth;
+    cb_LoadCustomModules.Checked := config.Plugins.LoadDLLs;
+    ed_UPSDIR.Text := config.Plugins.PascalScriptPath;
+    cb_CPAsWindow.Checked := config.PropertyInspector.AlwaysWindow;
+    ud_InlineSearchTimeout.Position := config.Layout.InlineSearchTimeout;
     ed_gpdf.text := config.Comments.Packages;
     ed_ExtCmtFile.Text := config.Comments.Declarations;
     if (ShowModal = mrOk) then begin
       { HTML output }
-      HTMLOutputDir := ed_HTMLOutputDir.Text;
-      ac_OpenOutput.Enabled := HTMLOutputDir <> '';
-      TemplateDir := ed_TemplateDir.Text;
-      HTMLTargetExt := ed_HTMLTargetExt.Text;
-      TabsToSpaces := ud_TabsToSpaces.Position;
-      CPPApp := ed_CPPApp.Text;
-      HTMLdefaultTitle := ed_HTMLDefaultTitle.Text;
-      GZCompress := TTriBool(cb_GZCompress.ItemIndex-1);
+      config.HTMLOutput.OutputDir := ed_HTMLOutputDir.Text;
+      ac_OpenOutput.Enabled := DirectoryExists(config.HTMLOutput.OutputDir);
+      config.HTMLOutput.TemplateDir := ed_TemplateDir.Text;
+      config.HTMLOutput.TargetExtention := ed_HTMLTargetExt.Text;
+      config.HTMLOutput.TabsToSpaces := ud_TabsToSpaces.Position;
+      config.HTMLOutput.CPP := ed_CPPApp.Text;
+      config.HTMLOutput.defaultTitle := ed_HTMLDefaultTitle.Text;
+      config.HTMLOutput.GZCompress := TTriBool(cb_GZCompress.ItemIndex-1);
       { HTML Help }
-      HHCPath := ed_WorkshopPath.Text;
-      ac_HTMLHelp.Enabled := HHCPath <> '';
-      HTMLHelpFile := ed_HTMLHelpOutput.Text;
-      HHTitle := ed_HHTitle.Text;
-      ac_OpenHTMLHelp.Enabled := FileExists(HTMLHelpFile);
+      config.HTMLHelp.Compiler := ed_WorkshopPath.Text;
+      ac_HTMLHelp.Enabled := FileExists(config.HTMLHelp.Compiler);
+      config.HTMLHelp.OutputFile := ed_HTMLHelpOutput.Text;
+      config.HTMLHelp.Title := ed_HHTitle.Text;
+      ac_OpenHTMLHelp.Enabled := FileExists(config.HTMLHelp.OutputFile);
       { Run server }
-      ServerCmd := ed_ServerCommandline.Text;
-      ac_RunServer.Enabled := ServerCmd <> '';
-      ServerPrio := cb_ServerPriority.ItemIndex;
-      ClientCmd := ed_ClientCommandline.Text;
-      ac_JoinServer.Enabled := ClientCmd <> '';
+      config.Commands.Server := ed_ServerCommandline.Text;
+      ac_RunServer.Enabled := config.Commands.Server <> '';
+      config.Commands.ServerPriority := cb_ServerPriority.ItemIndex;
+      config.Commands.Client := ed_ClientCommandline.Text;
+      ac_JoinServer.Enabled := config.Commands.Client <> '';
       { Commandlines }
-      CompilerCmd := ed_CompilerCommandline.Text;
-      ac_CompileClass.Enabled := CompilerCmd <> '';
-      OpenResultCmd := ed_OpenResultCmd.Text;
-      ac_OpenClass.Enabled := OpenResultCmd <> '';
-      NewClassTemplate := ed_NewClassTemplate.Text;
-      mi_CreateSubClass.Enabled := FileExists(NewClassTemplate);
+      config.Commands.Compiler := ed_CompilerCommandline.Text;
+      ac_CompileClass.Enabled := config.Commands.Compiler <> '';
+      config.Commands.OpenClass := ed_OpenResultCmd.Text;
+      config.NewClassTemplate := ed_NewClassTemplate.Text;
+      ac_CreateSubClass.Enabled := FileExists(config.NewClassTemplate);
       { Program options }
       config.StateFile := ed_StateFilename.Text;
-      AnalyseModified := cb_ModifiedOnStartup.Checked;
+      config.Startup.AnalyseModified := cb_ModifiedOnStartup.Checked;
       if (ExtractFilePath(config.StateFile) = '') then config.StateFile := ExtractFilePath(ConfigFile)+config.StateFile;
-      ExpandObject := cb_ExpandObject.Checked;
-      MinimizeOnClose := cb_MinimzeOnClose.Checked;
-      DefaultInheritanceDepth := ud_DefInheritDepth.Position;
-      LoadCustomOutputModules := cb_LoadCustomModules.Checked;
-      PascalScriptDir := ed_UPSDIR.Text;
-      ClassPropertiesWindow := cb_CPAsWindow.Checked;
+      config.Layout.ExpandObject := cb_ExpandObject.Checked;
+      config.Layout.MinimizeOnClose := cb_MinimzeOnClose.Checked;
+      config.PropertyInspector.InheritenceDepth := ud_DefInheritDepth.Position;
+      config.Plugins.LoadDLLs := cb_LoadCustomModules.Checked;
+      config.Plugins.PascalScriptPath := ed_UPSDIR.Text;
+      config.PropertyInspector.AlwaysWindow := cb_CPAsWindow.Checked;
+      config.Layout.InlineSearchTimeout := ud_InlineSearchTimeout.Position;
       tmr_InlineSearch.Interval := ud_InlineSearchTimeout.Position * 1000;
       config.Comments.Packages := ed_gpdf.Text;
       config.Comments.Declarations := ed_ExtCmtFile.Text;
@@ -2486,14 +2348,14 @@ begin
   InlineSearch := '';
   IsInlineSearch := false;
   SearchConfig.isFTS := false;
-  SearchConfig.history := DefaultSC.history;
-  SearchConfig.ftshistory := DefaultSC.ftshistory;
+  SearchConfig.history := config.SearchConfig.history;
+  SearchConfig.ftshistory := config.SearchConfig.ftshistory;
   // defaults
-  SearchConfig.isFromTop := DefaultSC.isFromTop;
-  SearchConfig.isStrict := DefaultSC.isStrict;
-  SearchConfig.isRegex := DefaultSC.isRegex;
-  SearchConfig.isFindFirst := DefaultSC.isFindFirst;
-  SearchConfig.Scope := DefaultSC.Scope; 
+  SearchConfig.isFromTop := config.SearchConfig.isFromTop;
+  SearchConfig.isStrict := config.SearchConfig.isStrict;
+  SearchConfig.isRegex := config.SearchConfig.isRegex;
+  SearchConfig.isFindFirst := config.SearchConfig.isFindFirst;
+  SearchConfig.Scope := config.SearchConfig.Scope; 
   if (SearchForm(SearchConfig)) then begin
     if (SearchConfig.isFromTop and not SearchConfig.isFTS) then (ActiveControl as TTreeView).Selected := nil;
     ac_FindNext.Execute;
@@ -2507,8 +2369,6 @@ begin
   hh_Help.Free;
   HHCloseAll;
   UnregisterAppBar;
-  DefaultSC.ftshistory.Free;
-  DefaultSC.history.Free;
   OutputModules.Free;
   config.Free;
 end;
@@ -2539,7 +2399,7 @@ end;
 
 procedure Tfrm_UnCodeX.ac_OpenOutputExecute(Sender: TObject);
 begin
-  ShellExecute(0, nil, PChar(HTMLOutputDir+PATHDELIM+'index.html'), nil, nil, 0);
+  ShellExecute(0, nil, PChar(config.HTMLOutput.OutputDir+PATHDELIM+'index.html'), nil, nil, 0);
 end;
 
 procedure Tfrm_UnCodeX.ac_SaveStateExecute(Sender: TObject);
@@ -2556,12 +2416,14 @@ end;
 procedure Tfrm_UnCodeX.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
-  if (MinimizeOnClose) then begin
+  if (config.Layout.MinimizeOnClose) then begin
     Action := caNone;
     Application.Minimize;
   end
   else begin
     tmr_StatusText.Enabled := false;
+    sb_Status.Panels[0].Text := 'Saving state and settings ...';
+    Application.ProcessMessages;
     if (TreeUpdated) then SaveState;
     SaveLayoutSettings;
   end;
@@ -2576,15 +2438,15 @@ procedure Tfrm_UnCodeX.ac_HTMLHelpExecute(Sender: TObject);
 var
   tmp: string;
 begin
-  if (not FileExists(HHCPath+PATHDELIM+COMPILER)) then begin
+  if (not FileExists(config.HTMLHelp.Compiler)) then begin
     MessageDlg('You first have to define the path to the HTML Help Workshop in '+#13+#10+'the program settings.', mtError, [mbOK], 0);
     exit;
   end;
   if (ThreadCreate) then begin
     ClearLog;
-    if (HHTitle <> '') then tmp := HHTitle
-    else tmp := HHTitle;
-    runningthread := TMSHTMLHelp.Create(HHCPath, HTMLOutputDir, HTMLHelpFile, tmp, config.PackageList, config.ClassList, StatusReport);
+    if (config.HTMLHelp.Title <> '') then tmp := config.HTMLHelp.Title
+    else tmp := APPTITLE;
+    runningthread := TMSHTMLHelp.Create(config.HTMLHelp.Compiler, config.HTMLOutput.OutputDir, config.HTMLHelp.OutputFile, tmp, config.PackageList, config.ClassList, StatusReport);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
   end;
@@ -2628,11 +2490,11 @@ begin
   try
     lst.Delimiter := ' ';
     lst.QuoteChar := '"';
-    lst.DelimitedText := ServerCmd;
+    lst.DelimitedText := config.Commands.Server;
     if (lst.Count > 0) then begin
       exe := lst[0];
       lst.Delete(0);
-      ExecuteProgram(exe, lst, ServerPrio);
+      ExecuteProgram(exe, lst, config.Commands.ServerPriority);
     end;
   finally
     lst.Free;
@@ -2648,7 +2510,7 @@ begin
   try
     lst.Delimiter := ' ';
     lst.QuoteChar := '"';
-    lst.DelimitedText := ClientCmd;
+    lst.DelimitedText := config.Commands.Client;
     if (lst.Count > 0) then begin
       exe := lst[0];
       lst.Delete(0);
@@ -2665,7 +2527,7 @@ var
   exe: string;
   i: integer;
 begin
-  if (CompilerCmd = '') then exit;
+  if (config.Commands.Compiler = '') then exit;
   if (ActiveControl.ClassType = TTreeView) then begin
     with (ActiveControl as TTreeView) do begin
       if ((Selected <> nil) and (TObject(Selected.Data).ClassType = TUClass)) then begin
@@ -2673,7 +2535,7 @@ begin
         try
           lst.Delimiter := ' ';
           lst.QuoteChar := '"';
-          lst.DelimitedText := CompilerCmd;
+          lst.DelimitedText := config.Commands.Compiler;
           exe := lst[0];
           lst.Delete(0);
           for i := 0 to lst.Count-1 do begin
@@ -2760,14 +2622,14 @@ begin
   InlineSearch := '';
   IsInlineSearch := false;
   SearchConfig.isFTS := true;
-  SearchConfig.history := DefaultSC.history;
-  SearchConfig.ftshistory := DefaultSC.ftshistory;
+  SearchConfig.history := config.SearchConfig.history;
+  SearchConfig.ftshistory := config.SearchConfig.ftshistory;
   // defaults
-  SearchConfig.isFromTop := DefaultSC.isFromTop;
-  SearchConfig.isStrict := DefaultSC.isStrict;
-  SearchConfig.isRegex := DefaultSC.isRegex;
-  SearchConfig.isFindFirst := DefaultSC.isFindFirst;
-  SearchConfig.Scope := DefaultSC.Scope;
+  SearchConfig.isFromTop := config.SearchConfig.isFromTop;
+  SearchConfig.isStrict := config.SearchConfig.isStrict;
+  SearchConfig.isRegex := config.SearchConfig.isRegex;
+  SearchConfig.isFindFirst := config.SearchConfig.isFindFirst;
+  SearchConfig.Scope := config.SearchConfig.Scope;
   if (SearchForm(SearchConfig)) then begin
     if (SearchConfig.isFromTop and not SearchConfig.isFTS) then (ActiveControl as TTreeView).Selected := nil;
     ac_FindNext.Execute;
@@ -2818,7 +2680,7 @@ begin
       end
       else if (OpenFTS) then ac_FullTextSearch.Execute // TODO: fixed 'enter' bug
       else if (IsBatching) then NextBatchCommand
-      else if (AnalyseModified) then begin
+      else if (config.Startup.AnalyseModified) then begin
         if (runningthread = nil) then begin
           IsBatching := true;
           CmdStack.Clear;
@@ -2866,10 +2728,10 @@ begin
       if (Selected <> nil) then begin
         if (TObject(Selected.Data).ClassType <> TUClass) then exit;
         selclass := TUclass(Selected.Data);
-        with Tfrm_Tags.CreateWindow(nil, ClassPropertiesWindow) do begin
+        with Tfrm_Tags.CreateWindow(nil, config.PropertyInspector.AlwaysWindow) do begin
           RestoreHandle := Handle;
           fr_Main.uclass := selclass;
-          fr_Main.ud_InheritanceLevel.Position := DefaultInheritanceDepth;
+          fr_Main.ud_InheritanceLevel.Position := config.PropertyInspector.InheritenceDepth;
           if LoadClass then begin
             Show;
           end;
@@ -2899,7 +2761,7 @@ end;
 
 procedure Tfrm_UnCodeX.ac_CloseExecute(Sender: TObject);
 begin
-  MinimizeOnClose := false;
+  config.Layout.MinimizeOnClose := false;
   Close;
 end;
 
@@ -3443,8 +3305,8 @@ end;
 
 procedure Tfrm_UnCodeX.ac_OpenHTMLHelpExecute(Sender: TObject);
 begin
-  if (FileExists(HTMLHelpFile)) then begin
-    ShellExecute(0, nil, PChar(HTMLHelpFile), nil, nil, 0);
+  if (FileExists(config.HTMLHelp.OutputFile)) then begin
+    ShellExecute(0, nil, PChar(config.HTMLHelp.OutputFile), nil, nil, 0);
   end;
 end;
 

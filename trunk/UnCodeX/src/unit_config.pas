@@ -6,7 +6,7 @@
   Purpose:
     Contains the configuration of UnCodeX
 
-  $Id: unit_config.pas,v 1.5 2005-04-04 21:31:35 elmuerte Exp $
+  $Id: unit_config.pas,v 1.6 2005-04-05 07:58:07 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -98,6 +98,7 @@ type
     Color:                TColor;
   public
     procedure Assign(target: TControl);
+    procedure Import(source: TControl);
   end;
 
   TSourcePreviewFont = record
@@ -117,6 +118,9 @@ type
   public
     StateFile:            string;
     NewClassTemplate:     string;
+    Startup: record
+      AnalyseModified:    boolean;
+    end;
     Plugins: record
       LoadDLLs:           boolean;
       PascalScriptPath:   string;
@@ -196,7 +200,7 @@ type
       Compiler:           string;
       OpenClass:          string;
     end;
-    SearchConfig:         TClassSearch;
+    SearchConfig:         TSearchConfig;
   public
     constructor Create(filename: string);
     destructor Destroy; override;
@@ -508,6 +512,7 @@ begin
   DockState.data.Right := TMemoryStream.Create;
   HotKeys := TStringList.Create;
 
+  Startup.AnalyseModified := true;
   Plugins.LoadDLLs := true;
   Plugins.PascalScriptPath := ExtractFilePath(ParamStr(0))+UPSDIR+PathDelim;
   Layout.StayOnTop := false;
@@ -606,6 +611,9 @@ end;
 procedure TUCXGUIConfig.InternalLoadFromIni;
 begin
   inherited InternalLoadFromIni;
+  with Startup do begin
+    AnalyseModified := ini.ReadBool('GUI.Startup', 'AnalyseModified', AnalyseModified);
+  end;
   with Plugins do begin
     LoadDLLs := ini.ReadBool('GUI.Plugins', 'LoadDLLs', LoadDLLs);
     PascalScriptPath := ini.ReadString('GUI.Plugins', 'PascalScriptPath', PascalScriptPath);
@@ -720,6 +728,9 @@ end;
 procedure TUCXGUIConfig.InternalSaveToIni;
 begin
   inherited InternalSaveToIni;
+  with Startup do begin
+    ini.WriteBool('GUI.Startup', 'AnalyseModified', AnalyseModified);
+  end;
   with Layout do begin
     ini.WriteBool('GUI.Layout', 'Option.StayOnTop', StayOnTop);
     ini.WriteBool('GUI.Layout', 'Option.SavePosition', SavePosition);
@@ -846,6 +857,7 @@ var
   i: integer;
 begin
   inherited UpgradeConfig;
+  Startup.AnalyseModified := ini.ReadBool('Config', 'AnalyseModified', Startup.AnalyseModified);
   Layout.StayOnTop := ini.ReadBool('Layout', 'StayOnTop', Layout.StayOnTop);
   Layout.SavePosition := ini.ReadBool('Layout', 'SavePosition', Layout.SavePosition);
   Layout.SaveSize := ini.ReadBool('Layout', 'SaveSize', Layout.SaveSize);
@@ -944,6 +956,18 @@ begin
     TStoreControl(target).Font.Color := Font.Color;
     TStoreControl(target).Font.Style := Font.Style;
     TStoreControl(target).Color := Color;
+  except
+  end;
+end;
+
+procedure TComponentSettings.Import(source: TControl);
+begin
+  try
+    Font.Name := TStoreControl(source).Font.Name;
+    Font.Size := TStoreControl(source).Font.Size;
+    Font.Color := TStoreControl(source).Font.Color;
+    Font.Style := TStoreControl(source).Font.Style;
+    Color := TStoreControl(source).Color;
   except
   end;
 end;

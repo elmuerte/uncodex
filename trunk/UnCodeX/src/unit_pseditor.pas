@@ -6,7 +6,7 @@
   Purpose:
     PascalScript editor window
 
-  $Id: unit_pseditor.pas,v 1.13 2004-12-30 09:40:21 elmuerte Exp $
+  $Id: unit_pseditor.pas,v 1.14 2005-04-05 07:58:08 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -214,11 +214,11 @@ var
 begin
   lb_Output.Items.Add(frm_UnCodeX.ps_Main.About);
   ScriptSaved := true;
-  sd_Save.InitialDir := PascalScriptDir;
-  od_Open.InitialDir := PascalScriptDir;
+  sd_Save.InitialDir := config.Plugins.PascalScriptPath;
+  od_Open.InitialDir := config.Plugins.PascalScriptPath;
   sl := TStringList.Create;
   try
-    if (GetFiles(PascalScriptDir+'*'+UPSEXT, faAnyfile, sl)) then begin
+    if (GetFiles(config.Plugins.PascalScriptPath+'*'+UPSEXT, faAnyfile, sl)) then begin
       sl.Sort;
       for i := 0 to sl.count-1 do begin
         mi := TMenuItem.Create(pm_Macros);
