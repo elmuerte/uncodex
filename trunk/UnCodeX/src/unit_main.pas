@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.142 2004-12-24 11:05:08 elmuerte Exp $
+  $Id: unit_main.pas,v 1.143 2004-12-28 15:55:57 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -589,12 +589,12 @@ begin
     else entry := TLogEntry(obj);
 
     if (entry.filename = '') then begin
-      if (IsA(obj, TUClass)) then begin
-        entry.filename := TUClass(obj).filename;
-      end;
-      if (IsA(obj, TUDeclaration)) then begin
-        entry.filename := TUDeclaration(obj).declaration;
-        entry.line := TUDeclaration(obj).srcline;
+      if (IsA(entry.obj, TUClass)) then begin
+        entry.filename := TUClass(entry.obj).FullFileName;
+      end
+      else if (IsA(entry.obj, TUDeclaration)) then begin
+        entry.filename := TUDeclaration(entry.obj).declaration;
+        entry.line := TUDeclaration(entry.obj).srcline;
       end;
     end;
 

@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.132 2004-12-24 11:05:03 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.133 2004-12-28 15:55:57 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -54,7 +54,7 @@ type
   TExternaComment = function(ref: string): string;
 
   // Used for -reuse
-  TRedirectStruct = packed record
+  TRedirectStruct = record
     Find: string[64];
     OpenFind: boolean;
     OpenTags: boolean;

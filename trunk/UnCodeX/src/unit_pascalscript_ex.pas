@@ -7,7 +7,7 @@
     Defines additional PascalScript objects and functions. (Generation is
     automated)
 
-  $Id: unit_pascalscript_ex.pas,v 1.8 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_pascalscript_ex.pas,v 1.9 2004-12-28 15:55:58 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -67,7 +67,7 @@ implementation
 uses
    Contnrs
   ,IniFiles
-  ,IFSI_unit_uclasses
+  ,IFSI_unit_uclasses, unit_definitions
   ;
 
 procedure Register;
@@ -184,12 +184,26 @@ begin
   end;
 end;
 
+procedure SIRegister_TLogEntry(CL: TPSPascalCompiler);
+begin
+  //with RegClassS(CL,'TObject', 'TLogEntry') do
+  with CL.AddClassN(CL.FindClass('TObject'),'TLogEntry') do
+  begin
+    RegisterProperty('mt', 'TLogType', iptrw);
+    RegisterProperty('obj', 'TObject', iptrw);
+    RegisterProperty('filename', 'string', iptrw);
+    RegisterProperty('line', 'integer', iptrw);
+    RegisterProperty('pos', 'integer', iptrw);
+  end;
+end;
+
 (*----------------------------------------------------------------------------*)
 procedure SIRegister_miscclasses(CL: TPSPascalCompiler);
 begin
   SIRegister_TList(CL);
   SIRegister_TObjectList(CL);
   SIRegister_TMemIniFile(CL);
+  SIRegister_TLogEntry(CL);
 end;
 
 (* === run-time registration functions === *)
@@ -344,11 +358,65 @@ begin
 end;
 
 (*----------------------------------------------------------------------------*)
+procedure TLogEntrypos_W(Self: TLogEntry; const T: integer);
+Begin Self.pos := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TLogEntrypos_R(Self: TLogEntry; var T: integer);
+Begin T := Self.pos; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TLogEntryline_W(Self: TLogEntry; const T: integer);
+Begin Self.line := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TLogEntryline_R(Self: TLogEntry; var T: integer);
+Begin T := Self.line; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TLogEntryfilename_W(Self: TLogEntry; const T: string);
+Begin Self.filename := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TLogEntryfilename_R(Self: TLogEntry; var T: string);
+Begin T := Self.filename; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TLogEntryobj_W(Self: TLogEntry; const T: TObject);
+Begin Self.obj := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TLogEntryobj_R(Self: TLogEntry; var T: TObject);
+Begin T := Self.obj; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TLogEntrymt_W(Self: TLogEntry; const T: TLogType);
+Begin Self.mt := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TLogEntrymt_R(Self: TLogEntry; var T: TLogType);
+Begin T := Self.mt; end;
+
+
+procedure RIRegister_TLogEntry(CL: TPSRuntimeClassImporter);
+begin
+  with CL.Add(TLogEntry) do
+  begin
+    RegisterPropertyHelper(@TLogEntrymt_R,@TLogEntrymt_W,'mt');
+    RegisterPropertyHelper(@TLogEntryobj_R,@TLogEntryobj_W,'obj');
+    RegisterPropertyHelper(@TLogEntryfilename_R,@TLogEntryfilename_W,'filename');
+    RegisterPropertyHelper(@TLogEntryline_R,@TLogEntryline_W,'line');
+    RegisterPropertyHelper(@TLogEntrypos_R,@TLogEntrypos_W,'pos');
+  end;
+end;
+
+(*----------------------------------------------------------------------------*)
 procedure RIRegister_miscclasses(CL: TPSRuntimeClassImporter);
 begin
   RIRegister_TList(CL);
   RIRegister_TObjectList(CL);
   RIRegister_TMemIniFile(CL);
+  RIRegister_TLogEntry(CL);
 end;
 
  
