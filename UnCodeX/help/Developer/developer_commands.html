@@ -23,6 +23,7 @@ TRedirectStruct = packed record
   OpenTags:  boolean;
   Batch:     string[255];
   NewHandle: integer;
+	OpenFTS:   boolean;
 end;
 </pre>
 This structure needs to be send to the main UnCodeX window using WM_COPYDATA.
@@ -47,6 +48,10 @@ This structure needs to be send to the main UnCodeX window using WM_COPYDATA.
 <tr>
 	<td><pre>NewHandle</pre></td>
 	<td>New window handle to send the status messages to</td>
+</tr>
+<tr>
+	<td><pre>OpenFTS</pre></td>
+	<td>Open full text search dialog</td>
 </tr>
 </table>
 

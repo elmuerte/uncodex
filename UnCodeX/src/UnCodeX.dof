@@ -55,7 +55,7 @@ DebugSourceDirs=
 UsePackages=0
 
 [Parameters]
-RunParams=-find object
+RunParams=
 HostApplication=
 Launcher=
 UseLauncher=0
@@ -67,7 +67,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=0
 Release=1
-Build=107
+Build=108
 Debug=0
 PreRelease=0
 Special=0
@@ -79,7 +79,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Michiel 'El Muerte' Hendriks
 FileDescription=
-FileVersion=1.0.1.107
+FileVersion=1.0.1.108
 InternalName=UnCodeX
 LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
 LegalTrademarks=
@@ -91,3 +91,20 @@ Comments=http://wiki.beyondunreal.com/wiki/UnCodeX
 [Excluded Packages]
 e:\program files\borland\delphi6\Projects\Bpl\dclrx6.bpl=RX Library Controls and Tools
 e:\program files\borland\delphi6\Bin\dclite60.bpl=Borland Integrated Translation Environment
+
+[HistoryLists\hlUnitAliases]
+Count=1
+Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
+
+[HistoryLists\hlUnitOutputDirectory]
+Count=6
+Item0=E:\Program Files\Borland\Projects\UnCodeX\Dcu\ucxcpp
+Item1=E:\Program Files\Borland\Projects\UnCodeX\DCU
+Item2=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_graphviz
+Item3=E:\Program Files\Borland\Projects\UnCodeX\Dcu\ucxc
+Item4=E:\Program Files\Borland\Projects\UnCodeX\DCU\out_wikifier
+Item5=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_sample
+
+[HistoryLists\hlOutputDirectorry]
+Count=1
+Item0=E:\Program Files\Borland\Projects\UnCodeX\Bin

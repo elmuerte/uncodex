@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   General definitions
- $Id: unit_definitions.pas,v 1.59 2003-06-18 10:08:23 elmuerte Exp $
+ $Id: unit_definitions.pas,v 1.60 2003-06-22 08:58:45 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_definitions;
@@ -24,6 +24,7 @@ type
     OpenTags: boolean;
     Batch: string[255];
     NewHandle: integer;
+    OpenFTS: boolean;
   end;
 
   // repeat a string
@@ -31,7 +32,7 @@ type
 
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '107';
+  APPVERSION = '108';
 
   PATHDELIM = '\';
   WILDCARD = '*.*';
@@ -63,6 +64,7 @@ const
               #9'ext:<name>'#9#9'call an custom output module'+#13+#10+
               #9'--'#9#9'end of batch commands'+#13+#10+
               '-find'#9#9#9'find a class'+#13+#10+
+              '-fts'#9#9#9'show full text search dialog'+#13+#10+
               '-help'#9#9#9'display this message'+#13+#10+
               '-hide'#9#9#9'hides UnCodeX'+#13+#10+
               '-handle'#9#9#9'Window handle'+#13+#10+

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
- $Id: UnCodeX.dpr,v 1.23 2003-06-10 12:00:18 elmuerte Exp $
+ $Id: UnCodeX.dpr,v 1.24 2003-06-22 08:58:45 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 program UnCodeX;
@@ -42,7 +42,8 @@ uses
   unit_richeditex in 'unit_richeditex.pas',
   unit_utils in 'unit_utils.pas',
   unit_searchform in 'unit_searchform.pas' {frm_SearchForm},
-  unit_clpipe in 'unit_clpipe.pas';
+  unit_clpipe in 'unit_clpipe.pas',
+  DdeManEx in 'DdeManEx.pas';
 
 {$R *.res}
 
@@ -104,7 +105,6 @@ begin
     end
     else if (LowerCase(ParamStr(j)) = '-batch') then begin
       IsBatching := true;
-      CmdStack := TStringList.Create;
       for i := j+1 to ParamCount do begin
         Inc(j);
         if (ParamStr(i) = '--') then break;
@@ -128,6 +128,10 @@ begin
     end
     else if (LowerCase(ParamStr(j)) = '-reuse') then begin
       reuse := true;
+    end
+    else if (LowerCase(ParamStr(j)) = '-fts') then begin
+      OpenFTS := true;
+      RedirectData.OpenFTS := true;
     end
     else if (LowerCase(ParamStr(j)) = '-find') or (LowerCase(ParamStr(j)) = '-open')
       or (LowerCase(ParamStr(j)) = '-tags') then begin
@@ -154,12 +158,9 @@ begin
 end;
 
 begin
+  CmdStack := TStringList.Create;
   if (ParamCount() > 0) then ProcessCommandline;
-  if (HasPrevInst) then begin
-    if (CmdStack <> nil) then CmdStack.Free;
-    exit;
-  end
-  else begin
+  if (not HasPrevInst) then begin
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
@@ -167,4 +168,5 @@ begin
   if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end;
+  CmdStack.Free;
 end.
