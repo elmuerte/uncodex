@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.65 2004-12-18 23:52:00 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.66 2004-12-24 18:36:19 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -2509,6 +2509,7 @@ begin
   end
   else if (CompareText(replacement, 'glossary_items') = 0) then begin
     replacement := '';
+    lastname := '';
     gl := TGlossaryInfo(data).glossay;
     i := 0;
     while ((i < gl.Count) and (UpperCase(gl[i][1]) <> TGlossaryInfo(data).item)) do Inc(i);
