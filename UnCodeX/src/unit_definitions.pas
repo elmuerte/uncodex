@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   General definitions
- $Id: unit_definitions.pas,v 1.73 2003-12-16 11:37:58 elmuerte Exp $
+ $Id: unit_definitions.pas,v 1.74 2003-12-20 12:22:36 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -62,7 +62,12 @@ const
   APPPLATFORM = 'GNU\Linux';
   {$ENDIF}
 
+  {$IFDEF MSWINDOWS}
   WILDCARD = '*.*';
+  {$ENDIF}
+  {$IFDEF LINUX}
+  WILDCARD = '*';
+  {$ENDIF}
   SOURCECARD = '*.uc';
   CLASSDIR = 'Classes';
   TEMPLATEPATH = 'Templates';
@@ -172,7 +177,7 @@ begin
     dirname := ExtractFilePath(dirname);
     result := iFindDir(dirname, output); // find the parent dir
     if (result) then begin
-      output := iFindFile(basename, output); // find the file
+      output := iFindFile(basename); // find the file
       if (output <> '') then output := output+PATHDELIM;
       result := (output <> '');
     end;
