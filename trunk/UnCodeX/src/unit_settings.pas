@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Buttons {$IFDEF MSWINDOWS},FileCtrl{$ENDIF}, ComCtrls,
-  Menus, ExtCtrls, IniFiles;
+  Menus, ExtCtrls, IniFiles, CheckLst;
 
 type
   
@@ -26,7 +26,6 @@ type
     btn_SUp: TBitBtn;
     btn_SDown: TBitBtn;
     gb_PackagePriority: TGroupBox;
-    lb_PackagePriority: TListBox;
     btn_PUp: TBitBtn;
     btn_PDown: TBitBtn;
     btn_AddPackage: TBitBtn;
@@ -117,6 +116,7 @@ type
     Edit2: TEdit;
     CheckBox2: TCheckBox;
     CheckBox3: TCheckBox;
+    clb_PackagePriority: TCheckListBox;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -175,20 +175,20 @@ procedure Tfrm_Settings.btn_PUpClick(Sender: TObject);
 var
   i: integer;
 begin
-  if (lb_PackagePriority.ItemIndex < 1) then exit;
-  i := lb_PackagePriority.ItemIndex;
-  lb_PackagePriority.Items.Move(i, i-1);
-  lb_PackagePriority.Selected[i-1] := true;
+  if (clb_PackagePriority.ItemIndex < 1) then exit;
+  i := clb_PackagePriority.ItemIndex;
+  clb_PackagePriority.Items.Move(i, i-1);
+  clb_PackagePriority.Selected[i-1] := true;
 end;
 
 procedure Tfrm_Settings.btn_PDownClick(Sender: TObject);
 var
   i: integer;
 begin
-  if (lb_PackagePriority.ItemIndex = lb_PackagePriority.Items.Count-1) then exit;
-  i := lb_PackagePriority.ItemIndex;
-  lb_PackagePriority.Items.Move(i, i+1);
-  lb_PackagePriority.Selected[i+1] := true;
+  if (clb_PackagePriority.ItemIndex = clb_PackagePriority.Items.Count-1) then exit;
+  i := clb_PackagePriority.ItemIndex;
+  clb_PackagePriority.Items.Move(i, i+1);
+  clb_PackagePriority.Selected[i+1] := true;
 end;
 
 procedure Tfrm_Settings.btn_SUpClick(Sender: TObject);
@@ -266,8 +266,8 @@ end;
 
 procedure Tfrm_Settings.btn_DelPackageClick(Sender: TObject);
 begin
-  if (lb_PackagePriority.ItemIndex = -1) then exit;
-  lb_PackagePriority.Items.Delete(lb_PackagePriority.ItemIndex);
+  if (clb_PackagePriority.ItemIndex = -1) then exit;
+  clb_PackagePriority.Items.Delete(clb_PackagePriority.ItemIndex);
 end;
 
 procedure Tfrm_Settings.btn_AddPackageClick(Sender: TObject);
@@ -275,7 +275,7 @@ var
   tmp: string;
 begin
   if (InputQuery('Add package', 'Enter the package name', tmp)) then begin
-    lb_PackagePriority.Items.Add(LowerCase(tmp));
+    clb_PackagePriority.Items.Add(LowerCase(tmp));
   end;
 end;
 
@@ -420,10 +420,10 @@ var
   i, j: integer;
   tmp: string;
 begin
-  if (lb_PackagePriority.Items.Count > 0) then begin
+  if (clb_PackagePriority.Items.Count > 0) then begin
     if MessageDlg('This will clear the current priority list.'+#13+#10+
       'Are you sure you want to continue ?', mtWarning, [mbYes,mbNo], 0) = mrNo then exit;
-    lb_PackagePriority.Items.Clear;
+    clb_PackagePriority.Items.Clear;
   end;
   if (od_BrowseIni.Execute) then begin
     ini := TMemIniFile.Create(od_BrowseIni.FileName);
@@ -435,7 +435,7 @@ begin
         j := Pos('=', tmp);
         if (LowerCase(Copy(tmp, 1, j-1)) = 'editpackages') then begin
           Delete(tmp, 1, j);
-          lb_PackagePriority.Items.Add(tmp);
+          clb_PackagePriority.Items.Add(tmp);
         end;
       end;
     finally

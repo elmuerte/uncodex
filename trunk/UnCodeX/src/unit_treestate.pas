@@ -164,6 +164,7 @@ begin
         uclass.package := GetPackage(GetUnit(CurrStr, 1));
         uclass.parentname := GetUnit(CurrStr, 2);
         uclass.filename := GetUnit(CurrStr, 3);
+        uclass.tagged := uclass.package.tagged;
         if ANode = nil then // root
           ANode := FClassTree.Items.AddChildObject(nil, uclass.name, uclass)
         else if ANode.Level = ALevel then begin // same level
@@ -185,15 +186,22 @@ begin
         end
         else TreeViewErrorFmt(sInvalidLevelEx, [ALevel, CurrStr]);
         uclass.treenode := ANode;
-        uclass.treenode.ImageIndex := 1;
-        uclass.treenode.StateIndex := 1;
-        uclass.treenode.SelectedIndex := 1;
+        if (uclass.tagged) then begin
+          uclass.treenode.ImageIndex := ICON_CLASS_TAGGED;
+          uclass.treenode.StateIndex := ICON_CLASS_TAGGED;
+          uclass.treenode.SelectedIndex := ICON_CLASS_TAGGED;
+        end
+        else begin
+          uclass.treenode.ImageIndex := ICON_CLASS;
+          uclass.treenode.StateIndex := ICON_CLASS;
+          uclass.treenode.SelectedIndex := ICON_CLASS;
+        end;
         FClassList.Add(uclass);
         uclass.package.classes.Add(uclass);
         with FPackageTree.Items.AddChildObject(uclass.package.treenode, uclass.name, uclass) do begin
-          ImageIndex := 1;
-          StateIndex := 1;
-          SelectedIndex := 1;
+          ImageIndex := uclass.treenode.ImageIndex;
+          StateIndex := uclass.treenode.StateIndex;
+          SelectedIndex := uclass.treenode.SelectedIndex;
         end;
         puclass := uclass;
         Inc(i);
@@ -229,7 +237,7 @@ begin
       NodeStr := NodeStr + ANode.Text + UnitSeperator +
         TUClass(ANode.Data).package.name + UnitSeperator +
         TUClass(ANode.Data).parentname + UnitSeperator +
-        TUClass(ANode.Data).filename + EndOfLine;
+        TUClass(ANode.Data).filename + UnitSeperator + EndOfLine;
       Stream.Write(Pointer(NodeStr)^, Length(NodeStr));
       ANode := ANode.GetNext;
     end;
@@ -279,7 +287,8 @@ begin
   for i := 0 to FPackageList.Count-1 do begin
     NodeStr := FPackageList[i].name + UnitSeperator +
       IntToStr(FPackageList[i].priority) + UnitSeperator +
-      FPackageList[i].path + EndOfLine;
+      FPackageList[i].path + UnitSeperator +
+      IntToStr(Ord(FPackageList[i].tagged)) + UnitSeperator + EndOfLine;
     Stream.Write(Pointer(NodeStr)^, Length(NodeStr));
   end;
   NodeStr := EndOfText + EndOfLine;
@@ -306,9 +315,18 @@ begin
         package.name := GetUnit(List[i], 0);
         package.priority := StrToIntDef(GetUnit(List[i], 1), 255);
         package.path := GetUnit(List[i], 2);
+        package.tagged := GetUnit(List[i], 3) = '1';
         package.treenode := FPackageTree.Items.AddObject(nil, package.name, package);
-        package.treenode.ImageIndex := 0;
-        package.treenode.StateIndex := 0;
+        if (package.tagged) then begin
+          package.treenode.ImageIndex := ICON_PACKAGE_TAGGED;
+          package.treenode.StateIndex := ICON_PACKAGE_TAGGED;
+          package.treenode.SelectedIndex := ICON_PACKAGE_TAGGED;
+        end
+        else begin
+          package.treenode.ImageIndex := ICON_PACKAGE;
+          package.treenode.StateIndex := ICON_PACKAGE;
+          package.treenode.SelectedIndex := ICON_PACKAGE;
+        end;
         FPackageList.Add(package);
         Inc(i);
       end;
