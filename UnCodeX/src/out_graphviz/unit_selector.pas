@@ -8,7 +8,7 @@ uses
   ComCtrls, ExtCtrls, Hashes;
 
 const
-  DLLVERSION = '010 Beta';
+  DLLVERSION = '011 Beta';
 
 type
   Tfrm_GraphViz = class(TForm)
@@ -29,6 +29,8 @@ type
     TabSheet1: TTabSheet;
     mm_Settings: TMemo;
     cl_Color: TColorBox;
+    cb_OnlyPackages: TCheckBox;
+    btn_SelectAll: TBitBtn;
     procedure FormCreate(Sender: TObject);
     procedure btn_CreateClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -41,6 +43,7 @@ type
     procedure btn_ColorizeClick(Sender: TObject);
     procedure btn_DeselectClick(Sender: TObject);
     procedure cl_ColorChange(Sender: TObject);
+    procedure btn_SelectAllClick(Sender: TObject);
   private
     plist: TGraphUPAckageList;
     olist: TOrphanList;
@@ -66,7 +69,7 @@ begin
   {$IFDEF __USENAMES__}
   result := input;
   {$ELSE}
-  result := IntToHex(ColorToRGB(StrToIntDef(input, 0)), 6);
+  result := IntToHex(StrToIntDef(input, 0), 6);
   result := '#'+Copy(result, 5, 2)+Copy(result, 3, 2)+Copy(result, 1, 2);
   {$ENDIF}
 end;
@@ -144,7 +147,8 @@ begin
   deplist.SortOnPackage;
   olist.SortOnPackage;
   GInfo.AStatusReport('Filtering dependencies');
-  deplist.FilterDuplicates;
+  if (cb_OnlyPackages.Checked) then deplist.FilterDuplicatePackages
+    else deplist.FilterDuplicates;
   olist.FilterPackages(plist);
 end;
 
@@ -164,34 +168,53 @@ begin
       sl.Add('  '+trim(mm_Settings.Lines[i]));
     end;
 
-    for i := 0 to plist.Count-1 do begin
-      sl.Add('  subgraph cluster_'+plist[i].name+' {');
-      sl.Add('    label="'+plist[i].name+'";');
-      sl.Add('    color="'+ColorToDot(plist.colors[i])+'";');
-      sl.Add('    node [color="'+ColorToDot(plist.colors[i])+'"];');
-      for j := 0 to plist[i].classes.count-1 do begin
-       sl.Add('    '+plist[i].name+'_'+plist[i].classes[j].name+' [label="'+plist[i].classes[j].name+'"];');
+    if (cb_OnlyPackages.Checked) then begin
+      { Only packages }
+      for i := 0 to plist.Count-1 do begin
+        tmp := plist[i].name;
+        if (plist.colors[i] <> IntToStr(clNone)) then tmp := tmp+' [color="'+ColorToDot(plist.colors[i])+'"];';
+        sl.Add('  '+tmp);
       end;
-      sl.Add('  }');
+      for i := 0 to deplist.Count-1 do begin
+        if (deplist[i].depends.package <> deplist[i].source.package) then begin
+          tmp := deplist[i].depends.package.name+' -- '+deplist[i].source.package.name;
+          if (not deplist[i].isChild) then tmp := tmp+' [arrowtail=diamond]';
+          sl.Add('  '+tmp+';');
+        end;
+      end;
+    end
+    else begin
+      { Full listing of all classes }
+      for i := 0 to plist.Count-1 do begin
+        sl.Add('  subgraph cluster_'+plist[i].name+' {');
+        sl.Add('    label="'+plist[i].name+'";');
+        sl.Add('    color="'+ColorToDot(plist.colors[i])+'";');
+        if (plist.colors[i] <> IntToStr(clNone)) then sl.Add('    node [color="'+ColorToDot(plist.colors[i])+'"];');
+        for j := 0 to plist[i].classes.count-1 do begin
+         sl.Add('    '+plist[i].name+'_'+plist[i].classes[j].name+' [label="'+plist[i].classes[j].name+'"];');
+        end;
+        sl.Add('  }');
+      end;
+
+      upack := nil;
+      for i := 0 to olist.Count-1 do begin
+        if (upack <> olist[i].uclass.package) then begin
+          if (upack <> nil) then sl.Add('  }');
+          sl.Add('  subgraph cluster_'+olist[i].uclass.package.name+' {');
+          sl.Add('    label="'+olist[i].uclass.package.name+'";');
+          upack := olist[i].uclass.package;
+        end;
+        sl.Add('    '+olist[i].uclass.package.name+'_'+olist[i].uclass.name+' [label="'+olist[i].uclass.name+'"];');
+      end;
+      if (upack <> nil) then sl.Add('  }');
+
+      for i := 0 to deplist.Count-1 do begin
+        tmp := deplist[i].depends.package.name+'_'+deplist[i].depends.name+' -- '+deplist[i].source.package.name+'_'+deplist[i].source.name;
+        if (not deplist[i].isChild) then tmp := tmp+' [arrowtail=diamond]';
+        sl.Add('  '+tmp+';');
+      end;
     end;
 
-    upack := nil;
-    for i := 0 to olist.Count-1 do begin
-      if (upack <> olist[i].uclass.package) then begin
-        if (upack <> nil) then sl.Add('  }');
-        sl.Add('  subgraph cluster_'+olist[i].uclass.package.name+' {');
-        sl.Add('    label="'+olist[i].uclass.package.name+'";');
-        upack := olist[i].uclass.package;
-      end;
-      sl.Add('    '+olist[i].uclass.package.name+'_'+olist[i].uclass.name+' [label="'+olist[i].uclass.name+'"];');
-    end;
-    if (upack <> nil) then sl.Add('  }');
-
-    for i := 0 to deplist.Count-1 do begin
-      tmp := deplist[i].depends.package.name+'_'+deplist[i].depends.name+' -- '+deplist[i].source.package.name+'_'+deplist[i].source.name;
-      if (not deplist[i].isChild) then tmp := tmp+' [arrowtail=odot]';
-      sl.Add('  '+tmp+';');
-    end;
     sl.Add('  fontsize=9;');
     sl.Add('  labelloc=b;');
     sl.Add('  label="Created with UnCodeX\nout_graphviz.dll ('+DLLVERSION+')";');
@@ -214,7 +237,7 @@ begin
     {$IFDEF __USENAMES__}
     li.SubItems.Add('black');
     {$ELSE}
-    li.SubItems.Add(IntToStr(clSilver));
+    li.SubItems.Add(IntToStr(clNone));
     {$ENDIF}
     li.Data := GInfo.APackageList[i];
   end;
@@ -238,6 +261,7 @@ var
 begin
   if (sd_Save.Execute) then begin
     plist.Clear;
+    plist.colors.Clear;
     for i := 0 to lv_Packages.Items.Count-1 do begin
       if (lv_Packages.Items[i].Checked) then begin
         plist.Add(TUPackage(lv_Packages.Items[i].Data));
@@ -271,7 +295,7 @@ var
 {$ENDIF}
 begin
   {$IFNDEF __USENAMES__}
-  Sender.Canvas.Brush.Color := StrToIntDef(Item.SubItems[0], clSilver);
+  Sender.Canvas.Brush.Color := StrToIntDef(Item.SubItems[0], clNone);
   R := Item.DisplayRect(drBounds);
   R.Left := Sender.Column[0].Width;
   Sender.Canvas.FillRect(R);
@@ -297,7 +321,7 @@ begin
   cl_Color.Width := lv_Packages.Columns[1].Width+2;
   cl_Color.Top := lv_Packages.Top+R.Top;
   cl_Color.Height := R.Bottom-R.Top;
-  cl_Color.Selected := StrToIntDef(lv_Packages.Selected.SubItems[0], clSilver);
+  cl_Color.Selected := StrToIntDef(lv_Packages.Selected.SubItems[0], clNone);
   cl_Color.Visible := true;
   ActiveControl := cl_Color;
   {$ENDIF}
@@ -334,7 +358,7 @@ begin
     {$IFDEF __USENAMES__}
     if (lv_Packages.Items[i].Checked) then Inc(cnt);
     {$ELSE}
-    lv_Packages.Items[i].SubItems[0] := IntToStr(clSilver);
+    lv_Packages.Items[i].SubItems[0] := IntToStr(clNone);
     {$ENDIF}
   end;
   {$IFDEF __USENAMES__}
@@ -381,6 +405,15 @@ begin
   if (lv_Packages.Selected = nil) then exit;
   lv_Packages.Selected.SubItems[0] := IntToStr(cl_Color.Selected);
   cl_Color.Visible := false;
+end;
+
+procedure Tfrm_GraphViz.btn_SelectAllClick(Sender: TObject);
+var
+  i: integer;
+begin
+  for i := 0 to lv_Packages.Items.Count-1 do begin
+    lv_Packages.Items[i].Checked := true;
+  end;
 end;
 
 end.
