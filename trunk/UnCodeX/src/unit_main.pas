@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.55 2003-06-18 10:08:23 elmuerte Exp $
+ $Id: unit_main.pas,v 1.56 2003-06-22 08:58:45 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_main;
@@ -15,7 +15,7 @@ uses
   Forms, Dialogs, ComCtrls, Menus, StdCtrls, unit_packages, ExtCtrls,
   unit_uclasses, IniFiles, ShellApi, AppEvnts, ImgList, ActnList, StrUtils,
   Clipbrd, hh, hh_funcs, ToolWin, richedit, unit_richeditex, unit_searchform,
-  Buttons;
+  Buttons, DdeManEx;
 
 const
   // custom window messages
@@ -174,6 +174,8 @@ type
     mi_ClearHilight: TMenuItem;
     mi_FindSelection: TMenuItem;
     tmr_InlineSearch: TTimer;
+    EXEC: TDdeServerConvEx;
+    cmd: TDdeServerItemEx;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -248,6 +250,7 @@ type
     procedure tmr_InlineSearchTimer(Sender: TObject);
     procedure tv_ClassesExit(Sender: TObject);
     procedure ae_AppEventMessage(var Msg: tagMSG; var Handled: Boolean);
+    procedure cmdPokeData(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -327,6 +330,7 @@ var
   InlineSearch: string;
   OpenFind: boolean = false; // only on startup
   OpenTags: boolean = false; // only on startup
+  OpenFTS: boolean = false; // only on startup
   // batch vars
   IsBatching: boolean = false; // is batch executing
   CmdStack: TStringList; // command stack
@@ -782,6 +786,9 @@ begin
     Delete(cmd, 1, 4);
     CallCustomOutputModule('out_'+cmd+'.dll');
   end
+  else begin
+    NextBatchCommand;
+  end;
 end;
 
 // Check application for the same ID (config hash)
@@ -818,11 +825,13 @@ begin
         lst.DelimitedText := data.Batch;
         CmdStack.Clear;
         for i := 0 to lst.Count-1 do CmdStack.Add(lst[i]);
+        IsBatching := true;
         NextBatchCommand;
       finally
         lst.Free;
       end;
     end;
+    if (data.OpenFTS) then ac_FullTextSearch.Execute;
     Msg.Result := ord(true);
   end;
 end;
@@ -967,8 +976,8 @@ begin
   if (ActiveControl.ClassType <> TTreeView) then ActiveControl := tv_Classes;
   tv := TTreeView(ActiveControl);
   j := tv.Selected.AbsoluteIndex;
-  if (skipcurrent) then Inc(j);
-  for i := j downto 0 do begin
+  //if (skipcurrent) then Inc(j);
+  for i := 0 to j do begin
     if (CompareText(Copy(tv.Items[i].Text, 1, Length(inlinesearch)), inlinesearch) = 0) then begin
       tv.Select(tv.Items[i]);
       exit;
@@ -1855,7 +1864,8 @@ begin
   if (ThreadCreate) then begin
     isregex[0] := FTSRegexp;
     if (SearchQuery('Full text search', 'Enter your search query', query, isregex, FTSHistory, ['&Regular expression'])) then begin
-      mi_Log.Checked := true;
+      if (query = '') then exit;
+      ac_VLog.Checked := true;
       mi_Log.OnClick(Sender);
       lb_Log.Items.Clear;
       runningthread := TSearchThread.Create(PackageList, StatusReport, query, isregex[0], ClassList.Count);
@@ -1931,8 +1941,9 @@ begin
       ActiveControl := tv_Classes;
       ac_FindNext.Execute;
     end
+    else if (OpenFTS) then ac_FullTextSearch.Execute // TODO: fixed 'enter' bug
     else if (IsBatching) then NextBatchCommand
-    else if (AnalyseModified) then ac_AnalyseModified.Execute;
+    else if (AnalyseModified) then ac_AnalyseModified.Execute
   end;
   if (InitialStartup) then begin
     if MessageDlg('This is the first time you start UnCodeX (with this config file),'+#13+#10+
@@ -2351,6 +2362,66 @@ begin
       tmr_StatusText.OnTimer(nil);
     end;
   end;
+end;
+
+procedure Tfrm_UnCodeX.cmdPokeData(Sender: TObject);
+var
+  lst: TStringList;
+  i: integer;
+begin
+  Log('DDE Command: '+cmd.Text);
+  lst := TStringList.Create;
+  try
+    lst.Delimiter := ' ';
+    lst.QuoteChar := '"';
+    lst.DelimitedText := cmd.Text;
+    i := 0;
+    if (lst.Count = 0) then BringToFront;
+    while i < lst.Count do begin
+      if ((CompareText(lst[i], '-find') = 0) or (CompareText(lst[i], '-open') = 0) or
+        (CompareText(lst[i], '-tags') = 0)) then begin
+        if (i < lst.Count-1) then begin
+          OpenFind := (CompareText(lst[i], '-open') = 0);
+          OpenTags := (CompareText(lst[i], '-tags') = 0);
+          SearchConfig.query := trim(lst[i+1]);
+          SearchConfig.isBodySearch := false;
+          SearchConfig.Wrapped := true;
+          if (not (OpenTags or OpenFind)) then BringToFront;
+          if (SearchConfig.query <> '') then begin
+            ac_FindNext.Execute;
+            break;
+          end;
+        end;
+      end
+      else if (CompareText(lst[i], '-batch') = 0) then begin
+        Inc(i);
+        CmdStack.Clear;
+        while i < lst.Count do begin
+          if (lst[i] = '--') then break;
+          CmdStack.Add(LowerCase(lst[i]));
+          Inc(i);
+        end;
+        if (CmdStack.Count > 0) then begin
+          BringToFront;
+          IsBatching := true;
+          NextBatchCommand;
+          break;
+        end;
+      end
+      else if (CompareText(lst[i], '-fts') = 0) then begin
+        BringToFront;
+        ac_FullTextSearch.Execute;
+        break;
+      end
+      else if (CompareText(lst[i], '-handle') = 0) then begin
+        StatusHandle := StrToIntDef(lst[i], -1);
+      end;
+      Inc(i);
+    end
+  finally
+    lst.Free;
+  end;
+  cmd.Text := '';
 end;
 
 initialization

@@ -1935,4 +1935,16 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Left = 40
     Top = 168
   end
+  object EXEC: TDdeServerConvEx
+    Left = 8
+    Top = 240
+  end
+  object cmd: TDdeServerItemEx
+    ServerConv = EXEC
+    Lines.Strings = (
+      '')
+    OnPokeData = cmdPokeData
+    Left = 40
+    Top = 240
+  end
 end

@@ -3,7 +3,8 @@
  Author:    elmuerte
  Purpose:   parser class based on CopyParser.pas used for processing the HTML
             templates
- $Id: unit_copyparser.pas,v 1.5 2003-06-10 12:00:18 elmuerte Exp $
+            Based on the Borland's TCopyParser
+ $Id: unit_copyparser.pas,v 1.6 2003-06-22 08:58:45 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 { *************************************************************************** }
@@ -51,37 +52,20 @@ type
     procedure ReadBuffer;
     procedure SkipBlanks(DoCopy: Boolean);
     function SkipToNextToken(CopyBlanks, DoCopy: Boolean): Char;
-    function CopySkipTo(Length: Integer; DoCopy: Boolean): string;
     function CopySkipToToken(AToken: Char; DoCopy: Boolean): string;
-    function CopySkipToEOL(DoCopy: Boolean): string;
-    function CopySkipToEOF(DoCopy: Boolean): string;
     procedure UpdateOutStream(StartPos: PChar);
   public
     constructor Create(Stream, OutStream: TStream);
     destructor Destroy; override;
-    procedure CheckToken(T: Char);
-    procedure CheckTokenSymbol(const S: string);
-    function CopyTo(Length: Integer): string;
-    function CopyToToken(AToken: Char): string;
-    function CopyToEOL: string;
-    function CopyToEOF: string;
     procedure CopyTokenToOutput;
     procedure Error(const Ident: string);
     procedure ErrorFmt(const Ident: string; const Args: array of const);
     procedure ErrorStr(const Message: string);
     function NextToken: Char;
     function SkipToken(CopyBlanks: Boolean): Char;
-    procedure SkipEOL;
-    function SkipTo(Length: Integer): string;
     function SkipToToken(AToken: Char): string;
-    function SkipToEOL: string;
-    function SkipToEOF: string;
     function SourcePos: Longint;
-    function TokenComponentIdent: String;
-    function TokenFloat: Extended;
-    function TokenInt: Longint;
     function TokenString: string;
-    function TokenSymbolIs(const S: string): Boolean;
     property SourceLine: Integer read FSourceLine;
     property Token: Char read FToken;
     property OutputStream: TStream read FOutStream write FOutStream;
@@ -119,81 +103,6 @@ begin
     FStream.Seek(Longint(FTokenPtr) - Longint(FBufPtr), 1);
     FreeMem(FBuffer, ParseBufSize);
   end;
-end;
-
-procedure TCopyParser.CheckToken(T: Char);
-begin
-  if Token <> T then
-    case T of
-      toSymbol:
-        Error(SIdentifierExpected);
-      toString:
-        Error(SStringExpected);
-      toInteger, toFloat:
-        Error(SNumberExpected);
-    else
-      ErrorFmt(SCharExpected, [T]);
-    end;
-end;
-
-procedure TCopyParser.CheckTokenSymbol(const S: string);
-begin
-  if not TokenSymbolIs(S) then ErrorFmt(SSymbolExpected, [S]);
-end;
-
-function TCopyParser.CopySkipTo(Length: Integer; DoCopy: Boolean): string;
-var
-  P: PChar;
-  Temp: string;
-begin
-  Result := '';
-  repeat
-    P := FTokenPtr;
-    while (Length > 0) and (P^ <> #0) do
-    begin
-      Inc(P);
-      Dec(Length);
-    end;
-    if DoCopy and (FOutStream <> nil) then
-        FOutStream.WriteBuffer(FTokenPtr^, P - FTokenPtr);
-    SetString(Temp, FTokenPtr, P - FTokenPtr);
-    Result := Result + Temp;
-    if Length > 0 then ReadBuffer;
-  until (Length = 0) or (Token = toEOF);
-  FSourcePtr := P;
-end;
-
-function TCopyParser.CopySkipToEOL(DoCopy: Boolean): string;
-var
-  P: PChar;
-begin
-  P := FTokenPtr;
-  while not (P^ in [#13, #10, #0]) do Inc(P);
-  SetString(Result, FTokenPtr, P - FTokenPtr);
-  if P^ = #13 then Inc(P);
-  FSourcePtr := P;
-  if DoCopy then UpdateOutStream(FTokenPtr);
-  NextToken;
-end;
-
-function TCopyParser.CopySkipToEOF(DoCopy: Boolean): string;
-var
-  P: PChar;
-  Temp: string;
-begin
-  repeat
-    P := FTokenPtr;
-    while P^ <> #0 do Inc(P);
-    FSourcePtr := P;
-    SetString(Temp, FTokenPtr, P - FTokenPtr);
-    Result := Result + Temp;
-    if DoCopy then
-    begin
-      UpdateOutStream(FTokenPtr);
-      NextToken;
-    end else SkipToken(False);
-    FTokenPtr := FSourcePtr;
-  until Token = toEOF;
 end;
 
 function TCopyParser.CopySkipToToken(AToken: Char; DoCopy: Boolean): string;
@@ -260,26 +169,6 @@ begin
   end;
 end;
 
-function TCopyParser.CopyTo(Length: Integer): string;
-begin
-  Result := CopySkipTo(Length, True);
-end;
-
-function TCopyParser.CopyToToken(AToken: Char): string;
-begin
-  Result := CopySkipToToken(AToken, True);
-end;
-
-function TCopyParser.CopyToEOL: string;
-begin
-  Result := CopySkipToEOL(True);
-end;
-
-function TCopyParser.CopyToEOF: string;
-begin
-  Result := CopySkipToEOF(True);
-end;
-
 procedure TCopyParser.CopyTokenToOutput;
 begin
   UpdateOutStream(FTokenPtr);
@@ -305,24 +194,9 @@ begin
   Result := SkipToNextToken(True, True);
 end;
 
-function TCopyParser.SkipTo(Length: Integer): string;
-begin
-  Result := CopySkipTo(Length, False);
-end;
-
 function TCopyParser.SkipToToken(AToken: Char): string;
 begin
   Result := CopySkipToToken(AToken, False);
-end;
-
-function TCopyParser.SkipToEOL: string;
-begin
-  Result := CopySkipToEOL(False);
-end;
-
-function TCopyParser.SkipToEOF: string;
-begin
-  Result := CopySkipToEOF(False);
 end;
 
 function TCopyParser.SkipToNextToken(CopyBlanks, DoCopy: Boolean): Char;
@@ -412,28 +286,6 @@ begin
   Result := FOrigin + (FTokenPtr - FBuffer);
 end;
 
-procedure TCopyParser.SkipEOL;
-begin
-  if Token = toEOL then
-  begin
-    while FTokenPtr^ in [#13, #10] do Inc(FTokenPtr);
-    FSourcePtr := FTokenPtr;
-    if FSourcePtr^ <> #0 then
-      NextToken
-    else FToken := #0;
-  end;
-end;
-
-function TCopyParser.TokenFloat: Extended;
-begin
-  Result := StrToFloat(TokenString);
-end;
-
-function TCopyParser.TokenInt: Longint;
-begin
-  Result := StrToInt(TokenString);
-end;
-
 function TCopyParser.TokenString: string;
 var
   L: Integer;
@@ -442,30 +294,6 @@ begin
     L := FStringPtr - FTokenPtr else
     L := FSourcePtr - FTokenPtr;
   SetString(Result, FTokenPtr, L);
-end;
-
-function TCopyParser.TokenSymbolIs(const S: string): Boolean;
-begin
-  Result := (Token = toSymbol) and (CompareText(S, TokenString) = 0);
-end;
-
-function TCopyParser.TokenComponentIdent: String;
-var
-  P: PChar;
-begin
-  CheckToken(toSymbol);
-  P := FSourcePtr;
-  while P^ = '.' do
-  begin
-    Inc(P);
-    if not (P^ in ['A'..'Z', 'a'..'z', '_']) then
-      Error(SIdentifierExpected);
-    repeat
-      Inc(P)
-    until not (P^ in ['A'..'Z', 'a'..'z', '0'..'9', '_']);
-  end;
-  FSourcePtr := P;
-  Result := TokenString;
 end;
 
 procedure TCopyParser.UpdateOutStream(StartPos: PChar);
