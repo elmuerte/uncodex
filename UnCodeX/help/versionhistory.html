@@ -14,6 +14,14 @@
 
 <div class="content">
 
+<h2>Changes since 220</h2>
+<ul>
+<li>[ucxcu] major fixes to the commandline version, it now works again.
+<li>[ucxcu] ucxcu assumes more default now, it can be run from an unrealengine game base directory and automatically find the Default.ini and packages. It can also reside in the System directory. As long as the HTML output template can be found it will run without additional paramaters. Or when the unrealengine config file is provided (the -uc switch) it will assume the package source directory is in the parent directory of the unrealengine config file.
+<li>[HTML generation] fixed the HTML output highlighted source code to be aligned with the line numbers
+<li>[HTML generation] added some magic for jumping to frames with the right content file.
+</ul>
+
 <h2>Changes since 219</h2>
 <ul>
 <li>Fixed bug where a search result line was longer than 255 chars (used for browse history).

@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.67 2005-03-16 21:28:08 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.68 2005-03-17 14:14:43 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -180,6 +180,7 @@ var
   TreeL: string;
   TreeI: string;
   subDirDepth: integer;
+  currentFile: string;
 
 function ClassLink(uclass: TUClass; DOSPath: boolean = false): string;
 var
@@ -476,6 +477,10 @@ begin
     replacement := TargetExtention;
     result := true;
   end
+  else if (CompareText(replacement, 'currentfile') = 0) then begin
+    replacement := StringReplace(currentFile, '\', '/', [rfReplaceAll]);
+    result := true;
+  end
   else if (IsReplacement(replacement, 'include:')) then begin
     tmp := Copy(replacement, Length('include:')+1, MaxInt);
     if (not FileExists(TemplateDir+tmp)) then begin
@@ -510,6 +515,7 @@ begin
   Status('Creating index.'+TargetExtention);
   template := TFileStream.Create(templatedir+'index.html', fmOpenRead or fmShareDenyWrite);
   target := TFileStream.Create(htmloutputdir+PATHDELIM+'index.'+TargetExtention, fmCreate);
+  currentFile := 'index.'+TargetExtention;
   try
     parseTemplate(template, target, replaceIndex);
   finally
@@ -532,6 +538,7 @@ begin
   Status('Creating '+overview_filename+TargetExtention);
   template := TFileStream.Create(templatedir+'overview.html', fmOpenRead or fmShareDenyWrite);
   target := TFileStream.Create(htmloutputdir+PATHDELIM+overview_filename+TargetExtention, fmCreate);
+  currentFile := overview_filename+TargetExtention;
   try
     parseTemplate(template, target, replaceOverview);
   finally
@@ -577,6 +584,7 @@ begin
   Status('Creating '+packages_list_filename+TargetExtention);
   template := TFileStream.Create(templatedir+'packages_list.html', fmOpenRead or fmShareDenyWrite);
   target := TFileStream.Create(htmloutputdir+PATHDELIM+packages_list_filename+TargetExtention, fmCreate);
+  currentFile := packages_list_filename+TargetExtention;
   try
     parseTemplate(template, target, replacePackagesList);
   finally
@@ -662,6 +670,7 @@ begin
   Status('Creating '+classes_list_filename+TargetExtention);
   template := TFileStream.Create(templatedir+'classes_list.html', fmOpenRead or fmShareDenyWrite);
   target := TFileStream.Create(htmloutputdir+PATHDELIM+classes_list_filename+TargetExtention, fmCreate);
+  currentFile := classes_list_filename+TargetExtention;
   try
     parseTemplate(template, target, replaceClassesList);
   finally
@@ -688,6 +697,7 @@ begin
       curPos := curPos+1;
       PackageList[i].classes.Sort;
       target := TFileStream.Create(htmloutputdir+PATHDELIM+pfname, fmCreate);
+      currentFile := pfname;
       try
         template.Position := 0;
         parseTemplate(template, target, replacePackageClassesList, PackageList[i]);
@@ -834,6 +844,7 @@ begin
       curPos := curPos+1;
       PackageList[i].classes.Sort;
       target := TFileStream.Create(htmloutputdir+PATHDELIM+pfname, fmCreate);
+      currentFile := pfname;
       try
         template.Position := 0;
         parseTemplate(template, target, replacePackageOverview, PackageList[i]);
@@ -933,6 +944,7 @@ begin
           TypeCache.Items[LowerCase(currentClass.structs[j].name)] := ClassLink(currentClass)+'#'+currentClass.structs[j].name;
         end;
         target := TFileStream.Create(htmloutputdir+PATHDELIM+ClassLink(ClassList[i]), fmCreate);
+        currentFile := ClassLink(ClassList[i]);
         try
           template.Position := 0;
           parseTemplate(template, target, replaceClass, ClassList[i]);
@@ -2340,6 +2352,7 @@ begin
   Status('Creating '+classtree_filename+TargetExtention);
   template := TFileStream.Create(templatedir+'classtree.html', fmOpenRead or fmShareDenyWrite);
   target := TFileStream.Create(htmloutputdir+PATHDELIM+classtree_filename+TargetExtention, fmCreate);
+  currentFile := classtree_filename+TargetExtention;
   try
     parseTemplate(template, target, replaceClasstree);
   finally
@@ -2477,6 +2490,7 @@ begin
       curPos := curPos+1;
       template.Position := 0;
       target := TFileStream.Create(htmloutputdir+PATHDELIM+'glossary_'+glossaryitems[i]+'.'+TargetExtention, fmCreate);
+      currentFile := 'glossary_'+glossaryitems[i]+'.'+TargetExtention;
       try
         parseTemplate(template, target, replaceGlossary, gli);
       finally
@@ -2607,6 +2621,7 @@ begin
       curPos := curPos+1;
       currentClass := ClassList[i];
       target := TFileStream.Create(htmloutputdir+PATHDELIM+fname, fmCreate);
+      currentFile := fname;
       try
         template1.Position := 0;
         parseTemplate(template1, target, replaceClass, ClassList[i]);
@@ -2774,11 +2789,17 @@ begin
     if (not nolineno) then begin
       replacement := '<td class="source_lineno"><span class="source_lineno">';
       output.WriteBuffer(PChar(replacement)^, Length(replacement));
+      replacement := '';
       for i := 1 to p.SourceLine do begin
-        replacement := format('%.5d<br />'+#10, [i]);
-        output.WriteBuffer(PChar(replacement)^, Length(replacement));
+        replacement := replacement+format('%.5d', [i]);
+        if (i < p.SourceLine) then replacement := replacement+'<br />';
+        if (i mod 20 = 0) then begin
+          replacement := replacement+#10;
+          output.WriteBuffer(PChar(replacement)^, Length(replacement));
+          replacement := '';
+        end;
       end;
-      replacement := '</span></td>';
+      replacement := replacement+'</span></td>'+#10;
       output.WriteBuffer(PChar(replacement)^, Length(replacement));
     end;
     if (not notable) then begin

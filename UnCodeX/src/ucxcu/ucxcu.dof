@@ -51,7 +51,7 @@ Conditionals=DEBUG_BUILD
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
-RunParams=-o .\uncodex-output -uc d:\dev\ut2004\UT2004CodeDrop3323\system\default.ini -nc -s d:\dev\ut2004\UT2004CodeDrop3323 -t templates\docstyle2
+RunParams=-nc
 HostApplication=
 Launcher=
 UseLauncher=0
@@ -96,15 +96,12 @@ Item4=DETECT_MEM_LEAK;DETECT_MEM_LEAK
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=3
-Item0=..
-Item1=$(DELPHI)\Lib\Debug;VCL
-Item2=VCL
+Count=2
+Item0=$(DELPHI)\Lib\Debug;VCL
+Item1=VCL
 [HistoryLists\hlUnitOutputDirectory]
-Count=2
-Item0=..\..\dcu\ucxcu
-Item1=..\DCU
+Count=1
+Item0=..\DCU
 [HistoryLists\hlOutputDirectorry]
-Count=2
-Item0=..\..\bin
-Item1=..\BIN
+Count=1
+Item0=..\BIN

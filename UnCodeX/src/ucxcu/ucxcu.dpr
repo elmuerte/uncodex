@@ -6,11 +6,11 @@
   Purpose:
     UnCodeX Commandline Utility Client
 
-  $Id: ucxcu.dpr,v 1.16 2005-03-16 21:28:11 elmuerte Exp $
+  $Id: ucxcu.dpr,v 1.17 2005-03-17 14:14:46 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
-  Copyright (C) 2003, 2004  Michiel Hendriks
+  Copyright (C) 2003-2005  Michiel Hendriks
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -65,30 +65,34 @@ uses
 begin
   if (HasCmdOption('V')) then PrintVersion
   else begin
-  if (HasCmdOption('q')) then Verbose := 0
-  else if (HasCmdOption('v')) then Verbose := 1
-  else if (HasCmdOption('vv')) then Verbose := 2;
+    if (HasCmdOption('q')) then Verbose := 0
+    else if (HasCmdOption('v')) then Verbose := 1
+    else if (HasCmdOption('vv')) then Verbose := 2;
 
-  if (Verbose > 0) then PrintBanner;
-  if (HasCmdOption('h')) then PrintHelp
-  else begin
-    {$IFDEF LINUX}
-    signal(SIGINT, SigProc);
-    signal(SIGABRT, SigProc);
-    {$ENDIF}
-  	HTMLOutputDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+'Output';
-  	TemplateDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+TEMPLATEPATH+PATHDELIM+DEFTEMPLATE;
-  	HTMLHelpFile := ExtractFilePath(ExpandFileName(ParamStr(0)))+'UnCodeX.chm';
-    PackageDescFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTPDF);
-    ExtCommentFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTECF);
+    if (Verbose > 0) then PrintBanner;
+    if (HasCmdOption('h')) then PrintHelp
+    else begin
+      {$IFDEF LINUX}
+      signal(SIGINT, SigProc);
+      signal(SIGABRT, SigProc);
+      {$ENDIF}
+    	HTMLOutputDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+'ucxcu-output';
+    	TemplateDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+TEMPLATEPATH+PATHDELIM+DEFTEMPLATE;
+  	  HTMLHelpFile := ExtractFilePath(ExpandFileName(ParamStr(0)))+'UnCodeX.chm';
+      PackageDescFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTPDF);
+      ExtCommentFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTECF);
 
-    ConfigFile := ExtractFilePath(ParamStr(0)) + 'UnCodeX.ini';
-    CmdOption('c', ConfigFile);
-    ConfigFile := iFindFile(ConfigFile);
-    if (not HasCmdOption('nc')) then LoadConfig();
-    ProcessCommandline();
-    Main();
-  end;
+      ConfigFile := ExtractFilePath(ParamStr(0)) + 'UnCodeX.ini';
+      if (CmdOption('c', ConfigFile)) then begin
+        ConfigFile := iFindFile(ConfigFile);
+        if (not FileExists(ConfigFile)) then begin
+          Warning('Config file does not exist: '+ConfigFile);
+        end;
+      end;
+      if (not HasCmdOption('nc') and FileExists(ConfigFile)) then LoadConfig();
+      ProcessCommandline();
+      Main();
+    end;
   end;
 end.
  

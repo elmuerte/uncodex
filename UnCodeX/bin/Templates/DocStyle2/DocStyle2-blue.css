@@ -305,6 +305,7 @@ DIV.source {
 }
 
 PRE.source {	
+	margin: 0px;
 }
 
 .source_lineno {
