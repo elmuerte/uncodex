@@ -1,0 +1,13 @@
+*.dll
+*.exe
+*.log
+keywords2.list
+keywords1.list
+utpg.ucx
+UnCodeX.ucx
+UnCodeX-help.chm
+ut.ini
+ut.ini.ucx
+utpg.ini
+UnCodeX.ini
+ucxcu
