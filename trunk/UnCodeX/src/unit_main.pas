@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.82 2004-03-23 16:25:45 elmuerte Exp $
+ $Id: unit_main.pas,v 1.83 2004-03-23 19:58:37 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -1666,6 +1666,7 @@ begin
     { Commandlines }
     ed_CompilerCommandline.Text := CompilerCmd;
     ed_OpenResultCmd.Text := OpenResultCmd;
+    ed_NewClassTemplate.Text := NewClassTemplate;
     { Layout settings }
     lb_LogLayout.Color := lb_Log.Color;
     cb_LogColor.Selected := lb_Log.Color;
@@ -1713,6 +1714,8 @@ begin
       ac_CompileClass.Enabled := CompilerCmd <> '';
       OpenResultCmd := ed_OpenResultCmd.Text;
       ac_OpenClass.Enabled := OpenResultCmd <> '';
+      NewClassTemplate := ed_NewClassTemplate.Text;
+      mi_CreateSubClass.Enabled := FileExists(NewClassTemplate);
       { Program options }
       StateFile := ed_StateFilename.Text;
       AnalyseModified := cb_ModifiedOnStartup.Checked;
@@ -1769,7 +1772,7 @@ begin
         data.Add('ClientCmd='+ClientCmd);
         data.Add('CompilerCmd='+CompilerCmd);
         data.Add('OpenResultCmd='+OpenResultCmd);
-        //data.Add('FullTextSearchRegExp='+IntToStr(Ord(FTSRegexp)));
+        data.Add('NewClassTemplate='+NewClassTemplate);
         data.Add('StateFile='+ed_StateFilename.Text);
         data.Add('AnalyseModified='+IntToStr(Ord(AnalyseModified)));
         data.Add('DefaultInheritanceDepth='+IntToStr(DefaultInheritanceDepth));
@@ -2882,7 +2885,7 @@ begin
       mi_DeleteClass.Visible := false;
       mi_MoveClass.Visible := false;
       mi_RenameClass.Visible := false;
-      mi_PropInspector.Visible := false;
+      mi_Properties.Visible := false;
     end
     else if (TObject(Selected.Data).ClassType = TUClass) then begin
       mi_ClassName.Visible := true;
@@ -2894,7 +2897,7 @@ begin
       mi_DeleteClass.Visible := true;
       mi_MoveClass.Visible := true;
       mi_RenameClass.Visible := true;
-      mi_PropInspector.Visible := false;
+      mi_Properties.Visible := false;
     end
     else if (TObject(Selected.Data).ClassType = TUPackage) then begin
       mi_ClassName.Visible := false;
@@ -2905,7 +2908,7 @@ begin
       mi_DeleteClass.Visible := false;
       mi_MoveClass.Visible := false;
       mi_RenameClass.Visible := false;
-      mi_PropInspector.Visible := true;
+      mi_Properties.Visible := true;
     end;
     mi_SwitchTree.Visible := tv_Packages.Visible;
   end;
