@@ -72,10 +72,9 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Width = 650
     Height = 505
     Align = alClient
-    AutoSize = True
     BevelOuter = bvNone
     DockSite = True
-    TabOrder = 12
+    TabOrder = 11
   end
   object tv_Packages: TTreeView
     Left = 32
@@ -122,29 +121,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Align = alBottom
     Min = 0
     Max = 100
-    TabOrder = 6
-  end
-  object lb_Log: TListBox
-    Left = 88
-    Top = 432
-    Width = 466
-    Height = 87
-    HelpType = htKeyword
-    HelpKeyword = 'log'
-    DragKind = dkDock
-    DragMode = dmAutomatic
-    ExtendedSelect = False
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
-    Font.Name = 'Courier New'
-    Font.Style = []
-    ItemHeight = 14
-    ParentFont = False
     TabOrder = 4
-    OnClick = lb_LogClick
-    OnDblClick = lb_LogDblClick
-    OnEndDock = lb_LogEndDock
   end
   object tb_Tools: TToolBar
     Left = 0
@@ -312,7 +289,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
     AutoScroll = False
     DragKind = dkDock
     DragMode = dmAutomatic
-    TabOrder = 7
+    TabOrder = 5
+    Visible = False
     inherited bcl_Spacer: TBevel
       Width = 185
     end
@@ -345,7 +323,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
     OnKeyDown = tv_ClassesKeyDown
     OnKeyPress = tv_ClassesKeyPress
     OnMouseDown = tv_ClassesMouseDown
-    OnStartDock = tv_ClassesStartDock
   end
   object dckTop: TPanel
     Left = 0
@@ -355,7 +332,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Align = alTop
     BevelOuter = bvNone
     DockSite = True
-    TabOrder = 8
+    TabOrder = 6
     OnDockDrop = dckLeftDockDrop
     OnUnDock = dckLeftUnDock
   end
@@ -367,7 +344,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Align = alBottom
     BevelOuter = bvNone
     DockSite = True
-    TabOrder = 9
+    TabOrder = 7
     OnDockDrop = dckLeftDockDrop
     OnUnDock = dckLeftUnDock
   end
@@ -379,7 +356,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Align = alLeft
     BevelOuter = bvNone
     DockSite = True
-    TabOrder = 10
+    TabOrder = 8
     OnDockDrop = dckLeftDockDrop
     OnUnDock = dckLeftUnDock
   end
@@ -391,9 +368,30 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Align = alRight
     BevelOuter = bvNone
     DockSite = True
-    TabOrder = 11
+    TabOrder = 9
     OnDockDrop = dckLeftDockDrop
     OnUnDock = dckLeftUnDock
+  end
+  object lb_Log: TListBox
+    Left = 68
+    Top = 394
+    Width = 461
+    Height = 103
+    HelpType = htKeyword
+    HelpKeyword = 'log'
+    DragKind = dkDock
+    DragMode = dmAutomatic
+    ExtendedSelect = False
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Courier New'
+    Font.Style = []
+    ItemHeight = 14
+    ParentFont = False
+    TabOrder = 12
+    OnClick = lb_LogClick
+    OnDblClick = lb_LogDblClick
   end
   object mm_Main: TMainMenu
     Images = il_Small
@@ -481,6 +479,10 @@ object frm_UnCodeX: Tfrm_UnCodeX
         Caption = 'Class Tree'
         Checked = True
         Enabled = False
+      end
+      object mi_PropInspector: TMenuItem
+        Action = ac_PropInspector
+        AutoCheck = True
       end
       object mi_SourceSnoop: TMenuItem
         Action = ac_VSourceSnoop
@@ -955,6 +957,13 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Caption = 'Open HTML Help file'
       Hint = 'Open the MS HTML Help file'
       OnExecute = ac_OpenHTMLHelpExecute
+    end
+    object ac_PropInspector: TAction
+      Category = 'Layout'
+      AutoCheck = True
+      Caption = 'Property Inspector'
+      ShortCut = 49225
+      OnExecute = ac_PropInspectorExecute
     end
   end
   object il_Small: TImageList

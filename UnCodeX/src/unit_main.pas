@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.70 2004-01-29 09:02:51 elmuerte Exp $
+ $Id: unit_main.pas,v 1.71 2004-01-30 13:56:46 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -53,7 +53,6 @@ type
     mm_Main: TMainMenu;
     mi_Tree: TMenuItem;
     mi_ScanPackages: TMenuItem;
-    lb_Log: TListBox;
     tmr_StatusText: TTimer;
     mi_N1: TMenuItem;
     mi_Settings: TMenuItem;
@@ -210,6 +209,9 @@ type
     splTop: TSplitter;
     splBottom: TSplitter;
     pnlCenter: TPanel;
+    lb_Log: TListBox;
+    ac_PropInspector: TAction;
+    mi_PropInspector: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -297,9 +299,7 @@ type
       Y: Integer);
     procedure dckLeftUnDock(Sender: TObject; Client: TControl;
       NewTarget: TWinControl; var Allow: Boolean);
-    procedure tv_ClassesStartDock(Sender: TObject;
-      var DragObject: TDragDockObject);
-    procedure lb_LogEndDock(Sender, Target: TObject; X, Y: Integer);
+    procedure ac_PropInspectorExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -1124,6 +1124,13 @@ end;
 
 { Docking methods }
 
+function clamp(min,mid,max: integer): integer;
+begin
+	if (mid < min) then result := min
+  else if (mid > max) then result := max
+  else result := mid;
+end;
+
 procedure Tfrm_UnCodeX.ShowDockPanel(APanel: TPanel; MakeVisible: Boolean; Client: TControl);
 var
 	makeHeight, makeWidth: integer;
@@ -1152,8 +1159,8 @@ begin
   makeHeight := 0;
   makeWidth := 0;
   if (client <> nil) then begin
-    makeHeight := Client.TBDockHeight;
-    makeWidth := Client.LRDockWidth;
+    if (Client.TBDockHeight > 0) then makeHeight := clamp(30, Client.TBDockHeight, ClientHeight div 4);
+    if (Client.LRDockWidth > 0) then makeWidth := clamp(30, Client.LRDockWidth, ClientWidth div 4);
   end;
   if (makeHeight = 0) then makeHeight := ClientHeight div 4;
   if (makeWidth = 0) then makeWidth := ClientWidth div 4;
@@ -1206,15 +1213,11 @@ var
   tmp, tmp2: string;
   sl: TStringList;
   i: integer;
+  dockData: TMemoryStream;
+  dckHost: TPanel;
 begin
   Mouse.DragImmediate := false;
   Mouse.DragThreshold := 5;
-  tv_Classes.ManualDock(pnlCenter);
-  tv_Packages.ManualDock(dckLeft);
-  lb_Log.ManualDock(dckBottom);
-  re_SourceSnoop.ManualDock(dckRight);
-  fr_Props.ManualDock(pnlCenter);
-  lb_Log.FloatingDockSiteClass := nil;
   hh_Help := THookHelpSystem.Create(ExtractFilePath(ParamStr(0))+'UnCodeX-help.chm', '', htHHAPI);
   Caption := APPTITLE+' - version '+APPVERSION;
   Application.Title := Caption;
@@ -1223,6 +1226,7 @@ begin
   InitialStartup := not FileExists(ConfigFile);
   ini := TMemIniFile.Create(ConfigFile);
   sl := TStringList.Create;
+  dockData := TMemoryStream.Create;
   { StringLists }
   PackagePriority := TStringList.Create;
   SourcePaths := TStringList.Create;
@@ -1250,19 +1254,72 @@ begin
     ac_VMenuBar.Checked := ini.ReadBool('Layout', 'MenuBar', true);
     ac_VToolbar.Checked := ini.ReadBool('Layout', 'Toolbar', true);
     mi_Toolbar.OnClick(Sender);
-    //ac_VPackageTree.Checked := ini.ReadBool('Layout', 'PackageTree', true);
+
+    ac_VPackageTree.Checked := ini.ReadBool('Layout', 'PackageTree', true);
     //tv_Packages.Width := ini.ReadInteger('Layout', 'PackageTreeWidth', tv_Packages.Width);
     //if (spl_Main1.MinSize > tv_Packages.Width) then tv_Packages.Width := spl_Main1.MinSize;
     //mi_PackageTree.OnClick(Sender);
     //ac_ClassTree.Checked := ini.ReadBool('Layout', 'ClassTree', true);
     //mi_ClassTree.OnClick(Sender);
     //lb_Log.Height := ini.ReadInteger('Layout', 'LogHeight', lb_Log.Height);
-    //ac_VLog.Checked := ini.ReadBool('Layout', 'Log', true);
+    ac_VLog.Checked := ini.ReadBool('Layout', 'Log', true);
     //mi_Log.OnClick(Sender);
-    //ac_VSourceSnoop.Checked := ini.ReadBool('Layout', 'SourceSnoop', false);
+    ac_VSourceSnoop.Checked := ini.ReadBool('Layout', 'SourceSnoop', false);
+    re_SourceSnoop.Visible := ac_VSourceSnoop.Checked;
     //re_SourceSnoop.Width := ini.ReadInteger('Layout', 'SourceSnoopWidth', re_SourceSnoop.Width);
     //if (spl_Main3.MinSize > re_SourceSnoop.Width) then re_SourceSnoop.Width := spl_Main3.MinSize;
     //mi_SourceSnoop.OnClick(Sender);
+    ac_PropInspector.Checked := ini.ReadBool('Layout', 'PropertyInspector', false);
+    fr_Props.Visible := ac_PropInspector.Checked;
+
+    { load dock settings }
+    ini.ReadBinaryStream('dckTop.DockManager', 'data', dockData);
+    if (dockData.Size > 0) then dckTop.DockManager.LoadFromStream(dockData);
+    dckTop.Height := ini.ReadInteger('dckTop.DockManager', 'height', dckTop.Height);
+    dockData.Clear;
+
+    ini.ReadBinaryStream('dckBottom.DockManager', 'data', dockData);
+    if (dockData.Size > 0) then dckBottom.DockManager.LoadFromStream(dockData);
+    dckBottom.Height := ini.ReadInteger('dckBottom.DockManager', 'height', dckBottom.Height);
+    dockData.Clear;
+
+    ini.ReadBinaryStream('dckLeft.DockManager', 'data', dockData);
+    if (dockData.Size > 0) then dckLeft.DockManager.LoadFromStream(dockData);
+    dckLeft.Width := ini.ReadInteger('dckLeft.DockManager', 'width', dckLeft.Width);
+    dockData.Clear;
+
+    ini.ReadBinaryStream('dckRight.DockManager', 'data', dockData);
+    if (dockData.Size > 0) then dckRight.DockManager.LoadFromStream(dockData);
+    dckRight.Width := ini.ReadInteger('dckRight.DockManager', 'width', dckRight.Width);
+    dockData.Clear;
+
+    ini.ReadBinaryStream('pnlCenter.DockManager', 'data', dockData);
+    if (dockData.Size > 0) then pnlCenter.DockManager.LoadFromStream(dockData);
+    dockData.Clear;
+
+    { find dock hosts }
+    if (tv_Classes.HostDockSite = nil) then begin
+	    dckHost := (FindComponent(ini.ReadString('DockHosts', 'tv_Classes', 'pnlCenter')) as TPanel);
+  	  tv_Classes.ManualDock(dckHost);
+    end;
+    if (tv_Packages.HostDockSite = nil) then begin
+	    dckHost := (FindComponent(ini.ReadString('DockHosts', 'tv_Packages', 'dckLeft')) as TPanel);
+  		tv_Packages.ManualDock(dckHost);
+    end;
+    if (lb_Log.HostDockSite = nil) then begin
+	    dckHost := (FindComponent(ini.ReadString('DockHosts', 'lb_Log', 'dckBottom')) as TPanel);
+  		lb_Log.ManualDock(dckHost);
+    end;
+    if (re_SourceSnoop.HostDockSite = nil) then begin
+	    dckHost := (FindComponent(ini.ReadString('DockHosts', 're_SourceSnoop', 'dckRight')) as TPanel);
+  		re_SourceSnoop.ManualDock(dckHost);
+    end;
+    if (fr_Props.HostDockSite = nil) then begin
+	    dckHost := (FindComponent(ini.ReadString('DockHosts', 'fr_Props', 'pnlCenter')) as TPanel);
+  		fr_Props.ManualDock(dckHost);
+    end;
+
+
     ABWidth := ini.ReadInteger('Layout', 'ABWidth', 150);
     ac_VAutoHide.Checked := ini.ReadBool('Layout', 'AutoHide', false);
     mi_AutoHide.OnClick(Sender);
@@ -1395,6 +1452,7 @@ begin
   finally
     ini.Free;
     sl.Free;
+    dockData.Free;
   end;
   if (LoadCustomOutputModules) then LoadOutputModules;
   PackageList := TUPackageList.Create(true);
@@ -1841,6 +1899,7 @@ procedure Tfrm_UnCodeX.FormClose(Sender: TObject;
 var
   ini: TMemIniFile;
   i: integer;
+  dockData: TMemoryStream;
 begin
   if (MinimizeOnClose) then begin
     Action := caMinimize;
@@ -1849,16 +1908,52 @@ begin
     tmr_StatusText.Enabled := false;
     if (TreeUpdated) then SaveState;
     ini := TMemIniFile.Create(ConfigFile);
+    dockData := TMemoryStream.Create;
     try
+    	{ save dock hosts }
+
+      ini.WriteString('DockHosts', 'tv_Classes', tv_Classes.Parent.Name);
+  	  ini.WriteString('DockHosts', 'tv_Packages', tv_Packages.Parent.Name);
+    	ini.WriteString('DockHosts', 'lb_Log', lb_Log.Parent.Name);
+	    ini.WriteString('DockHosts', 're_SourceSnoop', re_SourceSnoop.Parent.Name);
+  	  ini.WriteString('DockHosts', 'fr_Props', fr_Props.Parent.Name);
+
+      { save dock maneger settings }
+  	  dckTop.DockManager.SaveToStream(dockData);
+      dockData.Position := 0;
+      ini.WriteBinaryStream('dckTop.DockManager', 'data', dockData);
+      ini.WriteInteger('dckTop.DockManager', 'height', dckTop.Height);
+	    dockData.Clear;
+      dckBottom.DockManager.SaveToStream(dockData);
+      dockData.Position := 0;
+      ini.WriteBinaryStream('dckBottom.DockManager', 'data', dockData);
+      ini.WriteInteger('dckBottom.DockManager', 'height', dckBottom.Height);
+	    dockData.Clear;
+      dckLeft.DockManager.SaveToStream(dockData);
+      dockData.Position := 0;
+      ini.WriteBinaryStream('dckLeft.DockManager', 'data', dockData);
+      ini.WriteInteger('dckLeft.DockManager', 'width', dckLeft.Width);
+	    dockData.Clear;
+      dckRight.DockManager.SaveToStream(dockData);
+      dockData.Position := 0;
+      ini.WriteBinaryStream('dckRight.DockManager', 'data', dockData);
+      ini.WriteInteger('dckRight.DockManager', 'width', dckRight.Width);
+	    dockData.Clear;
+      pnlCenter.DockManager.SaveToStream(dockData);
+      dockData.Position := 0;
+      ini.WriteBinaryStream('pnlCenter.DockManager', 'data', dockData);
+
+      { general layout settings }
       ini.WriteBool('Layout', 'MenuBar', mi_MenuBar.Checked);
       ini.WriteBool('Layout', 'Toolbar', mi_Toolbar.Checked);
       ini.WriteBool('Layout', 'PackageTree', mi_PackageTree.Checked);
-      ini.WriteInteger('Layout', 'PackageTreeWidth', tv_Packages.Width);
+      //ini.WriteInteger('Layout', 'PackageTreeWidth', tv_Packages.Width);
       //ini.WriteBool('Layout', 'ClassTree', mi_ClassTree.Checked);
       ini.WriteBool('Layout', 'Log', mi_Log.Checked);
-      ini.WriteInteger('Layout', 'LogHeight', lb_Log.Height);
+      //ini.WriteInteger('Layout', 'LogHeight', lb_Log.Height);
       ini.WriteBool('Layout', 'SourceSnoop', mi_SourceSnoop.Checked);
-      ini.WriteInteger('Layout', 'SourceSnoopWidth', re_SourceSnoop.Width);
+      //ini.WriteInteger('Layout', 'SourceSnoopWidth', re_SourceSnoop.Width);
+      ini.WriteBool('Layout', 'PropertyInspector', mi_PropInspector.Checked);
       ini.WriteBool('Layout', 'StayOnTop', mi_StayOnTop.Checked);
       ini.WriteBool('Layout', 'SavePosition', mi_Saveposition.Checked);
       ini.WriteBool('Layout', 'SaveSize', mi_Savesize.Checked);
@@ -1899,6 +1994,7 @@ begin
       ini.UpdateFile;
     finally
       ini.Free;
+      dockData.Free;
     end;
   end;
 end;
@@ -2769,18 +2865,10 @@ begin
 	if (Sender as TPanel).VisibleDockClientCount = 1 then ShowDockPanel(Sender as TPanel, False, Client);
 end;
 
-procedure Tfrm_UnCodeX.tv_ClassesStartDock(Sender: TObject;
-  var DragObject: TDragDockObject);
+procedure Tfrm_UnCodeX.ac_PropInspectorExecute(Sender: TObject);
 begin
-  if (DragObject <> nil) then DragObject.Floating := false;
-end;
-
-procedure Tfrm_UnCodeX.lb_LogEndDock(Sender, Target: TObject; X,
-  Y: Integer);
-begin
-	if (Target = nil) then begin
-		(Sender as TControl).ManualDock(dckBottom); 
-  end;
+	fr_Props.Visible := mi_PropInspector.Checked;
+  ShowDockPanel((fr_Props.Parent as TPanel), fr_Props.Visible, nil);
 end;
 
 initialization

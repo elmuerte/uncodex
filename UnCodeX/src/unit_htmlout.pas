@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.42 2003-12-20 12:22:36 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.43 2004-01-30 13:56:45 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -346,6 +346,10 @@ begin
 end;
 
 function THTMLOutput.replaceDefault(var replacement: string; data: TObject = nil): boolean;
+var
+	fs: TFileStream;
+  ss: TStringStream;
+  tmp: string;
 begin
   result := false;
   if (CompareText(replacement, 'default_title') = 0) then begin
@@ -412,7 +416,25 @@ begin
   else if (CompareText(replacement, 'targetext') = 0) then begin
     replacement := TargetExtention;
     result := true;
-  end;
+  end
+  else if (IsReplacement(replacement, 'include:')) then begin
+    tmp := Copy(replacement, Length('include:')+1, MaxInt);
+    if (not FileExists(TemplateDir+tmp)) then begin
+    	Log('Can''t include file: '+tmp);
+      exit;
+    end;
+    //Log('Including '+replacement+' AS IS');
+    fs := TFileStream.Create(TemplateDir+tmp, fmOpenRead or fmShareDenyWrite);
+    ss := TStringStream.Create('');
+    try
+    	ss.CopyFrom(fs, fs.Size);
+    	replacement := ss.DataString;
+      result := true;
+  	finally
+    	fs.Free;
+      ss.Free;
+    end;
+  end
 end;
 
 procedure THTMLOutput.htmlIndex;
