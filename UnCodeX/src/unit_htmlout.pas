@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.46 2004-02-23 22:02:47 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.47 2004-02-24 07:51:24 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -121,7 +121,7 @@ type
     procedure CopyFiles;
     function ProcComment(input: string): string;
     procedure SourceCode;
-    procedure parseCode(input, output: TStream);
+    procedure parseCode(input, output: TStream; nolineno: boolean = false);
     function CommentPreprocessor(input: string): string;
     function GetPackage(curpack: TUPackage; offset: integer; wrap: boolean = true): TUPackage;
     function GetClass(curclass: TUClass; offset: integer; wrap: boolean = true): TUClass;
@@ -776,7 +776,7 @@ var
   i, cnt: integer;
   uclass, up: TUClass;
   template: TFileStream;
-  target: TStringStream;
+  target, source: TStringStream;
   tmp, last: string;
   idata: TInheritenceData;
 begin
@@ -821,6 +821,18 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'class_defaultproperties') = 0) then begin
+    source := TStringStream.Create('defaultproperties'+#13#10+TUClass(data).defaultproperties);
+    target := TStringStream.Create('');
+    try
+      parseCode(source, target, true);
+    	replacement := target.DataString;
+	    result := true;
+    finally
+    	target.Free;
+      source.Free;
+    end;
+  end
+  else if (CompareText(replacement, 'class_defaultproperties_plain') = 0) then begin
     if (TabsToSpaces >= 0) then begin
       replacement := StringReplace(TUClass(data).defaultproperties, #9, StrRepeat(' ', TabsToSpaces), [rfReplaceAll]);
     end
@@ -2170,7 +2182,7 @@ begin
   end;
 end;
 
-procedure THTMLOutput.parseCode(input, output: TStream);
+procedure THTMLOutput.parseCode(input, output: TStream; nolineno: boolean = false);
 var
   p: TSourceParser;
   replacement, tmp: string;
@@ -2258,7 +2270,8 @@ begin
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toEOL) then begin
-        replacement := p.TokenString+'<a name="'+IntToStr(p.SourceLine)+'"></a>';
+      	if (nolineno) then replacement := p.TokenString
+        else replacement := p.TokenString+'<a name="'+IntToStr(p.SourceLine)+'"></a>';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = #9) then begin
@@ -2278,13 +2291,19 @@ begin
     p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
 
     // finalize
-    replacement := '<div class="source"><table class="source"><tr><td class="source_lineno"><font class="source_lineno">';
+    replacement := '<div class="source"><table class="source"><tr>';
     output.WriteBuffer(PChar(replacement)^, Length(replacement));
-    for i := 1 to p.SourceLine do begin
-      replacement := format('%.5d<br>'+#10, [i]);
+    if (not nolineno) then begin
+    	replacement := '<td class="source_lineno"><font class="source_lineno">';
+    	output.WriteBuffer(PChar(replacement)^, Length(replacement));
+	    for i := 1 to p.SourceLine do begin
+    	  replacement := format('%.5d<br>'+#10, [i]);
+  	    output.WriteBuffer(PChar(replacement)^, Length(replacement));
+	    end;
+    	replacement := '</font></td>';
       output.WriteBuffer(PChar(replacement)^, Length(replacement));
-    end;
-    replacement := '</font></td><td class="source">';
+  	end;
+    replacement := '<td class="source">';
     output.WriteBuffer(PChar(replacement)^, Length(replacement));
     ms.SaveToStream(output);
     replacement := '</td></tr></table></div>';
