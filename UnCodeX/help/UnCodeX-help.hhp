@@ -82,6 +82,22 @@ UnCodeX-renameclass.gif
 UnCodeX-moveclass.gif
 donation.html
 pascalscript.html
+ps_types_basic.html
+ps_const.html
+ps_const_gui.html
+ps_types_enum.html
+ps_types_record.html
+ps_uclasses_TUClass.html
+ps_uclasses_TUConst.html
+ps_uclasses_TUEnum.html
+ps_uclasses_TUFunction.html
+ps_uclasses_TUObject.html
+ps_uclasses_TUPackage.html
+ps_uclasses_TUProperty.html
+ps_uclasses_TUState.html
+ps_uclasses_TUStruct.html
+ps_var.html
+ps_var_gui.html
 
 [INFOTYPES]
 

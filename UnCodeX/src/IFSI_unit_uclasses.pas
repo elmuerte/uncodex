@@ -30,7 +30,7 @@ type
     procedure ExecImport2(CompExec: TPSScript; const ri: TPSRuntimeClassImporter); override;
   end;
 
-	procedure Register; 
+  procedure Register; 
  
 (*
 { compile-time registration functions }
@@ -115,6 +115,7 @@ begin
   begin
     RegisterMethod('Procedure Sort');
     RegisterMethod('Procedure AlphaSort');
+    RegisterMethod('Function Find( name : string) : TUPackage');
     RegisterProperty('Items', 'TUPackage Integer', iptrw);
     SetDefaultPropery('Items');
   end;
@@ -142,6 +143,7 @@ begin
   with CL.AddClassN(CL.FindClass('TUObjectList'),'TUClassList') do
   begin
     RegisterMethod('Procedure Sort');
+    RegisterMethod('Function Find( name : string) : TUClass');
     RegisterProperty('Items', 'TUClass Integer', iptrw);
     SetDefaultPropery('Items');
   end;
@@ -186,6 +188,7 @@ begin
   with CL.AddClassN(CL.FindClass('TUObjectList'),'TUFunctionList') do
   begin
     RegisterMethod('Procedure Sort');
+    RegisterMethod('Function Find( name : string; state : string) : TUFunction');
     RegisterProperty('Items', 'TUFunction Integer', iptrw);
     SetDefaultPropery('Items');
   end;
@@ -215,6 +218,7 @@ begin
   with CL.AddClassN(CL.FindClass('TUObjectList'),'TUStateList') do
   begin
     RegisterMethod('Procedure Sort');
+    RegisterMethod('Function Find( name : string) : TUState');
     RegisterProperty('Items', 'TUState Integer', iptrw);
     SetDefaultPropery('Items');
   end;
@@ -240,6 +244,7 @@ begin
   with CL.AddClassN(CL.FindClass('TUObjectList'),'TUStructList') do
   begin
     RegisterMethod('Procedure Sort');
+    RegisterMethod('Function Find( name : string) : TUStruct');
     RegisterProperty('Items', 'TUStruct Integer', iptrw);
     SetDefaultPropery('Items');
   end;
@@ -266,6 +271,7 @@ begin
   with CL.AddClassN(CL.FindClass('TUObjectList'),'TUEnumList') do
   begin
     RegisterMethod('Procedure Sort');
+    RegisterMethod('Function Find( name : string) : TUEnum');
     RegisterProperty('Items', 'TUEnum Integer', iptrw);
     SetDefaultPropery('Items');
   end;
@@ -288,6 +294,7 @@ begin
   with CL.AddClassN(CL.FindClass('TUObjectList'),'TUPropertyList') do
   begin
     RegisterMethod('Procedure Sort');
+    RegisterMethod('Function Find( name : string) : TUProperty');
     RegisterMethod('Procedure SortOnTag');
     RegisterProperty('Items', 'TUProperty Integer', iptrw);
     SetDefaultPropery('Items');
@@ -313,6 +320,7 @@ begin
   with CL.AddClassN(CL.FindClass('TUObjectList'),'TUConstList') do
   begin
     RegisterMethod('Procedure Sort');
+    RegisterMethod('Function Find( name : string) : TUConst');
     RegisterProperty('Items', 'TUConst Integer', iptrw);
     SetDefaultPropery('Items');
   end;
@@ -334,6 +342,7 @@ begin
   //with RegClassS(CL,'TObjectList', 'TUObjectList') do
   with CL.AddClassN(CL.FindClass('TObjectList'),'TUObjectList') do
   begin
+    RegisterMethod('Function Find( name : string) : TUObject');
   end;
 end;
 
@@ -836,6 +845,7 @@ begin
   begin
     RegisterMethod(@TUPackageList.Sort, 'Sort');
     RegisterMethod(@TUPackageList.AlphaSort, 'AlphaSort');
+    RegisterMethod(@TUPackageList.Find, 'Find');
     RegisterPropertyHelper(@TUPackageListItems_R,@TUPackageListItems_W,'Items');
   end;
 end;
@@ -860,6 +870,7 @@ begin
   with CL.Add(TUClassList) do
   begin
     RegisterMethod(@TUClassList.Sort, 'Sort');
+    RegisterMethod(@TUClassList.Find, 'Find');
     RegisterPropertyHelper(@TUClassListItems_R,@TUClassListItems_W,'Items');
   end;
 end;
@@ -901,6 +912,7 @@ begin
   with CL.Add(TUFunctionList) do
   begin
     RegisterMethod(@TUFunctionList.Sort, 'Sort');
+    RegisterMethod(@TUFunctionList.Find, 'Find');
     RegisterPropertyHelper(@TUFunctionListItems_R,@TUFunctionListItems_W,'Items');
   end;
 end;
@@ -927,6 +939,7 @@ begin
   with CL.Add(TUStateList) do
   begin
     RegisterMethod(@TUStateList.Sort, 'Sort');
+    RegisterMethod(@TUStateList.Find, 'Find');
     RegisterPropertyHelper(@TUStateListItems_R,@TUStateListItems_W,'Items');
   end;
 end;
@@ -949,6 +962,7 @@ begin
   with CL.Add(TUStructList) do
   begin
     RegisterMethod(@TUStructList.Sort, 'Sort');
+    RegisterMethod(@TUStructList.Find, 'Find');
     RegisterPropertyHelper(@TUStructListItems_R,@TUStructListItems_W,'Items');
   end;
 end;
@@ -972,6 +986,7 @@ begin
   with CL.Add(TUEnumList) do
   begin
     RegisterMethod(@TUEnumList.Sort, 'Sort');
+    RegisterMethod(@TUEnumList.Find, 'Find');
     RegisterPropertyHelper(@TUEnumListItems_R,@TUEnumListItems_W,'Items');
   end;
 end;
@@ -991,6 +1006,7 @@ begin
   with CL.Add(TUPropertyList) do
   begin
     RegisterMethod(@TUPropertyList.Sort, 'Sort');
+    RegisterMethod(@TUPropertyList.Find, 'Find');
     RegisterMethod(@TUPropertyList.SortOnTag, 'SortOnTag');
     RegisterPropertyHelper(@TUPropertyListItems_R,@TUPropertyListItems_W,'Items');
   end;
@@ -1013,6 +1029,7 @@ begin
   with CL.Add(TUConstList) do
   begin
     RegisterMethod(@TUConstList.Sort, 'Sort');
+    RegisterMethod(@TUConstList.Find, 'Find');
     RegisterPropertyHelper(@TUConstListItems_R,@TUConstListItems_W,'Items');
   end;
 end;
@@ -1031,6 +1048,7 @@ procedure RIRegister_TUObjectList(CL: TPSRuntimeClassImporter);
 begin
   with CL.Add(TUObjectList) do
   begin
+    RegisterMethod(@TUObjectList.Find, 'Find');
   end;
 end;
 

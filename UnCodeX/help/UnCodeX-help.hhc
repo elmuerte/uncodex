@@ -229,11 +229,84 @@
 		</OBJECT>
 	<UL>
 		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="Constants and Variables">
+			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Constants">
+				<param name="Local" value="ps_const.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="GUI Constants">
+				<param name="Local" value="ps_const_gui.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Variables">
+				<param name="Local" value="ps_var.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="GUI Variables">
+				<param name="Local" value="ps_var_gui.html">
+				</OBJECT>
+		</UL>
+		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="Types">
 			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Basic types">
+				<param name="Local" value="ps_types_basic.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Enumerations">
+				<param name="Local" value="ps_types_enum.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="Records">
+				<param name="Local" value="ps_types_record.html">
+				</OBJECT>
+		</UL>
 		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="Classes">
 			</OBJECT>
+		<UL>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TUObject \ TUObjectList">
+				<param name="Local" value="ps_uclasses_TUObject.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TUPackage \ TUPackageList">
+				<param name="Local" value="ps_uclasses_TUPackage.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TUClass \ TUClassList">
+				<param name="Local" value="ps_uclasses_TUClass.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TUState \ TUStateList">
+				<param name="Local" value="ps_uclasses_TUState.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TUFunction \ TUFunctionList">
+				<param name="Local" value="ps_uclasses_TUFunction.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TUStruct \ TUStructList">
+				<param name="Local" value="ps_uclasses_TUStruct.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TUEnum \ TUEnumList">
+				<param name="Local" value="ps_uclasses_TUEnum.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TUProperty \ TUPropertyList">
+				<param name="Local" value="ps_uclasses_TUProperty.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="TUConst \ TUConstList">
+				<param name="Local" value="ps_uclasses_TUConst.html">
+				</OBJECT>
+		</UL>
 		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="Functions">
 			</OBJECT>
