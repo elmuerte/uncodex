@@ -7,6 +7,8 @@
 
 program UnCodeX;
 
+{$R 'hilight_preview.res' 'hilight_preview.rc'}
+
 uses
   ShareMem,
   Windows,
@@ -155,8 +157,8 @@ begin
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-    Application.CreateForm(Tfrm_About, frm_About);
-    if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+  Application.CreateForm(Tfrm_About, frm_About);
+  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end;
 end.

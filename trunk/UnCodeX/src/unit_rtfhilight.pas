@@ -15,7 +15,7 @@ uses
   procedure RTFHilightUScript(input, output: TStream; uclass: TUClass);
 
 var
-  cf1,cf2,cf3,cf4,cf5: TColor;
+  cf1,cf2,cf3,cf4,cf5,cf6: TColor;
   textfont: TFont;
 
 implementation
@@ -33,9 +33,9 @@ var
   L: longint;
 begin
   L := ColorToRGB(col);
-  result := '\red'+IntToStr(L div 65536);
+  result := '\blue'+IntToStr(L div 65536);
   result := result+'\green'+IntToStr((L mod 65536) div 256);
-  result := result+'\blue'+IntToStr((L mod 65536) mod 256);
+  result := result+'\red'+IntToStr((L mod 65536) mod 256);
   result := result+';'
 end;
 
@@ -47,8 +47,8 @@ begin
   // must be absolute first to prevent reading the first char
   replacement := RTFHeader+
     '{\fonttbl\f0\fmodren '+textfont.name+';}'+
-    '{\colortbl;'+ColorToRTF(cf1)+ColorToRTF(cf2)+ColorToRTF(cf3)+ColorToRTF(cf4)+ColorToRTF(cf5)+'}'+
-    '{\f0\fs'+IntToStr(textfont.Size*2)+' ';
+    '{\colortbl;'+ColorToRTF(cf1)+ColorToRTF(cf2)+ColorToRTF(cf3)+ColorToRTF(cf4)+ColorToRTF(cf5)+ColorToRTF(cf6)+'}'+
+    '{\f0\fs'+IntToStr(textfont.Size*2)+'\cf6 ';
   Output.WriteBuffer(PChar(replacement)^, Length(replacement));
   p := TSourceParser.Create(input, output);
   try
@@ -114,10 +114,11 @@ begin
       p.SkipToken(true);
     end;
     replacement := '}{\info'+
-      '{\author '+APPTITLE+' '+APPVERSION+'}'+
-      '{\title '+uclass.package.name+'.'+uclass.name+'}'+
-      '}'+
-      '{\header '+uclass.package.name+'.'+uclass.name+'}'+
+      '{\author '+APPTITLE+' '+APPVERSION+'}';
+    if (uclass <> nil) then replacement := replacement+'{\title '+uclass.package.name+'.'+uclass.name+'}';
+    replacement := replacement+'}';
+    if (uclass <> nil) then replacement := replacement+'{\header '+uclass.package.name+'.'+uclass.name+'}';
+    replacement := replacement+
       '{\footer '+APPTITLE+' '+APPVERSION+'}'+
       '}';
     p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
@@ -201,11 +202,12 @@ initialization
   Keywords.Items['while'] := '';
   Keywords.Items['within'] := '';
   // fill keyword table -- end
-  cf1 := $0000FF;
-  cf2 := $009933;
-  cf3 := $CC0000;
-  cf4 := $660000;
-  cf5 := $000099;
+  cf1 := $00FF0000;
+  cf2 := $00339900;
+  cf3 := $000000CC;
+  cf4 := $00000066;
+  cf5 := $00990000;
+  cf6 := $00000000;
   textfont := TFont.Create;
   textfont.Name := 'Courier New';
   textfont.Size := 9;

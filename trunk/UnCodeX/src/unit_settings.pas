@@ -12,7 +12,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, Buttons {$IFDEF MSWINDOWS},FileCtrl{$ENDIF}, ComCtrls,
-  Menus, ExtCtrls, IniFiles, CheckLst, ActnList;
+  Menus, ExtCtrls, IniFiles, CheckLst, ActnList, unit_richeditex;
 
 type
   
@@ -136,7 +136,24 @@ type
     ud_DefInheritDepth: TUpDown;
     cb_LoadCustomModules: TCheckBox;
     btn_Ignore: TBitBtn;
-    lbl_SourceSnoop: TLabel;
+    ts_SourceSnoop: TTabSheet;
+    gb_Sourcesnoop: TGroupBox;
+    BitBtn1: TBitBtn;
+    re_Preview: TRichEditEx;
+    cb_cf0: TColorBox;
+    cb_cf1: TColorBox;
+    cb_cf2: TColorBox;
+    cb_cf3: TColorBox;
+    cb_cf4: TColorBox;
+    cb_cf5: TColorBox;
+    Label2: TLabel;
+    Label4: TLabel;
+    Label5: TLabel;
+    Label6: TLabel;
+    Label7: TLabel;
+    Label8: TLabel;
+    cb_Background: TColorBox;
+    Label9: TLabel;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -183,10 +200,19 @@ type
     procedure lv_HotKeysSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
     procedure btn_IgnoreClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure BitBtn1Click(Sender: TObject);
+    procedure cb_cf0Change(Sender: TObject);
+    procedure cb_cf1Change(Sender: TObject);
+    procedure cb_cf2Change(Sender: TObject);
+    procedure cb_cf3Change(Sender: TObject);
+    procedure cb_cf4Change(Sender: TObject);
+    procedure cb_cf5Change(Sender: TObject);
+    procedure cb_BackgroundChange(Sender: TObject);
+    procedure btn_CancelClick(Sender: TObject);
   private
-    { Private declarations }
   public
-    { Public declarations }
+    procedure ReloadPreview;
   end;
 
 var
@@ -194,9 +220,31 @@ var
 
 implementation
 
-uses unit_main;
+uses unit_main, unit_rtfhilight;
 
 {$R *.dfm}
+
+var
+  bcf1,bcf2,bcf3,bcf4,bcf5,bcf6: TColor;
+  btextfont: TFont;
+
+procedure Tfrm_Settings.ReloadPreview;
+var
+  ms: TMemoryStream;
+  rs: TResourceStream;
+begin
+  rs := TResourceStream.Create(HInstance, 'PREVIEW', 'USCRIPT');
+  ms := TMemoryStream.Create;
+  try
+    RTFHilightUScript(rs, ms, nil);
+    re_Preview.Lines.Clear;
+    ms.Position := 0;
+    re_Preview.Lines.LoadFromStream(ms);
+  finally
+    ms.Free;
+    rs.Free;
+  end;
+end;
 
 procedure Tfrm_Settings.btn_PUpClick(Sender: TObject);
 var
@@ -324,6 +372,24 @@ begin
     li.SubItems.Add(ShortCutToText(TAction(frm_UnCodeX.al_Main.Actions[i]).ShortCut));
     li.Data := frm_UnCodeX.al_Main.Actions[i];
   end;
+  // backup old colors
+  bcf1 := unit_rtfhilight.cf1;
+  bcf2 := unit_rtfhilight.cf2;
+  bcf3 := unit_rtfhilight.cf3;
+  bcf4 := unit_rtfhilight.cf4;
+  bcf5 := unit_rtfhilight.cf5;
+  bcf6 := unit_rtfhilight.cf6;
+  btextfont.Name := unit_rtfhilight.textfont.Name;
+  btextfont.Size := unit_rtfhilight.textfont.Size;
+  //
+  re_Preview.Font := unit_rtfhilight.textfont;
+  cb_cf0.Selected := unit_rtfhilight.cf6;
+  cb_cf1.Selected := unit_rtfhilight.cf1;
+  cb_cf2.Selected := unit_rtfhilight.cf2;
+  cb_cf3.Selected := unit_rtfhilight.cf3;
+  cb_cf4.Selected := unit_rtfhilight.cf4;
+  cb_cf5.Selected := unit_rtfhilight.cf5;
+  ReloadPreview;
 end;
 
 procedure Tfrm_Settings.lb_SettingsClick(Sender: TObject);
@@ -553,4 +619,76 @@ begin
   clb_PackagePriority.Items.Delete(clb_PackagePriority.ItemIndex);
 end;
 
+procedure Tfrm_Settings.FormClose(Sender: TObject;
+  var Action: TCloseAction);
+begin
+  Action := caFree;
+end;
+
+procedure Tfrm_Settings.BitBtn1Click(Sender: TObject);
+begin
+  fd_Font.Font := unit_rtfhilight.textfont;
+  if (fd_Font.Execute) then begin
+    unit_rtfhilight.textfont := fd_Font.Font;
+    ReloadPreview;
+  end;
+end;
+
+procedure Tfrm_Settings.cb_cf0Change(Sender: TObject);
+begin
+  unit_rtfhilight.cf6 := cb_cf0.Selected;
+  ReloadPreview;
+end;
+
+procedure Tfrm_Settings.cb_cf1Change(Sender: TObject);
+begin
+  unit_rtfhilight.cf1 := cb_cf1.Selected;
+  ReloadPreview;
+end;
+
+procedure Tfrm_Settings.cb_cf2Change(Sender: TObject);
+begin
+  unit_rtfhilight.cf2 := cb_cf2.Selected;
+  ReloadPreview;
+end;
+
+procedure Tfrm_Settings.cb_cf3Change(Sender: TObject);
+begin
+  unit_rtfhilight.cf3 := cb_cf3.Selected;
+  ReloadPreview;
+end;
+
+procedure Tfrm_Settings.cb_cf4Change(Sender: TObject);
+begin
+  unit_rtfhilight.cf4 := cb_cf4.Selected;
+  ReloadPreview;
+end;
+
+procedure Tfrm_Settings.cb_cf5Change(Sender: TObject);
+begin
+  unit_rtfhilight.cf5 := cb_cf5.Selected;
+  ReloadPreview;
+end;
+
+procedure Tfrm_Settings.cb_BackgroundChange(Sender: TObject);
+begin
+  re_Preview.Color := cb_Background.Selected;
+end;
+
+procedure Tfrm_Settings.btn_CancelClick(Sender: TObject);
+begin
+  unit_rtfhilight.cf1 := bcf1;
+  unit_rtfhilight.cf2 := bcf2;
+  unit_rtfhilight.cf3 := bcf3;
+  unit_rtfhilight.cf4 := bcf4;
+  unit_rtfhilight.cf5 := bcf5;
+  unit_rtfhilight.cf6 := bcf6;
+  unit_rtfhilight.textfont.Name := btextfont.Name;
+  unit_rtfhilight.textfont.Size := btextfont.Size;
+end;
+
+initialization
+  btextfont := TFont.Create;
+finalization
+  btextfont.Free;
 end.

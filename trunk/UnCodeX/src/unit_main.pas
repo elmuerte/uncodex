@@ -237,8 +237,9 @@ type
     procedure re_SourceSnoopMouseMove(Sender: TObject; Shift: TShiftState;
       X, Y: Integer);
     procedure mi_ClearHilightClick(Sender: TObject);
-    procedure sb_StatusClick(Sender: TObject);
     procedure mi_FindSelectionClick(Sender: TObject);
+    procedure re_SourceSnoopMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -984,13 +985,14 @@ begin
     tv_Packages.Color := ini.ReadInteger('Layout', 'Tree.Color', tv_Packages.Color);
     ExpandObject := ini.ReadBool('Layout', 'ExpandObject', true);
     MinimizeOnClose := ini.ReadBool('Layout', 'MinimizeOnClose', MinimizeOnClose);
+    
     re_SourceSnoop.Color := ini.ReadInteger('Layout', 'Source.Color', re_SourceSnoop.Color);
-    re_SourceSnoop.Font.Color := ini.ReadInteger('Layout', 'Source.Font.Color', re_SourceSnoop.Color);
     unit_rtfhilight.cf1 := ini.ReadInteger('Layout', 'Source.CF1', unit_rtfhilight.cf1);
     unit_rtfhilight.cf2 := ini.ReadInteger('Layout', 'Source.CF2', unit_rtfhilight.cf2);
     unit_rtfhilight.cf3 := ini.ReadInteger('Layout', 'Source.CF3', unit_rtfhilight.cf3);
     unit_rtfhilight.cf4 := ini.ReadInteger('Layout', 'Source.CF4', unit_rtfhilight.cf4);
     unit_rtfhilight.cf5 := ini.ReadInteger('Layout', 'Source.CF5', unit_rtfhilight.cf5);
+    unit_rtfhilight.cf6 := ini.ReadInteger('Layout', 'Source.CF6', unit_rtfhilight.cf6);
     unit_rtfhilight.textfont.Name := ini.ReadString('Layout', 'Source.Font.Name', unit_rtfhilight.textfont.Name);
     unit_rtfhilight.textfont.Size := ini.ReadInteger('Layout', 'Source.Font.Size', unit_rtfhilight.textfont.Size);
     { Color and fonts -- END }
@@ -1192,7 +1194,8 @@ begin
     tv_TreeLayout.Color := tv_Classes.Color;
     tv_TreeLayout.Font := tv_Classes.Font;
     cb_ExpandObject.Checked := ExpandObject;
-
+    re_Preview.Color := re_SourceSnoop.Color;
+    cb_Background.Selected := re_Preview.Color;
     { Program options }
     ed_StateFilename.Text := ExtractFilename(StateFile);
     cb_MinimzeOnClose.Checked := MinimizeOnClose;
@@ -1244,6 +1247,7 @@ begin
       tv_Classes.Font := tv_TreeLayout.Font;
       tv_Packages.Color := tv_TreeLayout.Color;
       tv_Packages.Font := tv_TreeLayout.Font;
+      re_SourceSnoop.Color := re_Preview.Color;
 
       ini := TMemIniFile.Create(ConfigFile);
       data := TStringList.Create;
@@ -1276,6 +1280,16 @@ begin
         data.Add('Tree.Color='+IntToStr(tv_Classes.Color));
         Data.Add('ExpandObject='+IntToStr(Ord(ExpandObject)));
         data.Add('MinimizeOnClose='+BoolToStr(MinimizeOnClose));
+
+        data.Add('Source.Color='+IntToStr(re_SourceSnoop.Color));
+        data.Add('Source.CF1='+IntToStr(unit_rtfhilight.cf1));
+        data.Add('Source.CF2='+IntToStr(unit_rtfhilight.cf2));
+        data.Add('Source.CF3='+IntToStr(unit_rtfhilight.cf3));
+        data.Add('Source.CF4='+IntToStr(unit_rtfhilight.cf4));
+        data.Add('Source.CF5='+IntToStr(unit_rtfhilight.cf5));
+        data.Add('Source.CF6='+IntToStr(unit_rtfhilight.cf6));
+        data.Add('Source.Font.Name='+unit_rtfhilight.textfont.Name);
+        data.Add('Source.Font.Size='+IntToStr(unit_rtfhilight.textfont.Size));
 
         data.Add('[HotKeys]');
         for i := 0 to lv_HotKeys.Items.Count-1 do begin
@@ -1975,11 +1989,6 @@ begin
   re_SourceSnoop.ClearBgColor;
 end;
 
-procedure Tfrm_UnCodeX.sb_StatusClick(Sender: TObject);
-begin
-  re_SourceSnoop.makeurl();
-end;
-
 procedure Tfrm_UnCodeX.mi_FindSelectionClick(Sender: TObject);
 begin
   if (re_SourceSnoop.SelText = '') then exit;
@@ -1988,6 +1997,17 @@ begin
   CSprops[1] := false;
   tv_Classes.Selected := nil;
   ac_FindNext.Execute;
+end;
+
+procedure Tfrm_UnCodeX.re_SourceSnoopMouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  pt: TPoint;
+begin
+  if (Button = mbRight) then begin
+    pt := re_SourceSnoop.ClientToScreen(Point(x,y));
+    pm_SourceSnoop.Popup(pt.X, pt.Y);
+  end;
 end;
 
 end.

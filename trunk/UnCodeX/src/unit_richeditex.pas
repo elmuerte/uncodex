@@ -14,10 +14,15 @@ uses
 
 type
   TRichEditEx = class(TRichEdit)
+  private
+    xCanvas: TCanvas;
+    FGutterWidth: integer;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
-    //function EditWordBreak(lpch: pchar; ichCurrent: integer; cch: integer; code: integer): integer; stdcall;
+    procedure WMPaint( var Msg : TWMPaint ); message WM_PAINT;
   public
+    constructor Create(AOwner: TComponent); override;
+    destructor Destroy; override;
     procedure CreateWnd(); override;
     procedure SetSelBgColor(color: TColor);
     procedure ClearBgColor();
@@ -28,13 +33,11 @@ type
 
 implementation
 
-uses unit_main;
-
 const
   RichEditModuleName = 'RICHED20.DLL';
 
 var
-  FRichEditModule: THandle;
+  FRichEditModule: THandle = 0;
 
 procedure Register;
 begin
@@ -69,12 +72,29 @@ begin
   end;
 end;
 
-procedure TRichEditEx.CreateWnd();
+constructor TRichEditEx.Create(AOwner: TComponent);
 begin
   inherited;
-  SendMessage(Self.Handle, EM_SETWORDBREAKPROC, 0, LPARAM(@EditWordBreak));
-  SendMessage(Self.Handle, EM_SETOPTIONS, ECOOP_OR, ECO_SELECTIONBAR);
-  //SendMessage(Self.Handle, EM_AUTOURLDETECT, Integer(True), 0);
+  xCanvas := TControlCanvas.Create;
+  TControlCanvas(xCanvas).Control := Self;
+  FGutterWidth := 50;
+end;
+
+destructor TRichEditEx.Destroy;
+begin
+  inherited;
+  xCanvas.Free;
+end;
+
+procedure TRichEditEx.CreateWnd();
+var
+  R: TRect;
+begin
+  inherited;
+  R := RECT( FGutterWidth+5, 0, Self.Width, Self.Height);
+  Perform(EM_SETRECT, 0, Integer(@R));
+  Perform(EM_SETWORDBREAKPROC, 0, LPARAM(@EditWordBreak));
+  //Perform(EM_EXLIMITTEXT, 0, 512000); // set max text limit to 500kb
 end;
 
 procedure TRichEditEx.CreateParams(var Params: TCreateParams);
@@ -91,8 +111,7 @@ begin
   CreateSubClass(Params, RICHEDIT_CLASS);
   with Params do
   begin
-    Style := Style or HideScrollBars[false] or
-      HideSelections[HideSelection];
+    Style := Style or HideScrollBars[false] or HideSelections[HideSelection];
     WindowClass.style := WindowClass.style and not (CS_HREDRAW or CS_VREDRAW);
   end;
 end;
@@ -137,7 +156,48 @@ begin
   end;
 end;
 
+procedure TRichEditEx.WMPaint( var Msg : TWMPaint );
+var
+  offset, lh: integer;
+  r: TRect;
+  pt: TPoint;
+  l: string;
+begin
+  inherited;
+  with xCanvas do begin
+    Brush.Color := clBtnFace;
+    Pen.Color := clBtnFace;
+    Rectangle(0, 0, FGutterWidth, Height);
+    Pen.Width := 1;
+    Pen.Color := cl3DLight;
+    MoveTo(FGutterWidth-3, 0);
+    LineTo(FGutterWidth-3, Height);
+    Pen.Color := clBtnShadow;
+    MoveTo(FGutterWidth-1, 0);
+    LineTo(FGutterWidth-1, Height);
+    Font.Name := 'Courier New';
+    font.Size := 8;
+    offset := Perform(EM_GETFIRSTVISIBLELINE, 0, 0);
+    l := 'ABCDEFGHIJKLMNOPQRSTUVQWYX1234567890';
+    DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_SINGLELINE	or DT_CALCRECT );
+    lh := r.Bottom-r.Top+2;
+    r.Top := 0;
+    r.Bottom := 0;
+    while (offset < lines.Count) and (r.Top < Height) do begin
+      if (r.Top > Height) then break;
+      Perform(EM_POSFROMCHAR, Integer(@pt), Perform(EM_LINEINDEX, offset, 0));
+      r := Rect(0, pt.y, FGutterWidth-10, pt.y+lh);
+      l := format('%d', [offset+1]);
+      DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_RIGHT or DT_SINGLELINE	or DT_VCENTER);
+      Inc(offset);
+    end;
+  end;
+end;
+
 initialization
 finalization
-  if FRichEditModule <> 0 then FreeLibrary(FRichEditModule);
+  if FRichEditModule <> 0 then begin
+    FreeLibrary(FRichEditModule);
+    FRichEditModule := 0;
+  end;
 end.

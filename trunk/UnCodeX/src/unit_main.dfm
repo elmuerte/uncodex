@@ -115,7 +115,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
       end>
     SimplePanel = False
     SizeGrip = False
-    OnClick = sb_StatusClick
   end
   object pb_Scan: TProgressBar
     Left = 0
@@ -295,13 +294,13 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Font.Name = 'Courier New'
     Font.Style = []
     ParentFont = False
-    PopupMenu = pm_SourceSnoop
     ReadOnly = True
     ScrollBars = ssBoth
     TabOrder = 3
     Visible = False
     WordWrap = False
     OnMouseMove = re_SourceSnoopMouseMove
+    OnMouseUp = re_SourceSnoopMouseUp
   end
   object mm_Main: TMainMenu
     Images = il_Small
@@ -1886,7 +1885,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
       000000000000}
   end
   object pm_SourceSnoop: TPopupMenu
-    TrackButton = tbLeftButton
+    AutoPopup = False
     Left = 72
     Top = 72
     object mi_FindSelection: TMenuItem
