@@ -3,7 +3,7 @@
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
             Based on the TParser class by Borland Software Corporation
- $Id: unit_parser.pas,v 1.14 2004-03-11 20:55:31 elmuerte Exp $
+ $Id: unit_parser.pas,v 1.15 2004-04-01 18:40:26 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 { *************************************************************************** }
@@ -202,6 +202,9 @@ begin
             Result := toEOF;
           end
           else begin
+          	if (FCIgnoreComments and FullCopy) then begin
+              FCopyStream.WriteString(#10); // or else this would be cut
+            end;
             Inc(P);
             Inc(FSourceLine); // next line
             Result := toComment; // not realy a comment but we just ignore it
