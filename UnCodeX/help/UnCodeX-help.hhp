@@ -38,6 +38,25 @@ x04_event.gif
 x04_func.gif
 x00_const.gif
 templates.html
+templates_packages_table_entry.html
+templates_class_const_entry.html
+templates_class_enum_entry.html
+templates_class_function_entry.html
+templates_class_inherited.html
+templates_class_struct_entry.html
+templates_class_var_entry.html
+templates_classes_list.html
+templates_classes_list_entry.html
+templates_classtree.html
+templates_glossary.html
+templates_index.html
+templates_overview.html
+templates_package_class_table_entry.html
+templates_package_overview.html
+templates_packages_list.html
+templates_packages_list_entry.html
+templates_class.html
+templates_template.ini.html
 
 [INFOTYPES]
 
