@@ -64,7 +64,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 433
     Height = 378
-    ActivePage = ts_Keywords
+    ActivePage = ts_HTMLHelp
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -483,26 +483,33 @@ object frm_Settings: Tfrm_Settings
         end
         object lbl_HTMLTargetExt: TLabel
           Left = 8
-          Top = 96
+          Top = 136
           Width = 209
           Height = 13
           Caption = 'Target extention (leave blank for the default)'
         end
         object Label11: TLabel
           Left = 8
-          Top = 136
+          Top = 176
           Width = 235
           Height = 13
           Caption = 'Tabs to spaces (0 = template default; -1 = disable)'
         end
         object lbl_CPP: TLabel
           Left = 8
-          Top = 176
+          Top = 216
           Width = 353
           Height = 13
           Caption = 
             'Comment PreProcessor (leave empty for template default, or none ' +
             'for none)'
+        end
+        object lbl_HTMLDefaultTitle: TLabel
+          Left = 8
+          Top = 96
+          Width = 228
+          Height = 13
+          Caption = 'Default title (leave blank for the template default)'
         end
         object ed_HTMLOutputDir: TEdit
           Left = 8
@@ -548,7 +555,7 @@ object frm_Settings: Tfrm_Settings
         end
         object ed_HTMLTargetExt: TEdit
           Left = 8
-          Top = 112
+          Top = 152
           Width = 409
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -558,7 +565,7 @@ object frm_Settings: Tfrm_Settings
         end
         object ed_TabsToSpaces: TEdit
           Left = 8
-          Top = 152
+          Top = 192
           Width = 393
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -582,20 +589,30 @@ object frm_Settings: Tfrm_Settings
         end
         object ed_CPPApp: TEdit
           Left = 8
-          Top = 192
+          Top = 232
           Width = 393
           Height = 21
           TabOrder = 7
         end
         object btn_SelectCPP: TBitBtn
           Left = 392
-          Top = 192
+          Top = 232
           Width = 25
           Height = 21
           Anchors = [akTop, akRight]
           Caption = '...'
           TabOrder = 8
           OnClick = btn_SelectCPPClick
+        end
+        object ed_HTMLDefaultTitle: TEdit
+          Left = 8
+          Top = 112
+          Width = 409
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          TabOrder = 9
         end
       end
     end

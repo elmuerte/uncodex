@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   program settings window
- $Id: unit_settings.pas,v 1.29 2003-11-22 19:27:05 elmuerte Exp $
+ $Id: unit_settings.pas,v 1.30 2003-11-26 21:15:36 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -198,6 +198,8 @@ type
     ed_AddSecKey: TEdit;
     lbl_PrimKey: TLabel;
     lbl_SecondKey: TLabel;
+    ed_HTMLDefaultTitle: TEdit;
+    lbl_HTMLDefaultTitle: TLabel;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);

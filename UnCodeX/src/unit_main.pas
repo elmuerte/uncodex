@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.62 2003-11-22 19:27:05 elmuerte Exp $
+ $Id: unit_main.pas,v 1.63 2003-11-26 21:15:36 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -383,7 +383,7 @@ var
   AnalyseModified: boolean;
   LoadCustomOutputModules: boolean = true;
   // HTML out
-  HTMLOutputDir, TemplateDir, HTMLTargetExt, CPPApp: string;
+  HTMLOutputDir, TemplateDir, HTMLTargetExt, CPPApp, HTMLdefaultTitle: string;
   TabsToSpaces: integer;
   // HTML Help out
   HHCPath, HTMLHelpFile, HHTitle: string;
@@ -1209,6 +1209,7 @@ begin
     HTMLTargetExt := ini.ReadString('Config', 'HTMLTargetExt', '');
     TabsToSpaces := ini.ReadInteger('Config', 'TabsToSpaces', 0);
     CPPApp := ini.ReadString('Config', 'CPP', '');
+    HTMLdefaultTitle := ini.ReadString('Config', 'HTMLDefaultTitle', '');
     HHCPath := ini.ReadString('Config', 'HHCPath', '');
     ac_HTMLHelp.Enabled := HHCPath <> '';
     HTMLHelpFile := ini.ReadString('Config', 'HTMLHelpFile', ExtractFilePath(ParamStr(0))+'UnCodeX.chm');
@@ -1365,13 +1366,13 @@ begin
     lb_Log.Items.Clear;
     htmlconfig.PackageList := PackageList;
     htmlconfig.ClassList := ClassList;
-    htmlconfig.ClassTree := tv_Classes.Items;
     htmlconfig.outputdir := HTMLOutputDir;
     htmlconfig.TemplateDir := TemplateDir;
     htmlconfig.CreateSource := true; // TODO: make configurable
     htmlconfig.TargetExtention := HTMLTargetExt;
     htmlconfig.TabsToSpaces := TabsToSpaces;
     htmlconfig.CPP := CPPApp;
+    htmlconfig.DefaultTitle := HTMLdefaultTitle;
     runningthread := THTMLoutput.Create(htmlconfig, StatusReport);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
@@ -1399,6 +1400,7 @@ begin
     ed_HTMLTargetExt.Text := HTMLTargetExt;
     ud_TabsToSpaces.Position := TabsToSpaces;
     ed_CPPApp.Text := CPPApp;
+    ed_HTMLDefaultTitle.Text := HTMLdefaultTitle;
     { HTML Help }
     ed_WorkshopPath.Text := HHCPath;
     ed_HTMLHelpOutput.Text := HTMLHelpFile;
@@ -1440,6 +1442,7 @@ begin
       HTMLTargetExt := ed_HTMLTargetExt.Text;
       TabsToSpaces := ud_TabsToSpaces.Position;
       CPPApp := ed_CPPApp.Text;
+      HTMLdefaultTitle := ed_HTMLDefaultTitle.Text;
       { HTML Help }
       HHCPath := ed_WorkshopPath.Text;
       ac_HTMLHelp.Enabled := HHCPath <> '';
@@ -1504,6 +1507,7 @@ begin
         data.Add('HTMLTargetExt='+HTMLTargetExt);
         data.Add('TabsToSpaces='+IntToStr(TabsToSpaces));
         data.Add('CPP='+CPPApp);
+        data.Add('HTMLDefaultTitle='+HTMLdefaultTitle);
         data.Add('HHCPath='+HHCPath);
         data.Add('HTMLHelpFile='+HTMLHelpFile);
         data.Add('HHTitle='+HHTitle);
@@ -1796,6 +1800,8 @@ begin
 end;
 
 procedure Tfrm_UnCodeX.ac_HTMLHelpExecute(Sender: TObject);
+var
+  tmp: string;
 begin
   if (not FileExists(HHCPath+PATHDELIM+COMPILER)) then begin
     MessageDlg('You first have to define the path to the HTML Help Workshop in '+#13+#10+'the program settings.', mtError, [mbOK], 0);
@@ -1803,7 +1809,9 @@ begin
   end;
   if (ThreadCreate) then begin
     lb_Log.Items.Clear;
-    runningthread := TMSHTMLHelp.Create(HHCPath, HTMLOutputDir, HTMLHelpFile, HHTitle, PackageList, ClassList, StatusReport);
+    if (HHTitle <> '') then tmp := HHTitle
+    else tmp := HHTitle;
+    runningthread := TMSHTMLHelp.Create(HHCPath, HTMLOutputDir, HTMLHelpFile, tmp, PackageList, ClassList, StatusReport);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
   end;
