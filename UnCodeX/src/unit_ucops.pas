@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class operations (implements subclassing, moving, ...)
 
-  $Id: unit_ucops.pas,v 1.16 2005-04-02 11:42:11 elmuerte Exp $
+  $Id: unit_ucops.pas,v 1.17 2005-04-04 21:31:59 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -92,13 +92,13 @@ var
   i: integer;
 begin
   result := false;
-  for i := 0 to SourcePaths.Count-1 do begin
-    if (FileExists(SourcePaths[i]+PathDelim+'System'+PathDelim+'ucc.exe')) then begin
-      seldir := SourcePaths[i];
+  for i := 0 to config.SourcePaths.Count-1 do begin
+    if (FileExists(config.SourcePaths[i]+PathDelim+'System'+PathDelim+'ucc.exe')) then begin
+      seldir := config.SourcePaths[i];
       break;
     end;
   end;
-  if (seldir = '') then seldir := SourcePaths[0];
+  if (seldir = '') then seldir := config.SourcePaths[0];
   if (SelectDirectory('Select the base directory for the new package: '+name, '', seldir)) then begin
     seldir := seldir+PathDelim+name+PathDelim+'Classes';
     if (not ForceDirectories(seldir)) then begin
@@ -113,11 +113,11 @@ function CreateUPackage(name, seldir: string): TUPackage;
 begin
   result := TUPackage.Create;
   result.name := name;
-  result.priority := PackageList.Count;
+  result.priority := config.PackageList.Count;
   result.path := seldir;
   result.treenode := frm_UnCodeX.tv_Packages.Items.AddObject(nil, result.name, result);
-  PackageList.Add(result);
-  PackagePriority.Add(result.name);
+  config.PackageList.Add(result);
+  config.PackagesPriority.Add(result.name);
   frm_UnCodeX.tv_Packages.AlphaSort();
   Log('Adding new package '''+result.name+''' to priority list, check the package priority list');
 end;
@@ -162,12 +162,12 @@ var
 begin
   with (Tfrm_CreateNewClass.Create(Application)) do begin
     cb_Package.Clear;
-    for i := 0 to PackageList.Count-1 do begin
-      cb_Package.Items.AddObject(PackageList[i].name, PackageList[i]);
+    for i := 0 to config.PackageList.Count-1 do begin
+      cb_Package.Items.AddObject(config.PackageList[i].name, config.PackageList[i]);
     end;
     cb_ParentClass.Clear;
-    for i := 0 to ClassList.Count-1 do begin
-      cb_ParentClass.Items.AddObject(ClassList[i].name, ClassList[i]);
+    for i := 0 to config.ClassList.Count-1 do begin
+      cb_ParentClass.Items.AddObject(config.ClassList[i].name, config.ClassList[i]);
     end;
     if (uparent <> nil) then begin
       if (uparent.ClassType = TUPackage) then begin
@@ -192,8 +192,8 @@ var
 begin
   with (Tfrm_MoveClass.Create(Application)) do begin
     cb_NewPkg.Items.Clear;
-    for i := 0 to PackageList.Count-1 do begin
-      cb_NewPkg.Items.AddObject(PackageList[i].name, PackageList[i]);
+    for i := 0 to config.PackageList.Count-1 do begin
+      cb_NewPkg.Items.AddObject(config.PackageList[i].name, config.PackageList[i]);
     end;
     ed_Class.Text := mclass.name;
     ed_OldPkg.Text := mclass.package.name;
@@ -239,7 +239,7 @@ begin
   with Tfrm_RenameClass.Create(Application) do begin
     ed_Class.Text := mclass.name;
     uclass := mclass;
-    uclasslist := ClassList;
+    uclasslist := config.ClassList;
     if (ShowModal = mrOk) then begin
       sin := uclass.name;
       sout := ed_NewClass.Text;
@@ -398,7 +398,7 @@ begin
     newclass.parent := uclass;
     newclass.parentname := uclass.name;
     uclass.children.Add(newclass);
-    ClassList.Add(newclass);
+    config.ClassList.Add(newclass);
     newclass.priority := upackage.priority;
     newclass.tagged := upackage.tagged;
 

@@ -6,7 +6,7 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.61 2005-04-04 15:12:17 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.62 2005-04-04 21:31:34 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -185,7 +185,7 @@ begin
       Inc(j);
       ConfigFile := ParamStr(j);
       if (ExtractFilePath(ConfigFile) = '') then ConfigFile := ExtractFilePath(ParamStr(0))+ConfigFile;
-      StateFile := ExtractFilePath(ConfigFile)+ChangeFileExt(ExtractFilename(ConfigFile), '.ucx');
+      config.StateFile := ExtractFilePath(ConfigFile)+ChangeFileExt(ExtractFilename(ConfigFile), '.ucx');
     end
     else if (LowerCase(ParamStr(j)) = '-handle') then begin
       Inc(j);
@@ -234,15 +234,15 @@ begin
 
   if (not (FindCmdLineSwitch('nosplash') or FindCmdLineSwitch('hide'))) then frm_Splash := Tfrm_Splash.Create(nil);
   CmdStack := TStringList.Create;
-  StateFile := 'UnCodeX.ucx';
+  //config.StateFile := 'UnCodeX.ucx'; //TODO: fix this
   if (ParamCount() > 0) then ProcessCommandline;
   if (not HasPrevInst) then begin
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-  Application.CreateForm(Tfrm_About, frm_About);
-  Application.CreateForm(Tfrm_License, frm_License);
-  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+    Application.CreateForm(Tfrm_About, frm_About);
+    Application.CreateForm(Tfrm_License, frm_License);
+    if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end
   else if (frm_Splash <> nil) then frm_Splash.Close;

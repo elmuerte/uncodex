@@ -6,7 +6,7 @@
   Purpose:
     Run dialog for the game\server
 
-  $Id: unit_rungame.pas,v 1.11 2005-03-18 07:43:22 elmuerte Exp $
+  $Id: unit_rungame.pas,v 1.12 2005-04-04 21:31:58 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -177,9 +177,9 @@ var
   ini: TMemIniFile;
 begin
   pc_Args.ActivePage := ts_URL;
-  for i := 0 to ClassList.Count-1 do begin
-    if (CompareText(ClassList[i].name, 'gameinfo') = 0) then FillGameInfo(ClassList[i]);
-    if (CompareText(ClassList[i].name, 'mutator') = 0) then FillMutator(ClassList[i])
+  for i := 0 to config.ClassList.Count-1 do begin
+    if (CompareText(config.ClassList[i].name, 'gameinfo') = 0) then FillGameInfo(config.ClassList[i]);
+    if (CompareText(config.ClassList[i].name, 'mutator') = 0) then FillMutator(config.ClassList[i])
   end;
   ini := TMemIniFile.Create(ExtractFilePath(ParamStr(0))+'\runpresets.ini');
   try
@@ -426,9 +426,9 @@ procedure Tfrm_Run.btn_MapClick(Sender: TObject);
 var
   i: integer;
 begin
-  for i := 0 to SourcePaths.Count-1 do begin
-    if (DirectoryExists(SourcePaths[i]+'\Maps')) then begin
-      od_SelectMap.InitialDir := SourcePaths[i]+'\Maps';
+  for i := 0 to config.SourcePaths.Count-1 do begin
+    if (DirectoryExists(config.SourcePaths[i]+'\Maps')) then begin
+      od_SelectMap.InitialDir := config.SourcePaths[i]+'\Maps';
       Break;
     end;
   end;
@@ -442,9 +442,9 @@ procedure Tfrm_Run.btn_INIClick(Sender: TObject);
 var
   i: integer;
 begin
-  for i := 0 to SourcePaths.Count-1 do begin
-    if (DirectoryExists(SourcePaths[i]+'\System')) then begin
-      od_IniFiles.InitialDir := SourcePaths[i]+'\System';
+  for i := 0 to config.SourcePaths.Count-1 do begin
+    if (DirectoryExists(config.SourcePaths[i]+'\System')) then begin
+      od_IniFiles.InitialDir := config.SourcePaths[i]+'\System';
       Break;
     end;
   end;
@@ -459,9 +459,9 @@ procedure Tfrm_Run.btn_READINIClick(Sender: TObject);
 var
   i: integer;
 begin
-  for i := 0 to SourcePaths.Count-1 do begin
-    if (DirectoryExists(SourcePaths[i]+'\System')) then begin
-      od_IniFiles.InitialDir := SourcePaths[i]+'\System';
+  for i := 0 to config.SourcePaths.Count-1 do begin
+    if (DirectoryExists(config.SourcePaths[i]+'\System')) then begin
+      od_IniFiles.InitialDir := config.SourcePaths[i]+'\System';
       Break;
     end;
   end;
@@ -476,9 +476,9 @@ procedure Tfrm_Run.btn_USERINIClick(Sender: TObject);
 var
   i: integer;
 begin
-  for i := 0 to SourcePaths.Count-1 do begin
-    if (DirectoryExists(SourcePaths[i]+'\System')) then begin
-      od_IniFiles.InitialDir := SourcePaths[i]+'\System';
+  for i := 0 to config.SourcePaths.Count-1 do begin
+    if (DirectoryExists(config.SourcePaths[i]+'\System')) then begin
+      od_IniFiles.InitialDir := config.SourcePaths[i]+'\System';
       Break;
     end;
   end;
@@ -493,9 +493,9 @@ procedure Tfrm_Run.btn_ExeClick(Sender: TObject);
 var
   i: integer;
 begin
-  for i := 0 to SourcePaths.Count-1 do begin
-    if (DirectoryExists(SourcePaths[i]+'\System')) then begin
-      od_Exe.InitialDir := SourcePaths[i]+'\System';
+  for i := 0 to config.SourcePaths.Count-1 do begin
+    if (DirectoryExists(config.SourcePaths[i]+'\System')) then begin
+      od_Exe.InitialDir := config.SourcePaths[i]+'\System';
       Break;
     end;
   end;
@@ -515,9 +515,9 @@ procedure Tfrm_Run.btn_LOGClick(Sender: TObject);
 var
   i: integer;
 begin
-  for i := 0 to SourcePaths.Count-1 do begin
-    if (DirectoryExists(SourcePaths[i]+'\System')) then begin
-      od_SelectMap.InitialDir := SourcePaths[i]+'\System';
+  for i := 0 to config.SourcePaths.Count-1 do begin
+    if (DirectoryExists(config.SourcePaths[i]+'\System')) then begin
+      od_SelectMap.InitialDir := config.SourcePaths[i]+'\System';
       Break;
     end;
   end;

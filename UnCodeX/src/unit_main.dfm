@@ -1024,7 +1024,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     object ac_VSourceSnoop: TAction
       Category = 'Layout'
       AutoCheck = True
-      Caption = 'Source Snoop'
+      Caption = 'Source Preview'
       Checked = True
       Hint = 'View the source code of a file'
       ShortCut = 49219

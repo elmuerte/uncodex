@@ -6,7 +6,7 @@
   Purpose:
     Additional GUI only PascalScript routines
 
-  $Id: unit_pascalscript_gui.pas,v 1.13 2004-12-24 11:05:09 elmuerte Exp $
+  $Id: unit_pascalscript_gui.pas,v 1.14 2005-04-04 21:31:56 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -354,8 +354,8 @@ procedure LinkPSGui(ps: TPSScript);
 begin
   ps.SetPointerToData('SelectedUClass', @unit_main.SelectedUClass, ps.FindNamedType('TUClass'));
   ps.SetPointerToData('SelectedUPackage', @unit_main.SelectedUPackage, ps.FindNamedType('TUPackage'));
-  ps.SetPointerToData('ClassList', @unit_main.ClassList, ps.FindNamedType('TUClassList'));
-  ps.SetPointerToData('PackageList', @unit_main.PackageList, ps.FindNamedType('TUPackageList'));
+  ps.SetPointerToData('ClassList', @config.ClassList, ps.FindNamedType('TUClassList'));
+  ps.SetPointerToData('PackageList', @config.PackageList, ps.FindNamedType('TUPackageList'));
   ps.SetPointerToData('CommandStack', @unit_main.CmdStack, ps.FindNamedType('TStringList'));
 end;
 

@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Package properties viewer\editor
 
-  $Id: unit_pkgprops.pas,v 1.10 2005-04-02 20:37:03 elmuerte Exp $
+  $Id: unit_pkgprops.pas,v 1.11 2005-04-04 21:31:57 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -113,8 +113,8 @@ begin
     end;
 
     if (cb_ExternalDescription.Checked) then begin
-      if (GPDF <> '') then begin
-        ini := TMemIniFile.Create(GPDF);
+      if (config.Comments.Packages <> '') then begin
+        ini := TMemIniFile.Create(config.Comments.Packages);
         sl := TStringList.Create;
         try
           ini.EraseSection(pkg.name);

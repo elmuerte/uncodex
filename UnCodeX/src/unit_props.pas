@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Class property inpector frame
 
-  $Id: unit_props.pas,v 1.30 2005-04-02 11:42:11 elmuerte Exp $
+  $Id: unit_props.pas,v 1.31 2005-04-04 21:31:57 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -540,7 +540,7 @@ begin
     exit;
   end;
   
-  ini := TMemIniFile.Create(ExtCommentFile);
+  ini := TMemIniFile.Create(config.Comments.Declarations);
   ref := pclass.FullName+'.'+uobj.name;
   if (uobj.ClassType = TUFunction) then begin
     if (TUFunction(uobj).state <> nil) then ref := ref+' '+TUFunction(uobj).state.name;
@@ -565,7 +565,7 @@ begin
         uobj.CommentType := ctExtern;
       end;
       TreeUpdated := true;
-      SetExtCommentFile(ExtCommentFile);
+      SetExtCommentFile(config.Comments.Declarations);
     end;
   finally
     lst.Free;

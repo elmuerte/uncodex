@@ -71,7 +71,7 @@ object frm_Settings: Tfrm_Settings
     Top = 24
     Width = 432
     Height = 353
-    ActivePage = ts_HTMLOutput
+    ActivePage = ts_SourceSnoop
     Align = alCustom
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -1346,7 +1346,7 @@ object frm_Settings: Tfrm_Settings
       Tag = 10
       HelpType = htKeyword
       HelpKeyword = 'sourcesnoop'
-      Caption = 'Source snoop'
+      Caption = 'Source preview'
       ImageIndex = 11
       TabVisible = False
       DesignSize = (

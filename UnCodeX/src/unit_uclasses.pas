@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.52 2005-03-30 07:21:50 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.53 2005-04-04 21:31:58 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -238,15 +238,6 @@ type
       symbols:          TStringList; // symbol=index
       expressions:      TStringList; // expression (DO NOT SORT)
     end;
-    //TODO: replication
-    //  - per statement a list of replicated symbols?
-    //  - hash list for replicated symbols (to entry in statement list)
-    //  - function AddReplication(expresion, symbols)
-    //    function IsReplicated(symbol)
-    //    function GetReplication(symbol)
-    //  - store AS IS? parse on the fly?
-    // repSymbols:    TStringList
-    // repExpression: TStringList
     tagged:             boolean;
     children:           TUClassList; // not owned, don't free, don't save
     deps:               TUClassList; // dependency list, not owned, don't free (CURRENTLY NOT USED)
