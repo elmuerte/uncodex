@@ -6,7 +6,7 @@
   Purpose:
     Program settings dialog
 
-  $Id: unit_settings.pas,v 1.44 2004-12-15 08:18:20 elmuerte Exp $
+  $Id: unit_settings.pas,v 1.45 2004-12-30 09:40:21 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -208,6 +208,7 @@ type
     lbl_ExtCmtFile: TLabel;
     ed_ExtCmtFile: TEdit;
     btn_ExtCmtFile: TBitBtn;
+    mi_Resultfilename1: TMenuItem;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -288,6 +289,7 @@ type
     procedure tv_SettingSelectCollapsing(Sender: TObject; Node: TTreeNode;
       var AllowCollapse: Boolean);
     procedure tv_SettingSelectChange(Sender: TObject; Node: TTreeNode);
+    procedure mi_Resultfilename1Click(Sender: TObject);
   private
   public
     TagChanged: boolean;
@@ -963,6 +965,11 @@ procedure Tfrm_Settings.tv_SettingSelectChange(Sender: TObject;
 begin
   pc_Settings.ActivePage := TTabSheet(Node.Data);
   pnl_Caption.Caption := '  '+pc_Settings.ActivePage.Caption;
+end;
+
+procedure Tfrm_Settings.mi_Resultfilename1Click(Sender: TObject);
+begin
+  ed_OpenResultCmd.Text := ed_OpenResultCmd.Text+' %filename%';
 end;
 
 end.

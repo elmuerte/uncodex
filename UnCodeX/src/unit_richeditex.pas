@@ -6,7 +6,7 @@
   Purpose:
     TRichEdit control that uses version 2
 
-  $Id: unit_richeditex.pas,v 1.22 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_richeditex.pas,v 1.23 2004-12-30 09:40:21 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -50,7 +50,6 @@ type
     procedure WMNCHitTest(var Msg: TMessage); message WM_NCHitTest;
   public
     uclass: TUClass;
-    udecl: TUDeclaration;
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     procedure CreateWnd(); override;

@@ -1713,6 +1713,10 @@ object frm_Settings: Tfrm_Settings
     object mi_N3: TMenuItem
       Caption = '-'
     end
+    object mi_Resultfilename1: TMenuItem
+      Caption = 'Result filename'
+      OnClick = mi_Resultfilename1Click
+    end
     object mi_Resultline1: TMenuItem
       Caption = 'Result line'
       OnClick = mi_Resultline1Click

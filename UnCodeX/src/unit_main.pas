@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.143 2004-12-28 15:55:57 elmuerte Exp $
+  $Id: unit_main.pas,v 1.144 2004-12-30 09:40:21 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -434,13 +434,13 @@ type
     procedure OnDockDragStart(client: TControl; var CanDrag: boolean);
     // other
     procedure DeleteClass(uclass: TUClass; recurse: boolean = false);
-    procedure SourceSnoopOpenClass(filename: string; uclass: TUClass);
-    procedure SourceSnoopOpenPackage(upackage: TUPackage);
+    function SourceSnoopOpenClass(filename: string; uclass: TUClass): boolean;
+    function SourceSnoopOpenPackage(upackage: TUPackage): boolean;
     // settings
     procedure SaveSettings;
     procedure SaveLayoutSettings;
     procedure LoadSettings;
-    procedure AddBrowserHistory(uclass: TUClass; udecl: TUDeclaration; line: integer; hint: string = '');
+    procedure AddBrowserHistory(uclass: TUClass; filename: string; line: integer; hint: string = '');
     procedure BrowseEntry(Sender: TObject);
   public
     statustext : string; // current status text
@@ -998,7 +998,6 @@ var
   i: integer;
   exe: string;
 begin
-		// TODO: fix, uclass could be nil?
   if ((filename = '') and (uclass <> nil)) then filename := ResolveFilename(uclass, nil);
   if (not fileExists(filename)) then begin
     Log('Could not open file '+filename, ltError);
@@ -1022,11 +1021,21 @@ begin
         if (InlineSearch <> '') then lst[i] := AnsiReplaceStr(lst[i], '%searchquery%', InlineSearch)
           else lst[i] := AnsiReplaceStr(lst[i], '%searchquery%', SearchConfig.query);
       end;
-      lst[i] := AnsiReplaceStr(lst[i], '%classname%', uclass.name);
-      lst[i] := AnsiReplaceStr(lst[i], '%classfile%', uclass.filename);
-      lst[i] := AnsiReplaceStr(lst[i], '%classpath%', filename);
-      lst[i] := AnsiReplaceStr(lst[i], '%packagename%', uclass.package.name);
-      lst[i] := AnsiReplaceStr(lst[i], '%packagepath%', uclass.package.path);
+      if (uclass <> nil) then begin
+        lst[i] := AnsiReplaceStr(lst[i], '%classname%', uclass.name);
+        lst[i] := AnsiReplaceStr(lst[i], '%classfile%', uclass.filename);
+        lst[i] := AnsiReplaceStr(lst[i], '%classpath%', uclass.FullFileName);
+        lst[i] := AnsiReplaceStr(lst[i], '%packagename%', uclass.package.name);
+        lst[i] := AnsiReplaceStr(lst[i], '%packagepath%', uclass.package.path);
+      end
+      else begin
+        lst[i] := AnsiReplaceStr(lst[i], '%classname%', '');
+        lst[i] := AnsiReplaceStr(lst[i], '%classfile%', ExtractFileName(filename));
+        lst[i] := AnsiReplaceStr(lst[i], '%classpath%', filename);
+        lst[i] := AnsiReplaceStr(lst[i], '%packagename%', '');
+        lst[i] := AnsiReplaceStr(lst[i], '%packagepath%', '');
+      end;
+      lst[i] := AnsiReplaceStr(lst[i], '%filename%', filename);
       lst[i] := AnsiReplaceStr(lst[i], '%classsearch%', SearchConfig.query);
       lst[i] := AnsiReplaceStr(lst[i], '%inlinesearch%', InlineSearch);
       lst[i] := AnsiReplaceStr(lst[i], '%resultline%', IntToStr(line));
@@ -1051,13 +1060,12 @@ begin
   SelectedUPackage := nil;
   if (mi_SourceSnoop.Checked) then begin
     //SourceSnoopOpen(uclass, udecl, nil);
-    SourceSnoopOpenClass(filename, uclass);
+    if (not SourceSnoopOpenClass(filename, uclass)) then exit;
     
     if (line < 0) then exit;
     tmp2[0] := #255;
     re_SourceSnoop.Perform(EM_GETLINE, line, integer(@tmp2));
-    //TODO: restore browsehistory functionality
-    //AddBrowserHistory(uclass, udecl, line+1, tmp2);
+    AddBrowserHistory(uclass, filename, line+1, tmp2);
     //re_SourceSnoop.Perform(EM_LINESCROLL, 0, -1*re_SourceSnoop.Lines.Count);
     //re_SourceSnoop.Perform(EM_LINESCROLL, 0, line);
     line := re_SourceSnoop.Perform(EM_LINEINDEX, line, 0); // get line index
@@ -1621,21 +1629,24 @@ end;
 
 { SourceSnoopOpen }
 
-procedure Tfrm_UnCodeX.SourceSnoopOpenClass(filename: string; uclass: TUClass);
+function Tfrm_UnCodeX.SourceSnoopOpenClass(filename: string; uclass: TUClass): boolean;
 var
   ms: TMemoryStream;
   fs: TFileStream;
 begin
-  if (uclass = nil) then exit;
+  result := true;
   if (not fileExists(filename)) then begin
     Log('Could not open file '+filename, ltError);
     exit;
   end;
   if (re_SourceSnoop.filename = filename) then exit;
-  re_SourceSnoop.uclass := uclass;
-  SetDockCaption(re_SourceSnoop, 'Class: '+uclass.FullName+' - '+filename);
-
-  //re_SourceSnoop.udecl := udecl;
+  if (uclass <> nil) then begin
+    re_SourceSnoop.uclass := uclass;
+    SetDockCaption(re_SourceSnoop, 'Class: '+uclass.FullName+' - '+filename);
+  end
+  else begin
+    SetDockCaption(re_SourceSnoop, 'Class: ??? - '+filename);
+  end;
   re_SourceSnoop.filename := filename;
   re_SourceSnoop.Hint := filename;
   fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
@@ -1651,19 +1662,20 @@ begin
     ms.Free;
     fs.Free;
   end;
+  result := true;
 end;
 
-procedure Tfrm_UnCodeX.SourceSnoopOpenPackage(upackage: TUPackage);
+function Tfrm_UnCodeX.SourceSnoopOpenPackage(upackage: TUPackage): boolean;
 var
   ms: TMemoryStream;
 begin
+  result := false;
   if (upackage = nil) then exit;
   ms := TMemoryStream.Create;
   SetDockCaption(re_SourceSnoop, 'Package: '+upackage.name);
   re_SourceSnoop.filename := upackage.path;
   re_SourceSnoop.Hint := re_SourceSnoop.filename;
   re_SourceSnoop.uclass := nil;
-  re_SourceSnoop.udecl := nil;
   try
     RTFHilightUPackage(ms, upackage);
     re_SourceSnoop.Lines.Clear;
@@ -1674,6 +1686,7 @@ begin
   finally
     ms.Free;
   end;
+  result := true;
 end;
 
 {procedure Tfrm_UnCodeX.SourceSnoopOpen(uclass: TUClass; udecl: TUDeclaration; upackage: TUPackage = nil);
@@ -2121,14 +2134,14 @@ end;
 type
   TBrowseHistory = record
     uclass: TUClass;
-    udecl: TUDeclaration;
+    filename: string;
     line: integer;
   end;
 
 var
    BrowseHistory: array[0..24] of TBrowseHistory;
 
-procedure Tfrm_UnCodeX.AddBrowserHistory(uclass: TUClass; udecl: TUDeclaration; line: integer; hint: string = '');
+procedure Tfrm_UnCodeX.AddBrowserHistory(uclass: TUClass; filename: string; line: integer; hint: string = '');
 var
   i: integer;
   mi: TMenuItem;
@@ -2138,7 +2151,7 @@ begin
   for i := 0 to mi_Browse.Count-1 do begin
     if (mi_Browse.Items[i].Tag < 25) then begin
       if ((BrowseHistory[mi_Browse.Items[i].Tag].uclass = uclass) and
-      		(BrowseHistory[mi_Browse.Items[i].Tag].udecl = udecl) and
+      		(BrowseHistory[mi_Browse.Items[i].Tag].filename = filename) and
         (BrowseHistory[mi_Browse.Items[i].Tag].line = line)) then begin
         mi_Browse.Items[i].MenuIndex := 0;
         exit;
@@ -2165,15 +2178,14 @@ begin
   mi_Browse.Insert(0, mi);
   mi_Browse.Enabled := true;
   BrowseHistory[i].uclass := uclass;
-  BrowseHistory[i].udecl := udecl;
+  BrowseHistory[i].filename := filename;
   BrowseHistory[i].line := line;
 end;
 
 procedure Tfrm_UnCodeX.BrowseEntry(Sender: TObject);
 begin
   if (TMenuItem(Sender) = nil) then exit;
-  //TODO: addapt for new stuff
-  //OpenSourceInLine(BrowseHistory[TMenuItem(Sender).Tag].uclass, BrowseHistory[TMenuItem(Sender).Tag].udecl, BrowseHistory[TMenuItem(Sender).Tag].line-1, 0);
+  OpenSourceInLine(BrowseHistory[TMenuItem(Sender).Tag].filename, BrowseHistory[TMenuItem(Sender).Tag].line-1, 0, BrowseHistory[TMenuItem(Sender).Tag].uclass);
 end;
 
 { Custom methods -- END}
@@ -2256,6 +2268,7 @@ end;
 procedure Tfrm_UnCodeX.ac_RecreateTreeExecute(Sender: TObject);
 var
   rec: TPackageScannerConfig;
+  i: integer;
 begin
   if (ThreadCreate) then begin
     ClearLog;
@@ -2266,6 +2279,11 @@ begin
     LastBuildTime := now;
     fr_Props.uclass := nil;
     if (fr_Props.Visible) then fr_Props.LoadClass;
+
+    for i := 0 to High(BrowseHistory) do begin
+      BrowseHistory[i].uclass := nil;
+    end;
+    re_SourceSnoop.uclass := nil;
 
     tv_Packages.Items.Clear;
     tv_Classes.Items.Clear;
@@ -3183,9 +3201,11 @@ begin
   if (re_SourceSnoop.Perform(EM_GETTEXTRANGE, 0, integer(@tr)) > 0) then begin
     if (unit_rtfhilight.ClassesHash.Exists(LowerCase(tmp)) and (not (ssCtrl in Shift))) then begin
       tmpc := TUClass(unit_rtfhilight.ClassesHash[LowerCase(tmp)]);
-      re_SourceSnoop.Hint := tmpc.FullName+' '+tmpc.FullFileName;
-      re_SourceSnoop.Cursor := crHandPoint;
-      exit;
+      if (tmpc <> nil) then begin
+        re_SourceSnoop.Hint := tmpc.FullName+' '+tmpc.FullFileName;
+        re_SourceSnoop.Cursor := crHandPoint;
+        exit;
+      end;
     end
     else begin
       if (SelectedUClass <> nil) then re_SourceSnoop.Hint := re_SourceSnoop.filename
@@ -3239,7 +3259,7 @@ begin
         realline := re_SourceSnoop.Perform(EM_LINEFROMCHAR, curpos, 0);
         tmp2[0] := #255;
         re_SourceSnoop.Perform(EM_GETLINE, realline, integer(@tmp2));
-        if (re_SourceSnoop.uclass <> nil) then AddBrowserHistory(re_SourceSnoop.uclass, re_SourceSnoop.udecl, realline+1, tmp2);
+        if (re_SourceSnoop.uclass <> nil) then AddBrowserHistory(re_SourceSnoop.uclass, re_SourceSnoop.filename, realline+1, tmp2);
         for i := 0 to tv_Classes.Items.Count-1 do begin
           if (AnsiCompareText(tv_Classes.items[i].Text, tmp) = 0) then begin
             tv_Classes.Tag := TV_ALWAYSEXPAND;

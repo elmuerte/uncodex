@@ -6,7 +6,7 @@
   Purpose:
     Global PascalScript routines and functionality
 
-  $Id: unit_pascalscript.pas,v 1.14 2004-12-28 15:55:58 elmuerte Exp $
+  $Id: unit_pascalscript.pas,v 1.15 2004-12-30 09:40:21 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -86,7 +86,7 @@ begin
   ps.AddFunction(@DateTimeToFileDate, 'function DateTimeToFileDate(DateTime: TDateTime): Integer;');
   ps.AddFunction(@CreateDir, 'function CreateDir(const Dir: string): Boolean;');
   ps.AddFunction(@RemoveDir, 'function RemoveDir(const Dir: string): Boolean;');
-  
+
   ps.AddFunction(@GetFiles, 'function GetFiles(path: string; Attr: Integer; var files: TStringList): boolean;');
   ps.AddFunction(@ExtractBaseName, 'function ExtractBaseName(filename: string): string;');
 
@@ -96,8 +96,7 @@ begin
   ps.AddFunction(@ParamStr, 'function ParamStr(Index: Integer): string;');
 
   { Misc }
-  //TODO: fix
-  ps.Comp.AddTypeS('TLogType', '(ltInfo, ltWarn, ltError, ltSearch);');
+  //ps.Comp.AddTypeS('TLogType', '(ltInfo, ltWarn, ltError, ltSearch);');
   ps.AddFunction(@Log, 'procedure Log(msg: string);');
   ps.AddFunction(@Log, 'procedure LogType(msg: string; mt: TLogType);');
   ps.AddFunction(@Log, 'procedure LogTypeObject(msg: string; mt: TLogType; obj: TObject);');

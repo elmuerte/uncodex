@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.59 2004-12-24 18:36:19 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.60 2004-12-30 09:40:20 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -555,8 +555,7 @@ begin
       // variable description
       if (p.Token = toString) then begin
         if (result.comment <> '') then begin
-          //TODO: use definedIn
-          Log(uclass.FullName+' '+Result.name+': ignoring variable description', ltInfo, CreateLogEntry('', p.SourceLine , 0, uclass));
+          Log(uclass.FullName+' '+Result.name+': ignoring variable description', ltInfo, CreateLogEntry(ResolveFilename(uclass, Result), p.SourceLine , 0, uclass));
         end
         else begin
           result.comment := UnQuoteString(p.TokenString);
@@ -916,14 +915,12 @@ begin
       Delete(args, 1, i);
     end;
     uclass.defs.define(macro, args);
-    //TODO: used defined in
-    if (DEBUG_MACRO_EVAL) then Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': define '+macro+' = '+args, ltInfo, CreateLogEntry(uclass));
+    if (DEBUG_MACRO_EVAL) then Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': define '+macro+' = '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
   end
   else if (macro = 'IF') then begin
     if (macroIfCnt > 0) then Inc(macroIfCnt)
     else begin
-      //TODO: use defined in
-      if (DEBUG_MACRO_EVAL) then Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': eval: '+args, ltInfo, CreateLogEntry(uclass));
+      if (DEBUG_MACRO_EVAL) then Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': eval: '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
       try
         if (not uclass.defs.Eval(args)) then begin
           if (DEBUG_MACRO_EVAL) then log(' = false');
@@ -933,16 +930,14 @@ begin
           end;
         end;
       except
-        //TODO: use defined in
-        on e:Exception do Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" : '+e.Message, ltError, CreateLogEntry(uclass));
+        on e:Exception do Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" : '+e.Message, ltError, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
       end;
     end; // do eval
   end
   else if (macro = 'IFDEF') then begin
     if (macroIfCnt > 0) then Inc(macroIfCnt)
     else begin
-      //TODO: use defined in
-      if (DEBUG_MACRO_EVAL) then Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': if defined: '+args, ltInfo, CreateLogEntry(uclass));
+      if (DEBUG_MACRO_EVAL) then Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': if defined: '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
       if (not uclass.defs.IsDefined(args)) then begin
         if (DEBUG_MACRO_EVAL) then log(' = false');
         macroIfCnt := 1;
@@ -974,12 +969,12 @@ begin
   	// ignore, exec macro calls certain commandlets for importing sounds/textures/etc.
   end
   else if (macro = 'INCLUDE') then begin
-    if (DEBUG_MACRO_EVAL) then Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Include file '+trim(args), ltInfo, CreateLogEntry(uclass));
+    if (DEBUG_MACRO_EVAL) then Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Include file '+trim(args), ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
     uclass.includes.Values[IntToStr(p.SourceLine-1)] := trim(args);
     pInclude(args);
   end
   else begin
-    Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Unsupported macro '+macro, ltWarn, CreateLogEntry(uclass));
+    Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Unsupported macro '+macro, ltWarn, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
   end;
 end;
 
@@ -992,8 +987,7 @@ begin
 
   filename := iFindFile(ExpandFileName(ExtractFilePath(uclass.package.path)+relfilename));
   if (not FileExists(filename)) then begin
-    //TODO: use defined in
-    Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Invalid include file: '+relfilename, ltError, CreateLogEntry(uclass));
+    Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Invalid include file: '+relfilename, ltError, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
     exit;
   end;
 
