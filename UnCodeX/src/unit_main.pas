@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.104 2004-06-04 20:42:49 elmuerte Exp $
+ $Id: unit_main.pas,v 1.105 2004-06-07 08:15:37 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -239,6 +239,7 @@ type
     mi_Donate: TMenuItem;
     mi_N21: TMenuItem;
     mi_N31: TMenuItem;
+    mi_Browse: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -398,6 +399,8 @@ type
     procedure SaveSettings;
     procedure SaveLayoutSettings;
     procedure LoadSettings;
+    procedure AddBrowserHistory(uclass: TUClass; line: integer);
+    procedure BrowseEntry(Sender: TObject);
   public
     statustext : string; // current status text
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
@@ -928,11 +931,14 @@ begin
   if (mi_SourceSnoop.Checked) then begin
     if (SelectedUClass <> oldsel) then ac_SourceSnoop.Execute;
     if (line < 0) then exit;
-  	re_SourceSnoop.Perform(EM_LINESCROLL, 0, -1*re_SourceSnoop.Lines.Count);
-		re_SourceSnoop.Perform(EM_LINESCROLL, 0, line);
+    AddBrowserHistory(uclass, line+1);
+  	//re_SourceSnoop.Perform(EM_LINESCROLL, 0, -1*re_SourceSnoop.Lines.Count);
+		//re_SourceSnoop.Perform(EM_LINESCROLL, 0, line);
     line := re_SourceSnoop.Perform(EM_LINEINDEX, line, 0); // get line index
+    re_SourceSnoop.Perform(EM_SETSEL, line, line);
+    re_SourceSnoop.Perform(EM_SCROLLCARET, 0, 0);
 		re_SourceSnoop.ClearBgColor();
-		re_SourceSnoop.SelStart := line;
+		//re_SourceSnoop.SelStart := line;
 		re_SourceSnoop.SelLength := re_SourceSnoop.Perform(EM_LINELENGTH, line, 0);
 		re_SourceSnoop.SetSelBgColor(clBtnFace);
 		re_SourceSnoop.SelLength := 0;
@@ -1637,6 +1643,7 @@ begin
     ac_VLog.Checked := ini.ReadBool('Layout', 'Log', true);
     ac_VSourceSnoop.Checked := ini.ReadBool('Layout', 'SourceSnoop', false);
     re_SourceSnoop.Visible := ac_VSourceSnoop.Checked;
+    mi_Browse.Visible := re_SourceSnoop.Visible;
     ac_PropInspector.Checked := ini.ReadBool('Layout', 'PropertyInspector', false);
     fr_Props.Visible := ac_PropInspector.Checked;
 
@@ -1816,6 +1823,58 @@ begin
 end;
 
 { Settings -- END}
+type
+	TBrowseHistory = record
+		uclass: TUClass;
+    line: integer;
+  end;
+
+var
+   BrowseHistory: array[0..24] of TBrowseHistory;
+
+procedure Tfrm_UnCodeX.AddBrowserHistory(uclass: TUClass; line: integer);
+var
+	i: integer;
+  mi: TMenuItem;
+  found: boolean;
+begin
+	if (uclass = nil) then exit;
+  for i := 0 to mi_Browse.Count-1 do begin
+		if (mi_Browse.Items[i].Tag < 25) then begin
+      if ((BrowseHistory[mi_Browse.Items[i].Tag].uclass = uclass) and
+      	(BrowseHistory[mi_Browse.Items[i].Tag].line = line)) then begin
+        mi_Browse.Items[i].MenuIndex := 0;
+        exit;
+      end;
+    end;
+  end;
+  found := false;
+  for i := 0 to 24 do begin
+    if (BrowseHistory[i].uclass = nil) then begin
+    	found := true;
+    	break;
+    end;
+  end;
+  if (not found) then begin
+		i := mi_Browse.Items[mi_Browse.Count-1].Tag;
+    mi_Browse.Remove(mi_Browse.Items[mi_Browse.Count-1]);
+  end;
+  mi := TMenuItem.Create(mi_Browse);
+	mi.Caption := uclass.FullName;
+  if (line > 0) then mi.Caption := mi.Caption+' - line #'+IntToStr(line);
+  mi.Tag := i;
+  mi.OnClick := BrowseEntry;
+  mi_Browse.Insert(0, mi);
+  BrowseHistory[i].uclass := uclass;
+  BrowseHistory[i].line := line;
+end;
+
+procedure Tfrm_UnCodeX.BrowseEntry(Sender: TObject);
+begin
+	if (TMenuItem(Sender) = nil) then exit;
+  OpenSourceInLine(BrowseHistory[TMenuItem(Sender).Tag].uclass, BrowseHistory[TMenuItem(Sender).Tag].line-1, 0);
+end;
+
 { Custom methods -- END}
 { Auto generated methods }
 
@@ -2790,6 +2849,7 @@ end;
 procedure Tfrm_UnCodeX.ac_VSourceSnoopExecute(Sender: TObject);
 begin
   re_SourceSnoop.Visible := mi_SourceSnoop.Checked;
+  mi_Browse.Visible := re_SourceSnoop.Visible;
   ShowDockPanel((re_SourceSnoop.Parent as TPanel), re_SourceSnoop.Visible, nil);
   if (mi_SourceSnoop.Checked and not DoInit) then ac_SourceSnoop.Execute;
 end;
@@ -2878,6 +2938,7 @@ begin
     tr.lpstrText := tmp;
     if (re_SourceSnoop.Perform(EM_GETTEXTRANGE, 0, integer(@tr)) > 0) then begin
       if (tmp <> '') then begin
+        AddBrowserHistory(SelectedUClass, re_SourceSnoop.Perform(EM_LINEFROMCHAR, curpos, 0)+1);
         for i := 0 to tv_Classes.Items.Count-1 do begin
           if (AnsiCompareText(tv_Classes.items[i].Text, tmp) = 0) then begin
             tv_Classes.Tag := TV_ALWAYSEXPAND;
