@@ -102,3 +102,11 @@ PRE {
 PRE.indent {
 	margin-left: 20px;
 }
+
+TH {
+	font-weight: bold;
+	font-size: 10pt;
+	border-bottom: 2px inset #AEF0FF;
+}
+
+A { color: #6F5722; }
