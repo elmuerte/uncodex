@@ -1572,6 +1572,7 @@ begin
   Keywords.Items['config'] := '';
   Keywords.Items['const'] := '';
   Keywords.Items['continue'] := '';
+  Keywords.Items['cpptext'] := '';
   Keywords.Items['defaultproperties'] := '';
   Keywords.Items['do'] := '';
   Keywords.Items['editconst'] := '';

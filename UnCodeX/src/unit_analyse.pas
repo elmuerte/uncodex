@@ -235,6 +235,7 @@ end;
 
 // var(tag) <modifiers> <type> <name>,<name>;
 // var(tag) <modifiers> enum <name> {...} <name>,<name>;
+// var(tag) <modifiers> struct <name> {...} <name>,<name>;
 function TClassAnalyser.pVar: TUProperty;
 var
   last, prev: string;
@@ -266,8 +267,23 @@ begin
       p.NextToken;
       last := last+pSquareBrackets;
     end;
+    // inline enum
     if (CompareText(last, 'enum') = 0) then begin
       prev := pEnum.name;
+      last := p.TokenString;
+      p.NextToken;
+      last := last+pSquareBrackets; // name
+      while (p.Token = ',') do begin
+        p.NextToken;
+        last := last+','+p.TokenString;
+        p.NextToken;
+        last := last+pSquareBrackets; // name
+      end;
+      break;
+    end;
+    // inline struct
+    if (CompareText(last, 'struct') = 0) then begin
+      prev := pStruct.name;
       last := p.TokenString;
       p.NextToken;
       last := last+pSquareBrackets; // name
@@ -350,7 +366,7 @@ begin
   pCurlyBrackets();
   p.FullCopy := false;
   result.data := result.data+p.GetCopyData(true);
-  p.NextToken; // = ;
+  if (p.Token = ';') then p.NextToken; // = ;
   uclass.structs.Add(result);
 end;
 
