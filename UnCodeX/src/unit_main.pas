@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.86 2004-03-29 10:39:26 elmuerte Exp $
+ $Id: unit_main.pas,v 1.87 2004-03-29 19:59:39 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -1335,9 +1335,11 @@ begin
   Mouse.DragImmediate := false;
   Mouse.DragThreshold := 5;
   hh_Help := THookHelpSystem.Create(ExtractFilePath(ParamStr(0))+'UnCodeX-help.chm', '', htHHAPI);
-  Caption := APPTITLE+' - version '+APPVERSION;
+  Caption := APPTITLE;
+  if (ConfigFile = '') then ConfigFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ini'
+  else Caption := Caption+' ['+ExtractFileName(ConfigFile)+']';
+  Caption := Caption+' - version '+APPVERSION;
   Application.Title := Caption;
-  if (ConfigFile = '') then ConfigFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ini';
   if (StateFile = '') then StateFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ucx';
   InitialStartup := not FileExists(ConfigFile);
   ini := TMemIniFile.Create(ConfigFile);
