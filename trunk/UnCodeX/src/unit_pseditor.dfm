@@ -795,14 +795,16 @@ object frm_PSEditor: Tfrm_PSEditor
       Left = 31
       Top = 0
       Action = ac_Load
+      DropdownMenu = pm_Macros
+      Style = tbsDropDown
     end
     object btn_Save: TToolButton
-      Left = 54
+      Left = 67
       Top = 0
       Action = ac_Save
     end
     object btn_Spl1: TToolButton
-      Left = 77
+      Left = 90
       Top = 0
       Width = 8
       Caption = 'btn_Spl1'
@@ -810,24 +812,29 @@ object frm_PSEditor: Tfrm_PSEditor
       Style = tbsSeparator
     end
     object btn_Compile: TToolButton
-      Left = 85
+      Left = 98
       Top = 0
       Action = ac_Compile
     end
     object btn_Run: TToolButton
-      Left = 108
+      Left = 121
       Top = 0
       Action = ac_Run
     end
+    object btn_Abort: TToolButton
+      Left = 144
+      Top = 0
+      Action = ac_Abort
+    end
     object btn_Spl2: TToolButton
-      Left = 131
+      Left = 167
       Top = 0
       Width = 8
       ImageIndex = 19
       Style = tbsSeparator
     end
     object btn_HTMLscript: TToolButton
-      Left = 139
+      Left = 175
       Top = 0
       AutoSize = True
       ImageIndex = 16
@@ -899,6 +906,16 @@ object frm_PSEditor: Tfrm_PSEditor
       ShortCut = 16463
       OnExecute = ac_LoadExecute
     end
+    object ac_Abort: TAction
+      Caption = 'Abort'
+      Enabled = False
+      Hint = 'Request to abort the script execution'
+      ImageIndex = 8
+      ShortCut = 16497
+      SecondaryShortCuts.Strings = (
+        'Ctrl+Del')
+      OnExecute = ac_AbortExecute
+    end
   end
   object od_Open: TOpenDialog
     Filter = 'UnCodeX Pascal Script|*.ups|All Files|*.*'
@@ -911,5 +928,12 @@ object frm_PSEditor: Tfrm_PSEditor
     Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
     Left = 40
     Top = 112
+  end
+  object pm_Macros: TPopupMenu
+    Left = 40
+    Top = 80
+    object N1: TMenuItem
+      Caption = '-'
+    end
   end
 end

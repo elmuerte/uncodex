@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   PascalScript routines for the GUI
- $Id: unit_pascalscript_gui.pas,v 1.3 2004-08-02 19:58:58 elmuerte Exp $
+ $Id: unit_pascalscript_gui.pas,v 1.4 2004-08-03 07:02:35 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -28,7 +28,7 @@ unit unit_pascalscript_gui;
 interface
 
 uses
-  Classes, uPSComponent, Dialogs;
+  Classes, uPSComponent, Dialogs, windows, forms;
 
 	procedure RegisterPSGui(ps: TPSScript);
   procedure LinkPSGui(ps: TPSScript);
@@ -206,6 +206,37 @@ end;
 
 { Actions -- end }
 
+function ExecuteCommandStack: boolean;
+begin
+	result := false;
+  if (unit_main.IsBatching) then exit;
+	result := true;
+	frm_UnCodeX.NextBatchCommand;
+end;
+
+function IsBatching: boolean;
+begin
+  result := unit_main.IsBatching;
+end;
+
+procedure OpenSourceLine(uclass: TUClass; line, caret: integer);
+begin
+  frm_UnCodeX.OpenSourceLine(uclass, line, caret);
+end;
+
+procedure OpenSourceInLine(uclass: TUClass; line, caret: integer);
+begin
+  frm_UnCodeX.OpenSourceInLine(uclass, line, caret);
+end;
+
+procedure Sleep(time: cardinal);
+var
+	i: Cardinal;
+begin
+	i := GetTickCount;
+  while (i > GetTickCount-time) do Application.ProcessMessages;
+end;
+
 procedure RegisterPSGui(ps: TPSScript);
 begin
 	if (frm_UnCodeX = nil) then exit;
@@ -248,14 +279,23 @@ begin
   ps.AddFunction(@MInputQuery, 'function MInputQuery(const ACaption, APrompt: string; var Value: string): Boolean;');
   ps.AddFunction(@InputQuery, 'function InputQuery(const ACaption, APrompt: string; var Value: string): Boolean;');
   ps.AddFunction(@InputBox, 'function InputBox(const ACaption, APrompt, ADefault: string): string;');
+	{ Batch routines/etc. }
+  ps.AddFunction(@ExecuteCommandStack, 'function ExecuteCommandStack: boolean;');
+  ps.AddFunction(@IsBatching, 'function IsBatching: boolean;');
+  //ps.AddFunction(@.., 'procedure ExecutePascalScript(const filename: string);');
+  //check if running, then clone, return compile errors, return execution errors
 
-
+  //procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
+  ps.AddFunction(@OpenSourceLine, 'procedure OpenSourceLine(uclass: TUClass; line, caret: integer);');
+  ps.AddFunction(@OpenSourceInline, 'procedure OpenSourceInline(uclass: TUClass; line, caret: integer);');
+  ps.AddFunction(@Sleep, 'procedure Sleep(time: cardinal);');
 
   { Variables }
   ps.AddRegisteredPTRVariable('SelectedUClass', 'TUClass');
   ps.AddRegisteredPTRVariable('SelectedUPackage', 'TUPackage');
   ps.AddRegisteredPTRVariable('ClassList', 'TUClassList');
   ps.AddRegisteredPTRVariable('PackageList', 'TUPackageList');
+  ps.AddRegisteredPTRVariable('CommandStack', 'TStringList');
 end;
 
 procedure LinkPSGui(ps: TPSScript);
@@ -264,6 +304,7 @@ begin
   ps.SetPointerToData('SelectedUPackage', @unit_main.SelectedUPackage, ps.FindNamedType('TUPackage'));
 	ps.SetPointerToData('ClassList', @unit_main.ClassList, ps.FindNamedType('TUClassList'));
   ps.SetPointerToData('PackageList', @unit_main.PackageList, ps.FindNamedType('TUPackageList'));
+  ps.SetPointerToData('CommandStack', @unit_main.CmdStack, ps.FindNamedType('TStringList'));
 end;
 
 end.

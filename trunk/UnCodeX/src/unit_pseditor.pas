@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, ToolWin, ComCtrls, ActnList, StdActns;
+  Dialogs, ExtCtrls, StdCtrls, ToolWin, ComCtrls, ActnList, StdActns, Menus;
 
 type
   Tfrm_PSEditor = class(TForm)
@@ -31,6 +31,10 @@ type
     sd_Save: TSaveDialog;
     ac_Save: TAction;
     ac_Load: TAction;
+    btn_Abort: TToolButton;
+    ac_Abort: TAction;
+    pm_Macros: TPopupMenu;
+    N1: TMenuItem;
     procedure ac_CompileExecute(Sender: TObject);
     procedure ac_RunExecute(Sender: TObject);
     procedure mm_EditorChange(Sender: TObject);
@@ -44,8 +48,10 @@ type
     procedure EditSelectAll1Execute(Sender: TObject);
     procedure ac_SaveExecute(Sender: TObject);
     procedure ac_LoadExecute(Sender: TObject);
+    procedure ac_AbortExecute(Sender: TObject);
   private
     ScriptSaved: boolean;
+    procedure ReopenFile(Sender: TObject);
   public
     function SaveFile: boolean;
   end;
@@ -55,7 +61,7 @@ var
 
 implementation
 
-uses unit_main;
+uses unit_main, unit_definitions;
 
 {$R *.dfm}
 
@@ -66,8 +72,18 @@ begin
   if (result) then begin
     mm_Editor.Lines.SaveToFile(sd_Save.FileName);
   	sb_EditorBar.Panels[2].Text := sd_Save.FileName;
+    sb_EditorBar.Panels[1].Text := '';
     ScriptSaved := true;
   end;
+end;
+
+procedure Tfrm_PSEditor.ReopenFile(Sender: TObject);
+begin
+  if (not (Sender is TMenuItem)) then exit;
+  if (not FileExists(TMenuItem(Sender).Hint)) then exit;
+  mm_Editor.Lines.LoadFromFile(TMenuItem(Sender).Hint);
+  sb_EditorBar.Panels[2].Text := TMenuItem(Sender).Hint;
+  ScriptSaved := true;
 end;
 
 procedure Tfrm_PSEditor.ac_CompileExecute(Sender: TObject);
@@ -93,18 +109,30 @@ begin
 end;
 
 procedure Tfrm_PSEditor.ac_RunExecute(Sender: TObject);
+var
+	t: Cardinal;
 begin
 	lb_Output.Items.Clear;
+  lb_Output.Items.Add('Execution started');
+  ac_Abort.Enabled := true;
+  ac_Run.Enabled := false;
+  t := GetTickCount;
 	if (not frm_UnCodeX.ps_Main.Execute) then begin
     lb_Output.Items.Add(frm_UnCodeX.ps_Main.ExecErrorToString);
     lb_Output.Items.Add(format('Execution failed @ %d:%d', [frm_UnCodeX.ps_Main.ExecErrorRow, frm_UnCodeX.ps_Main.ExecErrorCol]));
+  end
+  else begin
+		lb_Output.Items.Add(format('Execution finished in %f seconds', [(GetTickCount-t)/1000]));
   end;
+  ac_Run.Enabled := true;
+  ac_Abort.Enabled := false;
 end;
 
 procedure Tfrm_PSEditor.mm_EditorChange(Sender: TObject);
 begin
   ac_Run.Enabled := false;
   ScriptSaved := false;
+  sb_EditorBar.Panels[1].Text := 'changed';
 end;
 
 procedure Tfrm_PSEditor.mm_EditorKeyUp(Sender: TObject; var Key: Word;
@@ -140,10 +168,29 @@ begin
 end;
 
 procedure Tfrm_PSEditor.FormCreate(Sender: TObject);
+var
+	sl: TStringList;
+  i: integer;
+  mi: TMenuItem;
 begin
 	ScriptSaved := true;
   sd_Save.InitialDir := ExtractFilePath(ParamStr(0));
   od_Open.InitialDir := ExtractFilePath(ParamStr(0));
+  sl := TStringList.Create;
+  try
+	  if (GetFiles(ExtractFilePath(ParamStr(0))+'*.ups', faAnyfile, sl)) then begin
+    	sl.Sort;
+  		for i := 0 to sl.count-1 do begin
+	  	  mi := TMenuItem.Create(pm_Macros);
+	  	  mi.Caption := ExtractFilename(sl[i]);
+  	  	mi.Hint := sl[i];
+        mi.OnClick := ReopenFile;
+        n1.Parent.Add(mi);
+    	end;
+	  end;
+  finally
+		sl.Free;
+  end;
 end;
 
 procedure Tfrm_PSEditor.ac_NewExecute(Sender: TObject);
@@ -187,6 +234,16 @@ begin
     mm_Editor.Lines.LoadFromFile(od_Open.FileName);
     sb_EditorBar.Panels[2].Text := od_Open.FileName;
     ScriptSaved := true;
+  end;
+end;
+
+procedure Tfrm_PSEditor.ac_AbortExecute(Sender: TObject);
+begin
+	if (frm_UnCodeX.ps_Main.Running) then begin
+    ac_Abort.Enabled := false;
+    frm_UnCodeX.ps_Main.Stop;
+		lb_Output.Items.Add('Abort requested, waiting to finish...');
+    exit;
   end;
 end;
 

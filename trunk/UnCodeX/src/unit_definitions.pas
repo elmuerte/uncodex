@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   General definitions
- $Id: unit_definitions.pas,v 1.109 2004-08-02 19:58:58 elmuerte Exp $
+ $Id: unit_definitions.pas,v 1.110 2004-08-03 07:02:35 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -51,6 +51,8 @@ type
   function iFindFile(filename: string): string;
   function iFindDir(dirname: string; var output: string): boolean;
   function CopyFile(filename, target: string): boolean;
+  function GetFiles(path: string; Attr: Integer; var files: TStringList): boolean; 
+
   procedure ReloadKeywords;
 
   procedure guard(s: string);
@@ -289,6 +291,23 @@ begin
   if (not FileExists(ini)) then exit;
   if (ExtCommentIni <> nil) then FreeAndNil(ExtCommentIni);
   ExtCommentIni := TMemIniFile.Create(ini);
+end;
+
+function GetFiles(path: string; Attr: Integer; var files: TStringList): boolean;
+var
+	sr: TSearchRec;
+  dir: string;
+begin
+	files.Clear;
+  dir := extractfilepath(path);
+	if (FindFirst(path, Attr, sr) = 0) then begin
+    repeat
+			if ((sr.Name = '.') or (sr.Name = '..')) then continue;
+      Files.Add(dir+sr.Name);
+    until FindNext(sr) <> 0;
+    FindClose(sr);
+  end;
+  result := files.count > 0;
 end;
 
 initialization

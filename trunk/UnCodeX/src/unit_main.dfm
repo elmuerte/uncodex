@@ -2398,7 +2398,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
       #9'acAbout;'
       'end.'
       '')
-    CompilerOptions = []
+    CompilerOptions = [icAllowNoBegin, icAllowUnit, icAllowNoEnd]
     OnLine = ps_MainLine
     OnCompile = ps_MainCompile
     OnExecute = ps_MainExecute
