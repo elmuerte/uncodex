@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<title>UnCodeX - Pascal Script - TUConst</title>
+	<link href="../images/default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="../images/UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">TUConst</div>
+</div>
+
+<div class="content">
+<h1>TUConstList</h1>
+<pre>
+TUConstList = class(TUObjectList)
+    procedure Sort;
+    function Find(name: string): TUConst;
+    property Items[Index: Integer]: TUConst; default;
+  end;
+</pre>
+
+<h1>TUConst</h1>
+<pre>
+TUConst = class(TUObject)
+    value:      string;
+  end;
+</pre>
+
+</div>
+</div>
+</body>
+</html>
