@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.41 2003-12-07 21:33:11 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.42 2003-12-20 12:22:36 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -188,7 +188,7 @@ function PackageListLink(upackage: TUPackage; DOSPath: boolean = false): string;
 var
   path: string;
 begin
-  if (DOSPath) then path := '\' else path := '/';
+  if (DOSPath) then path := PathDelim else path := '/';
   result := LowerCase(upackage.name+path+upackage.name+'-list.'+TargetExtention);
 end;
 
@@ -213,7 +213,7 @@ begin
   Self.ClassList := Config.ClassList;
   Self.status := status;
   Self.HTMLOutputDir := Config.outputdir;
-  Self.TemplateDir := Config.TemplateDir+PATHDELIM;
+  iFindDir(Config.TemplateDir+PATHDELIM, Self.TemplateDir);
   Self.CreateSource := config.CreateSource;
   Self.TabsToSpaces := config.TabsToSpaces;
   Self.CPP := config.CPP;
@@ -225,7 +225,8 @@ begin
   EnumCache := Hashes.TStringHash.Create;
   StructCache := Hashes.TStringHash.Create;
   FunctionCache := Hashes.TStringHash.Create;
-  ini := TMemIniFile.Create(TemplateDir+'template.ini');
+  ini := TMemIniFile.Create(iFindFile(TemplateDir+'template.ini'));
+  ini.CaseSensitive := false;
   MaxInherit := ini.ReadInteger('Settings', 'MaxInherit', MaxInt);
   if (TargetExtention = '') then TargetExtention := ini.ReadString('Settings', 'TargetExt', 'html');
   if (MaxInherit <= 0) then MaxInherit := MaxInt;
@@ -361,7 +362,7 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'glossary_title') = 0) then begin
-    replacement := ini.ReadString('titles', 'Glossary', '');
+    replacement := ini.ReadString('Titles', 'Glossary', 'Glossary');
     result := true;
   end
   else if (CompareText(replacement, 'classtree_link') = 0) then begin
@@ -369,7 +370,7 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'classtree_title') = 0) then begin
-    replacement := ini.ReadString('titles', 'ClassTree', '');
+    replacement := ini.ReadString('Titles', 'ClassTree', 'ClassTree');
     result := true;
   end
   else if (CompareText(replacement, 'index_link') = 0) then begin
@@ -377,7 +378,7 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'index_title') = 0) then begin
-    replacement := ini.ReadString('titles', 'Overview', '');
+    replacement := ini.ReadString('Titles', 'Overview', 'Overview');
     result := true;
   end
   else if (CompareText(replacement, 'VERSION') = 0) then begin

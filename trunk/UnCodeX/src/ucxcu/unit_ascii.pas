@@ -29,13 +29,13 @@ const
   PB_TODO = #176; // 25% block
   {$ENDIF}
   {$IFDEF LINUX}
-  PB_RESET = #27'''0';
+  PB_RESET = #13;
   PB_DONE = '='; // full bock
   PB_HALF = '-'; // 50% block
   PB_TODO = '.'; // 25% block
   {$ENDIF}
   PB_NONE = ' ';
-  VERSION = '009 Beta';
+  VERSION = '010 Beta';
 
 var
   lastsp: integer = -1;
@@ -83,6 +83,7 @@ procedure PrintHelp;
 begin
   writeln('Accepted commandline switches:');
   writeln(#9'-c <filename>'   +#9'Set configuration file (uncodex.ini used by default)');
+  writeln(#9'-d <filename>'   +#9'Package description file');
   writeln(#9'-h'#9            +#9'This message');
   writeln(#9'-l <filename>'   +#9'Log to file <filename>, logging disablled by default');
   writeln(#9'-m'#9			      +#9'Create MS HTML Help file');

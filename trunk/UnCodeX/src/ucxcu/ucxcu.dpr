@@ -11,6 +11,9 @@ uses
   {$IFDEF MSWINDOWS}
   unit_mshtmlhelp in '../unit_mshtmlhelp.pas',
   {$ENDIF}
+  {$IFDEF LINUX}
+  Libc,
+  {$ENDIF}
   unit_outputdefs in '../unit_outputdefs.pas',
   unit_packages in '../unit_packages.pas',
   unit_parser in '../unit_parser.pas',
@@ -31,9 +34,14 @@ begin
     if (Verbose > 0) then PrintBanner;
     if (HasCmdOption('h')) then PrintHelp
     else begin
-    	HTMLOutputDir := ExtractFilePath(ParamStr(0))+'Output';
-    	TemplateDir := ExtractFilePath(ParamStr(0))+TEMPLATEPATH+PATHDELIM+DEFTEMPLATE;
-    	HTMLHelpFile := ExtractFilePath(ParamStr(0))+'UnCodeX.chm';
+      {$IFDEF LINUX}
+      signal(SIGINT, SigProc);
+      signal(SIGABRT, SigProc);
+      {$ENDIF}
+    	HTMLOutputDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+'Output';
+    	TemplateDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+TEMPLATEPATH+PATHDELIM+DEFTEMPLATE;
+    	HTMLHelpFile := ExtractFilePath(ExpandFileName(ParamStr(0)))+'UnCodeX.chm';
+      PackageDescFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTPDF);
 
       ConfigFile := ExtractFilePath(ParamStr(0)) + 'UnCodeX.ini';
       CmdOption('c', ConfigFile);

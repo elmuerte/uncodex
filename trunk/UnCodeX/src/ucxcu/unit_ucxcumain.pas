@@ -5,6 +5,7 @@ interface
 uses
   Classes, SysUtils, IniFiles, unit_uclasses;
 
+  procedure SigProc(signum: integer); cdecl;
   procedure LoadConfig;
   procedure ProcessCommandline;
   procedure Main;
@@ -18,6 +19,7 @@ var
   Verbose: byte = 1;
   ConfigFile: string;
   sourcepaths, packagepriority, ignorepackages: TStringList;
+  PackageDescFile: string;
   // HTML output config:
   HTMLOutputDir, TemplateDir, HTMLTargetExt, CPPApp: string;
   TabsToSpaces: integer;
@@ -26,8 +28,11 @@ var
 
 implementation
 
-uses unit_packages, unit_ascii, unit_definitions, unit_analyse,
-  unit_htmlout;
+uses
+  {$IFDEF LINUX}
+  Libc,
+  {$ENDIF}
+  unit_packages, unit_ascii, unit_definitions, unit_analyse, unit_htmlout;
 
 var
   PackageList: TUPackageList;
@@ -35,6 +40,20 @@ var
   PhaseLabel, StatusFormat: string;
   LogFile: TextFile;
   Logging: boolean = false;
+  ActiveThread: TThread;
+
+procedure SigProc(signum: integer);
+begin
+  case (signum) of
+    SIGINT, SIGABRT:
+      begin
+        if (ActiveThread <> nil) then ActiveThread.Terminate;
+        writeln('');
+        writeln(#9'process aborted (signal: '+IntToStr(signum)+')');
+        Halt(signum);
+      end;
+  end;
+end;
 
 procedure LoadConfig;
 var
@@ -169,10 +188,11 @@ begin
   end;
   i := 0;
   while (CmdOption('s', tmp, i)) do begin
-    sourcepaths.Add(ExpandFileName(tmp));
+    sourcepaths.Add(ExcludeTrailingPathDelimiter(ExpandFileName(tmp)));
     i := i+1;
   end;
   CmdOption('t', TemplateDir);
+  CmdOption('d', PackageDescFile);
 
   // html help
   CmdOption('mc', HHCPath);
@@ -194,7 +214,8 @@ begin
   else if (Verbose = 2) then StatusFormat := 'Phase %d)';
 
   PhaseLabel := format(StatusFormat, [1, 'Scanning packages']);
-  ps := TPackageScanner.Create(sourcepaths, statusreport, PackageList, ClassList, packagepriority, ignorepackages);
+  ps := TPackageScanner.Create(sourcepaths, statusreport, PackageList, ClassList, packagepriority, ignorepackages, nil, PackageDescFile);
+  ActiveThread := ps;
   try
     ps.FreeOnTerminate := false;
     ps.Resume;
@@ -210,6 +231,7 @@ begin
 
   PhaseLabel := format(StatusFormat, [2, 'Analyzing classes']);
   ca := TClassAnalyser.Create(ClassList, statusreport);
+  ActiveThread := ca;
   try
     ca.FreeOnTerminate := false;
     ca.Resume;
@@ -229,6 +251,7 @@ begin
   hoc.CPP := CPPApp;
   hoc.CreateSource := true;
   ho := THTMLOutput.Create(hoc, statusreport);
+  ActiveThread := ho;
   try
     ho.FreeOnTerminate := false;
     ho.Resume;
