@@ -1,0 +1,50 @@
+<html>
+<head>
+	<title>UnCodeX - Main window</title>
+	<link href="default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">main window</div>
+</div>
+
+<div class="content">
+<h1>Main window</h1>
+<map name="mainwindow">
+<area shape="rect" coords="6,22,468,42" href="window_main_menu.html" title="" alt="" >
+<area shape="rect" coords="4,549,471,558" href="#progressmeter" title="Progress meter" alt="Progress meter" >
+<area shape="rect" coords="5,560,468,576" href="#statusbar" title="Status bar" alt="Status bar" >
+<area shape="rect" coords="7,44,468,72" href="window_main_toolbar.html" title="Toolbar" alt="Toolbar" >
+<area shape="rect" coords="6,465,468,548" href="#log" title="Log window" alt="Log window" >
+<area shape="rect" coords="209,72,468,457" href="#classtree" title="Class Tree" alt="Class Tree" >
+<area shape="rect" coords="7,72,202,457" href="#packagetree" title="Package Tree" alt="Package Tree" >
+</map>
+<div align="center"><img src="UnCodeX-main.gif" usemap="#mainwindow" border="0" alt="0"></div>
+
+<a name="packagetree"></a><h2>Package tree</h2>
+These are all the packages found by UnCodeX. The packages with a yellow icon have been <a href="window_settings.html#packagepriority">tagged</a>.<br>
+You can use inline search to find a class or package. Just start typing the name of the class to search for it, use backspace to delete characters. You can use &lt;tab&gt; to complete the current search string and &lt;esc&gt; to cancel the inline search. You can use the find next feature to find the next class/package that matches the current inline search. The inline search will automatically be canceled after a couple of seconds, the find next feature remains to work.
+
+<a name="#classtree"></a><h2>Class tree</h2>
+This is the class inheritance tree, right click a class for some extra options or double click the class to open it. Yellow classes are in a package that has been <a href="window_settings.html#packagepriority">tagged</a>.<br>
+The class tree also has the inline search feature.
+
+<a name="#log"></a><h2>Log window</h2>
+The log window will display information during the execution of commands. These message can be result message but also errors. When you perform a full text search this window will be displayed automatically (if it was hidden). The resulting items can't be double clicked to open the source file.
+
+<a name="#statusbar"></a><h2>Status bar</h2>
+On this bar you will see status messages of the current\last command executed.
+
+<a name="#progressmeter"></a><h2>Progress bar</h2>
+Some actions that take a long time to process will display their current progress on this bar.
+
+<a name="#sourcesnoop"></a><h2>Source Snoop</h2>
+Here you will see the syntax highlighted source code of the selected class. Names of other classes are click-able.
+
+</div>
+</div>
+</body>
+</html>
