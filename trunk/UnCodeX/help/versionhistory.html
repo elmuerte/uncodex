@@ -12,6 +12,12 @@
 </div>
 
 <div class="content">
+<h2>Changes since 062:</h2>
+<ul>
+<li>Fixed error when the parser encountered an unterminated string or name. The rest of the line is now accepted as string/name. (Note: that unterminated names and strings don't compile in ucc make)
+<li>Added syntax highlighted HTML output, this introduces two new templates: sourcecode-1.html and sourcecode-2.html
+</ul>
+
 <h2>Changes since 061:</h2>
 <ul>
 <li>Type identifier with a class name preceding it (var <u>ComeClass.MyStruct</u> i;) are now parsed correctly.
