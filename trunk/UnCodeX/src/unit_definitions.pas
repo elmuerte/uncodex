@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.139 2005-03-18 14:42:42 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.140 2005-03-20 12:43:34 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -104,6 +104,15 @@ const
   {$ENDIF}
   {$IFDEF LINUX}
   APPPLATFORM     = 'GNU\Linux';
+  {$ENDIF}
+  {$IFDEF FPC}
+  COMPILER        = 'FPC';
+  {$ENDIF}
+  {$IFDEF IS_DELPHI}
+  COMPILER        = 'Borland\Delphi';
+  {$ENDIF}
+  {$IFDEF GNU}
+  COMPILER        = 'GNU\Pascal';
   {$ENDIF}
 
   {$IFDEF MSWINDOWS}

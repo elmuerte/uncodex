@@ -6,7 +6,7 @@
   Purpose:
     Main code for the commandline utility
 
-  $Id: unit_ucxcumain.pas,v 1.20 2005-03-18 14:42:42 elmuerte Exp $
+  $Id: unit_ucxcumain.pas,v 1.21 2005-03-20 12:43:39 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -83,9 +83,9 @@ begin
     SIGINT, SIGABRT:
       begin
         if (ActiveThread <> nil) then begin
-			ActiveThread.Terminate;
-			ActiveThread.WaitFor;
-		end;
+          ActiveThread.Terminate;
+          ActiveThread.WaitFor;
+        end;
         writeln('');
         writeln(#9'process aborted (signal: '+IntToStr(signum)+')');
         Halt(signum);
@@ -125,16 +125,6 @@ begin
       if (LowerCase(tmp2) = 'packages=') then begin
         Log('Config: Package = '+tmp);
         PackagePriority.Add(LowerCase(tmp));
-      end;
-    end;
-    // must be after Package= listing
-    for i := 0 to sl.Count-1 do begin
-      tmp := sl[i];
-      tmp2 := Copy(tmp, 1, Pos('=', tmp));
-      Delete(tmp, 1, Pos('=', tmp));
-      if (LowerCase(tmp2) = 'tag=') then begin
-        Log('Config: Tagged package = '+tmp);
-        PackagePriority.Objects[PackagePriority.IndexOf(LowerCase(tmp))] := PackagePriority;
       end;
     end;
     ini.ReadSectionValues('IgnorePackages', sl);
@@ -252,6 +242,21 @@ begin
       lst.Free;
     end;
   end;
+  if (CmdOption('pi', tmp)) then begin
+    lst := TStringList.Create;
+    try
+      {$IFNDEF FPC}
+      lst.Delimiter := ',';
+      lst.QuoteChar := '"';
+      lst.DelimitedText := tmp;
+      {$ELSE}
+      {$MESSAGE warn 'FIX'}
+      {$ENDIF}
+      ignorepackages.AddStrings(lst);
+    finally
+      lst.Free;
+    end;
+  end;
   i := 0;
   while (CmdOption('s', tmp, i)) do begin
     sourcepaths.Add(ExcludeTrailingPathDelimiter(ExpandFileName(tmp)));
@@ -347,7 +352,10 @@ begin
   end;
   if (Verbose > 0) then writeln('');
 
-
+  if (HTMLHelpFile <> '') then begin
+    PhaseLabel := format(StatusFormat, [4, 'Compiling MS HTML Help']);
+    Warning('Not implemented'); //TODO: implement
+  end;
 
   if (HasCmdOption('me')) then begin
     PhaseLabel := format(StatusFormat, [5, 'Clean up HTML files']);
@@ -394,6 +402,11 @@ begin
       if (TLogEntry(obj).filename <> '') then
         WriteLn(LogFile, #9'File: '+TLogEntry(obj).filename+' #'+IntToStr(TLogEntry(obj).line)+','+IntToStr(TLogEntry(obj).pos));
     end;
+  end;
+  if (mt = ltError) then begin
+    writeln(ErrOutput, '');
+    writeln(ErrOutput, '[ERROR] '+msg);
+    flush(ErrOutput);
   end;
 end;
 

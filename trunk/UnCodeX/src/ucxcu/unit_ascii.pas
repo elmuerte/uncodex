@@ -6,7 +6,7 @@
   Purpose:
     General commandline routines
 
-  $Id: unit_ascii.pas,v 1.19 2005-03-18 14:42:42 elmuerte Exp $
+  $Id: unit_ascii.pas,v 1.20 2005-03-20 12:43:39 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -48,7 +48,7 @@ uses
 
 implementation
 
-uses unit_definitions;
+uses unit_definitions, unit_uclasses;
 
 const
   PB_BEGIN  = '[';
@@ -56,14 +56,14 @@ const
   {$IFDEF MSWINDOWS}
   PB_RESET  = #13;
   PB_DONE   = #219; // full bock
-  PB_HALF   = #178; // 66% block
-  PB_TODO   = #176; // 33% block
+  PB_HALF   = #178; // 50% block
+  PB_TODO   = #176; // 0% block
   {$ENDIF}
   {$IFDEF LINUX}
   PB_RESET  = #13;
   PB_DONE   = '='; // full bock
-  PB_HALF   = '-'; // 66% block
-  PB_TODO   = '.'; // 33% block
+  PB_HALF   = '-'; // 50% block
+  PB_TODO   = '.'; // 0% block
   {$ENDIF}
   PB_NONE   = ' ';
   PB_BUSY0	= ' ';
@@ -81,14 +81,14 @@ var
   half: integer;
 begin
   if (showvalue) then size := size - 5;
-  {$IF 0}
+  {$IF false}
   if (progress = 255) then begin
 	pbtoggle := not pbtoggle;
     if (pbtoggle) then write(PB_BUSY0+#8)
 	else write(PB_BUSY1+#8);
 	exit;
   end;
-  {$ENDIF}
+  {$IFEND}
   if ((progress < 0) or (progress > 100)) then exit;
   sp := trunc(progress / (100 / size));
   half := round(progress / (100 / size))-sp;
@@ -108,7 +108,7 @@ procedure PrintBanner;
 begin
   writeln('------------------------------------------------------------');
   writeln(' UnCodeX Commandline Utility (ucxcu) version '+VERSION);
-  writeln(' Engine version: '+APPTITLE+' '+APPVERSION+' '+APPPLATFORM);
+  writeln(' Engine version: '+APPTITLE+' '+APPVERSION+' '+APPPLATFORM+' '+COMPILER);
   writeln(' (c) 2003-2005 Michiel ''El Muerte'' Hendriks');
   writeln(' http://wiki.beyondunreal.com/wiki/UnCodeX');
   writeln('------------------------------------------------------------');
@@ -117,8 +117,9 @@ end;
 
 procedure PrintVersion;
 begin
-  writeln('ucxcu version: '+VERSION);
-  writeln('engine version: '+APPTITLE+' '+APPVERSION+' '+APPPLATFORM);
+  writeln('ucxcu version:  '+VERSION);
+  writeln('engine version: '+APPTITLE+' '+APPVERSION+' '+APPPLATFORM+' '+COMPILER);
+  writeln('uclasses rev:   '+IntToStr(UCLASSES_REV));
 end;
 
 procedure PrintHelp;
@@ -139,6 +140,7 @@ begin
   writeln(#9'-o <path>'      +#9'Output directory for the HTML files');
   writeln(#9'-p <...>'       +#9'Comma seperated list of package names (exclusive)');
   writeln(#9'-pa <...>'      +#9'Comma seperated list of package names (additional)');
+  writeln(#9'-pi <...>'      +#9'Comma seperated list of packages to ignore');
   writeln(#9'-s <path>'      +#9'Source path (multiple allowed). If none specified');
   writeln(#9#9               +#9'the current directory will be used.');
   writeln(#9'-t <path>'      +#9'Path to the template directory');
