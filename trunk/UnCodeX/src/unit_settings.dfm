@@ -43,7 +43,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_GameServer
+    ActivePage = ts_PackagePriority
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -256,7 +256,7 @@ object frm_Settings: Tfrm_Settings
           Top = 270
           Width = 27
           Height = 25
-          Hint = 'Remoave package from the listing'
+          Hint = 'Remove package from the listing'
           Anchors = [akRight, akBottom]
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -1041,6 +1041,14 @@ object frm_Settings: Tfrm_Settings
           State = cbChecked
           TabOrder = 5
         end
+        object cb_CPAsWindow: TCheckBox
+          Left = 8
+          Top = 160
+          Width = 177
+          Height = 17
+          Caption = 'Open class properties as window'
+          TabOrder = 6
+        end
       end
     end
     object ts_HotKeys: TTabSheet
@@ -1290,7 +1298,6 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 9
           Thousands = False
           Wrap = False
-          OnChanging = ud_TabSizeChanging
         end
         object ed_TabSize: TEdit
           Left = 320
@@ -1303,6 +1310,7 @@ object frm_Settings: Tfrm_Settings
           ParentBiDiMode = False
           TabOrder = 10
           Text = '4'
+          OnChange = ed_TabSizeChange
         end
       end
     end
