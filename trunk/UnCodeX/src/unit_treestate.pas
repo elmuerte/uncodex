@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   loading/saving the tree state
- $Id: unit_treestate.pas,v 1.20 2004-03-30 09:46:18 elmuerte Exp $
+ $Id: unit_treestate.pas,v 1.21 2004-05-08 12:06:28 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -241,7 +241,7 @@ begin
     for n := 0 to NumClasses-1 do begin
       uclass := TUClass.Create;
       uclass.name := Reader.ReadString;
-      unit_rtfhilight.ClassesHash.Items[LowerCase(uclass.name)] := '-';
+      unit_rtfhilight.ClassesHash.Items[LowerCase(uclass.name)] := uclass;
       ALevel := Reader.ReadInteger;
       uclass.package := GetPackage(Reader.ReadString);
       uclass.tagged := uclass.package.tagged;

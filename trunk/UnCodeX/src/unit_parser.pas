@@ -3,22 +3,26 @@
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
             Based on the TParser class by Borland Software Corporation
- $Id: unit_parser.pas,v 1.16 2004-05-07 13:19:50 elmuerte Exp $
+ $Id: unit_parser.pas,v 1.17 2004-05-08 12:06:28 elmuerte Exp $
 -----------------------------------------------------------------------------}
+{
+    UnCodeX - UnrealScript source browser & documenter
+    Copyright (C) 2003, 2004  Michiel Hendriks
 
-{ *************************************************************************** }
-{                                                                             }
-{ Kylix and Delphi Cross-Platform Visual Component Library                    }
-{ Internet Application Runtime                                                }
-{                                                                             }
-{ Copyright (C) 1997, 2001 Borland Software Corporation                       }
-{                                                                             }
-{ Licensees holding a valid Borland No-Nonsense License for this Software may }
-{ use this file in accordance with such license, which appears in the file    }
-{ license.txt that came with this Software.                                   }
-{                                                                             }
-{ *************************************************************************** }
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
 
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+}
 unit unit_parser;
 
 interface

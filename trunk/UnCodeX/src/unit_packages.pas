@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Unreal Package scanner, searches for classes in directories
- $Id: unit_packages.pas,v 1.24 2004-04-02 10:33:26 elmuerte Exp $
+ $Id: unit_packages.pas,v 1.25 2004-05-08 12:06:28 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -53,7 +53,7 @@ type
     classlist: TUClassList;
     PackagePriority: TStringList;
     IgnorePackages: TStringList;
-    ClassHash: TStringHash;
+    ClassHash: TObjectHash;
     DuplicateHash: TStringHash;
     PDF: TMemIniFile;
     procedure ScanPackages;
@@ -67,11 +67,11 @@ type
     {$IFDEF __USE_TREEVIEW}
     constructor Create(paths: TStringList; packagetree, classtree: TTreeNodes;
       status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
-      PackagePriority, IgnorePackages: TStringList; CHash: TStringHash = nil; PDFile: string = '');
+      PackagePriority, IgnorePackages: TStringList; CHash: TObjectHash = nil; PDFile: string = '');
     {$ELSE}
     constructor Create(paths: TStringList;
       status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
-      PackagePriority, IgnorePackages: TStringList; CHash: TStringHash = nil; PDFile: string = '');
+      PackagePriority, IgnorePackages: TStringList; CHash: TObjectHash = nil; PDFile: string = '');
     {$ENDIF}
     destructor Destroy; override;
     procedure Execute; override;
@@ -108,11 +108,11 @@ end;
 {$IFDEF __USE_TREEVIEW}
 constructor TPackageScanner.Create(paths: TStringList; packagetree, classtree: TTreeNodes;
   status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
-  PackagePriority, IgnorePackages: TStringList; CHash: TStringHash = nil; PDFile: string = '');
+  PackagePriority, IgnorePackages: TStringList; CHash: TObjectHash = nil; PDFile: string = '');
 {$ELSE}
 constructor TPackageScanner.Create(paths: TStringList;
   status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
-  PackagePriority, IgnorePackages: TStringList; CHash: TStringHash = nil; PDFile: string = '');
+  PackagePriority, IgnorePackages: TStringList; CHash: TObjectHash = nil; PDFile: string = '');
 {$ENDIF}
 begin
   Self.paths := paths;
@@ -308,7 +308,7 @@ begin
               	LogClass('Scanner: (Warning) duplicate class name: '+uclass.FullName, uclass);
               	DuplicateHash[LowerCase(uclass.name)] := '-'
               end
-              else ClassHash.Items[LowerCase(uclass.name)] := '-';
+              else ClassHash.Items[LowerCase(uclass.name)] := uclass;
             end;
           end
           else log('Scanner: No class found in this file: '+sr.Name);

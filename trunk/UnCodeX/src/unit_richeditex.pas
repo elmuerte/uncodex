@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   we need RichEdit control version 2
- $Id: unit_richeditex.pas,v 1.14 2004-02-23 12:20:47 elmuerte Exp $
+ $Id: unit_richeditex.pas,v 1.15 2004-05-08 12:06:28 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -194,7 +194,7 @@ var
   pt, pt2: TPoint;
   l: string;
 begin
-  inherited;
+	inherited;
   with xCanvas do begin
     Brush.Color := clBtnFace;
     Pen.Color := clBtnFace;
