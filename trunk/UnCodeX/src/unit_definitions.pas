@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.126 2004-12-18 14:36:47 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.127 2004-12-18 23:52:00 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -73,7 +73,7 @@ type
 
 const
   APPTITLE        = 'UnCodeX';
-  APPVERSION      = '215';
+  APPVERSION      = '216';
   {$IFDEF MSWINDOWS}
   APPPLATFORM     = 'MS Windows';
   {$ENDIF}
@@ -473,9 +473,9 @@ initialization
   // fill keyword table -- end
   TmpExtCmt := TStringList.Create;
 finalization
-  Keywords1.Clear;
-  Keywords2.Clear;
-  GuardStack.Free;
-  TmpExtCmt.Free;
-  if (Assigned(ExtCommentIni)) then ExtCommentIni.Free;
+  FreeAndNil(Keywords1);
+  FreeAndNil(Keywords2);
+  FreeAndNil(GuardStack);
+  FreeAndNil(TmpExtCmt);
+  if (Assigned(ExtCommentIni)) then FreeAndNil(ExtCommentIni);
 end.

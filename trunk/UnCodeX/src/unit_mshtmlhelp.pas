@@ -6,7 +6,7 @@
   Purpose:
     Creates an MS HTML Help project and compiles it.
 
-  $Id: unit_mshtmlhelp.pas,v 1.18 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_mshtmlhelp.pas,v 1.19 2004-12-18 23:52:00 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -82,6 +82,7 @@ begin
   Self.MainTitle := title;
   if (MainTitle = '') then MainTitle := APPTITLE+' - '+APPVERSION;
   inherited Create(true);
+  FreeOnTerminate := true;
 end;
 
 destructor TMSHTMLHelp.Destroy;

@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.44 2004-12-08 20:09:05 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.45 2004-12-18 23:52:00 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -415,7 +415,7 @@ end;
 
 destructor TUStruct.Destroy;
 begin
-  properties.Free;
+  FreeAndNil(properties);
 end;
 
 function TUStruct.declaration: string;
@@ -463,7 +463,7 @@ end;
 
 destructor TUState.Destroy;
 begin
-  functions.Free;
+  FreeAndNil(functions);
 end;
 
 function TUState.declaration: string;
@@ -518,7 +518,7 @@ end;
 
 destructor TUFunction.Destroy;
 begin
-  locals.Free;
+  FreeAndNil(locals);
 end;
 
 function TUFunction.declaration: string;
@@ -596,17 +596,17 @@ end;
 
 destructor TUClass.Destroy;
 begin
-  consts.Free;
-  properties.Free;
-  enums.Free;
-  structs.Free;
-  states.Free;
-  functions.Free;
-  delegates.Free;
-  children.Free;
-  deps.Free;
-  defs.Free;
-  includes.Free;
+  FreeAndNil(consts);
+  FreeAndNil(properties);
+  FreeAndNil(enums);
+  FreeAndNil(structs);
+  FreeAndNil(states);
+  FreeAndNil(functions);
+  FreeAndNil(delegates);
+  FreeAndNil(children);
+  FreeAndNil(deps);
+  FreeAndNil(defs);
+  FreeAndNil(includes);
 end;
 
 function TUClass.FullName: string;
@@ -665,7 +665,7 @@ end;
 
 destructor TUPackage.Destroy;
 begin
-  classes.Free;
+  FreeAndNil(classes);
 end;
 
 function TUPackage.PackageDir: string;
@@ -728,7 +728,7 @@ end;
 destructor TDefinitionList.Destroy;
 begin
   fowner := nil;
-  defines.Free;
+  FreeAndNil(defines);
 end;
 
 function TDefinitionList.IsDefined(name: string): boolean;

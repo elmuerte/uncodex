@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript package scanner, search for UnrealScript classes
 
-  $Id: unit_packages.pas,v 1.39 2004-12-18 14:36:48 elmuerte Exp $
+  $Id: unit_packages.pas,v 1.40 2004-12-18 23:52:00 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -200,8 +200,8 @@ end;
 
 destructor TPackageScanner.Destroy;
 begin
-  DuplicateHash.Clear;
-  if (PDF <> nil) then PDF.Free;
+  FreeAndNil(DuplicateHash);
+  if (PDF <> nil) then FreeAndNil(PDF);
   inherited Destroy();
 end;
 
@@ -250,7 +250,7 @@ begin
     for i := 0 to paths.count-1 do begin
       pathpkgcount := 0;
       if FindFirst(paths[i]+PATHDELIM+WILDCARD, faDirectory, sr) = 0 then begin
-        repeat
+        try repeat
           if ((sr.Name <> '.') and (sr.Name <> '..')) then begin
             if (iFindDir(paths[i]+PATHDELIM+sr.name+PATHDELIM+CLASSDIR, tmp) and
               (IgnorePackages.IndexOf(sr.Name) = -1)) then begin
@@ -319,7 +319,9 @@ begin
             end;
           end;
         until (FindNext(sr) <> 0) or (Self.Terminated);
-        FindClose(sr);
+        finally
+          FindClose(sr);
+        end;
         if (Self.Terminated) then break;
       end;
       if (pathpkgcount = 0) then begin
@@ -519,6 +521,7 @@ end;
 
 constructor TNewClassScanner.Create(mypackagelist: TUPackageList; myclasslist: TUClassList; mystatus: TStatusReport; CHash: TObjectHash = nil);
 begin
+  Self.FreeOnTerminate := true;
   packagelist := mypackagelist;
   classlist := myclasslist;
   ClassHash := CHash;

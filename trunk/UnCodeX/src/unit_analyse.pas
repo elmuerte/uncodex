@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.55 2004-12-18 14:36:47 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.56 2004-12-18 23:52:00 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -447,31 +447,35 @@ var
 begin
   guard('pConst '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   result := TUConst.Create;
-  result.comment := trim(p.GetCopyData);
-  result.name := p.TokenString;
-  result.srcline := p.SourceLine;
-  result.definedIn := incFilename;
-  p.NextToken; // =
-  p.GetCopyData();
-  p.FullCopy := true;
-  p.FCIgnoreComments := true;
-  p.NextToken;
-  while ((p.Token <> ';') and (p.Token <> toEOF)) do p.NextToken;
-  if (p.Token = toEOF) then begin
-    result.Free;
-    raise EOFException.CreateFmt(EOFExceptionFmt, ['pConst', uclass.name, p.SourceLine, '']);
+  try
+    result.comment := trim(p.GetCopyData);
+    result.name := p.TokenString;
+    result.srcline := p.SourceLine;
+    result.definedIn := incFilename;
+    p.NextToken; // =
+    p.GetCopyData();
+    p.FullCopy := true;
+    p.FCIgnoreComments := true;
+    p.NextToken;
+    while ((p.Token <> ';') and (p.Token <> toEOF)) do p.NextToken;
+    if (p.Token = toEOF) then begin
+      raise EOFException.CreateFmt(EOFExceptionFmt, ['pConst', uclass.name, p.SourceLine, '']);
+    end;
+    tmp := p.GetCopyData();
+    Delete(tmp, length(tmp), 1); // strip ;
+    result.value := trim(tmp);
+    p.FullCopy := false;
+    p.FCIgnoreComments := false;
+    p.NextToken; // = ;
+    if (result.comment = '') then begin
+      result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
+      result.CommentType := ctExtern;
+    end;
+    uclass.consts.Add(result);
+  except
+    FreeAndNil(result);
+    raise;
   end;
-  tmp := p.GetCopyData();
-  Delete(tmp, length(tmp), 1); // strip ;
-  result.value := trim(tmp);
-  p.FullCopy := false;
-  p.FCIgnoreComments := false;
-  p.NextToken; // = ;
-  if (result.comment = '') then begin
-    result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
-    result.CommentType := ctExtern;
-  end;
-  uclass.consts.Add(result);
   unguard;
 end;
 
@@ -486,125 +490,134 @@ var
 begin
   guard('pVar '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   result := TUProperty.Create;
-  if (p.Token = '(') then last := #1#2#3#4#5 else last := '';
-  result.tag := pBrackets(true);
-  // empty tag = classname
-  if ((result.tag = '') and (last <> '')) then result.tag := uclass.name;
-  result.comment := trim(p.GetCopyData);
-  result.srcline := p.SourceLine;
-  result.definedIn := incFilename;
-  guard('searching end token');
-  while (p.Token <> ';') do begin
-    if (p.Token = toEOF) then begin
-      result.Free;
-      raise EOFException.CreateFmt(EOFExceptionFMT, ['pVar', uclass.name, p.SourceLine, result.modifiers]);
-    end;
-    if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
-    result.modifiers := result.modifiers+prev;
-    
-    prev := last;
-    last := p.TokenString;
-    p.NextToken;
-    // check if Class.type
-    if (p.Token = '.') then begin
+  try
+    if (p.Token = '(') then last := #1#2#3#4#5 else last := '';
+    result.tag := pBrackets(true);
+    // empty tag = classname
+    if ((result.tag = '') and (last <> '')) then result.tag := uclass.name;
+    result.comment := trim(p.GetCopyData);
+    result.srcline := p.SourceLine;
+    result.definedIn := incFilename;
+    guard('searching end token');
+    while (p.Token <> ';') do begin
+      if (p.Token = toEOF) then begin
+        raise EOFException.CreateFmt(EOFExceptionFMT, ['pVar', uclass.name, p.SourceLine, result.modifiers]);
+      end;
+      if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
+      result.modifiers := result.modifiers+prev;
+
+      prev := last;
+      last := p.TokenString;
       p.NextToken;
-      last := last+'.'+p.TokenString;
-      p.NextToken;
-    end;
-    last := last+pAngleBrackets;
-    last := last+pSquareBrackets;
-    while (p.Token = ',') do begin
-      p.NextToken;
-      last := last+','+p.TokenString;
-      p.NextToken;
+      // check if Class.type
+      if (p.Token = '.') then begin
+        p.NextToken;
+        last := last+'.'+p.TokenString;
+        p.NextToken;
+      end;
+      last := last+pAngleBrackets;
       last := last+pSquareBrackets;
-    end;
-    // inline enum
-    if (CompareText(last, KEYWORD_enum) = 0) then begin
-      prev := pEnum.name;
-      last := p.TokenString;
-      p.NextToken;
-      last := last+pSquareBrackets; // name
       while (p.Token = ',') do begin
         p.NextToken;
         last := last+','+p.TokenString;
         p.NextToken;
-        last := last+pSquareBrackets; // name
+        last := last+pSquareBrackets;
       end;
-      break;
-    end;
-    // inline struct
-    if (CompareText(last, KEYWORD_struct) = 0) then begin
-      prev := pStruct.name;
-      last := p.TokenString;
-      p.NextToken;
-      last := last+pSquareBrackets; // name
-      while (p.Token = ',') do begin
-        p.NextToken;
-        last := last+','+p.TokenString;
+      // inline enum
+      if (CompareText(last, KEYWORD_enum) = 0) then begin
+        prev := pEnum.name;
+        last := p.TokenString;
         p.NextToken;
         last := last+pSquareBrackets; // name
+        while (p.Token = ',') do begin
+          p.NextToken;
+          last := last+','+p.TokenString;
+          p.NextToken;
+          last := last+pSquareBrackets; // name
+        end;
+        break;
       end;
-      break;
-    end;
-    // variable description
-    if (p.Token = toString) then begin
-      if (result.comment <> '') then begin
-        logclass(uclass.FullName+' '+Result.name+': ignoring variable description', uclass);
-      end
-      else begin
-        result.comment := UnQuoteString(p.TokenString);
+      // inline struct
+      if (CompareText(last, KEYWORD_struct) = 0) then begin
+        prev := pStruct.name;
+        last := p.TokenString;
+        p.NextToken;
+        last := last+pSquareBrackets; // name
+        while (p.Token = ',') do begin
+          p.NextToken;
+          last := last+','+p.TokenString;
+          p.NextToken;
+          last := last+pSquareBrackets; // name
+        end;
+        break;
       end;
-      p.NextToken; // should be: ';'
+      // variable description
+      if (p.Token = toString) then begin
+        if (result.comment <> '') then begin
+          logclass(uclass.FullName+' '+Result.name+': ignoring variable description', uclass);
+        end
+        else begin
+          result.comment := UnQuoteString(p.TokenString);
+        end;
+        p.NextToken; // should be: ';'
+      end;
     end;
-  end;
-  unguard;
-  result.ptype := prev;
-  i := Pos(',', last);
-  while (i > 0) do begin
-    nprop := TUProperty.Create;
-    nprop.comment := trim(result.comment);
-    nprop.srcline := result.srcline;
-    nprop.definedIn := Result.definedIn;
-    nprop.ptype := result.ptype;
-    nprop.modifiers := result.modifiers;
-    nprop.name := Copy(last, 1, i-1);
-    nprop.tag := result.tag;
+    unguard;
+    result.ptype := prev;
+    i := Pos(',', last);
+    while (i > 0) do begin
+      nprop := TUProperty.Create;
+      try
+        nprop.comment := trim(result.comment);
+        nprop.srcline := result.srcline;
+        nprop.definedIn := Result.definedIn;
+        nprop.ptype := result.ptype;
+        nprop.modifiers := result.modifiers;
+        nprop.name := Copy(last, 1, i-1);
+        nprop.tag := result.tag;
+        if (UseOverWriteStruct) then begin
+          if (nprop.comment = '') then begin
+            nprop.comment := GetSecondaryComment(uclass.FullName+'.'+OverWriteUstruct.name+'.'+nprop.name);
+            nprop.CommentType := ctExtern;
+          end;
+          OverWriteUstruct.properties.Add(nprop)
+        end
+        else begin
+          if (nprop.comment = '') then begin
+            nprop.comment := GetSecondaryComment(uclass.FullName+'.'+nprop.name);
+            result.CommentType := ctExtern;
+          end;
+          uclass.properties.Add(nprop);
+        end;
+      except
+        FreeAndNil(nprop);
+        raise;
+      end;
+      // TODO: fix
+      Delete(last, 1, i);
+      i := Pos(',', last);
+    end;
+    result.name := last;
     if (UseOverWriteStruct) then begin
-      if (nprop.comment = '') then begin
-        nprop.comment := GetSecondaryComment(uclass.FullName+'.'+OverWriteUstruct.name+'.'+nprop.name);
-        nprop.CommentType := ctExtern;
-      end;
-      OverWriteUstruct.properties.Add(nprop)
-    end
-    else begin
-      if (nprop.comment = '') then begin
-        nprop.comment := GetSecondaryComment(uclass.FullName+'.'+nprop.name);
+      // package.class.struct.name
+      if (result.comment = '') then begin
+        result.comment := GetSecondaryComment(uclass.FullName+'.'+OverWriteUstruct.name+'.'+result.name);
         result.CommentType := ctExtern;
       end;
-      uclass.properties.Add(nprop);
+      OverWriteUstruct.properties.Add(result)
+    end
+    else begin
+      if (result.comment = '') then begin
+        result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
+        result.CommentType := ctExtern;
+      end;
+      uclass.properties.Add(result);
     end;
-    // TODO: fix
-    Delete(last, 1, i);
-    i := Pos(',', last);
+    p.NextToken;
+  except
+    FreeAndNil(result);
+    raise;
   end;
-  result.name := last;
-  if (UseOverWriteStruct) then begin
-    // package.class.struct.name
-    if (result.comment = '') then begin
-      result.comment := GetSecondaryComment(uclass.FullName+'.'+OverWriteUstruct.name+'.'+result.name);
-      result.CommentType := ctExtern;
-    end;
-    OverWriteUstruct.properties.Add(result)
-  end
-  else begin
-    if (result.comment = '') then begin
-      result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
-      result.CommentType := ctExtern;
-    end;
-    uclass.properties.Add(result);
-  end;
-  p.NextToken;
   unguard;
 end;
 
@@ -613,26 +626,30 @@ function TClassAnalyser.pEnum: TUEnum;
 begin
   guard('pEnum '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   result := TUEnum.Create;
-  result.comment := trim(p.GetCopyData);
-  result.name := p.TokenString;
-  result.srcline := p.SourceLine;
-  result.definedIn := incFilename;
-  p.NextToken; // {
-  p.NextToken; // first element
-  while (p.Token <> '}') do begin
-    if (p.Token = toEOF) then begin
-      result.Free;
-      raise EOFException.CreateFmt(EOFExceptionFmt, ['pEnum', uclass.name, p.SourceLine, result.options]);
+  try
+    result.comment := trim(p.GetCopyData);
+    result.name := p.TokenString;
+    result.srcline := p.SourceLine;
+    result.definedIn := incFilename;
+    p.NextToken; // {
+    p.NextToken; // first element
+    while (p.Token <> '}') do begin
+      if (p.Token = toEOF) then begin
+        raise EOFException.CreateFmt(EOFExceptionFmt, ['pEnum', uclass.name, p.SourceLine, result.options]);
+      end;
+      result.options := result.options+p.TokenString;
+      p.NextToken;
     end;
-    result.options := result.options+p.TokenString;
-    p.NextToken;
+    p.NextToken; // = ;
+    if (result.comment = '') then begin
+      result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
+      result.CommentType := ctExtern;
+    end;
+    uclass.enums.Add(result);
+  except
+    FreeAndNil(result);
+    raise;
   end;
-  p.NextToken; // = ;
-  if (result.comment = '') then begin
-    result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
-    result.CommentType := ctExtern;
-  end;
-  uclass.enums.Add(result);
   unguard;
 end;
 
@@ -643,57 +660,60 @@ var
 begin
   guard('pStruct '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   Result := TUStruct.Create;
-  result.comment := trim(p.GetCopyData);
-  result.name := p.TokenString;
-  result.srcline := p.SourceLine;
-  result.definedIn := incFilename;
-  while (p.Token <> '{') do begin
-    if (p.Token = toEOF) then begin
-      result.Free;
-      raise EOFException.CreateFmt(EOFExceptionFmt, ['pStruct', uclass.name, p.SourceLine, result.modifiers]);
-    end;
-    if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
-    result.modifiers := result.modifiers+prev;
-    prev := last;
-    last := p.TokenString;
-    p.NextToken;
-    if (p.TokenSymbolIs(KEYWORD_extends) or p.TokenSymbolIs(KEYWORD_expands)) then begin
-      p.NextToken;
-      result.parent := p.TokenString;
-      p.NextToken;
-      // check if Class.type
-      if (p.Token = '.') then begin
-        p.NextToken;
-        result.parent := result.parent+'.'+p.TokenString;
-        p.NextToken;
+  try
+    result.comment := trim(p.GetCopyData);
+    result.name := p.TokenString;
+    result.srcline := p.SourceLine;
+    result.definedIn := incFilename;
+    while (p.Token <> '{') do begin
+      if (p.Token = toEOF) then begin
+        raise EOFException.CreateFmt(EOFExceptionFmt, ['pStruct', uclass.name, p.SourceLine, result.modifiers]);
       end;
-      break;
-    end;
-  end;
-  result.name := last;
-  OverWriteUstruct := result;
-  UseOverWriteStruct := true;
-  p.NextToken; // = {
-  while ((p.Token <> '}') and (not Self.Terminated)) do begin
-    if (p.Token = toEOF) then begin
-      result.Free;
-      raise EOFException.CreateFmt(EOFExceptionFmt, ['pStruct_variables', uclass.name, p.SourceLine, '']);
-    end;
-    if (p.TokenSymbolIs(KEYWORD_var)) then begin
+      if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
+      result.modifiers := result.modifiers+prev;
+      prev := last;
+      last := p.TokenString;
       p.NextToken;
-      pVar();
-      continue;
+      if (p.TokenSymbolIs(KEYWORD_extends) or p.TokenSymbolIs(KEYWORD_expands)) then begin
+        p.NextToken;
+        result.parent := p.TokenString;
+        p.NextToken;
+        // check if Class.type
+        if (p.Token = '.') then begin
+          p.NextToken;
+          result.parent := result.parent+'.'+p.TokenString;
+          p.NextToken;
+        end;
+        break;
+      end;
     end;
-    p.NextToken;
+    result.name := last;
+    OverWriteUstruct := result;
+    UseOverWriteStruct := true;
+    p.NextToken; // = {
+    while ((p.Token <> '}') and (not Self.Terminated)) do begin
+      if (p.Token = toEOF) then begin
+        raise EOFException.CreateFmt(EOFExceptionFmt, ['pStruct_variables', uclass.name, p.SourceLine, '']);
+      end;
+      if (p.TokenSymbolIs(KEYWORD_var)) then begin
+        p.NextToken;
+        pVar();
+        continue;
+      end;
+      p.NextToken;
+    end;
+    p.NextToken; // = {
+    UseOverWriteStruct := false;
+    if (p.Token = ';') then p.NextToken; // = ;
+    if (result.comment = '') then begin
+      result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
+      result.CommentType := ctExtern;
+    end;
+    uclass.structs.Add(result);
+  except
+    FreeAndNil(result);
+    raise;
   end;
-  p.NextToken; // = {
-  UseOverWriteStruct := false;
-  if (p.Token = ';') then p.NextToken; // = ;
-  if (result.comment = '') then begin
-    result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
-    result.CommentType := ctExtern;
-  end;
-  uclass.structs.Add(result);
   unguard;
 end;
 
@@ -710,109 +730,116 @@ var
 begin
   guard('pFunc '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   result := TUFunction.Create;
-  result.srcline := p.SourceLine;
-  while not (p.TokenSymbolIs(KEYWORD_function) or p.TokenSymbolIs(KEYWORD_event) or
-    p.TokenSymbolIs(KEYWORD_operator) or p.TokenSymbolIs(KEYWORD_preoperator) or
-    p.TokenSymbolIs(KEYWORD_postoperator) or p.TokenSymbolIs(KEYWORD_delegate) or
-    p.TokenSymbolIs(KEYWORD_state) or (p.token = toEOF)) do begin
-    if (instate) then begin
-      if (p.Token = ':') then begin // state labels
-        pCurlyBrackets(true);
-        currentState := nil;
-        instate := false;
-        result.Free;
-        unguard;
-        exit;
+  try
+    result.srcline := p.SourceLine;
+    while not (p.TokenSymbolIs(KEYWORD_function) or p.TokenSymbolIs(KEYWORD_event) or
+      p.TokenSymbolIs(KEYWORD_operator) or p.TokenSymbolIs(KEYWORD_preoperator) or
+      p.TokenSymbolIs(KEYWORD_postoperator) or p.TokenSymbolIs(KEYWORD_delegate) or
+      p.TokenSymbolIs(KEYWORD_state) or (p.token = toEOF)) do begin
+      if (instate) then begin
+        if (p.Token = ':') then begin // state labels
+          pCurlyBrackets(true);
+          currentState := nil;
+          instate := false;
+          FreeAndNil(result);
+          unguard;
+          exit;
+        end;
       end;
+      if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
+      result.modifiers := result.modifiers+last;
+      last := p.TokenString;
+      p.NextToken;
+      last := last+pBrackets;
+    end;
+    if (p.token = toEOF) then begin
+      FreeAndNil(result);
+      raise EOFException.CreateFmt(EOFExceptionFmt, ['pFunc', uclass.name, p.SourceLine, result.modifiers]);
     end;
     if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
     result.modifiers := result.modifiers+last;
-    last := p.TokenString;
+    if (p.TokenSymbolIs(KEYWORD_state)) then begin
+      try
+        pState(result.modifiers);
+      finally
+        FreeAndNil(result);
+      end;
+      unguard;
+      exit;
+    end
+    else if (p.TokenSymbolIs(KEYWORD_event)) then result.ftype := uftEvent
+    else if (p.TokenSymbolIs(KEYWORD_operator)) then result.ftype := uftOperator
+    else if (p.TokenSymbolIs(KEYWORD_preoperator)) then result.ftype := uftPreoperator
+    else if (p.TokenSymbolIs(KEYWORD_postoperator)) then result.ftype := uftPostoperator
+    else if (p.TokenSymbolIs(KEYWORD_delegate)) then result.ftype := uftDelegate
+    else result.ftype := uftFunction;
+    result.comment := trim(p.GetCopyData);
     p.NextToken;
-    last := last+pBrackets;
-  end;
-  if (p.token = toEOF) then begin
-    //log('EOF reached in pFunc of '+uclass.name+'('+IntToStr(p.SourceLine)+') '+result.modifiers);
-    result.Free;
-    raise EOFException.CreateFmt(EOFExceptionFmt, ['pFunc', uclass.name, p.SourceLine, result.modifiers]);
-  end;
-  if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
-  result.modifiers := result.modifiers+last;
-  if (p.TokenSymbolIs(KEYWORD_state)) then begin
-    pState(result.modifiers);
-    result.Free;
-    unguard;
-    exit;
-  end
-  else if (p.TokenSymbolIs(KEYWORD_event)) then result.ftype := uftEvent
-  else if (p.TokenSymbolIs(KEYWORD_operator)) then result.ftype := uftOperator
-  else if (p.TokenSymbolIs(KEYWORD_preoperator)) then result.ftype := uftPreoperator
-  else if (p.TokenSymbolIs(KEYWORD_postoperator)) then result.ftype := uftPostoperator
-  else if (p.TokenSymbolIs(KEYWORD_delegate)) then result.ftype := uftDelegate
-  else result.ftype := uftFunction;
-  result.comment := trim(p.GetCopyData);
-  p.NextToken;
-  pBrackets; // possible operator precendence
-  // function <mod> ...
-  while (isFunctionModifier(p.TokenString)) do begin
-    if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
-    result.modifiers := result.modifiers+p.TokenString;
+    pBrackets; // possible operator precendence
+    // function <mod> ...
+    while (isFunctionModifier(p.TokenString)) do begin
+      if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
+      result.modifiers := result.modifiers+p.TokenString;
+      p.NextToken;
+      result.modifiers := result.modifiers+pBrackets;
+    end;
+    result.return := p.TokenString; // optional return
     p.NextToken;
-    result.modifiers := result.modifiers+pBrackets;
-  end;
-  result.return := p.TokenString; // optional return
-  p.NextToken;
-  // check if Class.Type
-  if (p.Token = '.') then begin
-    p.NextToken;
-    result.return := result.return+'.'+p.TokenString;
-    p.NextToken;
-  end;
-  // check if return is array<> or class<>
-  if ((CompareText(result.return, KEYWORD_array) = 0) or
-      (CompareText(result.return, KEYWORD_class) = 0)) then result.return := result.return+pAngleBrackets;
-  if (p.Token = '(') then begin
-    result.name := result.return;
-    result.return := '';
-  end
-  else begin
-    result.name := p.TokenString;
+    // check if Class.Type
+    if (p.Token = '.') then begin
+      p.NextToken;
+      result.return := result.return+'.'+p.TokenString;
+      p.NextToken;
+    end;
+    // check if return is array<> or class<>
+    if ((CompareText(result.return, KEYWORD_array) = 0) or
+        (CompareText(result.return, KEYWORD_class) = 0)) then result.return := result.return+pAngleBrackets;
+    if (p.Token = '(') then begin
+      result.name := result.return;
+      result.return := '';
+    end
+    else begin
+      result.name := p.TokenString;
+      p.NextToken; // (
+    end;
+    // fix operator names
+    while (p.Token in OPERATOR_NAMES) do begin
+      result.name := result.name+p.TokenString;
+      p.NextToken;
+    end;
+    p.FullCopy := true;
+    p.FCIgnoreComments := true;
+    p.GetCopyData;
     p.NextToken; // (
-  end;
-  // fix operator names
-  while (p.Token in OPERATOR_NAMES) do begin
-    result.name := result.name+p.TokenString;
-    p.NextToken; 
-  end;
-  p.FullCopy := true;
-  p.FCIgnoreComments := true;
-  p.GetCopyData;
-  p.NextToken; // (
-  while (p.Token <> ')') do p.NextToken;
-  result.params := p.GetCopyData;
-  Delete(result.params, Length(result.params), 1);
-  result.params := trim(result.params);
-  p.FullCopy := false;
-  p.FCIgnoreComments := false;
-  p.NextToken; // )
-  if (p.Token <> ';') then pCurlyBrackets()
-  else p.NextToken; // = } or ;
-  result.state := currentState;
-  result.definedIn := incFilename;
-  if (currentState <> nil) then begin
-    // package.class.name state
+    while (p.Token <> ')') do p.NextToken;
+    result.params := p.GetCopyData;
+    Delete(result.params, Length(result.params), 1);
+    result.params := trim(result.params);
+    p.FullCopy := false;
+    p.FCIgnoreComments := false;
+    p.NextToken; // )
+    if (p.Token <> ';') then pCurlyBrackets()
+    else p.NextToken; // = } or ;
+    result.state := currentState;
+    result.definedIn := incFilename;
+    if (currentState <> nil) then begin
+      // package.class.name state
+      if (result.comment = '') then begin
+        result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name+' '+currentState.name);
+        result.CommentType := ctExtern;
+      end;
+      currentState.functions.Add(result);
+    end;
     if (result.comment = '') then begin
-      result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name+' '+currentState.name);
+      result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
       result.CommentType := ctExtern;
     end;
-    currentState.functions.Add(result);
+    if (result.ftype = uftDelegate) then uclass.delegates.Add(result)
+    else uclass.functions.Add(result);
+  except
+    FreeAndNil(result);
+    raise;
   end;
-  if (result.comment = '') then begin
-    result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
-    result.CommentType := ctExtern;
-  end;
-  if (result.ftype = uftDelegate) then uclass.delegates.Add(result)
-  else uclass.functions.Add(result);
   unguard;
 end;
 
@@ -821,41 +848,46 @@ function TClassAnalyser.pState(modifiers: string): TUState;
 begin
   guard('pState '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   result := TUState.Create;
-  result.comment := trim(p.GetCopyData);
-  result.srcline := p.SourceLine;
-  result.modifiers := modifiers;
-  result.definedIn := incFilename;
-  p.NextToken; // name
-  pBrackets;
-  result.name := p.TokenString;
-  if (result.name = UNREAL2_AT_NAME) then begin
-    p.NextToken; // after @
-    result.name := result.name+p.TokenString;
-  end;
-  p.NextToken;
-  if (p.TokenSymbolIs(KEYWORD_extends) or p.TokenSymbolIs(KEYWORD_expands)) then begin
-    p.NextToken; // extends
-    result.extends := p.TokenString;
-    if (result.extends = UNREAL2_AT_NAME) then begin
+  try
+    result.comment := trim(p.GetCopyData);
+    result.srcline := p.SourceLine;
+    result.modifiers := modifiers;
+    result.definedIn := incFilename;
+    p.NextToken; // name
+    pBrackets;
+    result.name := p.TokenString;
+    if (result.name = UNREAL2_AT_NAME) then begin
       p.NextToken; // after @
-      result.extends := result.extends+p.TokenString;
+      result.name := result.name+p.TokenString;
     end;
     p.NextToken;
-  end;
-  if (p.Token = '{') then begin
-    p.NextToken;
-    instate := true;
-    while (p.TokenSymbolIs(KEYWORD_ignores)) do begin
-      while (p.Token <> ';') do p.NextToken;
+    if (p.TokenSymbolIs(KEYWORD_extends) or p.TokenSymbolIs(KEYWORD_expands)) then begin
+      p.NextToken; // extends
+      result.extends := p.TokenString;
+      if (result.extends = UNREAL2_AT_NAME) then begin
+        p.NextToken; // after @
+        result.extends := result.extends+p.TokenString;
+      end;
       p.NextToken;
     end;
+    if (p.Token = '{') then begin
+      p.NextToken;
+      instate := true;
+      while (p.TokenSymbolIs(KEYWORD_ignores)) do begin
+        while (p.Token <> ';') do p.NextToken;
+        p.NextToken;
+      end;
+    end;
+    currentState := Result;
+    if (result.comment = '') then begin
+      result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
+      result.CommentType := ctExtern;
+    end;
+    uclass.states.Add(result);
+  except
+    FreeAndNil(result);
+    raise;
   end;
-  currentState := Result;
-  if (result.comment = '') then begin
-    result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
-    result.CommentType := ctExtern;
-  end;
-  uclass.states.Add(result);
   unguard;
 end;
 
