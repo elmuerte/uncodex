@@ -1590,7 +1590,7 @@ var
 begin
   p := TSourceParser.Create(input, output);
   try
-    replacement := '<a name="'+IntToStr(p.SourceLine-1)+'"></a>';
+    replacement := '<pre class="source"><a name="'+IntToStr(p.SourceLine-1)+'"></a>';
     p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
     while (p.Token <> toEOF) do begin
       if (p.Token = '<') then begin
@@ -1652,6 +1652,8 @@ begin
       else p.CopyTokenToOutput;
       p.SkipToken(true);
     end;
+    replacement := '</pre>';
+    p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
   finally
     p.Free;
   end;
