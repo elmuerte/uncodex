@@ -63,7 +63,7 @@ object frm_Run: Tfrm_Run
     Top = 93
     Width = 575
     Height = 356
-    ActivePage = TabSheet2
+    ActivePage = ts_URL
     Anchors = [akLeft, akTop, akRight, akBottom]
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clMenuText
@@ -140,6 +140,7 @@ object frm_Run: Tfrm_Run
         Top = 16
         Width = 525
         Height = 21
+        Hint = 'The commandline format to use'
         Anchors = [akLeft, akTop, akRight]
         TabOrder = 0
         Text = '%url% %switch%'
@@ -150,6 +151,7 @@ object frm_Run: Tfrm_Run
         Top = 168
         Width = 193
         Height = 21
+        Hint = 'The name of the Game type option on the url'
         TabOrder = 1
         Text = 'Game'
         OnChange = ed_MapChange
@@ -159,6 +161,7 @@ object frm_Run: Tfrm_Run
         Top = 216
         Width = 193
         Height = 21
+        Hint = 'The name of the mutator option in the url'
         TabOrder = 2
         Text = 'Mutator'
         OnChange = ed_MapChange
@@ -168,6 +171,7 @@ object frm_Run: Tfrm_Run
         Top = 240
         Width = 193
         Height = 17
+        Hint = 'Use a comma seperated list for the mutator list'
         Caption = 'Comma seperated list'
         Checked = True
         State = cbChecked
@@ -179,6 +183,7 @@ object frm_Run: Tfrm_Run
         Top = 120
         Width = 193
         Height = 21
+        Hint = 'File mask to use for maps'
         TabOrder = 4
         Text = '*.unr;*.ut2'
       end
@@ -187,6 +192,7 @@ object frm_Run: Tfrm_Run
         Top = 64
         Width = 564
         Height = 21
+        Hint = 'The priority on witch the process will run'
         Style = csDropDownList
         Anchors = [akLeft, akTop, akRight]
         ItemHeight = 13
@@ -281,6 +287,7 @@ object frm_Run: Tfrm_Run
         Top = 16
         Width = 185
         Height = 309
+        Hint = 'Optional switches'
         OnClickCheck = ed_MapChange
         Anchors = [akLeft, akTop, akBottom]
         Ctl3D = True
@@ -335,6 +342,7 @@ object frm_Run: Tfrm_Run
         Top = 18
         Width = 97
         Height = 17
+        Hint = 'System configuration'
         Caption = 'INI='
         TabOrder = 1
         OnClick = ed_MapChange
@@ -344,6 +352,7 @@ object frm_Run: Tfrm_Run
         Top = 16
         Width = 201
         Height = 21
+        Hint = 'System configuration'
         TabOrder = 2
         OnChange = ed_MapChange
       end
@@ -352,6 +361,7 @@ object frm_Run: Tfrm_Run
         Top = 240
         Width = 374
         Height = 84
+        Hint = 'Additional switches'
         Anchors = [akLeft, akTop, akRight, akBottom]
         ScrollBars = ssVertical
         TabOrder = 3
@@ -363,6 +373,7 @@ object frm_Run: Tfrm_Run
         Top = 66
         Width = 97
         Height = 17
+        Hint = 'The user configuration file'
         Caption = 'USERINI='
         TabOrder = 4
         OnClick = ed_MapChange
@@ -372,6 +383,7 @@ object frm_Run: Tfrm_Run
         Top = 64
         Width = 201
         Height = 21
+        Hint = 'The user configuration file'
         TabOrder = 5
         OnChange = ed_MapChange
       end
@@ -380,6 +392,7 @@ object frm_Run: Tfrm_Run
         Top = 170
         Width = 97
         Height = 17
+        Hint = 'The log file to use'
         Caption = 'LOG='
         TabOrder = 6
         OnClick = ed_MapChange
@@ -389,6 +402,7 @@ object frm_Run: Tfrm_Run
         Top = 168
         Width = 201
         Height = 21
+        Hint = 'The log file to use'
         TabOrder = 7
         OnChange = ed_MapChange
       end
@@ -397,6 +411,7 @@ object frm_Run: Tfrm_Run
         Top = 106
         Width = 97
         Height = 17
+        Hint = 'IP address to use for a multihome system'
         Caption = 'MULTIHOME='
         TabOrder = 8
         OnClick = ed_MapChange
@@ -406,6 +421,7 @@ object frm_Run: Tfrm_Run
         Top = 104
         Width = 225
         Height = 21
+        Hint = 'IP address to use for a multihome system'
         TabOrder = 9
         OnChange = ed_MapChange
       end
@@ -414,6 +430,7 @@ object frm_Run: Tfrm_Run
         Top = 42
         Width = 97
         Height = 17
+        Hint = 'Read from this ini file, but do not save to it'
         Caption = 'READINI='
         TabOrder = 10
         OnClick = ed_MapChange
@@ -423,6 +440,7 @@ object frm_Run: Tfrm_Run
         Top = 40
         Width = 201
         Height = 21
+        Hint = 'Read from this ini file, but do not save to it'
         TabOrder = 11
         OnChange = ed_MapChange
       end
@@ -431,6 +449,7 @@ object frm_Run: Tfrm_Run
         Top = 194
         Width = 97
         Height = 17
+        Hint = 'UT2004 Mod Architecture'
         Caption = 'MOD='
         TabOrder = 12
         OnClick = ed_MapChange
@@ -440,6 +459,7 @@ object frm_Run: Tfrm_Run
         Top = 192
         Width = 225
         Height = 21
+        Hint = 'UT2004 Mod Architecture'
         TabOrder = 13
         OnChange = ed_MapChange
       end
@@ -448,6 +468,7 @@ object frm_Run: Tfrm_Run
         Top = 130
         Width = 97
         Height = 17
+        Hint = 'The port to listen on'
         Caption = 'PORT='
         TabOrder = 14
         OnClick = ed_MapChange
@@ -455,8 +476,9 @@ object frm_Run: Tfrm_Run
       object ed_PORT: TEdit
         Left = 296
         Top = 128
-        Width = 209
+        Width = 225
         Height = 21
+        Hint = 'The port to listen on'
         TabOrder = 15
         OnChange = ed_MapChange
       end
@@ -497,7 +519,7 @@ object frm_Run: Tfrm_Run
         OnClick = btn_LOGClick
       end
     end
-    object TabSheet2: TTabSheet
+    object ts_URL: TTabSheet
       Caption = 'URL'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -534,6 +556,7 @@ object frm_Run: Tfrm_Run
         Top = 56
         Width = 193
         Height = 21
+        Hint = 'Selected gametype'
         ItemHeight = 13
         Sorted = True
         TabOrder = 0
@@ -544,6 +567,7 @@ object frm_Run: Tfrm_Run
         Top = 0
         Width = 169
         Height = 21
+        Hint = 'Map file'
         ParentColor = True
         ReadOnly = True
         TabOrder = 1
@@ -554,6 +578,7 @@ object frm_Run: Tfrm_Run
         Top = 24
         Width = 193
         Height = 21
+        Hint = 'Location, this can be a internet address or file'
         TabOrder = 2
         OnChange = ed_MapChange
       end
@@ -650,6 +675,7 @@ object frm_Run: Tfrm_Run
           Top = 32
           Width = 257
           Height = 97
+          Hint = 'Selected mutators'
           Anchors = [akLeft, akTop, akRight]
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -667,6 +693,7 @@ object frm_Run: Tfrm_Run
           Top = 40
           Width = 25
           Height = 25
+          Hint = 'Add the selected mutator'
           Caption = '4'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -682,6 +709,7 @@ object frm_Run: Tfrm_Run
           Top = 64
           Width = 25
           Height = 25
+          Hint = 'Remove the selected mutator'
           Caption = '3'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -697,6 +725,7 @@ object frm_Run: Tfrm_Run
           Top = 96
           Width = 25
           Height = 25
+          Hint = 'Add a mutator by hand'
           Caption = '+'
           TabOrder = 4
           OnClick = btn_MutPlusClick
@@ -707,6 +736,7 @@ object frm_Run: Tfrm_Run
         Top = 136
         Width = 561
         Height = 49
+        Hint = 'Additional options, start with a ?'
         Anchors = [akLeft, akTop, akRight, akBottom]
         ScrollBars = ssVertical
         TabOrder = 7
@@ -720,6 +750,7 @@ object frm_Run: Tfrm_Run
     Top = 24
     Width = 537
     Height = 21
+    Hint = 'The system executable'
     Anchors = [akLeft, akTop, akRight]
     ParentColor = True
     ReadOnly = True
@@ -770,6 +801,7 @@ object frm_Run: Tfrm_Run
     Top = 454
     Width = 185
     Height = 21
+    Hint = 'Select a preset configuration. (System wide)'
     Style = csDropDownList
     Anchors = [akLeft, akBottom]
     ItemHeight = 13
@@ -782,6 +814,7 @@ object frm_Run: Tfrm_Run
     Top = 454
     Width = 17
     Height = 21
+    Hint = 'Add a new preset'
     Anchors = [akLeft, akBottom]
     Caption = '+'
     Font.Charset = DEFAULT_CHARSET
@@ -798,6 +831,7 @@ object frm_Run: Tfrm_Run
     Top = 454
     Width = 17
     Height = 21
+    Hint = 'Remove the current preset'
     Anchors = [akLeft, akBottom]
     Caption = '-'
     Font.Charset = DEFAULT_CHARSET
@@ -809,32 +843,49 @@ object frm_Run: Tfrm_Run
     TabOrder = 8
     OnClick = btn_DelPreClick
   end
+  object btn_Default: TBitBtn
+    Left = 288
+    Top = 454
+    Width = 17
+    Height = 21
+    Hint = 'Set as default'
+    Anchors = [akLeft, akBottom]
+    Caption = 'a'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Marlett'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 9
+    OnClick = btn_DefaultClick
+  end
   object od_SelectMap: TOpenDialog
     Filter = 'Maps|*.unr;*.ut2|All Files|*.*'
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
     Title = 'Select Map'
     Left = 248
-    Top = 432
+    Top = 424
   end
   object od_IniFiles: TOpenDialog
     Filter = 'INI Files|*.ini|All Files|*.*'
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
     Title = 'Select ini files'
     Left = 280
-    Top = 432
+    Top = 424
   end
   object od_Exe: TOpenDialog
     Filter = 'Executables|*.exe;*.bat;*.cmd|All Files|*.*'
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
     Title = 'Executable'
     Left = 312
-    Top = 432
+    Top = 424
   end
   object od_Log: TOpenDialog
     Filter = 'Log files|*.log|All Files|*.*'
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
     Title = 'Log files'
     Left = 344
-    Top = 432
+    Top = 424
   end
 end
