@@ -4,12 +4,12 @@
     <Version Value="5"/>
     <General>
       <MainUnit Value="0"/>
-      <ActiveEditorIndexAtStart Value="3"/>
+      <ActiveEditorIndexAtStart Value="1"/>
       <IconPath Value="./"/>
       <TargetFileExt Value=".exe"/>
       <Title Value="ucxcu"/>
     </General>
-    <JumpHistory Count="14" HistoryIndex="13">
+    <JumpHistory Count="13" HistoryIndex="12">
       <Position1>
         <Filename Value="D:\dev\UnCodeX\src\unit_htmlout.pas"/>
         <Caret Line="308" Column="12" TopLine="288"/>
@@ -51,21 +51,17 @@
         <Caret Line="1" Column="1" TopLine="1"/>
       </Position10>
       <Position11>
-        <Filename Value="unit_ucxcumain.pas"/>
+        <Filename Value="D:\dev\UnCodeX\src\unit_fpc_compat.pas"/>
         <Caret Line="1" Column="1" TopLine="1"/>
       </Position11>
       <Position12>
-        <Filename Value="unit_ucxcumain.pas"/>
-        <Caret Line="205" Column="8" TopLine="185"/>
+        <Filename Value="D:\dev\UnCodeX\src\unit_fpc_compat.pas"/>
+        <Caret Line="39" Column="6" TopLine="17"/>
       </Position12>
       <Position13>
-        <Filename Value="unit_ucxcumain.pas"/>
-        <Caret Line="246" Column="2" TopLine="225"/>
+        <Filename Value="D:\dev\UnCodeX\src\unit_fpc_compat.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
       </Position13>
-      <Position14>
-        <Filename Value="unit_ucxcumain.pas"/>
-        <Caret Line="320" Column="11" TopLine="300"/>
-      </Position14>
     </JumpHistory>
     <Units Count="8">
       <Unit0>
@@ -73,7 +69,7 @@
         <Filename Value="ucxcu.dpr"/>
         <IsPartOfProject Value="True"/>
         <TopLine Value="33"/>
-        <UsageCount Value="27"/>
+        <UsageCount Value="28"/>
       </Unit0>
       <Unit1>
         <CursorPos X="26" Y="28"/>
@@ -106,11 +102,11 @@
         <UsageCount Value="10"/>
       </Unit4>
       <Unit5>
-        <CursorPos X="1" Y="1"/>
+        <CursorPos X="9" Y="49"/>
         <EditorIndex Value="1"/>
         <Filename Value="D:\dev\UnCodeX\src\unit_fpc_compat.pas"/>
         <Loaded Value="True"/>
-        <TopLine Value="1"/>
+        <TopLine Value="17"/>
         <UnitName Value="unit_fpc_compat"/>
         <UsageCount Value="10"/>
       </Unit5>
@@ -152,7 +148,7 @@
     <PathDelim Value="\"/>
     <SearchPaths>
       <OtherUnitFiles Value="..\"/>
-      <UnitOutputDirectory Value="D:\dev\UnCodeX\dcu\ucxcu\"/>
+      <UnitOutputDirectory Value="..\..\dcu\ucxcu\"/>
     </SearchPaths>
     <Parsing>
       <SymantecChecking>
@@ -164,6 +160,7 @@
     <CodeGeneration>
       <UnitStyle Value="0"/>
       <Generate Value="Smaller"/>
+      <TargetProcessor Value="3"/>
       <Optimizations>
         <OptimizationLevel Value="2"/>
       </Optimizations>

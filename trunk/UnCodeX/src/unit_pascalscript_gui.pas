@@ -6,7 +6,7 @@
 	Purpose:
         Additional GUI only PascalScript routines
 
-    $Id: unit_pascalscript_gui.pas,v 1.7 2004-10-18 15:36:07 elmuerte Exp $
+	$Id: unit_pascalscript_gui.pas,v 1.8 2004-10-20 13:00:41 elmuerte Exp $
 *******************************************************************************}
 {
 	UnCodeX - UnrealScript source browser & documenter

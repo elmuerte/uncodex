@@ -6,7 +6,7 @@
 	Purpose:
         UnrealScript class defaultproperties browser.
 
-    $Id: unit_defprops.pas,v 1.4 2004-10-18 15:36:06 elmuerte Exp $
+	$Id: unit_defprops.pas,v 1.5 2004-10-20 13:00:40 elmuerte Exp $
 *******************************************************************************}
 
 {

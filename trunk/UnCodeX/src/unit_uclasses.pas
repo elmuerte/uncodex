@@ -6,7 +6,7 @@
 	Purpose:
         Class definitions for UnrealScript elements
 
-    $Id: unit_uclasses.pas,v 1.35 2004-10-18 15:36:07 elmuerte Exp $
+	$Id: unit_uclasses.pas,v 1.36 2004-10-20 13:00:42 elmuerte Exp $
 *******************************************************************************}
 {
 	UnCodeX - UnrealScript source browser & documenter

@@ -6,7 +6,7 @@
 	Purpose:
         MultiLine input query dialog box
 
-    $Id: unit_multilinequery.pas,v 1.3 2004-10-18 15:36:07 elmuerte Exp $
+	$Id: unit_multilinequery.pas,v 1.4 2004-10-20 13:00:41 elmuerte Exp $
 *******************************************************************************}
 
 {

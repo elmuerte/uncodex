@@ -6,7 +6,7 @@
 	Purpose:
         GUI dialog for moving an UnrealScript class to a new package
 
-    $Id: unit_moveclass.pas,v 1.5 2004-10-18 15:36:07 elmuerte Exp $
+	$Id: unit_moveclass.pas,v 1.6 2004-10-20 13:00:41 elmuerte Exp $
 *******************************************************************************}
 {
 	UnCodeX - UnrealScript source browser & documenter

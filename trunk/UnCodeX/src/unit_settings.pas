@@ -6,7 +6,7 @@
 	Purpose:
         Program settings dialog
 
-    $Id: unit_settings.pas,v 1.39 2004-10-18 15:36:07 elmuerte Exp $
+	$Id: unit_settings.pas,v 1.40 2004-10-20 13:00:42 elmuerte Exp $
 *******************************************************************************}
 {
 	UnCodeX - UnrealScript source browser & documenter

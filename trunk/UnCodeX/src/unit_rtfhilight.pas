@@ -6,7 +6,7 @@
 	Purpose:
         Creates a syntax highlighted RTF file from an UnrealScript file
 
-    $Id: unit_rtfhilight.pas,v 1.22 2004-10-18 15:36:07 elmuerte Exp $
+	$Id: unit_rtfhilight.pas,v 1.23 2004-10-20 13:00:41 elmuerte Exp $
 *******************************************************************************}
 {
 	UnCodeX - UnrealScript source browser & documenter

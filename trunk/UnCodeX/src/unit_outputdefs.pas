@@ -7,7 +7,7 @@
         Definitions shared between the main application and custom output
         modules.
 
-    $Id: unit_outputdefs.pas,v 1.13 2004-10-18 15:36:07 elmuerte Exp $
+	$Id: unit_outputdefs.pas,v 1.14 2004-10-20 13:00:41 elmuerte Exp $
 *******************************************************************************}
 
 {

@@ -6,7 +6,7 @@
 	Purpose:
         UnrealScript class operations (implements subclassing, moving, ...)
 
-    $Id: unit_ucops.pas,v 1.10 2004-10-18 15:36:07 elmuerte Exp $
+	$Id: unit_ucops.pas,v 1.11 2004-10-20 13:00:42 elmuerte Exp $
 *******************************************************************************}
 {
 	UnCodeX - UnrealScript source browser & documenter

@@ -6,7 +6,7 @@
 	Purpose:
         Program unit for the GUI
 
-    $Id: UnCodeX.dpr,v 1.48 2004-10-18 15:36:06 elmuerte Exp $
+	$Id: UnCodeX.dpr,v 1.49 2004-10-20 13:00:39 elmuerte Exp $
 *******************************************************************************}
 
 {
