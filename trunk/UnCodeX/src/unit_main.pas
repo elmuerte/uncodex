@@ -233,6 +233,7 @@ var
   FTSRegexp: boolean;
   FTSHistory: TStringList;
   CSHistory: TStringList;
+  ExpandObject: boolean;
 
 implementation
 
@@ -341,6 +342,8 @@ begin
     tv_Packages.Items.AlphaSort(true);
     ClassList.Sort;
     tv_Classes.Items.AlphaSort(true);
+    if (ExpandObject and (tv_Classes.Items.Count > 0)) then
+      tv_Classes.Items.GetFirstNode.Expand(false);
   finally
     fs.Free;
   end;
@@ -675,6 +678,20 @@ begin
     mi_Left.Checked := ini.ReadBool('Layout', 'ABLeft', false);
     if (mi_Left.Checked) then mi_Left.OnClick(Sender);
 
+    lb_Log.Font.Name := ini.ReadString('Layout', 'Log.Font.Name', lb_Log.Font.Name);
+    lb_Log.Font.Color := ini.ReadInteger('Layout', 'Log.Font.Color', lb_Log.Font.Color);
+    lb_Log.Font.Size := ini.ReadInteger('Layout', 'Log.Font.Size', lb_Log.Font.Size);
+    lb_Log.Color := ini.ReadInteger('Layout', 'Log.Color', lb_Log.Color);
+    tv_Classes.Font.Name := ini.ReadString('Layout', 'Tree.Font.Name', tv_Classes.Font.Name);
+    tv_Classes.Font.Color := ini.ReadInteger('Layout', 'Tree.Font.Color', tv_Classes.Font.Color);
+    tv_Classes.Font.Size := ini.ReadInteger('Layout', 'Tree.Font.Size', tv_Classes.Font.Size);
+    tv_Classes.Color := ini.ReadInteger('Layout', 'Tree.Color', tv_Classes.Color);
+    tv_Packages.Font.Name := ini.ReadString('Layout', 'Tree.Font.Name', tv_Packages.Font.Name);
+    tv_Packages.Font.Color := ini.ReadInteger('Layout', 'Tree.Font.Color', tv_Packages.Font.Color);
+    tv_Packages.Font.Size := ini.ReadInteger('Layout', 'Tree.Font.Size', tv_Packages.Font.Size);
+    tv_Packages.Color := ini.ReadInteger('Layout', 'Tree.Color', tv_Packages.Color);
+    ExpandObject := ini.ReadBool('Layout', 'ExpandObject', true);
+
     HTMLOutputDir := ini.ReadString('Config', 'HTMLOutputDir', ExtractFilePath(ParamStr(0))+'Output');
     TemplateDir := ini.ReadString('Config', 'TemplateDir', ExtractFilePath(ParamStr(0))+'Templates'+PATHDELIM+'UnrealWiki');
     HHCPath := ini.ReadString('Config', 'HHCPath', '');
@@ -842,6 +859,11 @@ begin
     lb_IgnorePackages.Items := IgnorePackages;
     ed_OpenResultCmd.Text := OpenResultCmd;
     cb_FTSRegExp.Checked := FTSRegexp;
+    lb_LogLayout.Color := lb_Log.Color;
+    lb_LogLayout.Font := lb_Log.Font;
+    tv_TreeLayout.Color := tv_Classes.Color;
+    tv_TreeLayout.Font := tv_Classes.Font;
+    cb_ExpandObject.Checked := ExpandObject;
     if (ShowModal = mrOk) then begin
       HTMLOutputDir := ed_HTMLOutputDir.Text;
       TemplateDir := ed_TemplateDir.Text;
@@ -859,6 +881,13 @@ begin
       PackagePriority.AddStrings(lb_PackagePriority.Items);
       IgnorePackages.Clear;
       IgnorePackages.AddStrings(lb_IgnorePackages.Items);
+      lb_Log.Color := lb_LogLayout.Color;
+      lb_Log.Font := lb_LogLayout.Font;
+      tv_Classes.Color := tv_TreeLayout.Color;
+      tv_Classes.Font := tv_TreeLayout.Font;
+      tv_Packages.Color := tv_TreeLayout.Color;
+      tv_Packages.Font := tv_TreeLayout.Font;
+      ExpandObject := cb_ExpandObject.Checked;
       ini := TMemIniFile.Create(ConfigFile);
       data := TStringList.Create;
       try
@@ -873,6 +902,18 @@ begin
         data.Add('CompilerCmd='+CompilerCmd);
         data.Add('OpenResultCmd='+OpenResultCmd);
         data.Add('FullTextSearchRegExp='+IntToStr(Ord(FTSRegexp)));
+
+        data.Add('[Layout]');
+        data.Add('Log.Font.Name='+lb_Log.Font.Name);
+        data.Add('Log.Font.Color='+IntToStr(lb_Log.Font.Color));
+        data.Add('Log.Font.Size='+IntToStr(lb_Log.Font.Size));
+        data.Add('Log.Color='+IntToStr(lb_Log.Color));
+        data.Add('Tree.Font.Name='+tv_Classes.Font.Name);
+        data.Add('Tree.Font.Color='+IntToStr(tv_Classes.Font.Color));
+        data.Add('Tree.Font.Size='+IntToStr(tv_Classes.Font.Size));
+        data.Add('Tree.Color='+IntToStr(tv_Classes.Color));
+        Data.Add('ExpandObject='+IntToStr(Ord(ExpandObject)));
+
         data.Add('[SourcePaths]');
         for i := 0 to SourcePaths.Count-1 do data.Add('Path='+SourcePaths[i]);
         data.Add('[PackagePriority]');
@@ -914,7 +955,7 @@ begin
     ActiveControl := tv_Classes;
   end;
   CSprops[1] := FTSRegexp;
-  if (SearchQuery('Find a class', 'Enter the name of the class you want to find', searchclass, CSprops, CSHistory, ['Search class body', 'Regular expression'])) then begin
+  if (SearchQuery('Find a class', 'Enter the name of the class you want to find', searchclass, CSprops, CSHistory, ['&Search class body', '&Regular expression'])) then begin
     (ActiveControl as TTreeView).Selected := nil;
     ac_FindNext.Execute;
   end;
@@ -935,11 +976,21 @@ end;
 procedure Tfrm_UnCodeX.ac_OpenClassExecute(Sender: TObject);
 var
   filename: string;
+  i: integer;
 begin
   if (ActiveControl.ClassType = TTreeView) then begin
     with (ActiveControl as TTreeView) do begin
       if (Selected <> nil) then begin
         if (TObject(Selected.Data).ClassType <> TUClass) then exit;
+        for i := 0 to lb_Log.Items.Count-1 do begin
+          if (lb_Log.Items.Objects[i] <> nil) then begin
+            if (TObject(lb_Log.Items.Objects[i]) = TObject(Selected.Data)) then begin
+              lb_Log.ItemIndex := i;
+              lb_Log.OnDblClick(Sender);
+              exit;
+            end;
+          end;
+        end;
         filename := TUClass(Selected.Data).package.path+PATHDELIM+CLASSDIR+PATHDELIM+TUClass(Selected.Data).filename;
         ExecuteProgram(filename);
       end;
@@ -1248,7 +1299,7 @@ var
 begin
   if (ThreadCreate) then begin
     isregex[0] := FTSRegexp;
-    if (SearchQuery('Full text search', 'Enter your search query', query, isregex, FTSHistory, ['Regular expression'])) then begin
+    if (SearchQuery('Full text search', 'Enter your search query', query, isregex, FTSHistory, ['&Regular expression'])) then begin
       mi_Log.Checked := true;
       mi_Log.OnClick(Sender);
       lb_Log.Items.Clear;

@@ -41,7 +41,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_PackagePriority
+    ActivePage = ts_Layout
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -667,6 +667,151 @@ object frm_Settings: Tfrm_Settings
         end
       end
     end
+    object ts_Layout: TTabSheet
+      Caption = 'Layout'
+      ImageIndex = 8
+      TabVisible = False
+      object gb_Layout: TGroupBox
+        Left = 0
+        Top = 0
+        Width = 433
+        Height = 368
+        Align = alClient
+        Caption = 'Layout'
+        TabOrder = 0
+        DesignSize = (
+          433
+          368)
+        object lbl_TreeFont: TLabel
+          Left = 8
+          Top = 16
+          Width = 53
+          Height = 13
+          Caption = 'Tree layout'
+        end
+        object lbl_LogLayout: TLabel
+          Left = 8
+          Top = 136
+          Width = 49
+          Height = 13
+          Caption = 'Log layout'
+        end
+        object tv_TreeLayout: TTreeView
+          Left = 8
+          Top = 32
+          Width = 305
+          Height = 73
+          Anchors = [akLeft, akTop, akRight]
+          HideSelection = False
+          Indent = 19
+          ReadOnly = True
+          TabOrder = 0
+          Items.Data = {
+            010000001F0000000000000000000000FFFFFFFFFFFFFFFF0000000002000000
+            064F626A6563741E0000000000000000000000FFFFFFFFFFFFFFFF0000000001
+            000000054163746F721D0000000000000000000000FFFFFFFFFFFFFFFF000000
+            000000000004496E666F200000000000000000000000FFFFFFFFFFFFFFFF0000
+            0000000000000753657373696F6E}
+        end
+        object btn_FontSelect: TBitBtn
+          Left = 320
+          Top = 32
+          Width = 105
+          Height = 25
+          Anchors = [akTop, akRight]
+          Caption = 'Font'
+          TabOrder = 1
+          OnClick = btn_FontSelectClick
+        end
+        object btn_FontColor: TBitBtn
+          Left = 320
+          Top = 56
+          Width = 105
+          Height = 25
+          Anchors = [akTop, akRight]
+          Caption = 'Font color'
+          TabOrder = 3
+          OnClick = btn_FontColorClick
+        end
+        object btn_BGColor: TBitBtn
+          Left = 320
+          Top = 80
+          Width = 105
+          Height = 25
+          Anchors = [akTop, akRight]
+          Caption = 'Background color'
+          TabOrder = 2
+          OnClick = btn_BGColorClick
+        end
+        object btn_LogFont: TBitBtn
+          Left = 320
+          Top = 152
+          Width = 105
+          Height = 25
+          Anchors = [akTop, akRight]
+          Caption = 'Font'
+          TabOrder = 4
+          OnClick = btn_LogFontClick
+        end
+        object btn_LogFontColor: TBitBtn
+          Left = 320
+          Top = 176
+          Width = 105
+          Height = 25
+          Anchors = [akTop, akRight]
+          Caption = 'Font color'
+          TabOrder = 5
+          OnClick = btn_LogFontColorClick
+        end
+        object btn_LogColor: TBitBtn
+          Left = 320
+          Top = 200
+          Width = 105
+          Height = 25
+          Anchors = [akTop, akRight]
+          Caption = 'Background color'
+          TabOrder = 6
+          OnClick = btn_LogColorClick
+        end
+        object lb_LogLayout: TListBox
+          Left = 8
+          Top = 152
+          Width = 305
+          Height = 73
+          Anchors = [akLeft, akTop, akRight]
+          ExtendedSelect = False
+          ItemHeight = 13
+          Items.Strings = (
+            
+              'Actor.uc #1238,72: // called after PostBeginPlay.  On a net clie' +
+              'nt, PostNetBeginPlay() is spawned after replicated variables hav' +
+              'e been initialized to'
+            
+              'Actor.uc #1678,49: simulated function bool EffectIsRelevant(vect' +
+              'or SpawnLocation, bool bForceDedicated )'
+            'Actor.uc #1689,12:  else if ( SpawnLocation == Location )'
+            
+              'Actor.uc #1699,41:    bResult = ( (Vector(P.Rotation) Dot (Spawn' +
+              'Location - P.ViewTarget.Location)) > 0.0 );'
+            
+              'Volume.uc #15,75: var() edfindable decorationlist DecoList;  // ' +
+              'A list of decorations to be spawned inside the volume when the l' +
+              'evel starts'
+            
+              'PhysicsVolume.uc #114,16:    PainTimer = spawn(class'#39'VolumeTimer' +
+              #39', self);')
+          TabOrder = 7
+        end
+        object cb_ExpandObject: TCheckBox
+          Left = 8
+          Top = 112
+          Width = 305
+          Height = 17
+          Caption = 'Expand '#39'Object'#39' on startup'
+          TabOrder = 8
+        end
+      end
+    end
   end
   object lb_Settings: TListBox
     Left = 0
@@ -769,5 +914,23 @@ object frm_Settings: Tfrm_Settings
     Title = 'Select an .ini file'
     Left = 624
     Top = 136
+  end
+  object fd_Font: TFontDialog
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = []
+    MinFontSize = 0
+    MaxFontSize = 0
+    Options = [fdForceFontExist]
+    Left = 592
+    Top = 168
+  end
+  object cd_Color: TColorDialog
+    Ctl3D = True
+    Options = [cdFullOpen, cdAnyColor]
+    Left = 624
+    Top = 168
   end
 end
