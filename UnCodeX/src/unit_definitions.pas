@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   General definitions
- $Id: unit_definitions.pas,v 1.110 2004-08-03 07:02:35 elmuerte Exp $
+ $Id: unit_definitions.pas,v 1.111 2004-08-03 13:53:00 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -51,7 +51,8 @@ type
   function iFindFile(filename: string): string;
   function iFindDir(dirname: string; var output: string): boolean;
   function CopyFile(filename, target: string): boolean;
-  function GetFiles(path: string; Attr: Integer; var files: TStringList): boolean; 
+  function GetFiles(path: string; Attr: Integer; var files: TStringList): boolean;
+  function ExtractBaseName(filename: string): string;
 
   procedure ReloadKeywords;
 
@@ -89,6 +90,9 @@ const
   KEYWORDFILE1 = 'keywords1.list';
   KEYWORDFILE2 = 'keywords2.list';
   DEFAULTECF = 'ExternalComments.ini';
+
+  UPSEXT = '.ups'; // uncodex pascal script
+  UPSDIR = 'Macros'; // default dir where Macros can be found
 
   // Full Text search tokens
   FTS_LN_BEGIN = ' #';
@@ -308,6 +312,15 @@ begin
     FindClose(sr);
   end;
   result := files.count > 0;
+end;
+
+function ExtractBaseName(filename: string): string;
+var
+	ext: string;
+begin
+	result := ExtractFileName(filename);
+  ext := ExtractFileExt(filename);
+  result := Copy(result, 1, length(result)-length(ext));
 end;
 
 initialization

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.118 2004-08-03 07:02:35 elmuerte Exp $
+ $Id: unit_main.pas,v 1.119 2004-08-03 13:53:00 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -248,10 +248,13 @@ type
     mi_PascalScript: TMenuItem;
     psi_Classes: TPSImport_Classes;
     psi_DateUtils: TPSImport_DateUtils;
-    N3: TMenuItem;
+    mi_PluginDiv2: TMenuItem;
     ac_PSEditor: TAction;
     psi_unit_uclasses: TPSImport_unit_uclasses;
     psi_miscclasses: TPSImport_miscclasses;
+    ac_PluginRefresh: TAction;
+    mi_Refresh: TMenuItem;
+    mi_PluginDiv1: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -366,6 +369,7 @@ type
     procedure ps_MainCompile(Sender: TPSScript);
     procedure ac_PSEditorExecute(Sender: TObject);
     procedure ps_MainExecute(Sender: TPSScript);
+    procedure ac_PluginRefreshExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -401,8 +405,11 @@ type
     procedure UMRestoreApplication(var msg: TMessage); message UM_RESTORE_APPLICATION;
     // Custom output modules
     procedure LoadOutputModules;
+    procedure LoadPascalScripts;
     procedure miCustomOutputClick(sender: TObject);
+    procedure miPascalScriptsClick(sender: TObject);
     procedure CallCustomOutputModule(module: string; selectedclass: TUClass = nil; issingle: boolean = false);
+    function ExecutePascalScript(filename: string): boolean;
     // inline search
     procedure InlineSearchNext(skipcurrent: boolean = false);
     procedure InlineSearchPrevious(skipcurrent: boolean = false);
@@ -478,6 +485,7 @@ var
   IgnorePackages: TStringList;
   MinimizeOnClose: boolean = false;
   ClassPropertiesWindow: boolean = false;
+  PascalScriptDir: string;
   // startup
   ExpandObject: boolean;
   AnalyseModified: boolean;
@@ -1016,8 +1024,11 @@ begin
     Delete(cmd, 1, 4);
     CallCustomOutputModule('out_'+cmd+'.dll');
   end
-  else if (Pos('ps:', cmd) = 1) then begin
-		// execute pascalscript
+  else if (Pos('ups:', cmd) = 1) then begin
+		Delete(cmd, 1, 4);
+    if (ExtractFilePath(cmd) = '') then cmd := PascalScriptDir+cmd;
+    ExecutePascalScript(cmd);
+    NextBatchCommand;
   end
   else begin
     NextBatchCommand;
@@ -1084,6 +1095,7 @@ var
   omod: THandle;
   rfunc: TUCX_UClassesRev;
   ucr: LongInt;
+  i: integer;
 
   procedure CreateMenuItem(caption, hint: string; parent: TMenuItem; tag: integer);
   var
@@ -1116,6 +1128,11 @@ var
   end;
 
 begin
+	for i := mi_Output.Count-1 downto mi_PluginDiv2.MenuIndex+1 do begin
+  	mi_Output.Delete(i);
+  end;
+  mi_SingleOutput.Clear;
+
   if FindFirst(ExtractFilePath(ParamStr(0))+'out_*.dll', 0, rec) = 0 then begin
     repeat
       omod := LoadLibrary(PChar(rec.Name));
@@ -1207,6 +1224,70 @@ begin
   else begin
     Log('Failed loading custom output module: '+module);
     if (IsBatching) then NextBatchCommand;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.LoadPascalScripts;
+var
+	sl: TStringList;
+  i: integer;
+  mi: TMenuItem;
+begin
+	sl := TStringList.Create;
+  try
+		// clean old
+    for i := mi_PluginDiv2.MenuIndex-1 downto mi_PluginDiv1.MenuIndex+1 do begin
+      mi_Output.Delete(i);
+    end;
+    if (GetFiles(PascalScriptDir+'*'+UPSEXT, faAnyFile, sl)) then begin
+			for i := 0 to sl.Count-1 do begin
+				mi := TMenuItem.Create(mi_Output);
+        mi.Caption := ExtractBaseName(sl[i]);
+        mi.Hint := sl[i];
+        mi.ImageIndex := 32;
+        mi.OnClick := miPascalScriptsClick;
+        mi_Output.Insert(mi_PluginDiv2.MenuIndex, mi);
+      end;
+    end;
+  finally
+		sl.Free;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.miPascalScriptsClick(sender: TObject);
+begin
+  ExecutePascalScript((Sender as TMenuItem).Hint);
+end;
+
+function Tfrm_UnCodeX.ExecutePascalScript(filename: string): boolean;
+var
+	i: integer;
+begin
+	result := false;
+  if (ps_Main.Running) then begin
+		log('Error: nested pascal script running not supported yet');
+    exit;
+  end;
+  if (not fileexists(filename)) then begin
+    log('Error: UPS file does not exist: '+filename);
+    exit;
+  end;
+  lb_Log.Items.Clear;
+  ps_Main.Script.LoadFromFile(filename);
+  result := frm_UnCodeX.ps_Main.Compile;
+  for i := 0 to frm_UnCodeX.ps_Main.CompilerMessageCount-1 do begin
+    log(frm_UnCodeX.ps_Main.CompilerMessages[i].MessageToString);
+  end;
+  if (not result) then begin
+    MessageBeep(MB_ICONHAND);
+    log('UnCodeX PascalScript compile failed!');
+    exit;
+  end;
+  lb_Log.Items.Clear;
+  result := ps_Main.Execute;
+  if (not result) then begin
+		log(ps_Main.ExecErrorToString);
+    log(format('Execution failed @ %d:%d', [ps_Main.ExecErrorRow, ps_Main.ExecErrorCol]));
   end;
 end;
 
@@ -1458,6 +1539,7 @@ begin
     ini.WriteBool('Config', 'AnalyseModified', AnalyseModified);
     ini.WriteInteger('Config', 'DefaultInheritanceDepth', DefaultInheritanceDepth);
     ini.WriteBool('Config', 'LoadOutputModules', LoadCustomOutputModules);
+    ini.WriteString('Config', 'PascalScriptDir', PascalScriptDir);
     ini.WriteBool('Config', 'ClassPropertiesWindow', ClassPropertiesWindow);
     ini.WriteInteger('Config', 'InlineSearchTimeout', tmr_InlineSearch.Interval div 1000);
     ini.WriteString('Config', 'PackageDescriptionFile', GPDF);
@@ -1777,6 +1859,7 @@ begin
     DefaultInheritanceDepth := ini.ReadInteger('Config', 'DefaultInheritanceDepth', 0);
     if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ConfigFile)+StateFile;
     LoadCustomOutputModules := ini.ReadBool('config', 'LoadOutputModules', LoadCustomOutputModules);
+    PascalScriptDir := ini.ReadString('Config', 'PascalScriptDir', ExtractFilePath(ParamStr(0))+UPSDIR+PathDelim);
     ClassPropertiesWindow := ini.ReadBool('config', 'ClassPropertiesWindow', ClassPropertiesWindow);
     tmr_InlineSearch.Interval := ini.ReadInteger('config', 'InlineSearchTimeout', (tmr_InlineSearch.Interval div 1000)) * 1000;
     { Program configuration -- END }
@@ -1927,7 +2010,10 @@ begin
   LoadSettings;
   if (StateFile = '') then StateFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ucx';
 
-  if (LoadCustomOutputModules) then LoadOutputModules;
+  if (LoadCustomOutputModules) then begin
+  	LoadOutputModules;
+    LoadPascalScripts;
+  end;
   PackageList := TUPackageList.Create(true);
   ClassList := TUClassList.Create(true);
   UpdateSystemMenu;
@@ -2068,6 +2154,7 @@ begin
     cb_ModifiedOnStartup.Checked := AnalyseModified;
     ud_DefInheritDepth.Position := DefaultInheritanceDepth;
     cb_LoadCustomModules.Checked := LoadCustomOutputModules;
+    ed_UPSDIR.Text := PascalScriptDir;
     cb_CPAsWindow.Checked := ClassPropertiesWindow;
     ud_InlineSearchTimeout.Position := tmr_InlineSearch.Interval div 1000;
     ed_gpdf.text := GPDF;
@@ -2108,6 +2195,7 @@ begin
       MinimizeOnClose := cb_MinimzeOnClose.Checked;
       DefaultInheritanceDepth := ud_DefInheritDepth.Position;
       LoadCustomOutputModules := cb_LoadCustomModules.Checked;
+      PascalScriptDir := ed_UPSDIR.Text;
       ClassPropertiesWindow := cb_CPAsWindow.Checked;
       tmr_InlineSearch.Interval := ud_InlineSearchTimeout.Position * 1000;
       GPDF := ed_gpdf.Text;
@@ -2303,7 +2391,8 @@ procedure Tfrm_UnCodeX.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
   if (MinimizeOnClose) then begin
-    Action := caMinimize;
+    Action := caNone;
+    Application.Minimize;
   end
   else begin
     tmr_StatusText.Enabled := false;
@@ -3380,6 +3469,12 @@ end;
 procedure Tfrm_UnCodeX.ps_MainExecute(Sender: TPSScript);
 begin
   LinkPSGui(Sender);
+end;
+
+procedure Tfrm_UnCodeX.ac_PluginRefreshExecute(Sender: TObject);
+begin
+  LoadOutputModules;
+  LoadPascalScripts;
 end;
 
 initialization

@@ -1123,14 +1123,14 @@ object frm_Settings: Tfrm_Settings
         end
         object Label1: TLabel
           Left = 8
-          Top = 264
+          Top = 304
           Width = 210
           Height = 13
           Caption = 'Default inheritance depth for class properties'
         end
         object bvl_Sep1: TBevel
           Left = 8
-          Top = 248
+          Top = 288
           Width = 409
           Height = 9
           Anchors = [akLeft, akTop, akRight]
@@ -1138,7 +1138,7 @@ object frm_Settings: Tfrm_Settings
         end
         object lbl_InlineSearchTimeout: TLabel
           Left = 8
-          Top = 208
+          Top = 248
           Width = 157
           Height = 13
           Caption = 'Inline search timeout (in seconds)'
@@ -1157,6 +1157,13 @@ object frm_Settings: Tfrm_Settings
           Height = 13
           Caption = 'External comment file'
         end
+        object lbl_UPSDIR: TLabel
+          Left = 8
+          Top = 184
+          Width = 154
+          Height = 13
+          Caption = 'UnCodeX Pascal Script directory'
+        end
         object ed_StateFilename: TEdit
           Left = 8
           Top = 32
@@ -1169,7 +1176,7 @@ object frm_Settings: Tfrm_Settings
         end
         object cb_MinimzeOnClose: TCheckBox
           Left = 8
-          Top = 168
+          Top = 232
           Width = 113
           Height = 17
           Caption = 'Minimize on close'
@@ -1185,7 +1192,7 @@ object frm_Settings: Tfrm_Settings
         end
         object ed_DefInheritanceDepth: TEdit
           Left = 8
-          Top = 280
+          Top = 320
           Width = 393
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -1196,7 +1203,7 @@ object frm_Settings: Tfrm_Settings
         end
         object ud_DefInheritDepth: TUpDown
           Left = 401
-          Top = 280
+          Top = 320
           Width = 16
           Height = 21
           Anchors = [akTop, akRight]
@@ -1210,7 +1217,7 @@ object frm_Settings: Tfrm_Settings
         end
         object cb_LoadCustomModules: TCheckBox
           Left = 8
-          Top = 184
+          Top = 168
           Width = 161
           Height = 17
           Caption = 'Load custom output modules'
@@ -1220,7 +1227,7 @@ object frm_Settings: Tfrm_Settings
         end
         object cb_CPAsWindow: TCheckBox
           Left = 8
-          Top = 304
+          Top = 344
           Width = 177
           Height = 17
           Caption = 'Open class properties as window'
@@ -1228,7 +1235,7 @@ object frm_Settings: Tfrm_Settings
         end
         object ed_InlineSearchTimeout: TEdit
           Left = 8
-          Top = 224
+          Top = 264
           Width = 393
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -1239,7 +1246,7 @@ object frm_Settings: Tfrm_Settings
         end
         object ud_InlineSearchTimeout: TUpDown
           Left = 401
-          Top = 224
+          Top = 264
           Width = 16
           Height = 21
           Anchors = [akTop, akRight]
@@ -1292,6 +1299,27 @@ object frm_Settings: Tfrm_Settings
           Caption = '...'
           TabOrder = 12
           OnClick = btn_ExtCmtFileClick
+        end
+        object ed_UPSDIR: TEdit
+          Left = 8
+          Top = 200
+          Width = 385
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          ReadOnly = True
+          TabOrder = 13
+        end
+        object btn_UPSDIR: TBitBtn
+          Left = 392
+          Top = 200
+          Width = 25
+          Height = 21
+          Anchors = [akTop, akRight]
+          Caption = '...'
+          TabOrder = 14
+          OnClick = btn_UPSDIRClick
         end
       end
     end

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   General PascalScript routines
- $Id: unit_pascalscript.pas,v 1.4 2004-08-03 07:02:35 elmuerte Exp $
+ $Id: unit_pascalscript.pas,v 1.5 2004-08-03 13:53:00 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -58,40 +58,10 @@ begin
 
   { file access }
   ps.Comp.AddTypeS('TCharSet', 'set of Char');
-  //ps.Comp.AddType('TFileName', btSingle);
-  //ps.Comp.AddType('THandle', btU32);
-  {$IFDEF MSWINDOWS}
-  {ps.Comp.AddTypeS('TSearchRec', 'record'+
-  	'Time: Integer;'+
-    'Size: Integer;'+
-    'Attr: Integer;'+
-    'Name: TFileName;'+
-    'ExcludeAttr: Integer;'+
-    'FindHandle: THandle;'+
-    'FindData: TWin32FindData;'+
-  'end;');}
-  {$ENDIF}
-
-  {$IFDEF LINUX}
-  {ps.Comp.AddTypeS('TSearchRec', 'record'+
-    'Time: Integer;'+
-    'Size: Integer;'+
-    'Attr: Integer;'+
-    'Name: TFileName;'+
-    'ExcludeAttr: Integer;'+
-    'Mode: mode_t;'+
-    'FindHandle: Pointer;'+
-    'PathOnly: String;'+
-    'Pattern: String;'+
-  'end;');}
-  {$ENDIF}
 	ps.AddFunction(@FileAge, 'function FileAge(const FileName: string): Integer;');
 	ps.AddFunction(@FileExists, 'function FileExists(const FileName: string): Boolean;');
 	ps.AddFunction(@DirectoryExists, 'function DirectoryExists(const Directory: string): Boolean;');
 	ps.AddFunction(@ForceDirectories, 'function ForceDirectories(Dir: string): Boolean;');
-	//ps.AddFunction(@FindFirst, 'function FindFirst(const Path: string; Attr: Integer; var F: TSearchRec): Integer;');
-  //ps.AddFunction(@FindNext, 'function FindNext(var F: TSearchRec): Integer;');
-  //ps.AddFunction(@FindClose, 'procedure FindClose(var F: TSearchRec);');
   ps.AddFunction(@FileIsReadOnly, 'function FileIsReadOnly(const FileName: string): Boolean;');
   ps.AddFunction(@DeleteFile, 'function DeleteFile(const FileName: string): Boolean;');
   ps.AddFunction(@RenameFile, 'function RenameFile(const OldName, NewName: string): Boolean;');
@@ -110,6 +80,8 @@ begin
   ps.AddFunction(@DateTimeToFileDate, 'function DateTimeToFileDate(DateTime: TDateTime): Integer;');
   ps.AddFunction(@CreateDir, 'function CreateDir(const Dir: string): Boolean;');
   ps.AddFunction(@RemoveDir, 'function RemoveDir(const Dir: string): Boolean;');
+  ps.AddFunction(@GetFiles, 'function GetFiles(path: string; Attr: Integer; var files: TStringList): boolean;');
+  ps.AddFunction(@ExtractBaseName, 'function ExtractBaseName(filename: string): string;');
 
   { Commandline support }
   ps.AddFunction(@FindCmdLineSwitch, 'function FindCmdLineSwitch(const Switch: string; const Chars: TCharSet; IgnoreCase: Boolean): Boolean;');
