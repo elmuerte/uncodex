@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.33 2004-03-30 09:46:17 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.34 2004-04-13 07:01:15 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -101,6 +101,7 @@ const
   KEYWORD_Replication = 'replication';
   KEYWORD_Array = 'array';
   KEYWORD_Ignores = 'ignores';
+  KEYWORD_Import = 'import';
   UNREAL2_AT_NAME = '@';
 
   RES_SUCCESS = 0;
@@ -175,6 +176,7 @@ begin
       end;
     except
       on E: Exception do begin
+      	Inc(i);
       	Log('Unhandled exception in class '+uclass.name+': '+E.Message);
         Log('History:');
       	for j := 0 to GuardStack.Count-1 do begin
@@ -555,6 +557,7 @@ begin
     log('EOF reached in pFunc of '+uclass.name+'('+IntToStr(p.SourceLine)+') '+result.modifiers);
     result.Free;
     Exception.Create('EOF reached');
+    exit;
   end;
   if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
   result.modifiers := result.modifiers+last;
@@ -740,6 +743,11 @@ begin
     if (p.TokenSymbolIs(KEYWORD_cpptext)) then begin
       p.NextToken;
       pCurlyBrackets();
+      continue;
+    end;
+    if (p.TokenSymbolIs(KEYWORD_Import)) then begin // ignore imports
+      while (p.Token <> ';') do p.NextToken;
+      p.NextToken;
       continue;
     end;
     if ((p.Token = UNREAL2_AT_NAME) and instate) then begin
