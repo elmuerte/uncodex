@@ -12,11 +12,11 @@ type
 
   function SearchQuery(const ACaption, APrompt: string; var value: string; var checkvalue: array of boolean;
     var history: TStringList; CheckPrompt: array of string): boolean; overload;
-  //function SearchQuery(const ACaption, APrompt: string; var value: string; var history: TStringList): boolean; overload;
+  function SearchQuery(const ACaption, APrompt: string; var value: string; var history: TStringList): boolean; overload;
   
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '038 Beta';
+  APPVERSION = '039 Beta';
 
   PATHDELIM = '\';
   WILDCARD = '*.*';
@@ -146,11 +146,12 @@ begin
     end;
 end;
 
-{function SearchQuery(const ACaption, APrompt: string; var value: string; var history: TStringList): boolean;
+function SearchQuery(const ACaption, APrompt: string; var value: string; var history: TStringList): boolean;
 var
-  tmpb: boolean;
+  tmpb: array[0..0] of boolean;
+  tmps: array[0..0] of string;
 begin
-  result := SearchQuery(ACaption, APrompt, value, tmpb, history, '');
-end;}
+  result := SearchQuery(ACaption, APrompt, value, tmpb, history, tmps);
+end;
 
 end.

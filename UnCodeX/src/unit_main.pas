@@ -162,6 +162,7 @@ type
     procedure ac_FindNextExecute(Sender: TObject);
     procedure ac_FullTextSearchExecute(Sender: TObject);
     procedure lb_LogDblClick(Sender: TObject);
+    procedure lb_LogClick(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -877,12 +878,13 @@ end;
 
 procedure Tfrm_UnCodeX.ac_FindClassExecute(Sender: TObject);
 begin
-  if (ActiveControl.ClassType = TTreeView) then begin
-    CSprops[1] := FTSRegexp;
-    if (SearchQuery('Find a class', 'Enter the name of the class you want to find', searchclass, CSprops, CSHistory, ['Search class body', 'Regular expression'])) then begin
-      (ActiveControl as TTreeView).Selected := nil;
-      ac_FindNext.Execute;
-    end;
+  if (ActiveControl.ClassType <> TTreeView) then begin
+    ActiveControl := tv_Classes;
+  end;
+  CSprops[1] := FTSRegexp;
+  if (SearchQuery('Find a class', 'Enter the name of the class you want to find', searchclass, CSprops, CSHistory, ['Search class body', 'Regular expression'])) then begin
+    (ActiveControl as TTreeView).Selected := nil;
+    ac_FindNext.Execute;
   end;
 end;
 
@@ -1194,25 +1196,26 @@ begin
     ac_FindClass.Execute;
     exit;
   end;
-  if (ActiveControl.ClassType = TTreeView) then begin
-    with (ActiveControl as TTreeView) do begin
-      if (CSprops[0]) then begin
-        if (ThreadCreate) then begin
-          lb_Log.Items.Clear;
-          runningthread := TSearchThread.Create((ActiveControl as TTreeView), StatusReport, searchclass, CSprops[1]);
-          runningthread.OnTerminate := ThreadTerminate;
-          runningthread.Resume;
+  if (ActiveControl.ClassType <> TTreeView) then begin
+    ActiveControl := tv_Classes;
+  end;
+  with (ActiveControl as TTreeView) do begin
+    if (CSprops[0]) then begin
+      if (ThreadCreate) then begin
+        lb_Log.Items.Clear;
+        runningthread := TSearchThread.Create((ActiveControl as TTreeView), StatusReport, searchclass, CSprops[1]);
+        runningthread.OnTerminate := ThreadTerminate;
+        runningthread.Resume;
+        exit;
+      end;
+    end
+    else begin
+      if (Selected <> nil) then j := Selected.AbsoluteIndex+1
+        else j := 0;
+      for i := j to Items.Count-1 do begin
+        if (AnsiContainsText(items[i].Text, searchclass)) then begin
+          Select(items[i]);
           exit;
-        end;
-      end
-      else begin
-        if (Selected <> nil) then j := Selected.AbsoluteIndex+1
-          else j := 0;
-        for i := j to Items.Count-1 do begin
-          if (AnsiContainsText(items[i].Text, searchclass)) then begin
-            Select(items[i]);
-            exit;
-          end;
         end;
       end;
     end;
@@ -1232,7 +1235,7 @@ begin
       mi_Log.Checked := true;
       mi_Log.OnClick(Sender);
       lb_Log.Items.Clear;
-      runningthread := TSearchThread.Create(PackageList, StatusReport, query, isregex[0]);
+      runningthread := TSearchThread.Create(PackageList, StatusReport, query, isregex[0], ClassList.Count);
       runningthread.OnTerminate := ThreadTerminate;
       runningthread.Resume;
     end
@@ -1287,6 +1290,21 @@ begin
       ExecuteProgram(exe, lst);
     finally
       lst.Free;
+    end;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.lb_LogClick(Sender: TObject);
+var
+  i: integer;
+begin
+  if (lb_Log.ItemIndex = -1) then exit;
+  if (lb_Log.Items.Objects[lb_Log.ItemIndex] = nil) then exit;
+  if (TObject(lb_Log.Items.Objects[lb_Log.ItemIndex]).ClassType <> TUClass) then exit;
+  for i := 0 to tv_Classes.Items.Count-1 do begin
+    if (tv_Classes.Items[i].Data = lb_Log.Items.Objects[lb_Log.ItemIndex]) then begin
+      tv_Classes.Select(tv_Classes.Items[i]);
+      exit;
     end;
   end;
 end;
