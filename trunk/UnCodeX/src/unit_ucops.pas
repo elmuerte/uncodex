@@ -6,7 +6,7 @@
     Purpose:
         UnrealScript class operations (implements subclassing, moving, ...)
 
-    $Id: unit_ucops.pas,v 1.12 2004-10-20 14:19:29 elmuerte Exp $
+    $Id: unit_ucops.pas,v 1.13 2004-11-17 08:13:52 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -305,9 +305,10 @@ begin
     i := cb_Package.Items.IndexOf(cb_Package.Text);
     cb_NewPackage.Checked := i = -1;
     lbl_Duplicate.Visible := cb_ParentClass.Items.IndexOf(trim(ed_NewClass.Text)) <> -1;
-    if (i <> -1)    then begin
+    if (i <> -1) then begin
         upackage := TUPackage(cb_Package.Items.Objects[i]);
         ed_Filename.Text := upackage.path;
+        btn_Ok.Enabled := btn_Ok.Enabled and (upackage.classes.Find(trim(ed_NewClass.Text)) = nil);
     end
     else begin
         upackage := nil;
