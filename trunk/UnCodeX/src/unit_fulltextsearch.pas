@@ -10,8 +10,7 @@ unit unit_fulltextsearch;
 interface
 
 uses
-  Windows, SysUtils, Classes, unit_uclasses, unit_definitions, RegExpr, ComCtrls,
-  unit_outputdefs;
+  Windows, SysUtils, Classes, RegExpr, ComCtrls, unit_uclasses, unit_outputdefs;
 
 type
   TSearchThread = class(TThread)
@@ -34,7 +33,8 @@ type
 
 implementation
 
-uses unit_main;
+uses
+  unit_definitions;
 
 const
   BUFFSIZE = 4096;

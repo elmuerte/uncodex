@@ -3,7 +3,7 @@ unit unit_mshtmlhelp;
 interface
 
 uses
-  Windows, SysUtils, Variants, Classes, unit_definitions, ComCtrls, unit_uclasses,
+  Windows, SysUtils, Classes, unit_definitions, ComCtrls, unit_uclasses,
   unit_outputdefs;
 
 type
@@ -38,7 +38,8 @@ implementation
  History:
 -----------------------------------------------------------------------------}
 
-uses unit_htmlout, unit_main;
+uses
+  unit_htmlout;
 
 var
   nFiles: integer;

@@ -38,7 +38,8 @@ uses
   unit_outputdefs in 'unit_outputdefs.pas',
   unit_sourceparser in 'unit_sourceparser.pas',
   unit_rtfhilight in 'unit_rtfhilight.pas',
-  unit_richeditex in 'unit_richeditex.pas';
+  unit_richeditex in 'unit_richeditex.pas',
+  unit_utils in 'unit_utils.pas';
 
 {$R *.res}
 

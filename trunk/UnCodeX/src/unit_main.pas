@@ -304,7 +304,6 @@ var
   InitActivateFix: Boolean = true; // fix initial form activation
   ConfigFile: string; // current config file
   InitialStartup: boolean; // is first run
-  TreeUpdated: boolean = false; // prevent useless saving
   hh_Help: THookHelpSystem; // help system
   OutputModules: TStringList; // custom output modules
   // UScript data
@@ -357,7 +356,7 @@ implementation
 
 uses unit_settings, unit_analyse, unit_htmlout, unit_definitions,
   unit_treestate, unit_about, unit_mshtmlhelp, unit_fulltextsearch,
-  unit_tags, unit_outputdefs, unit_rtfhilight;
+  unit_tags, unit_outputdefs, unit_rtfhilight, unit_utils;
 
 const
   PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
@@ -2064,4 +2063,7 @@ begin
   end;
 end;
 
+initialization
+  unit_definitions.Log := Log;
+  unit_definitions.LogClass := LogClass;
 end.

@@ -10,8 +10,7 @@ unit unit_analyse;
 interface
 
 uses
-  Windows, SysUtils, Variants, Classes, unit_uclasses, unit_parser,
-  unit_definitions, unit_outputdefs;
+  Windows, SysUtils, Classes, unit_uclasses, unit_parser, unit_outputdefs;
 
 type
   TClassAnalyser = class(TThread)
@@ -44,9 +43,13 @@ type
     procedure Execute; override;
   end;
 
+var
+  TreeUpdated: boolean = false;
+
 implementation
 
-uses unit_main;
+uses
+  unit_definitions;
 
 // Create for a class list
 constructor TClassAnalyser.Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false);

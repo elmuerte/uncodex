@@ -24,7 +24,8 @@ unit unit_copyparser;
 
 interface
 
-uses Classes;
+uses
+  Classes;
 
 const
   toEOL = Char(5);
@@ -88,7 +89,8 @@ type
 
 implementation
 
-uses SysUtils, RTLConsts;
+uses
+  SysUtils, RTLConsts;
 
 { TCopyParser }
 

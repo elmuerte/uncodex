@@ -10,8 +10,7 @@ unit unit_packages;
 interface
 
 uses
-  Windows, SysUtils, Variants, Classes, Controls, ComCtrls, unit_uclasses,
-  unit_definitions, unit_outputdefs;
+  Windows, SysUtils, Classes, ComCtrls, unit_uclasses, unit_outputdefs;
 
 type
   TPackageScanner = class(TThread)
@@ -37,7 +36,8 @@ type
 
 implementation
 
-uses unit_main, unit_parser;
+uses
+  unit_parser, unit_definitions;
 
 constructor TPackageScanner.Create(paths: TStringList; packagetree, classtree: TTreeView;
   status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
