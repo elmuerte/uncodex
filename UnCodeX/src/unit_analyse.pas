@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.21 2003-11-04 19:35:27 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.22 2003-11-11 17:58:01 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -583,7 +583,11 @@ begin
       end;
       continue;
     end;
-    // TODO: FIXME: stuff breaks when we don't have a class 
+    if (not bHadClass) then begin
+      p.NextToken;
+      continue;
+    end;
+    
     if (p.TokenSymbolIs('var')) then begin
       p.NextToken;
       pVar();

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.34 2003-11-09 11:01:27 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.35 2003-11-11 17:58:02 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -29,7 +29,7 @@ unit unit_htmlout;
 interface
 
 uses
-  Windows, Classes, SysUtils, ComCtrls, unit_uclasses, StrUtils, Hashes,
+  Windows, Classes, SysUtils, unit_uclasses, StrUtils, Hashes,
   IniFiles, unit_outputdefs, unit_clpipe;
 
 type
@@ -44,10 +44,16 @@ type
     next, prev: string;
   end;
 
+  TInheritenceData = class(TObject)
+    itype: string;
+    items: string;
+    uclass: TUClass;
+  end;
+
   THTMLoutConfig = record
     PackageList: TUPackageList;
     ClassList: TUClassList;
-    ClassTree: TTreeNodes;
+    ClassTree: TObject; //!TODO: remove
     outputdir, TemplateDir: string;
     CreateSource: boolean;
     TabsToSpaces: integer;
@@ -77,7 +83,6 @@ type
     
     PackageList: TUPackageList;
     ClassList: TUClassList;
-    ClassTree: TTreeNodes;
     status: TStatusReport;
     ini: TMemIniFile;
 
@@ -103,10 +108,11 @@ type
     function replaceClassEnum(var replacement: string; data: TObject = nil): boolean;
     function replaceClassStruct(var replacement: string; data: TObject = nil): boolean;
     function replaceClassFunction(var replacement: string; data: TObject = nil): boolean;
+    function replaceInherited(var replacement: string; data: TObject = nil): boolean;
     function GetTypeLink(name: string): string;
     function TypeLink(name: string; uclass: TUClass): string;
     procedure htmlTree;
-    procedure ProcTreeNode(var replacement: string; node: TTreeNode; basestring: string);
+    procedure ProcTreeNode(var replacement: string; uclass: TUClass; basestring: string);
     function replaceClasstree(var replacement: string; data: TObject = nil): boolean;
     procedure htmlGlossary;
     function replaceGlossary(var replacement: string; data: TObject = nil): boolean;
@@ -182,6 +188,11 @@ begin
   result := LowerCase(upackage.name+path+upackage.name+'-list.'+TargetExtention);
 end;
 
+function IsReplacement(replacement, check: string): boolean;
+begin
+  result := CompareText(Copy(replacement, 1, Length(check)), check) = 0;
+end;
+
 // convert to HTML chars
 function HTMLChars(line: string): string;
 begin
@@ -196,7 +207,6 @@ constructor THTMLOutput.Create(config: THTMLoutConfig; status: TStatusReport);
 begin
   Self.PackageList := Config.PackageList;
   Self.ClassList := Config.ClassList;
-  Self.ClassTree := Config.ClassTree;
   Self.status := status;
   Self.HTMLOutputDir := Config.outputdir;
   Self.TemplateDir := Config.TemplateDir+PATHDELIM;
@@ -272,10 +282,10 @@ begin
   TypeCache.Items['byte'] := '-';
   TypeCache.Items['class'] := '-';
   TypeCache.Items['name'] := '-';
-  for i := 0 to ClassTree.Count-1 do begin
-    if (not TypeCache.Exists(LowerCase(ClassTree[i].Text))) then
-      TypeCache.Items[LowerCase(ClassTree[i].Text)] := StrRepeat('../', subDirDepth)+ClassLink(TUClass(ClassTree[i].data))
-      else Log('Type already cached '+ClassTree[i].Text);
+  for i := 0 to ClassList.Count-1 do begin
+    if (not TypeCache.Exists(LowerCase(ClassList[i].Name))) then
+      TypeCache.Items[LowerCase(ClassList[i].Name)] := ClassLink(ClassList[i])
+      else Log('Type already cached '+ClassList[i].Name);
   end;
 
   if (not Self.Terminated) then CopyFiles;
@@ -749,6 +759,7 @@ var
   template: TFileStream;
   target: TStringStream;
   tmp, last: string;
+  idata: TInheritenceData;
 begin
   result := replaceDefault(replacement) or replacePackageOverview(replacement, TUClass(data).package);
   if (result) then exit;
@@ -809,10 +820,6 @@ begin
   end
   else if (CompareText(replacement, 'class_children') = 0) then begin
     replacement := '';
-    if (TUClass(data).treenode = nil) then begin
-      log('Orphan detected: '+TUClass(data).package.name+'.'+TUClass(data).name);
-      exit;
-    end;
     TUClass(data).children.Sort;
     for i := 0 to TUClass(data).children.count-1 do begin
       uclass := TUClass(data).children[i];
@@ -830,6 +837,7 @@ begin
     end;
     result := true;
   end
+{
   else if (CompareText(replacement, 'class_constants') = 0) then begin
     template := TFileStream.Create(templatedir+'class_const_entry.html', fmOpenRead);
     target := TStringStream.Create('');
@@ -1141,44 +1149,15 @@ begin
       target.Free;
     end;
   end
-  else if (CompareText(replacement, 'title_Constants') = 0) then begin
-    if (TUClass(data).consts.Count > 0) then
-      replacement := ini.ReadString('titles', 'Constants', '')
-      else replacement := '';
-    result := true;
-  end
-  else if (CompareText(replacement, 'title_Variables') = 0) then begin
-    if (TUClass(data).properties.Count > 0) then
-      replacement := ini.ReadString('titles', 'Variables', '')
-      else replacement := '';
-    result := true;
-  end
-  else if (CompareText(replacement, 'title_Enums') = 0) then begin
-    if (TUClass(data).enums.Count > 0) then
-      replacement := ini.ReadString('titles', 'Enums', '')
-      else replacement := '';
-    result := true;
-  end
-  else if (CompareText(replacement, 'title_Structs') = 0) then begin
-    if (TUClass(data).structs.Count > 0) then
-      replacement := ini.ReadString('titles', 'Structs', '')
-      else replacement := '';
-    result := true;
-  end
-  else if (CompareText(replacement, 'title_Functions') = 0) then begin
-    if (TUClass(data).functions.Count > 0) then
-      replacement := ini.ReadString('titles', 'Functions', '')
-      else replacement := '';
-    result := true;
-  end
-  // new templates
-  else if (CompareText(replacement, 'class_children_block') = 0) then begin
+}
+  ///////////////////// new templates //////////////////////
+  else if (IsReplacement(replacement, 'class_block_children')) then begin
     if (TUClass(data).children.Count = 0) then begin
       replacement := '';
       result := true;
     end
     else begin
-      template := TFileStream.Create(templatedir+'class_children_block.html', fmOpenRead);
+      template := TFileStream.Create(templatedir+LowerCase(replacement)+'.html', fmOpenRead);
       target := TStringStream.Create('');
       try
         parseTemplate(template, target, replaceClass, data);
@@ -1197,6 +1176,102 @@ begin
   else if (CompareText(replacement, 'class_next') = 0) then begin
     replacement := StrRepeat('../', subDirDepth)+ClassLink(GetClass(TUClass(data), 1));
     result := true;
+  end
+  else if (CompareText(replacement, 'class_source_previous') = 0) then begin
+    replacement := StrRepeat('../', subDirDepth)+SOURCEPRE+ClassLink(GetClass(TUClass(data), -1));
+    result := true;
+  end
+  else if (CompareText(replacement, 'class_source_next') = 0) then begin
+    replacement := StrRepeat('../', subDirDepth)+SOURCEPRE+ClassLink(GetClass(TUClass(data), 1));
+    result := true;
+  end
+  else if (IsReplacement(replacement, 'class_block_const')) then begin
+    template := TFileStream.Create(templatedir+LowerCase(replacement)+'.html', fmOpenRead);
+    target := TStringStream.Create('');
+    try
+      up := TUClass(data);
+      cnt := -1;
+      result := false;
+      while ((up <> nil) and (cnt < MaxInherit)) do begin
+        if (up.consts.Count > 0) then begin
+          result := true;
+          break;
+        end;
+        up := up.parent;
+        Inc(cnt);
+      end;
+      if (result) then begin
+        parseTemplate(template, target, replaceClass, data);
+        replacement := target.DataString;
+      end
+      else replacement := '';
+      result := true;
+    finally
+      template.Free;
+      target.Free;
+    end;
+  end
+  else if (IsReplacement(replacement, 'class_entry_const')) then begin
+    template := TFileStream.Create(templatedir+LowerCase(replacement)+'.html', fmOpenRead);
+    target := TStringStream.Create('');
+    try
+      for i := 0 to TUClass(data).consts.Count-1 do begin
+        // ignore const when comment = @ignore
+        if (CompareText(TUClass(data).consts[i].comment, IGNORE_KEYWORD) <> 0) then begin
+          template.Position := 0;
+          parseTemplate(template, target, replaceClassConst, TUClass(data).consts[i]);
+        end;
+        if (Self.Terminated) then break;
+      end;
+      replacement := target.DataString;
+      result := true;
+    finally
+      template.Free;
+      target.Free;
+    end;
+  end
+  else if (IsReplacement(replacement, 'inherited_entries_const')) then begin
+    template := TFileStream.Create(templatedir+'class_entry_inherited.html', fmOpenRead);
+    target := TStringStream.Create('');
+    idata := TInheritenceData.Create;
+    replacement := '';
+    cnt := 0;
+    try
+      up := TUClass(data).parent;
+      idata.itype := ini.ReadString('titels', 'Contants', 'Contants');
+      while ((up <> nil) and (cnt < MaxInherit)) do begin
+        if (CompareText(up.comment, IGNORE_KEYWORD) <> 0) then begin
+          template.Position := 0;
+          idata.uclass := up;
+          if (ConstCache.Exists(up.FullName)) then begin
+            idata.items := ConstCache[up.FullName];
+          end
+          else begin
+            tmp := '';
+            for i := 0 to up.consts.Count-1 do begin
+              // ignore const when comment = @ignore
+              if (CompareText(up.consts[i].comment, IGNORE_KEYWORD) <> 0) then begin
+                if (i > 0) then tmp := tmp+', ';
+                tmp := tmp+'<a href="'+StrRepeat('../', subDirDepth)+ClassLink(up)+'#'+up.consts[i].name+'">'+up.consts[i].name+'</a>';
+              end;
+            end;
+            if (tmp = '') then tmp := '-';
+            ConstCache[up.FullName] := tmp;
+            idata.items := tmp;
+          end;
+          if (idata.items <> '-') then parseTemplate(template, target, replaceInherited, idata);
+        end;
+        up := up.parent;
+        Inc(cnt);
+        if (Self.Terminated) then break;
+      end;
+      replacement := target.DataString;
+      result := true;
+    finally
+      idata.Free;
+      template.Free;
+      target.Free;
+    end;
   end
 end;
 
@@ -1484,6 +1559,20 @@ begin
   end
 end;
 
+function THTMLOutput.replaceInherited(var replacement: string; data: TObject = nil): boolean;
+begin
+  result := replaceClass(replacement, TInheritenceData(data).uclass);
+  if (result) then exit;
+  if (CompareText(replacement, 'inherited_type') = 0) then begin
+    replacement := TInheritenceData(data).itype;
+    result := true;
+  end
+  else if (CompareText(replacement, 'inherited_items') = 0) then begin
+    replacement := TInheritenceData(data).items;
+    result := true;
+  end
+end;
+
 function THTMLOutput.GetTypeLink(name: string): string;
 var
   tname: string;
@@ -1529,7 +1618,7 @@ begin
         if (result <> '') then TypeCache.Items[name] := result;
       end;
     end;
-    if (result <> '') then result := '<a href="'+result+'">'+HTMLChars(name)+'</a>'
+    if (result <> '') then result := '<a href="'+StrRepeat('../', subDirDepth)+result+'">'+HTMLChars(name)+'</a>'
     else result := HTMLChars(name);
     exit;
   end;
@@ -1542,7 +1631,7 @@ begin
   end
   else result := TypeCache.Items[tname];
   if (result = '-') then result := HTMLChars(name)
-  else result := '<a href="'+result+'">'+HTMLChars(name)+'</a>';
+  else result := '<a href="'+StrRepeat('../', subDirDepth)+result+'">'+HTMLChars(name)+'</a>';
 end;
 
 function THTMLOutput.TypeLink(name: string; uclass: TUClass): string;
@@ -1601,36 +1690,36 @@ begin
   end;
 end;
 
-procedure THTMLOutput.ProcTreeNode(var replacement: string; node: TTreeNode; basestring: string);
+procedure THTMLOutput.ProcTreeNode(var replacement: string; uclass: TUClass; basestring: string);
 var
   i: integer;
   tmp: string;
 begin
   // ignore class when comment = @ignore
-  if (CompareText(TUClass(node.data).comment, IGNORE_KEYWORD) = 0) then exit;
-  Status('Creating '+classtree_filename+TargetExtention+' class: '+node.Text);
-  for i := 0 to node.Count-1 do begin
-    if (i < node.Count-1) then tmp := TreeT else tmp := TreeL;
-    replacement := replacement+basestring+tmp+'<a href="'+StrRepeat('../', subDirDepth)+ClassLink(TUClass(node.Item[i].data))+'" name="'+node.Item[i].Text+'">'+node.Item[i].Text+'</a>'+#13#10;
-    if (i < node.Count-1)
-      then ProcTreeNode(replacement, node.Item[i], basestring+TreeI)
-      else ProcTreeNode(replacement, node.Item[i], basestring+TreeNone);
+  if (CompareText(uclass.comment, IGNORE_KEYWORD) = 0) then exit;
+  Status('Creating '+classtree_filename+TargetExtention+' class: '+uclass.Name);
+  for i := 0 to uclass.children.Count-1 do begin
+    if (i < uclass.children.Count-1) then tmp := TreeT else tmp := TreeL;
+    replacement := replacement+basestring+tmp+'<a href="'+StrRepeat('../', subDirDepth)+ClassLink(uclass.children[i])+'" name="'+uclass.children[i].name+'">'+uclass.children[i].name+'</a>'+#13#10;
+    if (i < uclass.children.Count-1)
+      then ProcTreeNode(replacement, uclass.children[i], basestring+TreeI)
+      else ProcTreeNode(replacement, uclass.children[i], basestring+TreeNone);
   end;
 end;
 
 function THTMLOutput.replaceClasstree(var replacement: string; data: TObject = nil): boolean;
 var
-  node: TTreeNode;
+  uclass: TUClass;
 begin
   result := replaceDefault(replacement);
   if (result) then exit;
   if (CompareText(replacement, 'classtree') = 0) then begin
     replacement := '';
-    node := ClassTree.GetFirstNode;
-    while (node <> nil) do begin
-      replacement := replacement+'<a href="'+StrRepeat('../', subDirDepth)+ClassLink(TUClass(node.data))+'" name="'+node.Text+'">'+node.Text+'</a>'+#13#10;
-      ProcTreeNode(replacement, node, '');
-      node := node.getNextSibling;
+    if (ClassList.Count > 0) then begin
+      uclass := ClassList[0];
+      while (uclass.parent <> nil) do uclass := uclass.parent;
+      replacement := replacement+'<a href="'+StrRepeat('../', subDirDepth)+ClassLink(uclass)+'" name="'+uclass.name+'">'+uclass.name+'</a>'+#13#10;
+      ProcTreeNode(replacement, uclass, '');
     end;
     result := true;
   end
@@ -1789,9 +1878,11 @@ begin
       // possible HRs: // -- ==
       Delete(tmp, 1, 2);
       tmp := trim(tmp);
-      if (tmp = '') then sl[i] := '<br>'
-      else if (ReverseString(tmp) = tmp) then sl.Delete(i)
-      else sl[i] := tmp+'<br>';
+      if ((tmp <> '') and (ReverseString(tmp) = tmp)) then sl.Delete(i)
+      else begin
+        sl[i] := tmp;
+        if (i < (sl.Count-1)) then sl[i] := sl[i]+'<br />';
+      end;
     end;
     result := sl.Text;
   finally
