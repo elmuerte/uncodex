@@ -6,7 +6,7 @@
   Purpose:
     Run dialog for the game\server
 
-  $Id: unit_rungame.pas,v 1.10 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_rungame.pas,v 1.11 2005-03-18 07:43:22 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -132,6 +132,7 @@ type
     procedure btn_DelPreClick(Sender: TObject);
     procedure btn_DefaultClick(Sender: TObject);
     procedure btn_okClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     procedure FillGameInfo(uclass: TUClass);
     procedure FillMutator(uclass: TUClass);
@@ -578,6 +579,13 @@ end;
 procedure Tfrm_Run.btn_okClick(Sender: TObject);
 begin
   Inc(IncI);
+end;
+
+procedure Tfrm_Run.FormShow(Sender: TObject);
+begin
+  if (PixelsPerInch <> Screen.PixelsPerInch) then begin
+    ScaleBy(Screen.PixelsPerInch, PixelsPerInch);
+  end;
 end;
 
 end.

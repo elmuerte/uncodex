@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Package properties viewer\editor
 
-  $Id: unit_pkgprops.pas,v 1.7 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_pkgprops.pas,v 1.8 2005-03-18 07:43:22 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -47,6 +47,7 @@ type
     cb_Official: TCheckBox;
     btn_Ok: TBitBtn;
     btn_Cancel: TBitBtn;
+    procedure FormShow(Sender: TObject);
   private
     UPackage: TUPackage;
     ini: TMemIniFile;
@@ -102,6 +103,13 @@ begin
     finally
       ini.Free;
     end;
+  end;
+end;
+
+procedure Tfrm_PackageProps.FormShow(Sender: TObject);
+begin
+  if (PixelsPerInch <> Screen.PixelsPerInch) then begin
+    ScaleBy(Screen.PixelsPerInch, PixelsPerInch);
   end;
 end;
 

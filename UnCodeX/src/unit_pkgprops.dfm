@@ -14,6 +14,8 @@ object frm_PackageProps: Tfrm_PackageProps
   Font.Style = []
   OldCreateOrder = False
   Position = poMainFormCenter
+  Scaled = False
+  OnShow = FormShow
   DesignSize = (
     290
     250)
