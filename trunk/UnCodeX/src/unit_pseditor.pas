@@ -6,7 +6,7 @@
   Purpose:
     PascalScript editor window
 
-  $Id: unit_pseditor.pas,v 1.12 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_pseditor.pas,v 1.13 2004-12-30 09:40:21 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -97,6 +97,9 @@ implementation
 
 uses unit_main, unit_definitions;
 
+var
+  SuccesfulCompile: boolean = false;
+
 {$R *.dfm}
 
 function Tfrm_PSEditor.SaveFile: boolean;
@@ -123,16 +126,15 @@ end;
 
 procedure Tfrm_PSEditor.ac_CompileExecute(Sender: TObject);
 var
-  res: boolean;
   i: integer;
 begin
   frm_UnCodeX.ps_Main.Script.Assign(mm_Editor.Lines);
   lb_Output.Items.Clear;
-  res := frm_UnCodeX.ps_Main.Compile;
+  SuccesfulCompile := frm_UnCodeX.ps_Main.Compile;
   for i := 0 to frm_UnCodeX.ps_Main.CompilerMessageCount-1 do begin
     lb_Output.Items.Add(frm_UnCodeX.ps_Main.CompilerMessages[i].MessageToString);
   end;
-  if (not res) then begin
+  if (not SuccesfulCompile) then begin
     MessageBeep(MB_ICONHAND);
     lb_Output.Items.Add('Compile failed!');
   end
@@ -140,13 +142,15 @@ begin
     MessageBeep(MB_ICONEXCLAMATION);
     lb_Output.Items.Add('Compile succesfull');
   end;
-  ac_Run.Enabled := res;
 end;
 
 procedure Tfrm_PSEditor.ac_RunExecute(Sender: TObject);
 var
   t: Cardinal;
 begin
+  if (not SuccesfulCompile) then ac_Compile.Execute;
+  if (not SuccesfulCompile) then exit;
+
   lb_Output.Items.Clear;
   lb_Output.Items.Add('Execution started');
   ac_Abort.Enabled := true;
@@ -165,7 +169,7 @@ end;
 
 procedure Tfrm_PSEditor.mm_EditorChange(Sender: TObject);
 begin
-  ac_Run.Enabled := false;
+  SuccesfulCompile := false;
   ScriptSaved := false;
   sb_EditorBar.Panels[1].Text := 'changed';
 end;
@@ -270,6 +274,7 @@ begin
     mm_Editor.Lines.LoadFromFile(od_Open.FileName);
     sb_EditorBar.Panels[2].Text := od_Open.FileName;
     ScriptSaved := true;
+    SuccesfulCompile := false;
   end;
 end;
 

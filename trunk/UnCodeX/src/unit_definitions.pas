@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.133 2004-12-28 15:55:57 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.134 2004-12-30 09:40:21 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -169,7 +169,7 @@ begin
   Result := TLogEntry.Create;
   Result.filename := filename;
   Result.line := line;
-  Result.pos := line;
+  Result.pos := pos;
   Result.obj := obj;
 end;
 
