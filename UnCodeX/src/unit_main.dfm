@@ -73,6 +73,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Height = 505
     Align = alClient
     BevelOuter = bvNone
+    BevelWidth = 0
     DockSite = True
     TabOrder = 11
   end
@@ -265,7 +266,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
     HelpType = htKeyword
     HelpKeyword = 'sourcesnoop'
     DragKind = dkDock
-    DragMode = dmAutomatic
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
@@ -296,7 +296,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
     inherited lv_Properties: TListView
       Width = 185
-      Height = 139
+      Height = 140
     end
   end
   object tv_Classes: TTreeView
@@ -380,7 +380,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
     HelpType = htKeyword
     HelpKeyword = 'log'
     DragKind = dkDock
-    DragMode = dmAutomatic
     ExtendedSelect = False
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText

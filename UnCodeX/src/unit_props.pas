@@ -30,6 +30,7 @@ type
       Item: TListItem; SubItem: Integer; State: TCustomDrawState;
       var DefaultDraw: Boolean);
     procedure btn_RefreshClick(Sender: TObject);
+    procedure lv_PropertiesResize(Sender: TObject);
   private
     { Private declarations }
   public
@@ -71,11 +72,16 @@ begin
   j := 0;
   pclass := uclass;
   while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
+  	if ((j > 0) and (pclass.consts.Count > 0)) then begin
+	  	li := lv_Properties.Items.Add;
+  		li.Caption := '=';
+	  	li.SubItems.Add(pclass.name);
+    end;
     for i := 0 to pclass.consts.Count-1 do begin
       li := lv_Properties.Items.Add;
       li.Caption := 'const';
-      if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.consts[i].name)
-        else li.SubItems.Add(pclass.consts[i].name);
+      {if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.consts[i].name)
+        else} li.SubItems.Add(pclass.consts[i].name);
       li.SubItems.Add(IntToStr(pclass.consts[i].srcline));
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(pclass.consts[i].name+' = '+pclass.consts[i].value);
@@ -92,11 +98,16 @@ begin
   j := 0;
   pclass := uclass;
   while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
+  	if ((j > 0) and (pclass.properties.Count > 0)) then begin
+	  	li := lv_Properties.Items.Add;
+  		li.Caption := '=';
+	  	li.SubItems.Add(pclass.name);
+    end;
     for i := 0 to pclass.properties.Count-1 do begin
       li := lv_Properties.Items.Add;
       li.Caption := 'var';
-      if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.properties[i].name)
-        else li.SubItems.Add(pclass.properties[i].name);
+      {if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.properties[i].name)
+        else} li.SubItems.Add(pclass.properties[i].name);
       li.SubItems.Add(IntToStr(pclass.properties[i].srcline));
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(pclass.properties[i].ptype+' '+pclass.properties[i].name);
@@ -113,11 +124,16 @@ begin
   j := 0;
   pclass := uclass;
   while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
+  	if ((j > 0) and (pclass.enums.Count > 0)) then begin
+	  	li := lv_Properties.Items.Add;
+  		li.Caption := '=';
+	  	li.SubItems.Add(pclass.name);
+    end;
     for i := 0 to pclass.enums.Count-1 do begin
       li := lv_Properties.Items.Add;
       li.Caption := 'enum';
-      if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.enums[i].name)
-        else li.SubItems.Add(pclass.enums[i].name);
+      {if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.enums[i].name)
+        else} li.SubItems.Add(pclass.enums[i].name);
       li.SubItems.Add(IntToStr(pclass.enums[i].srcline));
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(pclass.enums[i].name+' = '+StringReplace(pclass.enums[i].options, ',', ', ', [rfReplaceAll]));
@@ -134,11 +150,16 @@ begin
   j := 0;
   pclass := uclass;
   while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
+  	if ((j > 0) and (pclass.structs.Count > 0)) then begin
+	  	li := lv_Properties.Items.Add;
+  		li.Caption := '=';
+	  	li.SubItems.Add(pclass.name);
+    end;
     for i := 0 to pclass.structs.Count-1 do begin
       li := lv_Properties.Items.Add;
       li.Caption := 'struct';
-      if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.structs[i].name)
-        else li.SubItems.Add(pclass.structs[i].name);
+      {if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.structs[i].name)
+        else} li.SubItems.Add(pclass.structs[i].name);
       li.SubItems.Add(IntToStr(pclass.structs[i].srcline));
       li.SubItems.Add(IntToStr(j));
       li.SubItems.Add(pclass.structs[i].name);
@@ -155,11 +176,16 @@ begin
   j := 0;
   pclass := uclass;
   while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
+  	if ((j > 0) and (pclass.functions.Count > 0)) then begin
+	  	li := lv_Properties.Items.Add;
+  		li.Caption := '=';
+	  	li.SubItems.Add(pclass.name);
+    end;
     for i := 0 to pclass.functions.Count-1 do begin
       li := lv_Properties.Items.Add;
       li.Caption := 'function';
-      if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.functions[i].name)
-        else li.SubItems.Add(pclass.functions[i].name);
+      {if (j > 0) then li.SubItems.Add(pclass.name+'.'+pclass.functions[i].name)
+        else} li.SubItems.Add(pclass.functions[i].name);
       li.SubItems.Add(IntToStr(pclass.functions[i].srcline));
       li.SubItems.Add(IntToStr(j));
       if ((pclass.functions[i].ftype = uftFunction) or (pclass.functions[i].ftype = uftEvent) or (pclass.functions[i].ftype = uftDelegate)) then begin
@@ -189,8 +215,8 @@ begin
   lv_Properties.Items.EndUpdate;
 
   lv_Properties.Columns.BeginUpdate;
-  if (Visible) then lv_Properties.Columns[1].Width := lv_Properties.ClientWidth-lv_Properties.Columns[0].Width
-  else if (lv_Properties.Items.Count > lv_Properties.VisibleRowCount) then lv_Properties.Columns[1].Width := lv_Properties.ClientWidth-lv_Properties.Columns[0].Width-GetSystemMetrics(SM_CXVSCROLL);
+  //if (Visible) then lv_Properties.Columns[1].Width := lv_Properties.ClientWidth-lv_Properties.Columns[0].Width
+  //else if (lv_Properties.Items.Count > lv_Properties.VisibleRowCount) then lv_Properties.Columns[1].Width := lv_Properties.ClientWidth-lv_Properties.Columns[0].Width-GetSystemMetrics(SM_CXVSCROLL);
   lv_Properties.Columns.EndUpdate;
   result := true;
 end;
@@ -198,7 +224,7 @@ end;
 procedure Tfr_Properties.lv_PropertiesInfoTip(Sender: TObject;
   Item: TListItem; var InfoTip: String);
 begin
-	if (Item.Caption = '-') then InfoTip := '';
+	if ((Item.Caption = '-') or (Item.Caption = '=')) then InfoTip := '';
   if (Item.SubItems.Count < 4) then exit;
   InfoTip := Item.SubItems[3];
 end;
@@ -207,7 +233,7 @@ procedure Tfr_Properties.lv_PropertiesSelectItem(Sender: TObject;
   Item: TListItem; Selected: Boolean);
 begin
 	if (not Selected) then exit;
-  if (Item.Caption <> '-') then begin
+  if ((Item.Caption <> '-') and (Item.Caption <> '=')) then begin
     if (Item.SubItems.Count > 4) then Clipboard.SetTextBuf(PChar(Item.SubItems[4]))
     else Clipboard.SetTextBuf(PChar(Item.SubItems[0]));
   end;
@@ -246,12 +272,31 @@ begin
     DrawText(Sender.Canvas.Handle, PChar(Item.SubItems[0]), Length(Item.SubItems[0]), Rect, DT_CENTER or DT_VCENTER or DT_NOCLIP or DT_SINGLELINE	);
     SetBkMode(Sender.Canvas.Handle, oldMode);
   end
+  else if (Item.Caption = '=') then begin
+    DefaultDraw := false;
+    Rect := Item.DisplayRect(drBounds);
+    Rect.Left := Rect.Left+1;
+    //DrawButtonFace(Sender.Canvas, Rect, 1, bsNew, false, false, false);
+    Sender.Canvas.Brush.Color := clInfoBk;
+    Sender.Canvas.FillRect(Rect);
+    Sender.Canvas.Font := Self.Font;
+    Sender.Canvas.Font.Color := clInfoText;
+    oldMode := GetBkMode(Sender.Canvas.Handle);
+    SetBkMode(Sender.Canvas.Handle, TRANSPARENT);
+    DrawText(Sender.Canvas.Handle, PChar(Item.SubItems[0]), Length(Item.SubItems[0]), Rect, DT_CENTER or DT_VCENTER or DT_NOCLIP or DT_SINGLELINE	);
+    SetBkMode(Sender.Canvas.Handle, oldMode);
+  end
   else DefaultDraw := true;
 end;
 
 procedure Tfr_Properties.btn_RefreshClick(Sender: TObject);
 begin
 	LoadClass;
+end;
+
+procedure Tfr_Properties.lv_PropertiesResize(Sender: TObject);
+begin
+	lv_Properties.Columns[1].Width := lv_Properties.ClientWidth-lv_Properties.Columns[0].Width
 end;
 
 end.
