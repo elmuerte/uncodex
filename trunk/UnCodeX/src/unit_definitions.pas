@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.125 2004-12-08 09:25:37 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.126 2004-12-18 14:36:47 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -66,13 +66,14 @@ type
   procedure guard(s: string);
   procedure unguard;
   procedure resetguard();
+  procedure printguard(uclass: TUClass = nil);
 
   function RetExternalComment(ref: string): string;
   procedure SetExtCommentFile(ini: string);
 
 const
   APPTITLE        = 'UnCodeX';
-  APPVERSION      = '214';
+  APPVERSION      = '215';
   {$IFDEF MSWINDOWS}
   APPPLATFORM     = 'MS Windows';
   {$ENDIF}
@@ -239,6 +240,17 @@ begin
   GuardStack.Clear;
   GuardStack.Sorted := false;
   GuardStack.Duplicates := dupIgnore;
+end;
+
+procedure printguard(uclass: TUClass = nil);
+var
+  j: integer;
+begin
+  Log('History:');
+  for j := 0 to GuardStack.Count-1 do begin
+    if (uclass = nil) then
+      else LogClass('  '+GuardStack[j], uclass);
+  end;
 end;
 
 var

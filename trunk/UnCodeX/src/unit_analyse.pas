@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.54 2004-12-08 09:25:37 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.55 2004-12-18 14:36:47 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -130,6 +130,7 @@ var
   DEBUG_MACRO_EVAL: boolean = false;
 
 // unquote an unrealscript string
+//TODO: verify this
 function UnQuoteString(input: string): string;
 begin
   result := Copy(input, 2, length(input)-2);
@@ -182,7 +183,6 @@ end;
 procedure TClassAnalyser.Execute;
 var
   stime: TDateTime;
-  j: integer;
 begin
   DEBUG_MACRO_EVAL := FindCmdLineSwitch('debug', ['-'], true);
   stime := Now();
@@ -193,17 +193,11 @@ begin
     except
       on E: EOFException do begin
         LogClass('End of file reached while parsing '+uclass.filename+': '+E.Message, uclass);
-        LogClass('History:', uclass);
-        for j := 0 to GuardStack.Count-1 do begin
-          LogClass('  '+GuardStack[j], uclass);
-        end;
+        printguard(uclass);
       end;
       on E: Exception do begin
         LogClass('Unhandled exception in class '+uclass.name+': '+E.Message, uclass);
-        LogClass('History:', uclass);
-        for j := 0 to GuardStack.Count-1 do begin
-          LogClass('  '+GuardStack[j], uclass);
-        end;
+        printguard(uclass);
       end;
     end;
   end
@@ -265,18 +259,12 @@ var
       on E: EOFException do begin
         Inc(i);
         LogClass('End of file reached while parsing '+myclass.filename+': '+E.Message, myclass);
-        LogClass('History:', myclass);
-        for j := 0 to GuardStack.Count-1 do begin
-          LogClass('  '+GuardStack[j], myclass);
-        end;
+        printguard(myclass);
       end;
       on E: Exception do begin
         Inc(i);
         LogClass('Unhandled exception in class '+myclass.name+': '+E.Message, myclass);
-        LogClass('History:', myclass);
-        for j := 0 to GuardStack.Count-1 do begin
-          LogClass('  '+GuardStack[j], myclass);
-        end;
+        printguard(myclass);
       end;
     end;
     for j := 0 to myclass.children.Count-1 do begin
@@ -347,7 +335,7 @@ begin
       uclass.states.Sort;
     end;
   finally
-    p.Free;
+    FreeAndNil(p);
     fs.Free;
     includeParsers.Free;
     includeFiles.Free;
@@ -500,11 +488,12 @@ begin
   result := TUProperty.Create;
   if (p.Token = '(') then last := #1#2#3#4#5 else last := '';
   result.tag := pBrackets(true);
-  // TODO: empty tag = classname
+  // empty tag = classname
   if ((result.tag = '') and (last <> '')) then result.tag := uclass.name;
   result.comment := trim(p.GetCopyData);
   result.srcline := p.SourceLine;
   result.definedIn := incFilename;
+  guard('searching end token');
   while (p.Token <> ';') do begin
     if (p.Token = toEOF) then begin
       result.Free;
@@ -569,6 +558,7 @@ begin
       p.NextToken; // should be: ';'
     end;
   end;
+  unguard;
   result.ptype := prev;
   i := Pos(',', last);
   while (i > 0) do begin
@@ -943,7 +933,7 @@ begin
   	// ignore, exec macro calls certain commandlets for importing sounds/textures/etc.
   end
   else if (macro = 'INCLUDE') then begin
-    LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Include file '+trim(args), uclass);
+    if (DEBUG_MACRO_EVAL) then LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Include file '+trim(args), uclass);
     uclass.includes.Values[IntToStr(p.SourceLine-1)] := trim(args);
     pInclude(args);
   end
@@ -974,7 +964,7 @@ begin
     p.ProcessMacro := pMacro;
     AnalyseClass;
   finally
-    p.Free;
+    FreeAndNil(p);
     fs.Free;
     p := TUCParser(includeParsers.Last);
     includeParsers.Remove(p);

@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript package scanner, search for UnrealScript classes
 
-  $Id: unit_packages.pas,v 1.38 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_packages.pas,v 1.39 2004-12-18 14:36:48 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -128,8 +128,9 @@ var
   p: TUCParser;
   token: char;
 begin
+  guard('GetUClassName: '+filename);
   result := nil;
-  fs := TFileStream.Create(filename, fmOpenRead   or fmShareDenyWrite);
+  fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
   p := TUCParser.Create(fs);
   try
     token := p.Token;
@@ -165,6 +166,7 @@ begin
     p.free;
     fs.free;
   end;
+  unguard;
 end;
 
 {$IFDEF USE_TREEVIEW}
@@ -207,11 +209,15 @@ procedure TPackageScanner.Execute;
 var
   stime: TDateTime;
 begin
+  resetguard();
   stime := Now();
   try
     ScanPackages();
   except
-    on E: Exception do Log('Unhandled exception: '+E.Message);
+    on E: Exception do begin
+      Log('Unhandled exception: '+E.Message);
+      printguard;
+    end;
   end;
   Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds, '+IntToStr(classlist.Count)+' classes - '+IntToStr(packagelist.Count)+' packages');
 end;
@@ -231,6 +237,7 @@ var
   tmp: string;
   pathpkgcount: integer;
 begin
+  guard('ScanPackages');
   {$IFDEF USE_TREEVIEW}
   packagetree.BeginUpdate;
   classtree.BeginUpdate;
@@ -350,7 +357,10 @@ begin
           try
             uclass := GetUClassName(Packagelist[i].path+PATHDELIM+lst[j]);
           except
-            on E: Exception do log('Parser: error: '+E.Message);
+            on E: Exception do begin
+              log('Parser: error: '+E.Message);
+              continue;
+            end;
           end;
           if (Assigned(uclass)) then begin
             classlist.Add(uclass);
@@ -428,6 +438,7 @@ begin
     classtree.EndUpdate;
     {$ENDIF}
   end;
+  unguard;
 end;
 
 {$IFDEF USE_TREEVIEW}
@@ -441,6 +452,7 @@ var
   tmp, pname, packn, ppackn: string;
   i,j:  integer;
 begin
+  guard('CreateClassTree');
   pprio := 0;
   if (parent <> nil) then begin
     tmp := parent.name;
@@ -500,6 +512,7 @@ begin
       end;
     end;
   end;
+  unguard;
 end;
 
 { TNewClassScanner }
