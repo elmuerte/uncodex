@@ -1,0 +1,61 @@
+<html>
+<head>
+	<title>UnCodeX - Message commands</title>
+	<link href="default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">messages</div>
+</div>
+
+<div class="content">
+<h1>Message commands</h1>
+When UnCodeX is started with the -reuse commandline argument it will send a message to the previous instance with the new commandline arguments. You can use this same method to pass on new commands to a running UnCodeX window.
+<p>
+The following structure is used to pass on the new arguments:
+<pre>
+TRedirectStruct = packed record
+  Find:      string[64];
+  OpenFind:  boolean;
+  OpenTags:  boolean;
+  Batch:     string[255];
+  NewHandle: integer;
+	OpenFTS:   boolean;
+end;
+</pre>
+This structure needs to be send to the main UnCodeX window using WM_COPYDATA.
+<p>
+<table>
+<tr>
+	<td><pre>Find</pre></td>
+	<td>Search for a class, leave empty if not used</td>
+</tr>
+<tr>
+	<td><pre>OpenFind</pre></td>
+	<td>Open the source file of a found class</td>
+</tr>
+<tr>
+	<td><pre>OpenTags</pre></td>
+	<td>Open the class properties window when the class is found, can not be used together with OpenFind</td>
+</tr>
+<tr>
+	<td><pre>Batch</pre></td>
+	<td>New batch commands to be executed, leave blank if not used</td>
+</tr>
+<tr>
+	<td><pre>NewHandle</pre></td>
+	<td>New window handle to send the status messages to</td>
+</tr>
+<tr>
+	<td><pre>OpenFTS</pre></td>
+	<td>Open full text search dialog</td>
+</tr>
+</table>
+
+</div>
+</div>
+</body>
+</html>
