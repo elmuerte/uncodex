@@ -1,4 +1,4 @@
-library out_sample;
+library out_wikifier;
 
 { Important note about DLL memory management: ShareMem must be the
   first unit in your library's USES clause AND your project's (select
@@ -14,40 +14,32 @@ uses
   ShareMem,
   SysUtils,
   Classes,
-  Windows,
   unit_uclasses in '..\unit_uclasses.pas',
   unit_outputdefs in '..\unit_outputdefs.pas',
-  unit_sample in 'unit_sample.pas' {frm_OutputSample};
+  unit_wiki in 'unit_wiki.pas' {frm_Wikifier};
 
 {$R *.res}
 
 // return true if succesfull
 function UCX_Details(var Info: TUCXOutputDetails): boolean; stdcall
 begin
-  Info.AName := 'Sample output';
-  Info.ADescription := 'A sample output module';
-  Info.ASingleClass := false;
+  Info.AName := 'Class Wikifier';
+  Info.ADescription := 'Converts the class details to UnrealWiki source';
+  Info.ASingleClass := true;
   result := true;
 end;
 
 // return true if succesfull
 function UCX_Output(var Info: TUCXOutputInfo): boolean; stdcall
-var
-  i: integer;
 begin
-  frm_OutputSample := Tfrm_OutputSample.Create(nil);
-  with frm_OutputSample do begin
-    for i := 0 to info.APackageList.Count-1 do begin
-      lb_Packages.Items.Add(info.APackageList[i].name);
-    end;
-    for i := 0 to info.AClassList.Count-1 do begin
-      lb_Classes.Items.Add(info.AClassList[i].name);
-    end;
-    frm_OutputSample.ShowModal;
-    frm_OutputSample.Free;
+  if (info.ASelectedClass <> nil) then begin
+    frm_Wikifier := Tfrm_Wikifier.Create(nil);
+    frm_Wikifier.Wikify(info.ASelectedClass);
+    frm_Wikifier.ShowModal;
+    frm_Wikifier.Free;
   end;
-  Info.WaitForTerminate := false;
-  result := false;
+  info.WaitForTerminate := false;
+  result := true;
 end;
 
 exports
@@ -56,3 +48,4 @@ exports
 
 begin
 end.
+ 

@@ -18,6 +18,7 @@ type
   TUCXOutputInfo = record
     // input
     AClassList: TUClassList;
+    ASelectedClass: TUClass; // only used if ASingleClass = true
     APackageList: TUPackageList;
     AStatusReport: TStatusReport;
     AThreadTerminated: TNotifyEvent;
@@ -29,6 +30,7 @@ type
   TUCXOutputDetails = record
     AName: string;
     ADescription: string;
+    ASingleClass: boolean; // selected class only output
   end;
 
   TUCX_Output = function(var Info: TUCXOutputInfo): boolean; stdcall;

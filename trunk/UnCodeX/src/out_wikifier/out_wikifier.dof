@@ -26,7 +26,7 @@ U=0
 V=1
 W=0
 X=1
-Y=2
+Y=1
 Z=1
 ShowHints=1
 ShowWarnings=1
@@ -44,11 +44,11 @@ ImageBase=4194304
 ExeDescription=
 
 [Directories]
-OutputDir=E:\Program Files\Borland\Projects\UnCodeX\BIN
-UnitOutputDir=E:\Program Files\Borland\Projects\UnCodeX\DCU
+OutputDir=E:\Program Files\Borland\Projects\UnCodeX\Bin
+UnitOutputDir=E:\Program Files\Borland\Projects\UnCodeX\DCU\out_wikifier
 PackageDLLOutputDir=
 PackageDCPOutputDir=
-SearchPath=E:\Program Files\Borland\Projects\UnCodeX\Src\VCL
+SearchPath=
 Packages=vcl;rtl;dbrtl;adortl;vcldb;vclx;bdertl;vcldbx;ibxpress;dsnap;cds;bdecds;qrpt;teeui;teedb;tee;dss;teeqr;visualclx;dsnapcrba;dsnapcon;VclSmp;vclshlctrls;vclie;xmlrtl;inet;inetdbbde;inetdbxpress;inetdb;nmfast;webdsnap;websnap;soaprtl;dbexpress;dbxcds;indy;dclOffice2k;visualdbclx;TAC2comps
 Conditionals=
 DebugSourceDirs=
@@ -56,7 +56,7 @@ UsePackages=0
 
 [Parameters]
 RunParams=
-HostApplication=
+HostApplication=E:\Program Files\Borland\Projects\UnCodeX\Bin\UnCodeX.exe
 Launcher=
 UseLauncher=0
 DebugCWD=
@@ -72,7 +72,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=0
 Release=0
-Build=58
+Build=0
 Debug=0
 PreRelease=0
 Special=0
@@ -83,12 +83,12 @@ CodePage=1252
 
 [Version Info Keys]
 CompanyName=Michiel 'El Muerte' Hendriks
-FileDescription=
-FileVersion=1.0.0.58
-InternalName=UnCodeX
+FileDescription=Class wikifier
+FileVersion=1.0.0.0
+InternalName=out_wikifier
 LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
 LegalTrademarks=
-OriginalFilename=UnCodeX.exe
+OriginalFilename=out_wikifier.dll
 ProductName=UnCodeX
 ProductVersion=1.0.0.0
 Comments=http://wiki.beyondunreal.com/wiki/UnCodeX
