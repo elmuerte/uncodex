@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.85 2004-03-27 14:14:21 elmuerte Exp $
+ $Id: unit_main.pas,v 1.86 2004-03-29 10:39:26 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -3021,8 +3021,8 @@ var
 	atree, ftree: TTreeview;
   i: integer;
 begin
+	if (ActiveControl.ClassType <> TTreeView) then exit;
 	atree := (ActiveControl as TTreeView);
-  if (atree = nil) then exit;
   if (atree.Selected = nil) then exit;
   if (atree = tv_Classes) then ftree := tv_Packages
   else ftree := tv_Classes;

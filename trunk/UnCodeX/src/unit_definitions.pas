@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   General definitions
- $Id: unit_definitions.pas,v 1.90 2004-03-23 20:47:18 elmuerte Exp $
+ $Id: unit_definitions.pas,v 1.91 2004-03-29 10:39:25 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -29,7 +29,7 @@ unit unit_definitions;
 interface
 
 uses
-  Hashes, unit_uclasses;
+  Hashes, unit_uclasses, Classes;
 
 type
   TLogProc = procedure (msg: string);
@@ -51,6 +51,10 @@ type
   function iFindDir(dirname: string; var output: string): boolean;
   function CopyFile(filename, target: string): boolean;
   procedure ReloadKeywords;
+
+  procedure guard(s: string);
+  procedure unguard;
+  procedure resetguard();
 
 const
   APPTITLE = 'UnCodeX';
@@ -115,7 +119,8 @@ var
   Keywords1: Hashes.TStringHash;
   Keywords2: Hashes.TStringHash;
   Log: TLogProc;
-  LogClass: TLogClassProc;              
+  LogClass: TLogClassProc;
+  GuardStack: TStringList;
 
 implementation
 
@@ -123,7 +128,7 @@ uses
 {$IFDEF MSWINDOWS}
   Windows,
 {$ENDIF}
-  SysUtils, Classes;
+  SysUtils;
 
 var
   sl: TStringList;
@@ -213,6 +218,23 @@ begin
 end;
 {$ENDIF}
 
+procedure guard(s: string);
+begin
+  GuardStack.Append(s);
+end;
+
+procedure unguard;
+begin
+  GuardStack.Delete(GuardStack.Count-1);
+end;
+
+procedure resetguard();
+begin
+  GuardStack.Clear;
+  GuardStack.Sorted := false;
+  GuardStack.Duplicates := dupIgnore;
+end;
+
 var
 	kwl1, kwl2: boolean;
 
@@ -249,6 +271,7 @@ begin
 end;
 
 initialization
+	GuardStack := TStringList.Create;
 	kwl1 := false;
   kwl2 := false;
   Keywords1 := Hashes.TStringHash.Create;
@@ -365,4 +388,5 @@ initialization
 finalization
   Keywords1.Clear;
   Keywords2.Clear;
+  GuardStack.Free;
 end.

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   loading/saving the tree state
- $Id: unit_treestate.pas,v 1.18 2003-11-27 17:01:55 elmuerte Exp $
+ $Id: unit_treestate.pas,v 1.19 2004-03-29 10:39:26 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -108,6 +108,7 @@ const
   UCXheader151 = UCXheader+'151'+UCXHTail;
   UCXheader153 = UCXheader+'153'+UCXHTail;
   UCXheader156 = UCXheader+'156'+UCXHTail;
+  UCXheader171 = UCXheader+'171'+UCXHTail;
 
 procedure TUnCodeXState.SavePackageToStream(upackage: TUPackage; stream: TStream);
 var
@@ -190,6 +191,16 @@ begin
       Writer.WriteString(uclass.states[i].modifiers);
       Writer.WriteInteger(uclass.states[i].srcline);
       Writer.WriteString(uclass.states[i].comment);
+    end;
+    Writer.WriteInteger(uclass.delegates.Count);
+    for i := 0 to uclass.delegates.Count-1 do begin
+      Writer.WriteString(uclass.delegates[i].name);
+      Writer.WriteInteger(Ord(uclass.delegates[i].ftype));
+      Writer.WriteString(uclass.delegates[i].return);
+      Writer.WriteString(uclass.delegates[i].modifiers);
+      Writer.WriteString(uclass.delegates[i].params);
+      Writer.WriteInteger(uclass.delegates[i].srcline);
+      Writer.WriteString(uclass.delegates[i].comment);
     end;
     Writer.WriteInteger(uclass.functions.Count);
     for i := 0 to uclass.functions.Count-1 do begin
@@ -315,6 +326,20 @@ begin
         ustate.srcline := Reader.ReadInteger;
         if (version >= 150) then ustate.comment := Reader.ReadString;
         uclass.states.Add(ustate);
+      end;
+      if (version >= 171) then begin
+				m := Reader.ReadInteger;
+      	for i := 0 to m-1 do begin
+        	ufunc := TUFunction.Create;
+        	ufunc.name := Reader.ReadString;
+        	ufunc.ftype := TUFunctionType(Reader.ReadInteger);
+        	ufunc.return := Reader.ReadString;
+        	ufunc.modifiers := Reader.ReadString;
+        	ufunc.params := Reader.ReadString;
+        	ufunc.srcline := Reader.ReadInteger;
+        	if (version >= 150) then ufunc.comment := Reader.ReadString;
+        	uclass.delegates.Add(ufunc);
+      	end;
       end;
       m := Reader.ReadInteger;
       for i := 0 to m-1 do begin
@@ -483,6 +508,7 @@ begin
     else if (StrComp(tmp, UCXHeader151) = 0) then fversion := 151
     else if (StrComp(tmp, UCXHeader153) = 0) then fversion := 153
     else if (StrComp(tmp, UCXHeader156) = 0) then fversion := 156
+    else if (StrComp(tmp, UCXHeader171) = 0) then fversion := 171
     else begin
       Log('Unsupported file version, header: '+tmp);
       exit;
@@ -504,7 +530,7 @@ var
   c: cardinal;
 begin
   try
-    stream.WriteBuffer(UCXHeader156, 9);
+    stream.WriteBuffer(UCXHeader171, 9);
     // packages
     c := FPackageList.Count;
     stream.WriteBuffer(c, 4);

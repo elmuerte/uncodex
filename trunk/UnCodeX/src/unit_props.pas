@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   property inspector frame
- $Id: unit_props.pas,v 1.5 2004-03-27 14:14:21 elmuerte Exp $
+ $Id: unit_props.pas,v 1.6 2004-03-29 10:39:26 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -217,6 +217,35 @@ begin
 
   li := lv_Properties.Items.Add;
   li.Caption := '-';
+  li.SubItems.Add('Delegates');
+  j := 0;
+  pclass := uclass;
+  while (j <= ud_InheritanceLevel.Position) and (pclass <> nil) do begin
+  	if ((j > 0) and (pclass.delegates.Count > 0)) then begin
+	  	li := lv_Properties.Items.Add;
+  		li.Caption := '=';
+	  	li.SubItems.Add(pclass.name);
+      li.SubItems.Add(pclass.package.path+PathDelim+pclass.filename);
+    end;
+    for i := 0 to pclass.delegates.Count-1 do begin
+      li := lv_Properties.Items.Add;
+      li.Caption := 'delegate';
+      li.SubItems.Add(pclass.delegates[i].name);
+      li.SubItems.Add(IntToStr(pclass.delegates[i].srcline));
+      li.SubItems.Add(IntToStr(j));
+      if (pclass.delegates[i].return = '') then return := ''
+        else return := pclass.delegates[i].return+' = ';
+      li.SubItems.Add(return+pclass.delegates[i].name+'( '+pclass.delegates[i].params+' )');
+      li.SubItems.Add(pclass.delegates[i].comment);
+      li.Data := pclass;
+      li.ImageIndex := 7 // delegate is an event
+    end;
+    pclass := pclass.parent;
+    Inc(j);
+  end;
+
+  li := lv_Properties.Items.Add;
+  li.Caption := '-';
   li.SubItems.Add('Functions');
   j := 0;
   pclass := uclass;
@@ -258,7 +287,7 @@ begin
       li.Data := pclass;
       if (pclass.functions[i].ftype = uftFunction) then li.ImageIndex := 4
       else if (pclass.functions[i].ftype = uftEvent) then li.ImageIndex := 5
-      else if (pclass.functions[i].ftype = uftDelegate) then li.ImageIndex := 5 // delegate is an event
+      else if (pclass.functions[i].ftype = uftDelegate) then li.ImageIndex := 7 // delegate is an event
       else li.ImageIndex := 6;
     end;
     pclass := pclass.parent;

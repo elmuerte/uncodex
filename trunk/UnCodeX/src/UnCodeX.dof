@@ -63,11 +63,11 @@ RootDir=
 [Version Info]
 IncludeVerInfo=1
 AutoIncBuild=1
-MajorVer=1
-MinorVer=5
-Release=1
-Build=170
-Debug=0
+MajorVer=2
+MinorVer=0
+Release=0
+Build=171
+Debug=1
 PreRelease=1
 Special=0
 Private=0
@@ -77,7 +77,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Michiel 'El Muerte' Hendriks
 FileDescription=
-FileVersion=1.5.1.170
+FileVersion=2.0.0.171
 InternalName=UnCodeX
 LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
 LegalTrademarks=

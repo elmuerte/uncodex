@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.31 2004-03-27 14:14:21 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.32 2004-03-29 10:39:25 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -128,6 +128,7 @@ end;
 procedure TClassAnalyser.Execute;
 var
   stime: TDateTime;
+  j: integer;
 begin
   stime := Now();
   if (classes = nil) then begin
@@ -135,7 +136,13 @@ begin
     try
 	    ExecuteSingle;
     except
-			on E: Exception do Log('Unhandled exception in class '+uclass.name+': '+E.Message);
+			on E: Exception do begin
+      	Log('Unhandled exception in class '+uclass.name+': '+E.Message);
+        Log('History:');
+      	for j := 0 to GuardStack.Count-1 do begin
+					log('    '+GuardStack[j]);
+      	end;
+      end;
     end;
   end
   else ExecuteList;
@@ -144,7 +151,7 @@ end;
 
 procedure TClassAnalyser.ExecuteList;
 var
-  i: integer;
+  i, j: integer;
 begin
   for i := 0 to classes.Count-1 do begin
     uclass := classes[i];
@@ -152,7 +159,13 @@ begin
     try
 	    ExecuteSingle;
     except
-      on E: Exception do Log('Unhandled exception in class '+uclass.name+': '+E.Message);
+      on E: Exception do begin
+      	Log('Unhandled exception in class '+uclass.name+': '+E.Message);
+        Log('History:');
+      	for j := 0 to GuardStack.Count-1 do begin
+					log('    '+GuardStack[j]);
+      	end;
+      end;
     end;
     if (Self.Terminated) then break;
   end;
@@ -163,6 +176,7 @@ var
   filename: string;
   currenttime: Integer;
 begin
+  resetguard;
   filename := uclass.package.path+PATHDELIM+uclass.filename;
   if (not FileExists(filename)) then begin
     Log('Cant''t open file: '+filename);
@@ -203,6 +217,7 @@ end;
 // Process (...)
 function TClassAnalyser.pBrackets(exclude: boolean = false): string;
 begin
+	guard('pBrackets '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   result := '';
   if (p.Token = '(') then begin
     p.NextToken;
@@ -215,11 +230,13 @@ begin
     if (not exclude) then result := '('+result+')';
   end;
   if (p.Token = toEOF) then result := '';
+  unguard;
 end;
 
 // Process [...]
 function TClassAnalyser.pSquareBrackets: string;
 begin
+	guard('pSquareBrackets '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   result := '';
   if (p.Token = '[') then begin
     p.NextToken;
@@ -232,6 +249,7 @@ begin
     result := '['+result+']';
   end;
   if (p.Token = toEOF) then result := '';
+  unguard;
 end;
 
 // Process <...>
@@ -239,6 +257,7 @@ function TClassAnalyser.pAngleBrackets: string;
 var
   bcount: integer;
 begin
+	guard('pAngleBrackets '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   result := '';
   bcount := 0;
   if (p.Token = '<') then begin
@@ -255,6 +274,7 @@ begin
     end;
   end;
   if (p.Token = toEOF) then result := '';
+  unguard;
 end;
 
 // Process {...}
@@ -262,6 +282,7 @@ function TClassAnalyser.pCurlyBrackets(ignoreFirst: boolean = false): string;
 var
   bcount: integer;
 begin
+	guard('pCurlyBrackets '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   result := '';
   if (ignoreFirst) then bcount := 1
   	else bcount := 0;
@@ -279,11 +300,13 @@ begin
     end;
   end;
   if (p.Token = toEOF) then result := '';
+  unguard;
 end;
 
 // const <name> = <value>;
 function TClassAnalyser.pConst: TUConst;
 begin
+	guard('pConst '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   result := TUConst.Create;
   result.comment := trim(p.GetCopyData);
   result.name := p.TokenString;
@@ -301,6 +324,7 @@ begin
   p.FCIgnoreComments := false;
   p.NextToken; // = ;
   uclass.consts.Add(result);
+  unguard;
 end;
 
 // var(tag) <modifiers> <type> <name>,<name>;
@@ -312,6 +336,7 @@ var
   nprop: TUProperty;
   i: integer;
 begin
+	guard('pVar '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   result := TUProperty.Create;
   result.tag := pBrackets(true);
   result.comment := trim(p.GetCopyData);
@@ -384,11 +409,13 @@ begin
   if (UseOverWriteStruct) then OverWriteUstruct.properties.Add(result)
     else uclass.properties.Add(result);
   p.NextToken;
+  unguard;
 end;
 
 // enum <name> { <option>, ... };
 function TClassAnalyser.pEnum: TUEnum;
 begin
+	guard('pEnum '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   result := TUEnum.Create;
   result.comment := trim(p.GetCopyData);
   result.name := p.TokenString;
@@ -401,6 +428,7 @@ begin
   end;
   p.NextToken; // = ;
   uclass.enums.Add(result);
+  unguard;
 end;
 
 // struct <modifiers> <name> [extends <name>] { declaration };
@@ -408,6 +436,7 @@ function TClassAnalyser.pStruct: TUStruct;
 var
   last, prev: string;
 begin
+	guard('pStruct '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   Result := TUStruct.Create;
   result.comment := trim(p.GetCopyData);
   result.name := p.TokenString;
@@ -458,6 +487,7 @@ begin
   {$IFEND}
   if (p.Token = ';') then p.NextToken; // = ;
   uclass.structs.Add(result);
+  unguard;
 end;
 
 function TClassAnalyser.isFunctionModifier(str: string): boolean;
@@ -473,6 +503,7 @@ var
 const
   OPERATOR_NAMES: set of char = ['+', '-', '!', '<', '>', '=', '~', '*', '|', '^', '&'];
 begin
+	guard('pFunc '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   result := TUFunction.Create;
   result.srcline := p.SourceLine;
   while not (p.TokenSymbolIs(KEYWORD_function) or p.TokenSymbolIs(KEYWORD_event) or
@@ -485,6 +516,7 @@ begin
         currentState := nil;
         instate := false;
         result.Free;
+        unguard;
         exit;
       end;
     end;
@@ -504,6 +536,7 @@ begin
   if (p.TokenSymbolIs(KEYWORD_state)) then begin
     pState(result.modifiers);
     result.Free;
+    unguard;
     exit;
   end
   else if (p.TokenSymbolIs(KEYWORD_event)) then result.ftype := uftEvent
@@ -565,11 +598,13 @@ begin
   end;
   if (result.ftype = uftDelegate) then uclass.delegates.Add(result)
   else uclass.functions.Add(result);
+  unguard;
 end;
 
 // [modifiers] state <name> [extends <name>] { .. }
 function TClassAnalyser.pState(modifiers: string): TUState;
 begin
+	guard('pState '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
   result := TUState.Create;
   result.comment := trim(p.GetCopyData);
   result.srcline := p.SourceLine;
@@ -601,12 +636,14 @@ begin
   end;
   currentState := Result;
   uclass.states.Add(result);
+  unguard;
 end;
 
 procedure TClassAnalyser.AnalyseClass;
 var
   bHadClass: boolean;
 begin
+	guard('AnalyseClass '+uclass.name);
   bHadClass := false;
   while ((p.token <> toEOF) and (not Self.Terminated)) do begin
     // first check class
@@ -698,6 +735,7 @@ begin
     end;
     p.NextToken; // we should not even get here
   end;
+  unguard;
 end;
 
 initialization
