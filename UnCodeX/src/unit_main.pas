@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.151 2005-03-28 12:22:51 elmuerte Exp $
+  $Id: unit_main.pas,v 1.152 2005-03-29 08:38:42 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -3219,9 +3219,11 @@ var
 begin
   pt := Point(X, Y);
   curpos := re_SourceSnoop.Perform(EM_CHARFROMPOS, 0, Integer(@pt));
+
   tr.chrg.cpMin := re_SourceSnoop.Perform(EM_FINDWORDBREAK, WB_LEFT, curpos);
   tr.chrg.cpMax := re_SourceSnoop.Perform(EM_FINDWORDBREAK, WB_RIGHT, curpos);
   tr.lpstrText := tmp;
+
   if (re_SourceSnoop.Perform(EM_GETTEXTRANGE, 0, integer(@tr)) > 0) then begin
     if (unit_rtfhilight.ClassesHash.Exists(LowerCase(tmp)) and (not (ssCtrl in Shift))) then begin
       tmpc := TUClass(unit_rtfhilight.ClassesHash[LowerCase(tmp)]);
