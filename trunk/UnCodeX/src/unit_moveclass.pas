@@ -65,8 +65,7 @@ begin
   if ((Key >= #65) and (Key <= #90)) then exit; // A - Z
   if ((Key >= #97) and (Key <= #122)) then exit; // a - z
 	if (Key = #95) then exit; // _
-  if (Key = #8) then exit; // BS
-  if (Key = #127) then exit; // DEL
+  if (Key < #32) then exit; // BS
   Key := #0;
 end;
 

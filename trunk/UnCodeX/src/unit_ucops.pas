@@ -42,6 +42,7 @@ type
 
   procedure CreateSubUClass(uparent: TObject);
   procedure MoveUClass(mclass: TUClass);
+  procedure RenameUClass(mclass: TUClass);
 
 var
   frm_CreateNewClass: Tfrm_CreateNewClass;
@@ -49,7 +50,7 @@ var
 implementation
 
 uses unit_main, unit_copyparser, unit_definitions, unit_analyse,
-  unit_rtfhilight, unit_moveclass, shellapi;
+  unit_rtfhilight, unit_moveclass, shellapi, unit_renameclass;
 
 {$R *.dfm}
 
@@ -174,6 +175,18 @@ begin
   end;
 end;
 
+procedure RenameUClass(mclass: TUClass);
+begin
+  with Tfrm_RenameClass.Create(Application) do begin
+    ed_Class.Text := mclass.name;
+    uclass := mclass;
+    uclasslist := ClassList;
+		if (ShowModal = mrOk) then begin
+
+    end;
+  end;
+end;
+
 procedure Tfrm_CreateNewClass.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
@@ -211,8 +224,7 @@ begin
   if ((Key >= #65) and (Key <= #90)) then exit; // A - Z
   if ((Key >= #97) and (Key <= #122)) then exit; // a - z
 	if (Key = #95) then exit; // _
-  if (Key = #8) then exit; // BS
-  if (Key = #127) then exit; // DEL
+  if (Key < #31) then exit; // BS
   Key := #0;
 end;
 

@@ -1013,6 +1013,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     object ac_RenameClass: TAction
       Category = 'Class Tree'
       Caption = 'Rename class'
+      OnExecute = ac_RenameClassExecute
     end
     object ac_PackageProps: TAction
       Category = 'Class Tree'
