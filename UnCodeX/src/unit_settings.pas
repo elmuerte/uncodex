@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   program settings window
- $Id: unit_settings.pas,v 1.28 2003-11-22 10:45:34 elmuerte Exp $
+ $Id: unit_settings.pas,v 1.29 2003-11-22 19:27:05 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -155,18 +155,6 @@ type
     gb_Sourcesnoop: TGroupBox;
     btn_SourceFont: TBitBtn;
     re_Preview: TRichEditEx;
-    cb_cf0: TColorBox;
-    cb_cf1: TColorBox;
-    cb_cf2: TColorBox;
-    cb_cf3: TColorBox;
-    cb_cf4: TColorBox;
-    cb_cf5: TColorBox;
-    Label2: TLabel;
-    Label4: TLabel;
-    Label5: TLabel;
-    Label6: TLabel;
-    Label7: TLabel;
-    Label8: TLabel;
     cb_Background: TColorBox;
     Label9: TLabel;
     Label10: TLabel;
@@ -194,13 +182,13 @@ type
     mi_SearchQuery: TMenuItem;
     mi_Inlinesearchquery: TMenuItem;
     mi_Classsearchquery: TMenuItem;
-    ListBox1: TListBox;
+    lb_Fonts: TListBox;
     bvl_Font: TBevel;
-    CheckBox1: TCheckBox;
-    CheckBox2: TCheckBox;
-    CheckBox3: TCheckBox;
-    ColorBox1: TColorBox;
-    CheckBox4: TCheckBox;
+    cb_fbold: TCheckBox;
+    cb_fitalic: TCheckBox;
+    cb_funderline: TCheckBox;
+    cb_SelColor: TColorBox;
+    cb_fstrikeout: TCheckBox;
     ts_Keywords: TTabSheet;
     gb_Keywordlists: TGroupBox;
     bvl_Keys: TBevel;
@@ -253,12 +241,6 @@ type
       Selected: Boolean);
     procedure btn_IgnoreClick(Sender: TObject);
     procedure btn_SourceFontClick(Sender: TObject);
-    procedure cb_cf0Change(Sender: TObject);
-    procedure cb_cf1Change(Sender: TObject);
-    procedure cb_cf2Change(Sender: TObject);
-    procedure cb_cf3Change(Sender: TObject);
-    procedure cb_cf4Change(Sender: TObject);
-    procedure cb_cf5Change(Sender: TObject);
     procedure cb_BackgroundChange(Sender: TObject);
     procedure btn_CancelClick(Sender: TObject);
     procedure ed_TabSizeChange(Sender: TObject);
@@ -282,6 +264,10 @@ type
     procedure lb_PrimKeyClick(Sender: TObject);
     procedure lb_SecKeyKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure FormDestroy(Sender: TObject);
+    procedure lb_FontsClick(Sender: TObject);
+    procedure cb_fboldClick(Sender: TObject);
+    procedure cb_SelColorChange(Sender: TObject);
   private
   public
     TagChanged: boolean;
@@ -298,8 +284,15 @@ uses unit_main, unit_rtfhilight;
 {$R *.dfm}
 
 var
-  bcf1,bcf2,bcf3,bcf4,bcf5,bcf6: TColor;
   btextfont: TFont;
+  bfntKeyword1: TFont;
+  bfntKeyword2: TFont;
+  bfntString: TFont;
+  bfntNumber: TFont;
+  bfntMacro: TFont;
+  bfntComment: TFont;
+  bfntName: TFont;
+  bfntClassLink: TFont;
   btabs: integer;
 
 procedure Tfrm_Settings.ReloadPreview;
@@ -449,26 +442,40 @@ begin
     li.Data := frm_UnCodeX.al_Main.Actions[i];
   end;
   // backup old colors
-  bcf1 := unit_rtfhilight.cf1;
-  bcf2 := unit_rtfhilight.cf2;
-  bcf3 := unit_rtfhilight.cf3;
-  bcf4 := unit_rtfhilight.cf4;
-  bcf5 := unit_rtfhilight.cf5;
-  bcf6 := unit_rtfhilight.cf6;
-  btextfont.Name := unit_rtfhilight.textfont.Name;
-  btextfont.Size := unit_rtfhilight.textfont.Size;
+  btextfont := TFont.Create;
+  btextfont.Assign(unit_rtfhilight.textfont);
+  lb_Fonts.Items.Objects[0] := unit_rtfhilight.textfont;
+  bfntKeyword1 := TFont.Create;
+  bfntKeyword1.Assign(unit_rtfhilight.fntKeyword1);
+  lb_Fonts.Items.Objects[1] := unit_rtfhilight.fntKeyword1;
+  bfntKeyword2 := TFont.Create;
+  bfntKeyword2.Assign(unit_rtfhilight.fntKeyword2);
+  lb_Fonts.Items.Objects[2] := unit_rtfhilight.fntKeyword2;
+  bfntString := TFont.Create;
+  bfntString.Assign(unit_rtfhilight.fntString);
+  lb_Fonts.Items.Objects[3] := unit_rtfhilight.fntString;
+  bfntNumber := TFont.Create;
+  bfntNumber.Assign(unit_rtfhilight.fntNumber);
+  lb_Fonts.Items.Objects[4] := unit_rtfhilight.fntNumber;
+  bfntMacro := TFont.Create;
+  bfntMacro.Assign(unit_rtfhilight.fntMacro);
+  lb_Fonts.Items.Objects[5] := unit_rtfhilight.fntMacro;
+  bfntComment := TFont.Create;
+  bfntComment.Assign(unit_rtfhilight.fntComment);
+  lb_Fonts.Items.Objects[6] := unit_rtfhilight.fntComment;
+  bfntName := TFont.Create;
+  bfntName.Assign(unit_rtfhilight.fntName);
+  lb_Fonts.Items.Objects[7] := unit_rtfhilight.fntName;
+  bfntClassLink := TFont.Create;
+  bfntClassLink.Assign(unit_rtfhilight.fntClassLink);
+  lb_Fonts.Items.Objects[8] := unit_rtfhilight.fntClassLink;
   btabs := unit_rtfhilight.tabs;
   //
   re_Preview.Font.Name := unit_rtfhilight.textfont.Name;
   re_Preview.Font.Size := unit_rtfhilight.textfont.Size;
-  cb_cf0.Selected := unit_rtfhilight.cf6;
-  cb_cf1.Selected := unit_rtfhilight.cf1;
-  cb_cf2.Selected := unit_rtfhilight.cf2;
-  cb_cf3.Selected := unit_rtfhilight.cf3;
-  cb_cf4.Selected := unit_rtfhilight.cf4;
-  cb_cf5.Selected := unit_rtfhilight.cf5;
   ud_TabSize.Position := unit_rtfhilight.tabs;
   ReloadPreview;
+  
   if (FileExists(ExtractFilePath(ParamStr(0))+'keywords1.list')) then
     lb_PrimKey.Items.LoadFromFile(ExtractFilePath(ParamStr(0))+'keywords1.list');
   if (FileExists(ExtractFilePath(ParamStr(0))+'keywords2.list')) then
@@ -683,42 +690,6 @@ begin
   end;
 end;
 
-procedure Tfrm_Settings.cb_cf0Change(Sender: TObject);
-begin
-  unit_rtfhilight.cf6 := cb_cf0.Selected;
-  ReloadPreview;
-end;
-
-procedure Tfrm_Settings.cb_cf1Change(Sender: TObject);
-begin
-  unit_rtfhilight.cf1 := cb_cf1.Selected;
-  ReloadPreview;
-end;
-
-procedure Tfrm_Settings.cb_cf2Change(Sender: TObject);
-begin
-  unit_rtfhilight.cf2 := cb_cf2.Selected;
-  ReloadPreview;
-end;
-
-procedure Tfrm_Settings.cb_cf3Change(Sender: TObject);
-begin
-  unit_rtfhilight.cf3 := cb_cf3.Selected;
-  ReloadPreview;
-end;
-
-procedure Tfrm_Settings.cb_cf4Change(Sender: TObject);
-begin
-  unit_rtfhilight.cf4 := cb_cf4.Selected;
-  ReloadPreview;
-end;
-
-procedure Tfrm_Settings.cb_cf5Change(Sender: TObject);
-begin
-  unit_rtfhilight.cf5 := cb_cf5.Selected;
-  ReloadPreview;
-end;
-
 procedure Tfrm_Settings.cb_BackgroundChange(Sender: TObject);
 begin
   re_Preview.Color := cb_Background.Selected;
@@ -726,14 +697,15 @@ end;
 
 procedure Tfrm_Settings.btn_CancelClick(Sender: TObject);
 begin
-  unit_rtfhilight.cf1 := bcf1;
-  unit_rtfhilight.cf2 := bcf2;
-  unit_rtfhilight.cf3 := bcf3;
-  unit_rtfhilight.cf4 := bcf4;
-  unit_rtfhilight.cf5 := bcf5;
-  unit_rtfhilight.cf6 := bcf6;
-  unit_rtfhilight.textfont.Name := btextfont.Name;
-  unit_rtfhilight.textfont.Size := btextfont.Size;
+  unit_rtfhilight.textfont.Assign(btextfont);
+  unit_rtfhilight.fntKeyword1.Assign(bfntKeyword1);
+  unit_rtfhilight.fntKeyword2.Assign(bfntKeyword2);
+  unit_rtfhilight.fntString.Assign(bfntString);
+  unit_rtfhilight.fntNumber.Assign(bfntNumber);
+  unit_rtfhilight.fntMacro.Assign(bfntMacro);
+  unit_rtfhilight.fntComment.Assign(bfntComment);
+  unit_rtfhilight.fntName.Assign(bfntName);
+  unit_rtfhilight.fntClassLink.Assign(bfntClassLink);
   unit_rtfhilight.tabs := btabs;
 end;
 
@@ -845,8 +817,57 @@ begin
   end;
 end;
 
-initialization
-  btextfont := TFont.Create;
-finalization
+procedure Tfrm_Settings.FormDestroy(Sender: TObject);
+begin
   btextfont.Free;
+  bfntKeyword1.Free;
+  bfntKeyword2.Free;
+  bfntString.Free;
+  bfntNumber.Free;
+  bfntMacro.Free;
+  bfntComment.Free;
+  bfntName.Free;
+  bfntClassLink.Free;
+end;
+
+procedure Tfrm_Settings.lb_FontsClick(Sender: TObject);
+var
+  tmpfnt: TFont;
+begin
+  if (lb_Fonts.ItemIndex = -1) then exit;
+  tmpfnt := TFont(lb_Fonts.Items.Objects[lb_Fonts.ItemIndex]);
+  cb_SelColor.Selected := clNone;
+  cb_SelColor.Selected := tmpfnt.Color;
+  cb_fbold.Checked := fsBold in tmpfnt.Style;
+  cb_fItalic.Checked := fsItalic in tmpfnt.Style;
+  cb_fUnderline.Checked := fsUnderline in tmpfnt.Style;
+  cb_fStrikeout.Checked := fsStrikeout in tmpfnt.Style;
+end;
+
+procedure Tfrm_Settings.cb_fboldClick(Sender: TObject);
+var
+  tmpfnt: TFont;
+  tmpstyle: TFontStyles;
+begin
+  if (lb_Fonts.ItemIndex = -1) then exit;
+  tmpfnt := TFont(lb_Fonts.Items.Objects[lb_Fonts.ItemIndex]);
+  tmpstyle := [];
+  if (cb_fbold.Checked) then tmpstyle := tmpstyle + [fsBold];
+  if (cb_fitalic.Checked) then tmpstyle := tmpstyle + [fsItalic];
+  if (cb_funderline.Checked) then tmpstyle := tmpstyle + [fsUnderline];
+  if (cb_fstrikeout.Checked) then tmpstyle := tmpstyle + [fsStrikeout];
+  tmpfnt.Style := tmpstyle;
+  ReloadPreview;
+end;
+
+procedure Tfrm_Settings.cb_SelColorChange(Sender: TObject);
+var
+  tmpfnt: TFont;
+begin
+  if (lb_Fonts.ItemIndex = -1) then exit;
+  tmpfnt := TFont(lb_Fonts.Items.Objects[lb_Fonts.ItemIndex]);
+  tmpfnt.Color := cb_SelColor.Selected;
+  ReloadPreview;
+end;
+
 end.
