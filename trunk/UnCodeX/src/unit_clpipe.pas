@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Create a pipe with a commandline application
- $Id: unit_clpipe.pas,v 1.5 2004-02-23 22:05:30 elmuerte Exp $
+ $Id: unit_clpipe.pas,v 1.6 2004-06-20 21:10:04 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -45,7 +45,7 @@ type
     StartupInfo:TStartupInfo;
     ProcessInfo:TProcessInformation;
     {$ENDIF}
-    InRead,InWrite,OutRead,OutWrite:THandle;
+    InRead,InWrite,OutRead,OutWrite,ErrOutR,ErrOutW:THandle;
     InStream: THandleStream;
     OutStream: THandleStream;
   public
@@ -76,18 +76,25 @@ function TCLPipe.Open: boolean;
 var
   TempHandle: THandle;
   sa: TSECURITYATTRIBUTES;
+  sd: TSECURITYDESCRIPTOR;
 begin
   result := true;
   FillChar(StartupInfo,SizeOf(StartupInfo), 0);
   sa.nLength := sizeof(sa);
   sa.bInheritHandle := true;
-  sa.lpSecurityDescriptor := nil;
+  if (Win32Platform = VER_PLATFORM_WIN32_NT) then begin
+    InitializeSecurityDescriptor(@sd, SECURITY_DESCRIPTOR_REVISION);
+    SetSecurityDescriptorDacl(@sd, true, nil, false);
+    sa.lpSecurityDescriptor := @sd;
+  end
+  else sa.lpSecurityDescriptor := nil;
   try
-    if not CreatePipe(InRead, InWrite, @sa, 0) then RaiseLastOSError;
-    if not CreatePipe(OutRead, OutWrite, @sa, 0) then RaiseLastOSError;
+    if not CreatePipe(InRead, InWrite, @sa, 1) then RaiseLastOSError;
+    if not CreatePipe(OutRead, OutWrite, @sa, 1) then RaiseLastOSError;
+    if not CreatePipe(ErrOutR, ErrOutW, @sa, 1) then RaiseLastOSError;
 
     if (Win32Platform = VER_PLATFORM_WIN32_NT) then begin
-      if not SetHandleInformation(OutWrite, HANDLE_FLAG_INHERIT, 0) then RaiseLastOSError
+      if not SetHandleInformation(OutRead, HANDLE_FLAG_INHERIT, 0) then RaiseLastOSError;
     end
     else begin
       if not DuplicateHandle(GetCurrentProcess, OutRead, GetCurrentProcess, @TempHandle, 0, True, DUPLICATE_SAME_ACCESS) then RaiseLastOSError;
@@ -99,13 +106,16 @@ begin
     StartupInfo.dwFlags := STARTF_USESHOWWINDOW or STARTF_USESTDHANDLES;
     StartupInfo.hStdInput := InRead;
     StartupInfo.hStdOutput := OutWrite;
+    StartupInfo.hStdError := ErrOutR;
     StartupInfo.wShowWindow := SW_HIDE;
 
-    if not CreateProcess(nil, pchar(CommandLine), nil, nil, false, 0, nil, nil, StartupInfo, ProcessInfo) then begin
+    if not CreateProcess(nil, pchar(CommandLine), nil, nil, true, CREATE_NEW_CONSOLE, nil, nil, StartupInfo, ProcessInfo) then begin
       CloseHandle(InWrite);
       CloseHandle(InRead);
       CloseHandle(OutWrite);
       CloseHandle(OutRead);
+      CloseHandle(ErrOutR);
+      CloseHandle(ErrOutW);
       result := false;
     end else
     begin
@@ -113,6 +123,8 @@ begin
       InStream := THandleStream.Create(InWrite);
       CloseHandle(InRead);
       CloseHandle(OutWrite);
+      CloseHandle(ErrOutR);
+      CloseHandle(ErrOutW);
       CloseHandle(ProcessInfo.hThread);
       isOpen := true;
     end;
@@ -167,6 +179,7 @@ begin
     exit;
   end;
   try
+    FillChar(buffer, sizeof(buffer), 0);
     while (Length(input) >= sizeof(buffer)) do begin
       StrPCopy(buffer, Copy(input, 1, sizeof(buffer)));
       Delete(input, 1, sizeof(buffer));
@@ -174,9 +187,10 @@ begin
     end;
     StrPCopy(buffer, input);
     buffer[Length(input)] := #4;
-    i := InStream.Write(buffer, Length(input)+1);
+    InStream.Write(buffer, Length(input)+1);
     result := '';
-    while ((c <> #4) and (i > 0)) do begin
+    c := #0;
+    while (c <> #4) do begin
       i := OutStream.Read(c, 1);
       if ((c <> #4) and (i > 0)) then result := result+c;
     end;

@@ -24,10 +24,11 @@ begin
       read(input, c);
       if (c <> #4) then comment := comment+c;
     end;
-    writeln(ErrOutput, 'Got comment:');
+    //writeln(ErrOutput, 'Got comment:');
     comment := StringReplace(comment, 'Unreal', '<a href="http://www.unreal.com">Unreal</a>', [rfReplaceAll, rfIgnoreCase]);
+    comment := StringReplace(comment, 'Epic Games, Inc.', '<a href="http://www.epicgames.com">Epic Games, Inc.</a>', [rfReplaceAll, rfIgnoreCase]);
     write(output, comment+#4);
     flush(output);
-    writeln(ErrOutput, comment);
+    //writeln(ErrOutput, comment);
   end;
 end.
