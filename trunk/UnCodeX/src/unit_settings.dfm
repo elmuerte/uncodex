@@ -670,8 +670,197 @@ object frm_Settings: Tfrm_Settings
         OnClick = btn_SelectWorkshopClick
       end
     end
-    object ts_Command: TTabSheet
+    object ts_ProgramOptions: TTabSheet
       Tag = -1
+      HelpType = htKeyword
+      HelpKeyword = 'programoptions'
+      Caption = 'Program Options'
+      ImageIndex = 9
+      TabVisible = False
+      DesignSize = (
+        424
+        343)
+      object lbl_StateFile: TLabel
+        Left = 0
+        Top = 0
+        Width = 162
+        Height = 13
+        Caption = 'State file (relative to the config file)'
+      end
+      object lbl_InlineSearchTimeout: TLabel
+        Left = 0
+        Top = 88
+        Width = 157
+        Height = 13
+        Caption = 'Inline search timeout (in seconds)'
+      end
+      object Label1: TLabel
+        Left = 0
+        Top = 168
+        Width = 210
+        Height = 13
+        Caption = 'Default inheritance depth for class properties'
+      end
+      object bvl_Sep1: TBevel
+        Left = 0
+        Top = 128
+        Width = 425
+        Height = 9
+        Anchors = [akLeft, akTop, akRight]
+        Shape = bsBottomLine
+      end
+      object ud_InlineSearchTimeout: TUpDown
+        Left = 409
+        Top = 104
+        Width = 16
+        Height = 21
+        Anchors = [akTop, akRight]
+        Associate = ed_InlineSearchTimeout
+        Min = 1
+        Max = 255
+        Position = 5
+        TabOrder = 0
+        Thousands = False
+        Wrap = False
+      end
+      object ud_DefInheritDepth: TUpDown
+        Left = 409
+        Top = 184
+        Width = 16
+        Height = 21
+        Anchors = [akTop, akRight]
+        Associate = ed_DefInheritanceDepth
+        Min = 0
+        Max = 255
+        Position = 0
+        TabOrder = 1
+        Thousands = False
+        Wrap = False
+      end
+      object ed_StateFilename: TEdit
+        Left = 0
+        Top = 16
+        Width = 425
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        BevelKind = bkSoft
+        BorderStyle = bsNone
+        TabOrder = 2
+      end
+      object ed_InlineSearchTimeout: TEdit
+        Left = 0
+        Top = 104
+        Width = 409
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        BevelKind = bkSoft
+        BorderStyle = bsNone
+        TabOrder = 3
+        Text = '5'
+      end
+      object ed_DefInheritanceDepth: TEdit
+        Left = 0
+        Top = 184
+        Width = 409
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        BevelKind = bkSoft
+        BorderStyle = bsNone
+        TabOrder = 4
+        Text = '0'
+      end
+      object cb_ModifiedOnStartup: TCheckBox
+        Left = 0
+        Top = 40
+        Width = 193
+        Height = 17
+        Caption = 'Analyse modified classes on startup'
+        TabOrder = 5
+      end
+      object cb_MinimzeOnClose: TCheckBox
+        Left = 0
+        Top = 56
+        Width = 113
+        Height = 17
+        Caption = 'Minimize on close'
+        TabOrder = 6
+      end
+      object cb_CPAsWindow: TCheckBox
+        Left = 0
+        Top = 142
+        Width = 177
+        Height = 17
+        Caption = 'Open class properties as window'
+        TabOrder = 7
+      end
+    end
+    object ts_Comments: TTabSheet
+      Tag = 5
+      Caption = 'Comments\Descriptions'
+      ImageIndex = 13
+      TabVisible = False
+      DesignSize = (
+        424
+        343)
+      object lbl_gpdf: TLabel
+        Left = 0
+        Top = 0
+        Width = 152
+        Height = 13
+        Caption = 'General package description file'
+      end
+      object lbl_ExtCmtFile: TLabel
+        Left = 0
+        Top = 40
+        Width = 100
+        Height = 13
+        Caption = 'External comment file'
+      end
+      object ed_gpdf: TEdit
+        Left = 0
+        Top = 16
+        Width = 401
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        BevelKind = bkSoft
+        BorderStyle = bsNone
+        ReadOnly = True
+        TabOrder = 0
+      end
+      object btn_BrowseGPDF: TBitBtn
+        Left = 399
+        Top = 16
+        Width = 25
+        Height = 21
+        Anchors = [akTop, akRight]
+        Caption = '...'
+        TabOrder = 1
+        OnClick = btn_BrowseGPDFClick
+      end
+      object ed_ExtCmtFile: TEdit
+        Left = 0
+        Top = 56
+        Width = 401
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        BevelKind = bkSoft
+        BorderStyle = bsNone
+        ReadOnly = True
+        TabOrder = 2
+      end
+      object btn_ExtCmtFile: TBitBtn
+        Left = 399
+        Top = 56
+        Width = 25
+        Height = 21
+        Anchors = [akTop, akRight]
+        Caption = '...'
+        TabOrder = 3
+        OnClick = btn_ExtCmtFileClick
+      end
+    end
+    object ts_Command: TTabSheet
+      Tag = 5
       HelpType = htKeyword
       HelpKeyword = 'compile'
       Caption = 'Commands'
@@ -802,8 +991,81 @@ object frm_Settings: Tfrm_Settings
         OnClick = btn_BrowseCompilerClick
       end
     end
+    object ts_HotKeys: TTabSheet
+      Tag = 5
+      HelpType = htKeyword
+      HelpKeyword = 'hotkeys'
+      Caption = 'Hot keys'
+      ImageIndex = 10
+      TabVisible = False
+      DesignSize = (
+        424
+        343)
+      object btn_SetHotKey: TBitBtn
+        Left = 367
+        Top = 0
+        Width = 57
+        Height = 21
+        Anchors = [akTop, akRight]
+        Caption = 'Set'
+        TabOrder = 0
+        OnClick = btn_SetHotKeyClick
+      end
+      object lv_HotKeys: TListView
+        Left = 0
+        Top = 32
+        Width = 424
+        Height = 311
+        Align = alBottom
+        Anchors = [akLeft, akTop, akRight, akBottom]
+        BevelKind = bkSoft
+        BorderStyle = bsNone
+        Columns = <
+          item
+            Caption = 'Action'
+            Width = -1
+            WidthType = (
+              -1)
+          end
+          item
+            Caption = 'Hotkey'
+            Width = -1
+            WidthType = (
+              -1)
+          end>
+        ColumnClick = False
+        ReadOnly = True
+        RowSelect = True
+        SortType = stText
+        TabOrder = 1
+        ViewStyle = vsReport
+        OnSelectItem = lv_HotKeysSelectItem
+      end
+      object hk_HotKey: THotKey
+        Left = 191
+        Top = 0
+        Width = 169
+        Height = 21
+        Anchors = [akTop, akRight]
+        HotKey = 0
+        InvalidKeys = [hcNone]
+        Modifiers = []
+        TabOrder = 2
+      end
+      object ed_HotKey: TEdit
+        Left = 0
+        Top = 0
+        Width = 184
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        BevelKind = bkSoft
+        BorderStyle = bsNone
+        ReadOnly = True
+        TabOrder = 3
+      end
+    end
     object ts_GameServer: TTabSheet
-      Tag = -1
+      Tag = 5
       HelpType = htKeyword
       HelpKeyword = 'gameserver'
       Caption = 'Game Server'
@@ -904,7 +1166,7 @@ object frm_Settings: Tfrm_Settings
       end
     end
     object ts_Layout: TTabSheet
-      Tag = -1
+      Tag = 5
       HelpType = htKeyword
       HelpKeyword = 'layout'
       Caption = 'Layout'
@@ -1046,308 +1308,8 @@ object frm_Settings: Tfrm_Settings
         OnClick = btn_LogFontClick
       end
     end
-    object ts_ProgramOptions: TTabSheet
-      Tag = -1
-      HelpType = htKeyword
-      HelpKeyword = 'programoptions'
-      Caption = 'Program Options'
-      ImageIndex = 9
-      TabVisible = False
-      DesignSize = (
-        424
-        343)
-      object lbl_StateFile: TLabel
-        Left = 0
-        Top = 0
-        Width = 162
-        Height = 13
-        Caption = 'State file (relative to the config file)'
-      end
-      object lbl_InlineSearchTimeout: TLabel
-        Left = 0
-        Top = 176
-        Width = 157
-        Height = 13
-        Caption = 'Inline search timeout (in seconds)'
-      end
-      object lbl_gpdf: TLabel
-        Left = 0
-        Top = 64
-        Width = 152
-        Height = 13
-        Caption = 'General package description file'
-      end
-      object lbl_ExtCmtFile: TLabel
-        Left = 0
-        Top = 104
-        Width = 100
-        Height = 13
-        Caption = 'External comment file'
-      end
-      object Label1: TLabel
-        Left = 0
-        Top = 264
-        Width = 210
-        Height = 13
-        Caption = 'Default inheritance depth for class properties'
-      end
-      object bvl_Sep1: TBevel
-        Left = 0
-        Top = 224
-        Width = 425
-        Height = 9
-        Anchors = [akLeft, akTop, akRight]
-        Shape = bsBottomLine
-      end
-      object btn_BrowseGPDF: TBitBtn
-        Left = 399
-        Top = 80
-        Width = 25
-        Height = 21
-        Anchors = [akTop, akRight]
-        Caption = '...'
-        TabOrder = 0
-        OnClick = btn_BrowseGPDFClick
-      end
-      object ud_InlineSearchTimeout: TUpDown
-        Left = 408
-        Top = 192
-        Width = 16
-        Height = 21
-        Anchors = [akTop, akRight]
-        Associate = ed_InlineSearchTimeout
-        Min = 1
-        Max = 255
-        Position = 5
-        TabOrder = 1
-        Thousands = False
-        Wrap = False
-      end
-      object ud_DefInheritDepth: TUpDown
-        Left = 408
-        Top = 280
-        Width = 16
-        Height = 21
-        Anchors = [akTop, akRight]
-        Associate = ed_DefInheritanceDepth
-        Min = 0
-        Max = 255
-        Position = 0
-        TabOrder = 2
-        Thousands = False
-        Wrap = False
-      end
-      object ed_StateFilename: TEdit
-        Left = 0
-        Top = 16
-        Width = 425
-        Height = 21
-        Anchors = [akLeft, akTop, akRight]
-        BevelKind = bkSoft
-        BorderStyle = bsNone
-        TabOrder = 3
-      end
-      object ed_InlineSearchTimeout: TEdit
-        Left = 0
-        Top = 192
-        Width = 409
-        Height = 21
-        Anchors = [akLeft, akTop, akRight]
-        BevelKind = bkSoft
-        BorderStyle = bsNone
-        TabOrder = 4
-        Text = '5'
-      end
-      object ed_gpdf: TEdit
-        Left = 0
-        Top = 80
-        Width = 401
-        Height = 21
-        Anchors = [akLeft, akTop, akRight]
-        BevelKind = bkSoft
-        BorderStyle = bsNone
-        ReadOnly = True
-        TabOrder = 5
-      end
-      object ed_ExtCmtFile: TEdit
-        Left = 0
-        Top = 120
-        Width = 401
-        Height = 21
-        Anchors = [akLeft, akTop, akRight]
-        BevelKind = bkSoft
-        BorderStyle = bsNone
-        ReadOnly = True
-        TabOrder = 6
-      end
-      object ed_DefInheritanceDepth: TEdit
-        Left = 0
-        Top = 280
-        Width = 409
-        Height = 21
-        Anchors = [akLeft, akTop, akRight]
-        BevelKind = bkSoft
-        BorderStyle = bsNone
-        TabOrder = 7
-        Text = '0'
-      end
-      object cb_ModifiedOnStartup: TCheckBox
-        Left = 0
-        Top = 40
-        Width = 193
-        Height = 17
-        Caption = 'Analyse modified classes on startup'
-        TabOrder = 8
-      end
-      object cb_MinimzeOnClose: TCheckBox
-        Left = 0
-        Top = 152
-        Width = 113
-        Height = 17
-        Caption = 'Minimize on close'
-        TabOrder = 9
-      end
-      object cb_CPAsWindow: TCheckBox
-        Left = 0
-        Top = 238
-        Width = 177
-        Height = 17
-        Caption = 'Open class properties as window'
-        TabOrder = 10
-      end
-      object btn_ExtCmtFile: TBitBtn
-        Left = 399
-        Top = 120
-        Width = 25
-        Height = 21
-        Anchors = [akTop, akRight]
-        Caption = '...'
-        TabOrder = 11
-        OnClick = btn_ExtCmtFileClick
-      end
-    end
-    object ts_PlugIns: TTabSheet
-      Tag = 8
-      Caption = 'Plug-ins'
-      ImageIndex = 12
-      TabVisible = False
-      DesignSize = (
-        424
-        343)
-      object lbl_UPSDIR: TLabel
-        Left = 0
-        Top = 32
-        Width = 154
-        Height = 13
-        Caption = 'UnCodeX Pascal Script directory'
-      end
-      object ed_UPSDIR: TEdit
-        Left = 0
-        Top = 48
-        Width = 400
-        Height = 21
-        Anchors = [akLeft, akTop, akRight]
-        BevelKind = bkSoft
-        BorderStyle = bsNone
-        ReadOnly = True
-        TabOrder = 0
-      end
-      object btn_UPSDIR: TBitBtn
-        Left = 399
-        Top = 48
-        Width = 25
-        Height = 21
-        Anchors = [akTop, akRight]
-        Caption = '...'
-        TabOrder = 1
-        OnClick = btn_UPSDIRClick
-      end
-      object cb_LoadCustomModules: TCheckBox
-        Left = 0
-        Top = 0
-        Width = 161
-        Height = 17
-        Caption = 'Load custom output modules'
-        Checked = True
-        State = cbChecked
-        TabOrder = 2
-      end
-    end
-    object ts_HotKeys: TTabSheet
-      Tag = -1
-      HelpType = htKeyword
-      HelpKeyword = 'hotkeys'
-      Caption = 'Hot keys'
-      ImageIndex = 10
-      TabVisible = False
-      DesignSize = (
-        424
-        343)
-      object btn_SetHotKey: TBitBtn
-        Left = 367
-        Top = 0
-        Width = 57
-        Height = 21
-        Anchors = [akTop, akRight]
-        Caption = 'Set'
-        TabOrder = 0
-        OnClick = btn_SetHotKeyClick
-      end
-      object lv_HotKeys: TListView
-        Left = 0
-        Top = 32
-        Width = 424
-        Height = 311
-        Align = alBottom
-        Anchors = [akLeft, akTop, akRight, akBottom]
-        BevelKind = bkSoft
-        BorderStyle = bsNone
-        Columns = <
-          item
-            Caption = 'Action'
-            Width = -1
-            WidthType = (
-              -1)
-          end
-          item
-            Caption = 'Hotkey'
-            Width = -1
-            WidthType = (
-              -1)
-          end>
-        ColumnClick = False
-        ReadOnly = True
-        RowSelect = True
-        SortType = stText
-        TabOrder = 1
-        ViewStyle = vsReport
-        OnSelectItem = lv_HotKeysSelectItem
-      end
-      object hk_HotKey: THotKey
-        Left = 191
-        Top = 0
-        Width = 169
-        Height = 21
-        Anchors = [akTop, akRight]
-        HotKey = 0
-        InvalidKeys = [hcNone]
-        Modifiers = []
-        TabOrder = 2
-      end
-      object ed_HotKey: TEdit
-        Left = 0
-        Top = 0
-        Width = 184
-        Height = 21
-        Anchors = [akLeft, akTop, akRight]
-        BevelKind = bkSoft
-        BorderStyle = bsNone
-        ReadOnly = True
-        TabOrder = 3
-      end
-    end
     object ts_SourceSnoop: TTabSheet
-      Tag = -1
+      Tag = 10
       HelpType = htKeyword
       HelpKeyword = 'sourcesnoop'
       Caption = 'Source snoop'
@@ -1411,6 +1373,7 @@ object frm_Settings: Tfrm_Settings
         ScrollBars = ssBoth
         TabOrder = 2
         WordWrap = False
+        GutterWidth = 50
       end
       object lb_Fonts: TListBox
         Left = 0
@@ -1503,6 +1466,53 @@ object frm_Settings: Tfrm_Settings
         ItemHeight = 16
         TabOrder = 10
         OnChange = cb_BackgroundChange
+      end
+    end
+    object ts_PlugIns: TTabSheet
+      Tag = 5
+      Caption = 'Plug-ins'
+      ImageIndex = 12
+      TabVisible = False
+      DesignSize = (
+        424
+        343)
+      object lbl_UPSDIR: TLabel
+        Left = 0
+        Top = 32
+        Width = 154
+        Height = 13
+        Caption = 'UnCodeX Pascal Script directory'
+      end
+      object ed_UPSDIR: TEdit
+        Left = 0
+        Top = 48
+        Width = 400
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        BevelKind = bkSoft
+        BorderStyle = bsNone
+        ReadOnly = True
+        TabOrder = 0
+      end
+      object btn_UPSDIR: TBitBtn
+        Left = 399
+        Top = 48
+        Width = 25
+        Height = 21
+        Anchors = [akTop, akRight]
+        Caption = '...'
+        TabOrder = 1
+        OnClick = btn_UPSDIRClick
+      end
+      object cb_LoadCustomModules: TCheckBox
+        Left = 0
+        Top = 0
+        Width = 161
+        Height = 17
+        Caption = 'Load custom output modules'
+        Checked = True
+        State = cbChecked
+        TabOrder = 2
       end
     end
     object ts_Keywords: TTabSheet
@@ -1604,9 +1614,9 @@ object frm_Settings: Tfrm_Settings
     Alignment = taLeftJustify
     Anchors = [akLeft, akTop, akRight]
     BevelOuter = bvNone
-    Color = clActiveCaption
+    Color = clBtnShadow
     Font.Charset = DEFAULT_CHARSET
-    Font.Color = clCaptionText
+    Font.Color = clBtnHighlight
     Font.Height = -11
     Font.Name = 'MS Sans Serif'
     Font.Style = [fsBold]
