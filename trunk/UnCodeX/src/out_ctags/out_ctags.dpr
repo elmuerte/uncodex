@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   CTAGS file creation library
- $Id: out_ctags.dpr,v 1.4 2004-05-14 12:16:25 elmuerte Exp $
+ $Id: out_ctags.dpr,v 1.5 2004-07-30 11:18:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -37,7 +37,7 @@ uses
 {$R *.res}
 
 // return true if succesfull
-function UCX_Details2(var Info: TUCXOutputDetails2): boolean; stdcall
+function UCX_Details(var Info: TUCXOutputDetails): boolean; stdcall
 begin
   Info.AName := 'CTAGS';
   Info.ADescription := 'Create a CTAGS file (version '+DLLVERSION+')';
@@ -47,7 +47,7 @@ begin
 end;
 
 // return true if succesfull
-function UCX_Output2(var Info: TUCXOutputInfo2): boolean; stdcall
+function UCX_Output(var Info: TUCXOutputInfo): boolean; stdcall
 begin
   frm_CTAGS := Tfrm_CTAGS.Create(nil);
   frm_CTAGS.Info := info;
@@ -61,15 +61,9 @@ begin
   result := false;
 end;
 
-function UCX_Version: integer; stdcall
-begin
-	result := 2;
-end;
-
 exports
-  UCX_Output2,
-  UCX_Details2,
-  UCX_Version;
+  UCX_Output,
+  UCX_Details;
 
 begin
 end.

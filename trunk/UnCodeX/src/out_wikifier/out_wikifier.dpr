@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Converts the UScript class info to UnrealWiki format
- $Id: out_wikifier.dpr,v 1.6 2004-06-19 13:04:26 elmuerte Exp $
+ $Id: out_wikifier.dpr,v 1.7 2004-07-30 11:18:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -42,6 +42,7 @@ begin
   Info.AName := 'Class Wikifier';
   Info.ADescription := 'Converts the class details to UnrealWiki source';
   Info.ASingleClass := true;
+  Info.AMultipleClass := false;
   result := true;
 end;
 

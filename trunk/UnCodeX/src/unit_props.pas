@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   property inspector frame
- $Id: unit_props.pas,v 1.11 2004-07-28 21:31:44 elmuerte Exp $
+ $Id: unit_props.pas,v 1.12 2004-07-30 11:18:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -434,7 +434,10 @@ begin
       lst.Add(comment);
       ini.SetStrings(lst);
       ini.UpdateFile;
-      uobj.comment := comment;
+      if ((uobj.comment = '') or (uobj.CommentType = ctExtern)) then begin
+      	uobj.comment := comment;
+      	uobj.CommentType := ctExtern;
+      end;
       TreeUpdated := true;
       SetExtCommentFile(ExtCommentFile);
     end;

@@ -4,7 +4,7 @@
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   setup dialog + actual file creation
  						http://ctags.sourceforge.net/FORMAT
- $Id: unit_ctags.pas,v 1.5 2004-05-24 07:47:34 elmuerte Exp $
+ $Id: unit_ctags.pas,v 1.6 2004-07-30 11:18:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -78,7 +78,7 @@ type
   private
     { Private declarations }
   public
-    Info: TUCXOutputInfo2;
+    Info: TUCXOutputInfo;
     procedure Init;
     procedure CreateCTAGSfile;
     procedure ProcessBatch;
@@ -89,7 +89,7 @@ var
   frm_CTAGS: Tfrm_CTAGS;
 
 const
-  DLLVERSION = '102';
+  DLLVERSION = '103';
 
 implementation
 
