@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.83 2004-03-23 19:58:37 elmuerte Exp $
+ $Id: unit_main.pas,v 1.84 2004-03-23 20:47:18 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -1489,7 +1489,7 @@ begin
     CompilerCmd := ini.ReadString('Config', 'CompilerCmd', '');
     ac_CompileClass.Enabled := CompilerCmd <> '';
     OpenResultCmd := ini.ReadString('Config', 'OpenResultCmd', '');
-    ac_OpenClass.Enabled := OpenResultCmd <> '';
+    //ac_OpenClass.Enabled := OpenResultCmd <> '';
     NewClassTemplate := ini.ReadString('Config', 'NewClassTemplate', ExtractFilePath(ParamStr(0))+TEMPLATEPATH+PathDelim+'NewClass.uc');
 		ac_CreateSubClass.Enabled := FileExists(NewClassTemplate);
     StateFile := ini.ReadString('Config', 'StateFile', StateFile);
@@ -3025,6 +3025,7 @@ begin
   if (atree.Selected = nil) then exit;
   if (atree = tv_Classes) then ftree := tv_Packages
   else ftree := tv_Classes;
+  if (not ftree.Visible) then exit;
 	for i := 0 to ftree.Items.Count-1 do begin
 		if (ftree.Items[i].Data = atree.Selected.Data) then begin
 			ftree.Select(ftree.Items[i]);
