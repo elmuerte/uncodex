@@ -97,14 +97,14 @@ Comments=
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 
+[HistoryLists\hlSearchPath]
+Count=1
+Item0=..
+
 [HistoryLists\hlUnitOutputDirectory]
-Count=4
-Item0=..\..\Dcu\ucxcpp
-Item1=..\..\Dcu\out_graphviz
-Item2=..\..\DCU\out_wikifier
-Item3=..\..\Dcu\out_sample
+Count=1
+Item0=..\dcu\ucxcu
 
 [HistoryLists\hlOutputDirectorry]
-Count=2
-Item0=..\..\Bin
-Item1=..\..\Bin\out_sample
+Count=1
+Item0=..\bin

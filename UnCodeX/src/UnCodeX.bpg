@@ -10,7 +10,7 @@ DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
 PROJECTS = out_sample.dll out_wikifier.dll out_graphviz.dll ucxc.exe ucxcpp.exe \
-  UnCodeX.exe
+  UnCodeX.exe ucxcu.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -31,6 +31,9 @@ ucxcpp.exe: ucxcpp\ucxcpp.dpr
   $(DCC)
 
 out_graphviz.dll: out_graphviz\out_graphviz.dpr
+  $(DCC)
+
+ucxcu.exe: ucxcu\ucxcu.dpr
   $(DCC)
 
 

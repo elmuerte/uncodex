@@ -97,12 +97,14 @@ Comments=http://wiki.beyondunreal.com/wiki/UnCodeX
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 
+[HistoryLists\hlSearchPath]
+Count=1
+Item0=..
+
 [HistoryLists\hlUnitOutputDirectory]
-Count=2
-Item0=..\DCU
-Item1=..\..\DCU\out_wikifier
+Count=1
+Item0=..\dcu\ucxcu
 
 [HistoryLists\hlOutputDirectorry]
-Count=2
-Item0=..\BIN
-Item1=..\..\Bin
+Count=1
+Item0=..\bin
