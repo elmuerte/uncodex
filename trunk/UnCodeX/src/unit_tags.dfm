@@ -75,6 +75,7 @@ object frm_Tags: Tfrm_Tags
     SmallImages = il_Types
     TabOrder = 0
     ViewStyle = vsReport
+    OnClick = lv_PropertiesClick
     OnCustomDrawItem = lv_PropertiesCustomDrawItem
     OnDblClick = mi_OpenLocationClick
     OnInfoTip = lv_PropertiesInfoTip

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   definitions for Unreal Classes
- $Id: unit_uclasses.pas,v 1.13 2003-06-10 12:00:27 elmuerte Exp $
+ $Id: unit_uclasses.pas,v 1.14 2003-10-26 21:30:19 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_uclasses;
@@ -72,9 +72,12 @@ type
     parent:     string;
     modifiers:  string;
     data:       string;
-    // need more here ??
+    properties: TUPropertyList;
+    enums:      TUEnumList;
     srcline:    integer;
     comment:    string;
+    constructor Create;
+    destructor Destroy; override;
   end;
 
   TUStructList = class(TObjectList)
@@ -256,6 +259,20 @@ end;
 procedure TUPropertyList.SetItem(Index: Integer; AObject: TUProperty);
 begin
   inherited SetItem(index, AObject);
+end;
+
+{ TUStruct }
+
+constructor TUStruct.Create;
+begin
+  properties := TUPropertyList.Create(true);
+  enums := TUEnumList.Create(true);
+end;
+
+destructor TUStruct.Destroy;
+begin
+  properties.Free;
+  enums.Free;
 end;
 
 { TUStructList }

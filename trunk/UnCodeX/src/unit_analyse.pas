@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.19 2003-06-10 12:00:18 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.20 2003-10-26 21:30:19 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_analyse;
@@ -21,6 +21,8 @@ type
     currentState: TUState;
     classes: TUClassList;
     uclass: TUClass;
+    OverWriteUstruct: TUstruct; // if set enums and vars will be added to this
+    UseOverWriteStruct: bool;
     fs: TFileStream;
     p: TUCParser;
     status: TStatusReport;
@@ -118,6 +120,7 @@ begin
   if (onlynew and (currenttime <= uclass.filetime)) then exit;
   if (onlynew) then Log('Class changed since last time: '+uclass.name);
   TreeUpdated := true;
+  UseOverWriteStruct := false;
   uclass.filetime := currenttime;
   fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
   p := TUCParser.Create(fs);
@@ -310,11 +313,13 @@ begin
     nprop.ptype := result.ptype;
     nprop.modifiers := result.modifiers;
     nprop.name := Copy(result.name, 1, i-1);
-    uclass.properties.Add(nprop);
+    if (UseOverWriteStruct) then OverWriteUstruct.properties.Add(nprop)
+      else uclass.properties.Add(nprop);
     Delete(result.name, 1, i);
     i := Pos(',', result.name);
   end;
-  uclass.properties.Add(result);
+  if (UseOverWriteStruct) then OverWriteUstruct.properties.Add(result)
+    else uclass.properties.Add(result);
   p.NextToken;
 end;
 
@@ -332,7 +337,8 @@ begin
     p.NextToken;
   end;
   p.NextToken; // = ;
-  uclass.enums.Add(result);
+  if (UseOverWriteStruct) then OverWriteUstruct.enums.Add(result)
+    else uclass.enums.Add(result);
 end;
 
 // struct <modifiers> <name> [extends <name>] { declaration };
@@ -365,11 +371,29 @@ begin
   end;
   result.name := last;
   result.data := p.TokenString;
+  {$DEFINE USTRUCT_FULLCOPY}
+  {$IF USTRUCT_FULLCOPY}
   p.FullCopy := true;
   p.GetCopyData(true);// preflush
   pCurlyBrackets();
   p.FullCopy := false;
   result.data := result.data+p.GetCopyData(true);
+  {$ELSE}
+  result.data := '';
+  OverWriteUstruct := result;
+  UseOverWriteStruct := true;
+  p.NextToken; // = {
+  while ((p.Token <> '}') and (p.token <> toEOF) and (not Self.Terminated)) do begin
+    if (p.TokenSymbolIs('var')) then begin
+      p.NextToken;
+      pVar();
+      continue;
+    end;
+    p.NextToken;
+  end;
+  p.NextToken; // = {
+  UseOverWriteStruct := false;
+  {$IFEND}
   if (p.Token = ';') then p.NextToken; // = ;
   uclass.structs.Add(result);
 end;

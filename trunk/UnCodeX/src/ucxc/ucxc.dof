@@ -61,6 +61,11 @@ Launcher=
 UseLauncher=0
 DebugCWD=
 
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
+
 [Version Info]
 IncludeVerInfo=0
 AutoIncBuild=0
@@ -93,15 +98,13 @@ Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 
 [HistoryLists\hlUnitOutputDirectory]
-Count=6
-Item0=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_graphviz
-Item1=E:\Program Files\Borland\Projects\UnCodeX\DCU\out_wikifier
-Item2=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_sample
-Item3=E:\Program Files\Borland\Projects\UnCodeX\Dcu\ucxcpp
-Item4=E:\Program Files\Borland\Projects\UnCodeX\DCU
-Item5=E:\Program Files\Borland\Projects\UnCodeX\Dcu\ucxc
+Count=4
+Item0=..\..\Dcu\ucxcpp
+Item1=..\..\Dcu\out_graphviz
+Item2=..\..\DCU\out_wikifier
+Item3=..\..\Dcu\out_sample
 
 [HistoryLists\hlOutputDirectorry]
 Count=2
-Item0=E:\Program Files\Borland\Projects\UnCodeX\Bin
-Item1=E:\Program Files\Borland\Projects\UnCodeX\Bin\out_sample
+Item0=..\..\Bin
+Item1=..\..\Bin\out_sample

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class properties window
- $Id: unit_tags.pas,v 1.12 2003-06-10 12:00:27 elmuerte Exp $
+ $Id: unit_tags.pas,v 1.13 2003-10-26 21:30:19 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_tags;
@@ -42,6 +42,7 @@ type
     procedure mi_OpenLocationClick(Sender: TObject);
     procedure lv_PropertiesSelectItem(Sender: TObject; Item: TListItem;
       Selected: Boolean);
+    procedure lv_PropertiesClick(Sender: TObject);
   private
     FAsWindow: boolean;
     procedure WMActivate(var Message: TWMActivate); message WM_Activate;
@@ -362,10 +363,19 @@ end;
 procedure Tfrm_Tags.lv_PropertiesSelectItem(Sender: TObject;
   Item: TListItem; Selected: Boolean);
 begin
+  if (not Selected) then exit;
   if (Item.Caption <> '-') then begin
     if (Item.SubItems.Count > 4) then Clipboard.SetTextBuf(PChar(Item.SubItems[4]))
     else Clipboard.SetTextBuf(PChar(Item.SubItems[0]));
   end;
+end;
+
+procedure Tfrm_Tags.lv_PropertiesClick(Sender: TObject);
+begin
+  if (lv_Properties.Selected = nil) then exit;
+  if (lv_Properties.Selected.Data = nil) then exit;
+  if (frm_UnCodeX.Visible and frm_UnCodeX.mi_SourceSnoop.Checked) then
+    frm_UnCodeX.OpenSourceInline(TUClass(lv_Properties.Selected.Data), StrToIntDef(lv_Properties.Selected.SubItems[1], 1)-1, 0);
 end;
 
 end.

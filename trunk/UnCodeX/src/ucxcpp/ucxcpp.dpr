@@ -15,7 +15,6 @@ uses
 var
   comment: string;
   c: char;
-  i: integer;
 
 begin
   while (not eof(input)) do begin

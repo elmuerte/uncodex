@@ -4,8 +4,8 @@ Version=6.0
 [Compiler]
 A=8
 B=0
-C=0
-D=0
+C=1
+D=1
 E=0
 F=0
 G=1
@@ -13,7 +13,7 @@ H=1
 I=1
 J=0
 K=0
-L=0
+L=1
 M=0
 N=1
 O=1
@@ -26,7 +26,7 @@ U=0
 V=1
 W=0
 X=1
-Y=0
+Y=2
 Z=1
 ShowHints=1
 ShowWarnings=1
@@ -44,11 +44,11 @@ ImageBase=4194304
 ExeDescription=
 
 [Directories]
-OutputDir=E:\Program Files\Borland\Projects\UnCodeX\BIN
-UnitOutputDir=E:\Program Files\Borland\Projects\UnCodeX\DCU
+OutputDir=..\BIN
+UnitOutputDir=..\DCU
 PackageDLLOutputDir=
 PackageDCPOutputDir=
-SearchPath=E:\Program Files\Borland\Projects\UnCodeX\Src\VCL
+SearchPath=VCL
 Packages=vcl;rtl;dbrtl;adortl;vcldb;vclx;bdertl;vcldbx;ibxpress;dsnap;cds;bdecds;qrpt;teeui;teedb;tee;dss;teeqr;visualclx;dsnapcrba;dsnapcon;VclSmp;vclshlctrls;vclie;xmlrtl;inet;inetdbbde;inetdbxpress;inetdb;nmfast;webdsnap;websnap;soaprtl;dbexpress;dbxcds;indy;dclOffice2k;visualdbclx;TAC2comps
 Conditionals=
 DebugSourceDirs=
@@ -61,13 +61,18 @@ Launcher=
 UseLauncher=0
 DebugCWD=
 
+[Language]
+ActiveLang=
+ProjectLang=
+RootDir=
+
 [Version Info]
 IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=1
 MinorVer=0
 Release=1
-Build=109
+Build=150
 Debug=0
 PreRelease=0
 Special=0
@@ -79,7 +84,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Michiel 'El Muerte' Hendriks
 FileDescription=
-FileVersion=1.0.1.109
+FileVersion=1.0.1.150
 InternalName=UnCodeX
 LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
 LegalTrademarks=
@@ -88,28 +93,16 @@ ProductName=UnCodeX
 ProductVersion=1.0.0.0
 Comments=http://wiki.beyondunreal.com/wiki/UnCodeX
 
-[Excluded Packages]
-e:\program files\borland\delphi6\Projects\Bpl\dclrx6.bpl=RX Library Controls and Tools
-e:\program files\borland\delphi6\Bin\dclite60.bpl=Borland Integrated Translation Environment
-
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 
-[HistoryLists\hlSearchPath]
-Count=1
-Item0=E:\Program Files\Borland\Projects\UnCodeX\Src\VCL
-
 [HistoryLists\hlUnitOutputDirectory]
-Count=6
-Item0=E:\Program Files\Borland\Projects\UnCodeX\DCU
-Item1=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_graphviz
-Item2=E:\Program Files\Borland\Projects\UnCodeX\DCU\out_wikifier
-Item3=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_sample
-Item4=E:\Program Files\Borland\Projects\UnCodeX\Dcu\ucxcpp
-Item5=E:\Program Files\Borland\Projects\UnCodeX\Dcu\ucxc
+Count=2
+Item0=..\DCU
+Item1=..\..\DCU\out_wikifier
 
 [HistoryLists\hlOutputDirectorry]
 Count=2
-Item0=E:\Program Files\Borland\Projects\UnCodeX\Bin
-Item1=E:\Program Files\Borland\Projects\UnCodeX\Bin\out_sample
+Item0=..\BIN
+Item1=..\..\Bin

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.57 2003-07-10 07:46:53 elmuerte Exp $
+ $Id: unit_main.pas,v 1.58 2003-10-26 21:30:19 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_main;
@@ -295,7 +295,8 @@ type
   public
     statustext : string; // current status text
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
-    procedure OpenSourceLine(uclass: TUClass; line, caret: integer);    
+    procedure OpenSourceLine(uclass: TUClass; line, caret: integer);
+    procedure OpenSourceInline(uclass: TUClass; line, caret: integer);    
   end;
 
   // status redirecting
@@ -758,6 +759,29 @@ begin
     ExecuteProgram(exe, lst);
   finally
     lst.Free;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.OpenSourceInline(uclass: TUClass; line, caret: integer);
+var
+  i: integer;
+begin
+  ActiveControl := tv_Classes;
+  for i := 0 to tv_Classes.Items.Count-1 do begin
+    if (tv_Classes.Items[i].Data = uclass) then begin
+      tv_Classes.Select(tv_Classes.Items[i]);
+      if (mi_SourceSnoop.Checked) then begin
+        re_SourceSnoop.Perform(EM_LINESCROLL, 0, -1*re_SourceSnoop.Lines.Count);
+        re_SourceSnoop.Perform(EM_LINESCROLL, 0, line);
+        line := re_SourceSnoop.Perform(EM_LINEINDEX, line, 0); // get line index
+        re_SourceSnoop.ClearBgColor();
+        re_SourceSnoop.SelStart := line;
+        re_SourceSnoop.SelLength := re_SourceSnoop.Perform(EM_LINELENGTH, line, 0);
+        re_SourceSnoop.SetSelBgColor(clBtnFace);
+        re_SourceSnoop.SelLength := 0;
+      end;
+      exit;
+    end;
   end;
 end;
 
@@ -1608,6 +1632,7 @@ end;
 procedure Tfrm_UnCodeX.ac_SaveStateExecute(Sender: TObject);
 begin
   SaveState;
+  TreeUpdated := false;
 end;
 
 procedure Tfrm_UnCodeX.ac_LoadStateExecute(Sender: TObject);
@@ -1898,36 +1923,23 @@ end;
 
 procedure Tfrm_UnCodeX.lb_LogClick(Sender: TObject);
 var
-  i,j,k: integer;
+  j,k: integer;
   linenr, curpos: string;
 begin
   if (lb_Log.ItemIndex = -1) then exit;
   if (lb_Log.Items.Objects[lb_Log.ItemIndex] = nil) then exit;
   if (TObject(lb_Log.Items.Objects[lb_Log.ItemIndex]).ClassType <> TUClass) then exit;
-  for i := 0 to tv_Classes.Items.Count-1 do begin
-    ActiveControl := tv_Classes;
-    if (tv_Classes.Items[i].Data = lb_Log.Items.Objects[lb_Log.ItemIndex]) then begin
-      tv_Classes.Select(tv_Classes.Items[i]);
-      if (mi_SourceSnoop.Checked) then begin
-        linenr := lb_Log.Items[lb_Log.ItemIndex];
-        j := Pos(FTS_LN_BEGIN, linenr);
-        k := Pos(FTS_LN_END, linenr);
-        linenr := Copy(linenr, j+Length(FTS_LN_BEGIN), k-j-Length(FTS_LN_BEGIN));
-        j := Pos(FTS_LN_SEP, linenr);
-        curpos := Copy(linenr, j+Length(FTS_LN_SEP), MaxInt);
-        Delete(linenr, j, MaxInt);
-        j := StrToIntDef(linenr, 1)-1;
-        re_SourceSnoop.Perform(EM_LINESCROLL, 0, -1*re_SourceSnoop.Lines.Count);
-        re_SourceSnoop.Perform(EM_LINESCROLL, 0, j);
-        k := re_SourceSnoop.Perform(EM_LINEINDEX, j, 0); // get line index
-        re_SourceSnoop.ClearBgColor();
-        re_SourceSnoop.SelStart := k;
-        re_SourceSnoop.SelLength := re_SourceSnoop.Perform(EM_LINELENGTH, k, 0);
-        re_SourceSnoop.SetSelBgColor(clBtnFace);
-        re_SourceSnoop.SelLength := 0;
-      end;
-      exit;
-    end;
+
+  if (TUClass(lb_Log.Items.Objects[lb_Log.ItemIndex]) <> nil) then begin
+    linenr := lb_Log.Items[lb_Log.ItemIndex];
+    j := Pos(FTS_LN_BEGIN, linenr);
+    k := Pos(FTS_LN_END, linenr);
+    linenr := Copy(linenr, j+Length(FTS_LN_BEGIN), k-j-Length(FTS_LN_BEGIN));
+    j := Pos(FTS_LN_SEP, linenr);
+    curpos := Copy(linenr, j+Length(FTS_LN_SEP), MaxInt);
+    Delete(linenr, j, MaxInt);
+    j := StrToIntDef(linenr, 1)-1;
+    OpenSourceInline(TUClass(lb_Log.Items.Objects[lb_Log.ItemIndex]), j, 0);
   end;
 end;
 
