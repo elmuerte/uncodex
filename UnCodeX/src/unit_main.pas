@@ -188,6 +188,8 @@ type
     procedure RegisterABAutoHide;
     procedure UnregisterABAutoHide;
     procedure ABResize;
+    procedure ProcessCommandline;
+    procedure NextBatchCommand;
   public
     statustext : string;
     procedure StatusReport(msg: string; progress: byte = 255);
@@ -204,6 +206,10 @@ var
   PackageList: TUPackageList;
   ClassList: TUClassList;
   searchclass: string;
+  searchbody: boolean;
+  IsBatching: boolean = false;
+  CmdStack: TStringList;
+  ConfigFile: string;
 
 // config vars
 var
@@ -265,6 +271,7 @@ procedure Tfrm_UnCodeX.ThreadTerminate(Sender: TObject);
 begin
   runningthread := nil;
   ac_Abort.Enabled := false;
+  if (IsBatching) then NextBatchCommand;
 end;
 
 procedure Tfrm_UnCodeX.SaveState;
@@ -510,6 +517,69 @@ begin
   end;
 end;
 
+procedure Tfrm_UnCodeX.ProcessCommandline;
+var
+  i,j: integer;
+begin
+  j := 1;
+  while (j <= ParamCount) do begin
+    if (LowerCase(ParamStr(j)) = '-help') then begin
+      MessageDlg('Commandline options:'+#13+#10+
+                 '-help'#9#9#9'display this message'+#13+#10+
+                 '-hide'#9#9#9'hides UnCodeX'+#13+#10+
+                 '-config'#9#9#9'loads a diffirent config file (next argument)'+#13+#10+
+                 '-batch'#9#9#9'start UnCodeX in batch processing mode, the next'+#13+#10+
+                 #9#9#9'arguments must contain the batch order, '+#13+#10+
+                 #9#9#9'which can be on of the following:'+#13+#10+
+                 #9'rebuild'#9#9'rebuild class tree'+#13+#10+
+                 #9'analyse'#9#9'analyse all classes'+#13+#10+
+                 #9'createhtml'#9'create HTML output'+#13+#10+
+                 #9'htmlhelp'#9#9'create MS HTML Help file'+#13+#10+
+                 #9'close'#9#9'close UnCodeX'+#13+#10+
+                 #9'--'#9#9'end of batch commands'
+                 , mtInformation, [mbOK], 0);
+    end
+    else if (LowerCase(ParamStr(j)) = '-batch') then begin
+      IsBatching := true;
+      CmdStack := TStringList.Create;
+      for i := j+1 to ParamCount do begin
+        Inc(j);
+        if (ParamStr(i) = '--') then break;
+        CmdStack.Add(LowerCase(ParamStr(i)));
+      end;
+    end
+    else if (LowerCase(ParamStr(j)) = '-hide') then begin
+      Visible := false;
+      Application.ShowMainForm := false;
+    end
+    else if (LowerCase(ParamStr(j)) = '-config') then begin
+      Inc(j);
+      ConfigFile := ParamStr(j);
+    end;
+    Inc(j);
+  end;
+end;
+
+procedure Tfrm_UnCodeX.NextBatchCommand;
+var
+  cmd: string;
+begin
+  if (not IsBatching) then exit;
+  if (CmdStack.Count = 0) then begin
+    IsBatching := false;
+    Caption := APPTITLE+' - '+APPVERSION;
+    exit;
+  end;
+  cmd := CmdStack[0];
+  Caption := APPTITLE+' - '+APPVERSION+' - Batch process: '+cmd;
+  CmdStack.Delete(0);
+  if (cmd = 'rebuild') then ac_RecreateTree.Execute
+  else if (cmd = 'analyse') then ac_AnalyseAll.Execute
+  else if (cmd = 'createhtml') then ac_CreateHTMLfiles.Execute
+  else if (cmd = 'htmlhelp') then ac_HTMLHelp.Execute
+  else if (cmd = 'close') then Close;
+end;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Auto generated methods
 
@@ -527,7 +597,9 @@ var
 begin
   Caption := APPTITLE+' - '+APPVERSION;
   Application.Title := Caption;
-  ini := TMemIniFile.Create(ExtractFilePath(ParamStr(0))+'\UnCodeX.ini');
+  if (ParamCount() > 0) then ProcessCommandline;
+  if (ConfigFile = '') then ini := TMemIniFile.Create(ExtractFilePath(ParamStr(0))+'\UnCodeX.ini')
+    else ini := TMemIniFile.Create(ConfigFile);
   sl := TStringList.Create;
   PackagePriority := TStringList.Create;
   SourcePaths := TStringList.Create;
@@ -749,7 +821,8 @@ begin
       PackagePriority.AddStrings(lb_PackagePriority.Items);
       IgnorePackages.Clear;
       IgnorePackages.AddStrings(lb_IgnorePackages.Items);
-      ini := TMemIniFile.Create(ExtractFilePath(ParamStr(0))+'\UnCodeX.ini');
+      if (ConfigFile = '') then ini := TMemIniFile.Create(ExtractFilePath(ParamStr(0))+'\UnCodeX.ini')
+        else ini := TMemIniFile.Create(ConfigFile);
       data := TStringList.Create;
       try
         data.Add('[Config]');
@@ -803,7 +876,7 @@ var
   i: integer;
 begin
   if (ActiveControl.ClassType = TTreeView) then begin
-    if (SearchQuery('Find a class', 'Enter the name of the class you want to find', searchclass, CSHistory)) then begin
+    if (SearchQuery('Find a class', 'Enter the name of the class you want to find', searchclass, searchbody, CSHistory, 'Search class body')) then begin
       with (ActiveControl as TTreeView) do begin
         for i := 0 to Items.Count-1 do begin
           if (AnsiContainsText(items[i].Text, searchclass)) then begin
@@ -866,7 +939,8 @@ var
   i: integer;
 begin
   SaveState;
-  ini := TMemIniFile.Create(ExtractFilePath(ParamStr(0))+'\UnCodeX.ini');
+  if (ConfigFile = '') then ini := TMemIniFile.Create(ExtractFilePath(ParamStr(0))+'\UnCodeX.ini')
+    else ini := TMemIniFile.Create(ConfigFile);
   try
     ini.WriteBool('Layout', 'MenuBar', mi_MenuBar.Checked);
     ini.WriteBool('Layout', 'Toolbar', mi_Toolbar.Checked);
@@ -919,6 +993,7 @@ begin
   if (DoInit) then begin
     DoInit := false;
     LoadState;
+    if (IsBatching) then NextBatchCommand;
   end;
 end;
 
@@ -1136,7 +1211,7 @@ var
 begin
   if (ThreadCreate) then begin
     isregex := FTSRegexp;
-    if (SearchQuery('Full text search', 'Enter your search query', query, isregex, FTSHistory)) then begin
+    if (SearchQuery('Full text search', 'Enter your search query', query, isregex, FTSHistory, 'Regular expression')) then begin
       mi_Log.Checked := true;
       mi_Log.OnClick(Sender);
       lb_Log.Items.Clear;
