@@ -6,7 +6,7 @@
   Purpose:
     Global PascalScript routines and functionality
 
-  $Id: unit_pascalscript.pas,v 1.15 2004-12-30 09:40:21 elmuerte Exp $
+  $Id: unit_pascalscript.pas,v 1.16 2005-01-12 18:23:01 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -96,7 +96,7 @@ begin
   ps.AddFunction(@ParamStr, 'function ParamStr(Index: Integer): string;');
 
   { Misc }
-  //ps.Comp.AddTypeS('TLogType', '(ltInfo, ltWarn, ltError, ltSearch);');
+  ps.Comp.AddTypeS('TLogType', '(ltInfo, ltWarn, ltError, ltSearch);');
   ps.AddFunction(@Log, 'procedure Log(msg: string);');
   ps.AddFunction(@Log, 'procedure LogType(msg: string; mt: TLogType);');
   ps.AddFunction(@Log, 'procedure LogTypeObject(msg: string; mt: TLogType; obj: TObject);');
