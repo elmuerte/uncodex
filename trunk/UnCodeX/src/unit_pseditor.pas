@@ -1,0 +1,140 @@
+unit unit_pseditor;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, ExtCtrls, StdCtrls, ToolWin, ComCtrls, ActnList;
+
+type
+  Tfrm_PSEditor = class(TForm)
+    mm_Editor: TMemo;
+    lb_Output: TListBox;
+    spl_Split: TSplitter;
+    tb_PSBar: TToolBar;
+    btn_Load: TToolButton;
+    btn_Save: TToolButton;
+    btn_Spl1: TToolButton;
+    btn_Compile: TToolButton;
+    btn_Run: TToolButton;
+    al_PSEditor: TActionList;
+    ac_Compile: TAction;
+    ac_Run: TAction;
+    btn_Spl2: TToolButton;
+    btn_HTMLscript: TToolButton;
+    sb_EditorBar: TStatusBar;
+    btn_New: TToolButton;
+    btn_Sep3: TToolButton;
+    ac_New: TAction;
+    procedure ac_CompileExecute(Sender: TObject);
+    procedure ac_RunExecute(Sender: TObject);
+    procedure mm_EditorChange(Sender: TObject);
+    procedure mm_EditorKeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure mm_EditorMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure FormCreate(Sender: TObject);
+    procedure ac_NewExecute(Sender: TObject);
+  private
+    ScriptSaved: boolean;
+  public
+    { Public declarations }
+  end;
+
+var
+  frm_PSEditor: Tfrm_PSEditor;
+
+implementation
+
+uses unit_main;
+
+{$R *.dfm}
+
+procedure Tfrm_PSEditor.ac_CompileExecute(Sender: TObject);
+var
+	res: boolean;
+  i: integer;
+begin
+  frm_UnCodeX.ps_Main.Script.Assign(mm_Editor.Lines);
+  lb_Output.Items.Clear;
+  res := frm_UnCodeX.ps_Main.Compile;
+  for i := 0 to frm_UnCodeX.ps_Main.CompilerMessageCount-1 do begin
+    lb_Output.Items.Add(frm_UnCodeX.ps_Main.CompilerMessages[i].MessageToString);
+  end;
+  if (not res) then begin
+  	MessageBeep(MB_ICONHAND);
+    lb_Output.Items.Add('Compile failed!');
+  end
+  else begin
+  	MessageBeep(MB_ICONEXCLAMATION);
+  	lb_Output.Items.Add('Compile succesfull');
+  end;
+  ac_Run.Enabled := res;
+end;
+
+procedure Tfrm_PSEditor.ac_RunExecute(Sender: TObject);
+begin
+	frm_UnCodeX.ps_Main.Execute;
+end;
+
+procedure Tfrm_PSEditor.mm_EditorChange(Sender: TObject);
+begin
+  ac_Run.Enabled := false;
+  ScriptSaved := false;
+end;
+
+procedure Tfrm_PSEditor.mm_EditorKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+var
+	row, col: integer;
+begin
+	row := SendMessage(mm_Editor.Handle, EM_LINEFROMCHAR, mm_Editor.SelStart, 0);
+  col := mm_Editor.SelStart - SendMessage(mm_Editor.Handle, EM_LINEINDEX, SendMessage(mm_Editor.Handle, EM_LINEFROMCHAR, mm_Editor.SelStart, 0), 0);
+  sb_EditorBar.Panels[0].Text := Format('%d:%d', [row+1, col+1]);
+end;
+
+procedure Tfrm_PSEditor.mm_EditorMouseUp(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+	row, col: integer;
+begin
+	row := SendMessage(mm_Editor.Handle, EM_LINEFROMCHAR, mm_Editor.SelStart, 0);
+  col := mm_Editor.SelStart - SendMessage(mm_Editor.Handle, EM_LINEINDEX, SendMessage(mm_Editor.Handle, EM_LINEFROMCHAR, mm_Editor.SelStart, 0), 0);
+  sb_EditorBar.Panels[0].Text := Format('%d:%d', [row+1, col+1]);
+end;
+
+procedure Tfrm_PSEditor.FormCloseQuery(Sender: TObject;
+  var CanClose: Boolean);
+begin
+	if (not ScriptSaved) then begin
+		case MessageDlg('The current script has not been saved.'+#13+#10+'Do you want to save it now?', mtConfirmation, [mbYes, mbNo, mbCancel], 0) of
+    	mrYes:	begin
+								// if saved close
+      				end;
+	    mrNo:   	CanClose := true;
+  	  mrCancel: CanClose := false;
+	  end;
+  end;
+end;
+
+procedure Tfrm_PSEditor.FormCreate(Sender: TObject);
+var
+	i: integer;
+begin
+	ScriptSaved := true;
+end;
+
+procedure Tfrm_PSEditor.ac_NewExecute(Sender: TObject);
+begin
+	if (not ScriptSaved) then begin
+  	case MessageDlg('The current script has not been saved.'+#13+#10+'Do you want to save it now?', mtConfirmation, [mbYes, mbNo, mbCancel], 0) of
+    	mrYes:	begin
+								// if saved close
+      				end;
+	    mrNo:   	mm_Editor.Lines.Clear;
+	  end;
+  end;
+end;
+
+end.

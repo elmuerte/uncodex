@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.115 2004-07-31 13:26:04 elmuerte Exp $
+ $Id: unit_main.pas,v 1.116 2004-08-01 20:25:34 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -244,9 +244,11 @@ type
     mi_Run: TMenuItem;
     ac_Run: TAction;
     ps_Main: TPSScript;
-    mi_ScriptTest: TMenuItem;
+    mi_PascalScript: TMenuItem;
     psi_Classes: TPSImport_Classes;
     psi_DateUtils: TPSImport_DateUtils;
+    N3: TMenuItem;
+    ac_PSEditor: TAction;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -357,9 +359,9 @@ type
     procedure mi_SortListClick(Sender: TObject);
     procedure mi_DonateClick(Sender: TObject);
     procedure ac_RunExecute(Sender: TObject);
-    procedure mi_ScriptTestClick(Sender: TObject);
     procedure ps_MainLine(Sender: TObject);
     procedure ps_MainCompile(Sender: TPSScript);
+    procedure ac_PSEditorExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -494,7 +496,7 @@ uses unit_settings, unit_analyse, unit_htmlout, unit_definitions,
   unit_treestate, unit_about, unit_mshtmlhelp, unit_fulltextsearch,
   unit_tags, unit_outputdefs, unit_rtfhilight, unit_utils, unit_license,
   unit_splash, unit_ucxdocktree, unit_ucops, unit_pkgprops, unit_defprops,
-  unit_rungame, unit_pascalscript, unit_pascalscript_gui;
+  unit_rungame, unit_pascalscript, unit_pascalscript_gui, unit_pseditor;
 
 const
   PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
@@ -3352,20 +3354,6 @@ begin
   end;
 end;
 
-procedure Tfrm_UnCodeX.mi_ScriptTestClick(Sender: TObject);
-var
-	i: integer;
-  res: boolean;
-begin
-  res := ps_Main.Compile;
-  for i := 0 to ps_Main.CompilerMessageCount-1 do begin
-		log('PascalScript Compiler: '+ps_Main.CompilerMessages[i].MessageToString);
-  end;
-  if (res) then begin
-  	ps_Main.Execute;
-  end;
-end;
-
 procedure Tfrm_UnCodeX.ps_MainLine(Sender: TObject);
 begin
 	Application.ProcessMessages;
@@ -3373,7 +3361,13 @@ end;
 
 procedure Tfrm_UnCodeX.ps_MainCompile(Sender: TPSScript);
 begin
+	RegisterPS(Sender);
   RegisterPSGui(Sender);
+end;
+
+procedure Tfrm_UnCodeX.ac_PSEditorExecute(Sender: TObject);
+begin
+  with Tfrm_PSEditor.Create(Application) do ShowModal;
 end;
 
 initialization
