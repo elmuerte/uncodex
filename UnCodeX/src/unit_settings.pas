@@ -136,6 +136,7 @@ type
     ud_DefInheritDepth: TUpDown;
     cb_LoadCustomModules: TCheckBox;
     btn_Ignore: TBitBtn;
+    lbl_SourceSnoop: TLabel;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);

@@ -1567,6 +1567,7 @@ begin
   Keywords.Items['until'] := '';
   Keywords.Items['var'] := '';
   Keywords.Items['while'] := '';
+  Keywords.Items['within'] := '';
   // fill keyword table -- end
 
   template1 := TFileStream.Create(templatedir+'sourcecode-1.html', fmOpenRead or fmShareDenyWrite);

@@ -115,6 +115,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
       end>
     SimplePanel = False
     SizeGrip = False
+    OnClick = sb_StatusClick
   end
   object pb_Scan: TProgressBar
     Left = 0
@@ -280,7 +281,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Action = ac_Abort
     end
   end
-  object re_SourceSnoop: TRichEdit
+  object re_SourceSnoop: TRichEditEx
     Left = 408
     Top = 30
     Width = 250
@@ -294,13 +295,13 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Font.Name = 'Courier New'
     Font.Style = []
     ParentFont = False
+    PopupMenu = pm_SourceSnoop
     ReadOnly = True
     ScrollBars = ssBoth
     TabOrder = 3
     Visible = False
     WordWrap = False
-    OnKeyDown = re_SourceSnoopKeyDown
-    OnKeyUp = re_SourceSnoopKeyUp
+    OnMouseMove = re_SourceSnoopMouseMove
   end
   object mm_Main: TMainMenu
     Images = il_Small
@@ -798,6 +799,23 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Hint = 'View the source code of a file'
       ShortCut = 32835
       OnExecute = ac_VSourceSnoopExecute
+    end
+    object ac_CopySelection: TAction
+      Category = 'Source Snoop'
+      Caption = 'Copy selection'
+      Hint = 'Copy selection|Copy selected text to the clipboard'
+      OnExecute = ac_CopySelectionExecute
+    end
+    object ac_SaveToRTF: TAction
+      Category = 'Source Snoop'
+      Caption = 'Save to RTF'
+      Hint = 'Save to RTF|Save syntax hilighted code to a Rich Text File'
+      OnExecute = ac_SaveToRTFExecute
+    end
+    object ac_SelectAll: TAction
+      Category = 'Source Snoop'
+      Caption = 'Select All'
+      OnExecute = ac_SelectAllExecute
     end
   end
   object il_Small: TImageList
@@ -1866,5 +1884,36 @@ object frm_UnCodeX: Tfrm_UnCodeX
       800080000001000180008000000100018000800000010001E003E00300010001
       F80FF80F00010001FE3FFE3FFFFFFFFF00000000000000000000000000000000
       000000000000}
+  end
+  object pm_SourceSnoop: TPopupMenu
+    Left = 72
+    Top = 72
+    object mi_CopyToCliptboard: TMenuItem
+      Action = ac_CopySelection
+    end
+    object mi_SelectAll: TMenuItem
+      Action = ac_SelectAll
+    end
+    object mi_N17: TMenuItem
+      Caption = '-'
+    end
+    object mi_ClearHilight: TMenuItem
+      Caption = 'Clear hilight'
+      Hint = 'Clear hilight|Remove the background hilight'
+      OnClick = mi_ClearHilightClick
+    end
+    object mi_N16: TMenuItem
+      Caption = '-'
+    end
+    object mi_saveToFile: TMenuItem
+      Action = ac_SaveToRTF
+    end
+  end
+  object sd_SaveToRTF: TSaveDialog
+    DefaultExt = '*.rtf'
+    Filter = 'Rich Text Files|*.rtf|All Files (*.*)|*.*'
+    Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
+    Left = 8
+    Top = 200
   end
 end

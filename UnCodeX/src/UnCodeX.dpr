@@ -35,7 +35,8 @@ uses
   hh in 'hh.pas',
   unit_outputdefs in 'unit_outputdefs.pas',
   unit_sourceparser in 'unit_sourceparser.pas',
-  unit_rtfhilight in 'unit_rtfhilight.pas';
+  unit_rtfhilight in 'unit_rtfhilight.pas',
+  unit_richeditex in 'unit_richeditex.pas';
 
 {$R *.res}
 
@@ -154,8 +155,8 @@ begin
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-  Application.CreateForm(Tfrm_About, frm_About);
-  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+    Application.CreateForm(Tfrm_About, frm_About);
+    if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end;
 end.
