@@ -24,7 +24,7 @@ object frm_Settings: Tfrm_Settings
     Width = 75
     Height = 25
     Anchors = [akTop, akRight]
-    TabOrder = 0
+    TabOrder = 2
     Kind = bkOK
   end
   object btn_Cancel: TBitBtn
@@ -33,7 +33,7 @@ object frm_Settings: Tfrm_Settings
     Width = 75
     Height = 25
     Anchors = [akTop, akRight]
-    TabOrder = 1
+    TabOrder = 3
     Kind = bkCancel
   end
   object pc_Settings: TPageControl
@@ -41,12 +41,12 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_GameServer
+    ActivePage = ts_IgnorePackages
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
     Style = tsFlatButtons
-    TabOrder = 2
+    TabOrder = 1
     object ts_SourcePaths: TTabSheet
       Caption = 'Source Paths'
       TabVisible = False
@@ -70,7 +70,7 @@ object frm_Settings: Tfrm_Settings
           BevelKind = bkSoft
           BorderStyle = bsNone
           ItemHeight = 13
-          TabOrder = 0
+          TabOrder = 4
         end
         object btn_SAdd: TBitBtn
           Left = 8
@@ -78,7 +78,7 @@ object frm_Settings: Tfrm_Settings
           Width = 75
           Height = 25
           Caption = 'Add'
-          TabOrder = 1
+          TabOrder = 0
           OnClick = btn_SAddClick
         end
         object btn_SRemove: TBitBtn
@@ -87,7 +87,7 @@ object frm_Settings: Tfrm_Settings
           Width = 75
           Height = 25
           Caption = 'Remove'
-          TabOrder = 2
+          TabOrder = 1
           OnClick = btn_SRemoveClick
         end
         object btn_SUp: TBitBtn
@@ -103,7 +103,7 @@ object frm_Settings: Tfrm_Settings
           Font.Name = 'Marlett'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 3
+          TabOrder = 2
           OnClick = btn_SUpClick
         end
         object btn_SDown: TBitBtn
@@ -119,7 +119,7 @@ object frm_Settings: Tfrm_Settings
           Font.Name = 'Marlett'
           Font.Style = [fsBold]
           ParentFont = False
-          TabOrder = 4
+          TabOrder = 3
           OnClick = btn_SDownClick
         end
       end
@@ -214,6 +214,68 @@ object frm_Settings: Tfrm_Settings
           ParentFont = False
           TabOrder = 4
           OnClick = btn_DelPackageClick
+        end
+      end
+    end
+    object ts_IgnorePackages: TTabSheet
+      Caption = 'Ignore Packages'
+      ImageIndex = 6
+      TabVisible = False
+      object gb_IgnorePackages: TGroupBox
+        Left = 0
+        Top = 0
+        Width = 433
+        Height = 368
+        Align = alClient
+        Caption = 'Ignore Packages'
+        TabOrder = 0
+        DesignSize = (
+          433
+          368)
+        object lb_IgnorePackages: TListBox
+          Left = 8
+          Top = 16
+          Width = 385
+          Height = 343
+          Anchors = [akLeft, akTop, akRight, akBottom]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          ExtendedSelect = False
+          ItemHeight = 13
+          Sorted = True
+          TabOrder = 0
+        end
+        object btn_AddIgnore: TBitBtn
+          Left = 400
+          Top = 16
+          Width = 27
+          Height = 25
+          Anchors = [akRight, akBottom]
+          Caption = '+'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 1
+          OnClick = btn_AddIgnoreClick
+        end
+        object btn_DelIgnore: TBitBtn
+          Left = 400
+          Top = 48
+          Width = 27
+          Height = 25
+          Anchors = [akRight, akBottom]
+          Caption = '-'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 2
+          OnClick = btn_DelIgnoreClick
         end
       end
     end
@@ -398,7 +460,7 @@ object frm_Settings: Tfrm_Settings
           Font.Name = 'Marlett'
           Font.Style = []
           ParentFont = False
-          TabOrder = 2
+          TabOrder = 1
           OnClick = btn_CompilerPlaceholdersClick
         end
         object ed_CompilerCommandline: TEdit
@@ -418,7 +480,7 @@ object frm_Settings: Tfrm_Settings
           Height = 21
           Anchors = [akTop, akRight]
           Caption = '...'
-          TabOrder = 1
+          TabOrder = 2
           OnClick = btn_BrowseCompilerClick
         end
       end
@@ -529,7 +591,7 @@ object frm_Settings: Tfrm_Settings
     BevelKind = bkSoft
     BorderStyle = bsNone
     ItemHeight = 18
-    TabOrder = 3
+    TabOrder = 0
     OnClick = lb_SettingsClick
   end
   object sd_SaveFile: TSaveDialog

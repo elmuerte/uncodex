@@ -86,6 +86,7 @@ begin
     uclass := classes[i];
     Status('Analysing class '+uclass.name+' ...', round(i/(classes.count-1)*100));
     ExecuteSingle;
+    if (Self.Terminated) then break;
   end;
 end;
 
@@ -105,12 +106,14 @@ begin
   uclass.functions.Clear;
   uclass.states.Clear;
   AnalyseClass();
-  uclass.consts.Sort;
-  uclass.properties.Sort;
-  uclass.enums.Sort;
-  uclass.structs.Sort;
-  uclass.functions.Sort;
-  uclass.states.Sort;
+  if (not Self.Terminated) then begin
+    uclass.consts.Sort;
+    uclass.properties.Sort;
+    uclass.enums.Sort;
+    uclass.structs.Sort;
+    uclass.functions.Sort;
+    uclass.states.Sort;
+  end;
 end;
 
 function TClassAnalyser.pBrackets: string;
@@ -435,7 +438,7 @@ var
   bHadClass: boolean;
 begin
   bHadClass := false;
-  while (p.token <> toEOF) do begin
+  while ((p.token <> toEOF) and (not Self.Terminated)) do begin
 
       // first check class
       // class <classname> extends [<package>].<classname> <modifiers>;

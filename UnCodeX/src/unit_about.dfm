@@ -5,8 +5,8 @@ object frm_About: Tfrm_About
   BorderStyle = bsDialog
   BorderWidth = 5
   Caption = 'About ...'
-  ClientHeight = 233
-  ClientWidth = 298
+  ClientHeight = 278
+  ClientWidth = 322
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,8 +17,8 @@ object frm_About: Tfrm_About
   Position = poScreenCenter
   OnCreate = FormCreate
   DesignSize = (
-    298
-    233)
+    322
+    278)
   PixelsPerInch = 96
   TextHeight = 13
   object lbl_TitleHighlight: TLabel
@@ -189,7 +189,7 @@ object frm_About: Tfrm_About
     Left = 0
     Top = 0
     Width = 49
-    Height = 233
+    Height = 278
     Align = alLeft
     Shape = bsFrame
   end
@@ -236,8 +236,8 @@ object frm_About: Tfrm_About
   object mm_LegalShit: TMemo
     Left = 56
     Top = 144
-    Width = 241
-    Height = 89
+    Width = 265
+    Height = 134
     Alignment = taCenter
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelKind = bkSoft
@@ -248,7 +248,10 @@ object frm_About: Tfrm_About
       ''
       'All rights belong to their respectfull owners.'
       'For the complete license read the LICENSE.TXT '
-      'file in the program'#39's directory.')
+      'file in the program'#39's directory.'
+      ''
+      'Uses Andrey Sorokin'#39's TRegExpr'
+      'Uses Ciaran McCreesh'#39's Hashes Library')
     ParentColor = True
     ReadOnly = True
     TabOrder = 0
@@ -257,7 +260,7 @@ object frm_About: Tfrm_About
   object ed_Email: TEdit
     Left = 72
     Top = 72
-    Width = 225
+    Width = 249
     Height = 19
     Anchors = [akLeft, akTop, akRight]
     BevelKind = bkSoft
@@ -276,7 +279,7 @@ object frm_About: Tfrm_About
   object ed_Homepage: TEdit
     Left = 72
     Top = 112
-    Width = 225
+    Width = 249
     Height = 19
     Anchors = [akLeft, akTop, akRight]
     BevelKind = bkSoft

@@ -14,7 +14,9 @@ uses
   Hashes in 'Hashes.pas',
   unit_treestate in 'unit_treestate.pas',
   unit_about in 'unit_about.pas' {frm_About},
-  unit_mshtmlhelp in 'unit_mshtmlhelp.pas';
+  unit_mshtmlhelp in 'unit_mshtmlhelp.pas',
+  unit_fulltextsearch in 'unit_fulltextsearch.pas',
+  RegExpr in 'RegExpr.pas';
 
 {$R *.res}
 
