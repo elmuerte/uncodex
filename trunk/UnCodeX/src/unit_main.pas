@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.140 2004-12-22 12:25:10 elmuerte Exp $
+  $Id: unit_main.pas,v 1.141 2004-12-23 22:18:27 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -1633,6 +1633,8 @@ begin
   end;
   if (re_SourceSnoop.filename = filename) then exit;
   re_SourceSnoop.uclass := uclass;
+  SetDockCaption(re_SourceSnoop, 'Class: '+uclass.FullName+' - '+filename);
+
   //re_SourceSnoop.udecl := udecl;
   re_SourceSnoop.filename := filename;
   re_SourceSnoop.Hint := filename;
@@ -1657,6 +1659,7 @@ var
 begin
   if (upackage = nil) then exit;
   ms := TMemoryStream.Create;
+  SetDockCaption(re_SourceSnoop, 'Package: '+upackage.name);
   re_SourceSnoop.filename := upackage.path;
   re_SourceSnoop.Hint := re_SourceSnoop.filename;
   re_SourceSnoop.uclass := nil;
