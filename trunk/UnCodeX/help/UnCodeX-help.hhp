@@ -1,131 +1,120 @@
+
+[INFOTYPES]
+
 [OPTIONS]
 Compatibility=1.1 or later
-Compiled file=..\Bin\UnCodeX-help.chm
-Contents file=UnCodeX-help.hhc
+Compiled File=..\Bin\UnCodeX-help.chm
+Contents File=UnCodeX-help.hhc
 Default Window=main
-Default topic=index.html
+Default Topic=index.html
 Display compile progress=Yes
 Full-text search=Yes
 Language=0x409 English (United States)
 Title=UnCodeX
+Binary TOC=No
+Binary Index=Yes
+Index File=
+Default Font=
+Auto Index=No
+Create CHI file=No
+Error log file=_errorlog.txt
 
 [WINDOWS]
-main="UnCodeX Help","UnCodeX-help.hhc",,"index.html","index.html",,,,,0x62520,200,0x1046,[0,0,750,500],,,,,,,0
-
+main="UnCodeX Help","UnCodeX-help.hhc",,"index.html","index.html",,,,,0x62520,200,0x1046,[0,0,750,500],0xB0000,,,,,,0
 
 [FILES]
-UnCodeX-icon.gif
-index.html
-default.css
-window_main.html
-window_settings.html
-window_tags.html
-versionhistory.html
-credits.html
 commandline.html
-developer.html
-UnCodeX-main.gif
-UnCodeX-tags.gif
-window_main_toolbar.html
-window_main_menu.html
-x04_operator.gif
-x01_var.gif
-x02_enum.gif
-x03_struct.gif
-x04_event.gif
-x04_func.gif
-x00_const.gif
-templates.html
-templates_packages_table_entry.html
-templates_classes_list.html
-templates_classes_list_entry.html
-templates_classtree.html
-templates_glossary.html
-templates_index.html
-templates_overview.html
-templates_package_class_table_entry.html
-templates_package_overview.html
-templates_packages_list.html
-templates_packages_list_entry.html
-templates_class.html
-templates_template.ini.html
-developer_status.html
-developer_config.html
-developer_commands.html
-templates_sourcecode.html
-templates_packageclasses_list_entry.html
-templates_packageclasses_list.html
-guidelines.html
-UnCodeX-toolbar.gif
-developer_cpp.html
-developer_dde.html
-template_class_entry_variable.html
-template_class_entry_const.html
-template_class_entry_enum.html
-template_class_entry_function.html
-template_class_entry_inherited.html
-template_class_entry_state.html
-template_class_entry_struct.html
-template_class_entry_variable_tag.html
-UnCodeX-createnew.gif
-UnCodeX-pkgprop.gif
-UnCodeX-search.gif
-template_class_entry_delegate.html
-x04_delegate.gif
-window_search.html
-window_createsubclass.html
-window_main_classmenu.html
-window_moveclass.html
-window_pkgprop.html
-window_renameclass.html
-UnCodeX-renameclass.gif
-UnCodeX-moveclass.gif
+credits.html
 donation.html
-pascalscript.html
-ps_types_basic.html
-ps_const.html
-ps_const_gui.html
-ps_types_enum.html
-ps_types_record.html
-ps_uclasses_TUClass.html
-ps_uclasses_TUConst.html
-ps_uclasses_TUEnum.html
-ps_uclasses_TUFunction.html
-ps_uclasses_TUObject.html
-ps_uclasses_TUPackage.html
-ps_uclasses_TUProperty.html
-ps_uclasses_TUState.html
-ps_uclasses_TUStruct.html
-ps_var.html
-ps_var_gui.html
-ps_classes_TStrings.html
-ps_classes_TBits.html
-ps_classes_TCollection.html
-ps_classes_TCollectionItem.html
-ps_classes_TComponent.html
-ps_classes_TCustomMemoryStream.html
-ps_classes_TFileStream.html
-ps_classes_THandleStream.html
-ps_classes_TList.html
-ps_classes_TMemIniFile.html
-ps_classes_TMemoryStream.html
-ps_classes_TObject.html
-ps_classes_TObjectList.html
-ps_classes_TOwnedCollection.html
-ps_classes_TParser.html
-ps_classes_TPersistent.html
-ps_classes_TResourceStream.html
-ps_classes_TStream.html
-ps_classes_TStringList.html
-ps_funcs_string.html
-ps_funcs_actions.html
-ps_funcs_DateTime.html
-ps_funcs_dialogs.html
-ps_funcs_exec.html
-ps_funcs_fs.html
-ps_funcs_math.html
-ps_funcs_misc.html
-ps_funcs_programs.html
+guidelines.html
+index.html
+versionhistory.html
+Developer\developer.html
+Developer\developer_commands.html
+Developer\developer_config.html
+Developer\developer_cpp.html
+Developer\developer_dde.html
+Developer\developer_status.html
+GUI\window_createsubclass.html
+GUI\window_main.html
+GUI\window_main_classmenu.html
+GUI\window_main_menu.html
+GUI\window_main_toolbar.html
+GUI\window_moveclass.html
+GUI\window_pkgprop.html
+GUI\window_renameclass.html
+GUI\window_search.html
+GUI\window_settings.html
+GUI\window_tags.html
+PascalScript\ps_var_gui.html
+PascalScript\ps_classes_TBits.html
+PascalScript\ps_classes_TCollection.html
+PascalScript\ps_classes_TCollectionItem.html
+PascalScript\ps_classes_TComponent.html
+PascalScript\ps_classes_TCustomMemoryStream.html
+PascalScript\ps_classes_TFileStream.html
+PascalScript\ps_classes_THandleStream.html
+PascalScript\ps_classes_TList.html
+PascalScript\ps_classes_TMemIniFile.html
+PascalScript\ps_classes_TMemoryStream.html
+PascalScript\ps_classes_TObject.html
+PascalScript\ps_classes_TObjectList.html
+PascalScript\ps_classes_TOwnedCollection.html
+PascalScript\ps_classes_TParser.html
+PascalScript\ps_classes_TPersistent.html
+PascalScript\ps_classes_TResourceStream.html
+PascalScript\ps_classes_TStream.html
+PascalScript\ps_classes_TStringList.html
+PascalScript\ps_classes_TStrings.html
+PascalScript\ps_const.html
+PascalScript\ps_const_gui.html
+PascalScript\ps_funcs_actions.html
+PascalScript\ps_funcs_DateTime.html
+PascalScript\ps_funcs_dialogs.html
+PascalScript\ps_funcs_exec.html
+PascalScript\ps_funcs_fs.html
+PascalScript\ps_funcs_math.html
+PascalScript\ps_funcs_misc.html
+PascalScript\ps_funcs_programs.html
+PascalScript\ps_funcs_string.html
+PascalScript\ps_types_basic.html
+PascalScript\ps_types_enum.html
+PascalScript\ps_types_record.html
+PascalScript\ps_uclasses_TUClass.html
+PascalScript\ps_uclasses_TUConst.html
+PascalScript\ps_uclasses_TUEnum.html
+PascalScript\ps_uclasses_TUFunction.html
+PascalScript\ps_uclasses_TUObject.html
+PascalScript\ps_uclasses_TUPackage.html
+PascalScript\ps_uclasses_TUProperty.html
+PascalScript\ps_uclasses_TUState.html
+PascalScript\ps_uclasses_TUStruct.html
+PascalScript\ps_var.html
+Templates\templates_template.ini.html
+Templates\template_class_entry_const.html
+Templates\template_class_entry_delegate.html
+Templates\template_class_entry_enum.html
+Templates\template_class_entry_function.html
+Templates\template_class_entry_inherited.html
+Templates\template_class_entry_state.html
+Templates\template_class_entry_struct.html
+Templates\template_class_entry_variable.html
+Templates\template_class_entry_variable_tag.html
+Templates\templates.html
+Templates\templates_class.html
+Templates\templates_classes_list.html
+Templates\templates_classes_list_entry.html
+Templates\templates_classtree.html
+Templates\templates_glossary.html
+Templates\templates_index.html
+Templates\templates_overview.html
+Templates\templates_package_class_table_entry.html
+Templates\templates_package_overview.html
+Templates\templates_packageclasses_list.html
+Templates\templates_packageclasses_list_entry.html
+Templates\templates_packages_list.html
+Templates\templates_packages_list_entry.html
+Templates\templates_packages_table_entry.html
+Templates\templates_sourcecode.html
 
-[INFOTYPES]
-
+[MERGE FILES]
