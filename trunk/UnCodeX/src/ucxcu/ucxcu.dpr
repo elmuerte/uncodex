@@ -6,7 +6,7 @@
   Purpose:
     UnCodeX Commandline Utility Client
 
-  $Id: ucxcu.dpr,v 1.15 2004-12-30 09:40:22 elmuerte Exp $
+  $Id: ucxcu.dpr,v 1.16 2005-03-16 21:28:11 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -28,11 +28,11 @@
 }
 program ucxcu;
 
-{$I ..\defines.inc}
-
-{$IFDEF DELPHI}
+{$IFDEF VER140} // is delphi
   {$APPTYPE CONSOLE}
 {$ENDIF}
+
+{$I ..\defines.inc}
 
 uses
   {$IF Defined(FPC) and Defined(DEBUG_BUILD)}

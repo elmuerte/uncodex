@@ -6,11 +6,11 @@
     Purpose:
         Global macro file, to be included by means of ($I defines.inc)
 
-    $Id: defines.inc,v 1.5 2004-12-19 12:34:56 elmuerte Exp $
+    $Id: defines.inc,v 1.6 2005-03-16 21:28:08 elmuerte Exp $
 *******************************************************************************}
 
 {$IFDEF VER140} // delphi 6
-  {$DEFINE IS_DELPHI}
+    {$DEFINE IS_DELPHI}
 {$ENDIF}
 
 {$IFDEF LINUX}
