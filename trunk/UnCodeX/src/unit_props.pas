@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   property inspector frame
- $Id: unit_props.pas,v 1.12 2004-07-30 11:18:51 elmuerte Exp $
+ $Id: unit_props.pas,v 1.13 2004-08-02 19:58:58 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -70,7 +70,7 @@ type
 
 implementation
 
-uses unit_main, unit_analyse, unit_definitions;
+uses unit_main, unit_analyse, unit_definitions, unit_utils;
 
 {$R *.dfm}
 

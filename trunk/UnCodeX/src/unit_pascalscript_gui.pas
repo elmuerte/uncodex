@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   PascalScript routines for the GUI
- $Id: unit_pascalscript_gui.pas,v 1.2 2004-08-01 20:25:34 elmuerte Exp $
+ $Id: unit_pascalscript_gui.pas,v 1.3 2004-08-02 19:58:58 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -31,10 +31,11 @@ uses
   Classes, uPSComponent, Dialogs;
 
 	procedure RegisterPSGui(ps: TPSScript);
+  procedure LinkPSGui(ps: TPSScript);
 
 implementation
 
-uses unit_main;
+uses unit_main, unit_uclasses, unit_utils;
 
 { Actions -- begin}
 { Class Tree }
@@ -244,7 +245,25 @@ begin
   { Other gui things }
   ps.AddFunction(@ShowMessage, 'procedure ShowMessage(const Msg: string);');
   ps.AddFunction(@ShowMessageFmt, 'procedure ShowMessageFmt(const Msg: string; Params: array of const);');
+  ps.AddFunction(@MInputQuery, 'function MInputQuery(const ACaption, APrompt: string; var Value: string): Boolean;');
+  ps.AddFunction(@InputQuery, 'function InputQuery(const ACaption, APrompt: string; var Value: string): Boolean;');
+  ps.AddFunction(@InputBox, 'function InputBox(const ACaption, APrompt, ADefault: string): string;');
 
+
+
+  { Variables }
+  ps.AddRegisteredPTRVariable('SelectedUClass', 'TUClass');
+  ps.AddRegisteredPTRVariable('SelectedUPackage', 'TUPackage');
+  ps.AddRegisteredPTRVariable('ClassList', 'TUClassList');
+  ps.AddRegisteredPTRVariable('PackageList', 'TUPackageList');
+end;
+
+procedure LinkPSGui(ps: TPSScript);
+begin
+	ps.SetPointerToData('SelectedUClass', @unit_main.SelectedUClass, ps.FindNamedType('TUClass'));
+  ps.SetPointerToData('SelectedUPackage', @unit_main.SelectedUPackage, ps.FindNamedType('TUPackage'));
+	ps.SetPointerToData('ClassList', @unit_main.ClassList, ps.FindNamedType('TUClassList'));
+  ps.SetPointerToData('PackageList', @unit_main.PackageList, ps.FindNamedType('TUPackageList'));
 end;
 
 end.

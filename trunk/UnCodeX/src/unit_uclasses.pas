@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   definitions for Unreal Classes
- $Id: unit_uclasses.pas,v 1.29 2004-07-30 11:18:51 elmuerte Exp $
+ $Id: unit_uclasses.pas,v 1.30 2004-08-02 19:58:58 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -49,11 +49,15 @@ type
     CommentType:	TUCommentType;
   end;
 
+  // general Unreal Object List
+  TUObjectList = class(TObjectList)
+  end;
+
   TUConst = class(TUObject)
     value:      string;
   end;
 
-  TUConstList = class(TObjectList)
+  TUConstList = class(TUObjectList)
   private
     function GetItem(Index: Integer): TUConst;
     procedure SetItem(Index: Integer; AObject: TUConst);
@@ -68,7 +72,7 @@ type
     tag:        string;
   end;
 
-  TUPropertyList = class(TObjectList)
+  TUPropertyList = class(TUObjectList)
   private
     function GetItem(Index: Integer): TUProperty;
     procedure SetItem(Index: Integer; AObject: TUProperty);
@@ -82,7 +86,7 @@ type
     options:    string;
   end;
 
-  TUEnumList = class(TObjectList)
+  TUEnumList = class(TUObjectList)
   private
     function GetItem(Index: Integer): TUEnum;
     procedure SetItem(Index: Integer; AObject: TUEnum);
@@ -100,7 +104,7 @@ type
     destructor Destroy; override;
   end;
 
-  TUStructList = class(TObjectList)
+  TUStructList = class(TUObjectList)
   private
     function GetItem(Index: Integer): TUStruct;
     procedure SetItem(Index: Integer; AObject: TUStruct);
@@ -117,7 +121,7 @@ type
     destructor Destroy; override;
   end;
 
-  TUStateList = class(TObjectList)
+  TUStateList = class(TUObjectList)
   private
     function GetItem(Index: Integer): TUState;
     procedure SetItem(Index: Integer; AObject: TUState);
@@ -140,7 +144,7 @@ type
     destructor Destroy; override;
   end;
 
-  TUFunctionList = class(TObjectList)
+  TUFunctionList = class(TUObjectList)
   private
     function GetItem(Index: Integer): TUFunction;
     procedure SetItem(Index: Integer; AObject: TUFunction);
@@ -179,7 +183,7 @@ type
     function FullFileName: string;
   end;
 
-  TUClassList = class(TObjectList)
+  TUClassList = class(TUObjectList)
   private
     function GetItem(Index: Integer): TUClass;
     procedure SetItem(Index: Integer; AObject: TUClass);
@@ -198,7 +202,7 @@ type
     destructor Destroy; override;
   end;
 
-  TUPackageList = class(TObjectList)
+  TUPackageList = class(TUObjectList)
   private
     function GetItem(Index: Integer): TUPackage;
     procedure SetItem(Index: Integer; AObject: TUPackage);
