@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   loading/saving the tree state
- $Id: unit_treestate.pas,v 1.13 2003-10-26 21:30:19 elmuerte Exp $
+ $Id: unit_treestate.pas,v 1.14 2003-10-27 10:25:02 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_treestate;
@@ -87,6 +87,7 @@ const
   UCXHTail     = #13#10#0;
   UCXheader059 = UCXheader+'059'+UCXHTail;
   UCXheader150 = UCXheader+'150'+UCXHTail;
+  UCXheader151 = UCXheader+'151'+UCXHTail;
 
 procedure TUnCodeXState.SavePackageToStream(upackage: TUPackage; stream: TStream);
 var
@@ -118,6 +119,7 @@ begin
     Writer.WriteString(uclass.modifiers);
     Writer.WriteInteger(uclass.filetime);
     Writer.WriteString(uclass.comment);
+    Writer.WriteString(uclass.defaultproperties);
     Writer.WriteInteger(uclass.consts.Count);
     for i := 0 to uclass.consts.Count-1 do begin
       Writer.WriteString(uclass.consts[i].name);
@@ -224,6 +226,7 @@ begin
       uclass.modifiers := Reader.ReadString;
       uclass.filetime := Reader.ReadInteger;
       if (version >= 150) then uclass.comment := Reader.ReadString;
+      if (version >= 151) then uclass.defaultproperties := Reader.ReadString;
       m := Reader.ReadInteger;
       for i := 0 to m-1 do begin
         uconst := TUconst.Create;
@@ -455,6 +458,7 @@ begin
   if (StrLComp(tmp, UCXHeader, 3) = 0) then begin
     if (StrComp(tmp, UCXHeader059) = 0) then fversion := 59
     else if (StrComp(tmp, UCXHeader150) = 0) then fversion := 150
+    else if (StrComp(tmp, UCXHeader151) = 0) then fversion := 151
     else begin
       Log('Unsupported file version, header: '+tmp);
       exit;
@@ -476,7 +480,7 @@ var
   c: cardinal;
 begin
   try
-    stream.WriteBuffer(UCXheader150, 9);
+    stream.WriteBuffer(UCXheader151, 9);
     // packages
     c := FPackageList.Count;
     stream.WriteBuffer(c, 4);

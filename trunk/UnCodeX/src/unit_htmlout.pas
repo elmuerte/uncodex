@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.31 2003-07-10 07:46:53 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.32 2003-10-27 10:25:02 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_htmlout;
@@ -722,7 +722,10 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'class_defaultproperties') = 0) then begin
-    replacement := TUClass(data).defaultproperties;
+    if (TabsToSpaces >= 0) then begin
+      replacement := StringReplace(TUClass(data).defaultproperties, #9, StrRepeat(' ', TabsToSpaces), [rfReplaceAll]);
+    end
+    else replacement := TUClass(data).defaultproperties;
     result := true;
   end
   else if (CompareText(replacement, 'class_comment') = 0) then begin
@@ -1210,6 +1213,10 @@ begin
 end;
 
 function THTMLOutput.replaceClassStruct(var replacement: string; data: TObject = nil): boolean;
+var
+  i: integer;
+  template: TFileStream;
+  target: TStringStream;
 begin
   result := replaceDefault(replacement);
   if (result) then exit;
@@ -1253,6 +1260,45 @@ begin
   else if (CompareText(replacement, 'class_source') = 0) then begin
     replacement := SOURCEPRE+ClassLink(currentClass);
     result := true;
+  end
+  else if (CompareText(replacement, 'struct_variables') = 0) then begin
+    template := TFileStream.Create(templatedir+'class_var_entry.html', fmOpenRead);
+    target := TStringStream.Create('');
+    TUStruct(data).properties.Sort;
+    try
+      for i := 0 to TUStruct(data).properties.Count-1 do begin
+        // ignore var when comment = @ignore
+        if (CompareText(TUStruct(data).properties[i].comment, IGNORE_KEYWORD) <> 0) then begin
+          template.Position := 0;
+          parseTemplate(template, target, replaceClassVar, TUStruct(data).properties[i]);
+        end;
+        if (Self.Terminated) then break;
+      end;
+      replacement := target.DataString;
+      result := true;
+    finally
+      template.Free;
+      target.Free;
+    end;
+  end
+  else if (CompareText(replacement, 'struct_enums') = 0) then begin
+    template := TFileStream.Create(templatedir+'class_enum_entry.html', fmOpenRead);
+    target := TStringStream.Create('');
+    try
+      for i := 0 to TUStruct(data).enums.Count-1 do begin
+        // ignore enum when comment = @ignore
+        if (CompareText(TUStruct(data).enums[i].comment, IGNORE_KEYWORD) <> 0) then begin
+          template.Position := 0;
+          parseTemplate(template, target, replaceClassEnum, TUStruct(data).enums[i]);
+        end;
+        if (Self.Terminated) then break;
+      end;
+      replacement := target.DataString;
+      result := true;
+    finally
+      template.Free;
+      target.Free;
+    end;
   end
 end;
 
