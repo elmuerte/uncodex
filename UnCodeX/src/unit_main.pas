@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.141 2004-12-23 22:18:27 elmuerte Exp $
+  $Id: unit_main.pas,v 1.142 2004-12-24 11:05:08 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -446,7 +446,7 @@ type
     statustext : string; // current status text
     procedure NextBatchCommand;
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
-    procedure OpenSourceLine(uclass: TUClass; line, caret: integer);
+    procedure OpenSourceLine(filename: string; line, caret: integer; uclass: TUClass);
     procedure OpenSourceInline(filename: string; line, caret: integer; uclass: TUClass = nil);
   end;
 
@@ -583,17 +583,20 @@ begin
   if (frm_UnCodeX = nil) then exit;
   if (msg='') then exit;
   with frm_UnCodeX.lb_Log do begin
-    if (TLogEntry(obj) = nil) then begin
+    if (not IsA(obj, TLogEntry)) then begin
       entry := CreateLogEntry(obj);
     end
     else entry := TLogEntry(obj);
 
     if (entry.filename = '') then begin
-      if (TUClass(obj) <> nil) then begin
+      if (IsA(obj, TUClass)) then begin
         entry.filename := TUClass(obj).filename;
       end;
+      if (IsA(obj, TUDeclaration)) then begin
+        entry.filename := TUDeclaration(obj).declaration;
+        entry.line := TUDeclaration(obj).srcline;
+      end;
     end;
-    //TODO: TUDeclaration
 
     entry.mt := mt;
     Items.AddObject(msg, entry);
@@ -609,9 +612,7 @@ begin
   if (frm_UnCodeX = nil) then exit;
   with frm_UnCodeX.lb_Log do begin
     for i := 0 to Items.count-1 do begin
-      if (Items.Objects[i] <> nil) then begin
-        if (TLogEntry(Items.Objects[i]) <> nil) then Items.Objects[i].Free;
-      end;
+      if (IsA(Items.Objects[i], TLogEntry)) then Items.Objects[i].Free;
     end;
     Items.Clear;
   end;
@@ -663,7 +664,7 @@ end;
 // Running thread terminated, clean up
 procedure Tfrm_UnCodeX.ThreadTerminate(Sender: TObject);
 begin
-  if (runningthread.ClassType = TMSHTMLHelp) then ac_OpenHTMLHelp.Enabled := FileExists(HTMLHelpFile);
+  if (IsA(runningthread, TMSHTMLHelp)) then ac_OpenHTMLHelp.Enabled := FileExists(HTMLHelpFile);
   runningthread := nil;
   {if (OutputModule <> 0) then begin
     FreeLibrary(OutputModule);
@@ -991,22 +992,21 @@ begin
 end;
 
 // Open a source file at a specific line
-procedure Tfrm_UnCodeX.OpenSourceLine(uclass: TUClass; line, caret: integer);
+procedure Tfrm_UnCodeX.OpenSourceLine(filename: string; line, caret: integer; uclass: TUClass);
 var
   lst: TStringList;
   i: integer;
   exe: string;
-  exfile:	string;
 begin
-		// TODO: fix
-  exfile := ResolveFilename(uclass, nil);
-  if (not fileExists(exfile)) then begin
-    Log('Could not open file '+exfile);
+		// TODO: fix, uclass could be nil?
+  if ((filename = '') and (uclass <> nil)) then filename := ResolveFilename(uclass, nil);
+  if (not fileExists(filename)) then begin
+    Log('Could not open file '+filename, ltError);
     exit;
   end;
 
   if (OpenResultCmd = '') then begin
-    ExecuteProgram(exfile);
+    ExecuteProgram(filename);
     exit;
   end;
 
@@ -1024,7 +1024,7 @@ begin
       end;
       lst[i] := AnsiReplaceStr(lst[i], '%classname%', uclass.name);
       lst[i] := AnsiReplaceStr(lst[i], '%classfile%', uclass.filename);
-      lst[i] := AnsiReplaceStr(lst[i], '%classpath%', exfile);
+      lst[i] := AnsiReplaceStr(lst[i], '%classpath%', filename);
       lst[i] := AnsiReplaceStr(lst[i], '%packagename%', uclass.package.name);
       lst[i] := AnsiReplaceStr(lst[i], '%packagepath%', uclass.package.path);
       lst[i] := AnsiReplaceStr(lst[i], '%classsearch%', SearchConfig.query);
@@ -1056,7 +1056,7 @@ begin
     if (line < 0) then exit;
     tmp2[0] := #255;
     re_SourceSnoop.Perform(EM_GETLINE, line, integer(@tmp2));
-    //TODO: ...
+    //TODO: restore browsehistory functionality
     //AddBrowserHistory(uclass, udecl, line+1, tmp2);
     //re_SourceSnoop.Perform(EM_LINESCROLL, 0, -1*re_SourceSnoop.Lines.Count);
     //re_SourceSnoop.Perform(EM_LINESCROLL, 0, line);
@@ -1102,8 +1102,8 @@ begin
   else if (cmd = 'orphanstop') then begin
     if ClassOrphanCount > 0 then begin
       CmdStack.Clear;
-      Log('Stopped batching because of orhpan classes');
-      Log(IntToStr(ClassOrphanCount)+' orphans found');
+      Log('Stopped batching because of orhpan classes', ltWarn);
+      Log(IntToStr(ClassOrphanCount)+' orphans found', ltWarn);
       MessageDlg(IntToStr(ClassOrphanCount)+' orphan classes found.'+#13+#10+'Check the log for more information.', mtWarning, [mbOK], 0);
       IsBatching := false;
       Caption := APPTITLE+' - version '+APPVERSION;
@@ -1313,7 +1313,7 @@ begin
     end;
   end
   else begin
-    Log('Failed loading custom output module: '+module);
+    Log('Failed loading custom output module: '+module, ltError);
     if (IsBatching) then NextBatchCommand;
   end;
 end;
@@ -1356,11 +1356,11 @@ var
 begin
   result := false;
   if (ps_Main.Running) then begin
-    log('Error: nested pascal script running not supported yet');
+    log('Nested pascal script running not supported yet', ltError);
     exit;
   end;
   if (not fileexists(filename)) then begin
-    log('Error: UPS file does not exist: '+filename);
+    log('UPS file does not exist: '+filename, ltError);
     exit;
   end;
   ClearLog;
@@ -1371,14 +1371,14 @@ begin
   end;
   if (not result) then begin
     MessageBeep(MB_ICONHAND);
-    log('UnCodeX PascalScript compile failed!');
+    log('UnCodeX PascalScript compile failed!', ltError);
     exit;
   end;
   ClearLog;
   result := ps_Main.Execute;
   if (not result) then begin
-    log(ps_Main.ExecErrorToString);
-    log(format('Execution failed @ %d:%d', [ps_Main.ExecErrorRow, ps_Main.ExecErrorCol]));
+    log(ps_Main.ExecErrorToString, ltError);
+    log(format('Execution failed @ %d:%d', [ps_Main.ExecErrorRow, ps_Main.ExecErrorCol]), ltError);
   end;
 end;
 
@@ -1609,7 +1609,7 @@ begin
   fos.pFrom := PChar(s);
   fos.fFlags := FOF_ALLOWUNDO or FOF_NOCONFIRMATION or FOF_NOERRORUI;
   if (ShFileOperation(fos) <> 0) then begin
-    Log('Error deleting file: '+s);
+    Log('Error deleting file: '+s, ltError);
     exit;
   end;
   uclass.package.classes.Remove(uclass);
@@ -1628,7 +1628,7 @@ var
 begin
   if (uclass = nil) then exit;
   if (not fileExists(filename)) then begin
-    Log('Could not open file '+filename);
+    Log('Could not open file '+filename, ltError);
     exit;
   end;
   if (re_SourceSnoop.filename = filename) then exit;
@@ -2172,7 +2172,7 @@ end;
 procedure Tfrm_UnCodeX.BrowseEntry(Sender: TObject);
 begin
   if (TMenuItem(Sender) = nil) then exit;
-  //TODO: addapet for new stuff
+  //TODO: addapt for new stuff
   //OpenSourceInLine(BrowseHistory[TMenuItem(Sender).Tag].uclass, BrowseHistory[TMenuItem(Sender).Tag].udecl, BrowseHistory[TMenuItem(Sender).Tag].line-1, 0);
 end;
 
@@ -2294,8 +2294,7 @@ begin
   ClearLog;
   CountOrphans(ClassList);
   if ClassOrphanCount > 0 then begin
-    Log('Stopped batching because of orhpan classes');
-    Log(IntToStr(ClassOrphanCount)+' orphans found');
+    Log(IntToStr(ClassOrphanCount)+' orphans found', ltWarn);
     MessageDlg(IntToStr(ClassOrphanCount)+' orphan classes found.'+#13+#10+
       'Check the log for more information.', mtWarning, [mbOK], 0);
   end
@@ -2845,28 +2844,15 @@ begin
 end;
 
 procedure Tfrm_UnCodeX.lb_LogDblClick(Sender: TObject);
-{var
-  i, j: integer;
-  linenr, curpos: string;}
 var
   entry: TLogEntry;
 begin
-  //TODO: fix
   if (lb_Log.ItemIndex = -1) then exit;
   if (lb_Log.Items.Objects[lb_Log.ItemIndex] = nil) then exit;
-  if (TObject(lb_Log.Items.Objects[lb_Log.ItemIndex]).ClassType <> TLogEntry) then exit;
+  if (not IsA(lb_Log.Items.Objects[lb_Log.ItemIndex], TLogEntry)) then exit;
 
-  //entry := TLogEntry(lb_Log.Items.Objects[lb_Log.ItemIndex]);
-
-  {linenr := lb_Log.Items[lb_Log.ItemIndex];
-  i := Pos(FTS_LN_BEGIN, linenr);
-  j := Pos(FTS_LN_END, linenr);
-  linenr := Copy(linenr, i+Length(FTS_LN_BEGIN), j-i-Length(FTS_LN_BEGIN));
-  i := Pos(FTS_LN_SEP, linenr);
-  curpos := Copy(linenr, i+Length(FTS_LN_SEP), MaxInt);
-  Delete(linenr, i, MaxInt);
-
-  OpenSourceLine(TUClass(lb_Log.Items.Objects[lb_Log.ItemIndex]), StrToIntDef(linenr, 0), StrToIntDef(curpos, 0));}
+  entry := TLogEntry(lb_Log.Items.Objects[lb_Log.ItemIndex]);
+  OpenSourceline(entry.filename, entry.line-1, entry.pos, TUClass(entry));
 end;
 
 procedure Tfrm_UnCodeX.lb_LogClick(Sender: TObject);
@@ -2875,7 +2861,7 @@ var
 begin
   if (lb_Log.ItemIndex = -1) then exit;
   if (lb_Log.Items.Objects[lb_Log.ItemIndex] = nil) then exit;
-  if (TObject(lb_Log.Items.Objects[lb_Log.ItemIndex]).ClassType <> TLogEntry) then exit;
+  if (not IsA(lb_Log.Items.Objects[lb_Log.ItemIndex], TLogEntry)) then exit;
 
   entry := TLogEntry(lb_Log.Items.Objects[lb_Log.ItemIndex]);
   OpenSourceInline(entry.filename, entry.line-1, entry.pos, TUClass(entry.obj));

@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript package scanner, search for UnrealScript classes
 
-  $Id: unit_packages.pas,v 1.42 2004-12-20 22:22:31 elmuerte Exp $
+  $Id: unit_packages.pas,v 1.43 2004-12-24 11:05:09 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -440,7 +440,7 @@ begin
     knownpackages.Free;
     {$IFDEF USE_TREEVIEW}
     packagetree.EndUpdate;
-    // TODO: fix
+    // TODO: doesn't use configure option
     ti := classtree.GetFirstNode;
     while (ti <> nil) do begin
       if CompareText(ti.Text, 'object') = 0 then begin

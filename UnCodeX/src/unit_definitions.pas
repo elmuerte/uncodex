@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.131 2004-12-21 08:53:43 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.132 2004-12-24 11:05:03 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -86,6 +86,9 @@ type
 
   function RetExternalComment(ref: string): string;
   procedure SetExtCommentFile(ini: string);
+
+  function IsA(obj: TObject; cls: TClass): boolean; overload;
+  function IsA(obj: pointer; cls: TClass): boolean; overload;
 
 const
   APPTITLE        = 'UnCodeX';
@@ -400,6 +403,20 @@ begin
   result := ExtractFileName(filename);
   ext := ExtractFileExt(filename);
   result := Copy(result, 1, length(result)-length(ext));
+end;
+
+function IsA(obj: TObject; cls: TClass): boolean;
+begin
+  result := false;
+  if (obj = nil) then exit;
+  result := Obj.ClassType = cls;
+end;
+
+function IsA(obj: pointer; cls: TClass): boolean;
+begin
+  result := false;
+  if (obj = nil) then exit;
+  result := IsA(TObject(obj), cls);
 end;
 
 initialization
