@@ -9,6 +9,7 @@ uses
   procedure ProcessCommandline;
   procedure Main;
   procedure FatalError(msg: string; errorcode: integer = -1);
+  procedure Warning(msg: string);
   procedure StatusReport(msg: string; progress: byte = 255);
   procedure Log(msg: string);
   procedure LogClass(msg: string; uclass: TUClass = nil);
@@ -40,7 +41,10 @@ var
   i: integer;
   sl: TStringList;
 begin
-  if (not FileExists(ConfigFile)) then FatalError('Config file does not exist: '+ConfigFile);
+  if (not FileExists(ConfigFile)) then begin
+  	Warning('Config file does not exist: '+ConfigFile);
+    exit;
+  end;
   ini := TMemIniFile.Create(ConfigFile);
   sl := TStringList.Create;
   try
@@ -97,8 +101,47 @@ begin
 end;
 
 procedure ProcessCommandline;
+var
+	tmp: string;
+  lst: TStringList;
+  i: integer;
 begin
+	if (CmdOption('uc', tmp)) then begin
 
+  end;
+  CmdOption('o', HTMLOutputDir);
+	if (CmdOption('p', tmp)) then begin
+    lst := TStringList.Create;
+    try
+			lst.Delimiter := ',';
+      lst.QuoteChar := '"';
+      lst.DelimitedText := tmp;
+      packagepriority.Clear;
+      packagepriority.Assign(lst);
+    finally
+    	lst.Free;
+    end;
+  end;
+  if (CmdOption('pa', tmp)) then begin
+    lst := TStringList.Create;
+    try
+			lst.Delimiter := ',';
+      lst.QuoteChar := '"';
+      lst.DelimitedText := tmp;
+      packagepriority.AddStrings(lst);
+    finally
+    	lst.Free;
+    end;
+  end;
+  i := 0;
+  while (CmdOption('s', tmp, i)) do begin
+    sourcepaths.Add(tmp);
+  end;
+  CmdOption('t', TemplateDir);
+
+  // html help
+  CmdOption('mc', HHCPath);
+  CmdOption('mo', HTMLHelpFile);
 end;
 
 procedure Main;
@@ -108,6 +151,10 @@ var
   ho: THTMLOutput;
   hoc: THTMLoutConfig;
 begin
+	if (sourcepaths.Count <= 0) then begin
+    FatalError('No source paths defined');
+  end;
+
   if (Verbose = 1) then StatusFormat := '%2d) %-20s : '
   else if (Verbose = 2) then StatusFormat := 'Phase %d)';
 
@@ -121,6 +168,10 @@ begin
     ps.Free;
   end;
   writeln('');
+
+  if (ClassList.Count <= 0) then begin
+    FatalError('No classes found');
+  end;
 
   PhaseLabel := format(StatusFormat, [2, 'Analyzing classes']);
   ca := TClassAnalyser.Create(ClassList, statusreport);
@@ -159,6 +210,13 @@ begin
   writeln('Fatal error:');
   writeln(#9+msg);
   Halt(errorcode);
+end;
+
+procedure Warning(msg: string);
+begin
+  writeln('');
+  writeln('Warning:');
+  writeln(#9+msg);
 end;
 
 procedure StatusReport(msg: string; progress: byte = 255);

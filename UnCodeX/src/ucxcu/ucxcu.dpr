@@ -32,7 +32,7 @@ begin
     else begin
       ConfigFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ini';
       CmdOption('c', ConfigFile);
-      LoadConfig();
+      if (not HasCmdOption('nc')) then LoadConfig();
       ProcessCommandline();
       Main();
     end;
