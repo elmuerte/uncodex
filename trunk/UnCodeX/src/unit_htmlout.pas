@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.47 2004-02-24 07:51:24 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.48 2004-03-05 10:24:47 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -121,7 +121,7 @@ type
     procedure CopyFiles;
     function ProcComment(input: string): string;
     procedure SourceCode;
-    procedure parseCode(input, output: TStream; nolineno: boolean = false);
+    procedure parseCode(input, output: TStream; nolineno: boolean = false; notable: boolean = false; nopre: boolean = false);
     function CommentPreprocessor(input: string): string;
     function GetPackage(curpack: TUPackage; offset: integer; wrap: boolean = true): TUPackage;
     function GetClass(curclass: TUClass; offset: integer; wrap: boolean = true): TUClass;
@@ -203,6 +203,18 @@ begin
   result := StringReplace(line, '<', '&lt;', [rfReplaceAll]);
   result := StringReplace(result, '>', '&gt;', [rfReplaceAll]);
   result := StringReplace(result, '"', '&quot;', [rfReplaceAll]);
+end;
+
+function functionTypeToString(ftype: TUFunctionType): string;
+begin
+	case ftype of
+    uftFunction:      result := 'function';
+    uftEvent:         result := 'event';
+    uftOperator:      result := 'operator';
+    uftPreOperator:   result := 'preoperator';
+    uftPostOperator:  result := 'postoperator';
+    uftDelegate:      result := 'delegate';
+  end;
 end;
 
 { THTMLOutput }
@@ -733,7 +745,7 @@ end;
 procedure THTMLOutput.htmlClassOverview;
 var
   template, target: TFileStream;
-  i: integer;
+  i,j: integer;
 begin
   template := TFileStream.Create(templatedir+'class.html', fmOpenRead or fmShareDenyWrite);
   try
@@ -743,6 +755,12 @@ begin
         Status('Creating '+ClassLink(ClassList[i]), round(curPos/maxPos*100));
         curPos := curPos+1;
         currentClass := ClassList[i];
+        for j := 0 to currentClass.enums.Count-1 do begin
+          TypeCache.Items[LowerCase(currentClass.enums[j].name)] := ClassLink(currentClass)+'#'+currentClass.enums[j].name;
+        end;
+        for j := 0 to currentClass.structs.Count-1 do begin
+          TypeCache.Items[LowerCase(currentClass.structs[j].name)] := ClassLink(currentClass)+'#'+currentClass.structs[j].name;
+        end;
         target := TFileStream.Create(htmloutputdir+PATHDELIM+ClassLink(ClassList[i]), fmCreate);
         try
           template.Position := 0;
@@ -1415,6 +1433,8 @@ begin
 end;
 
 function THTMLOutput.replaceClassConst(var replacement: string; data: TObject = nil): boolean;
+var
+	source, target: TStringStream;
 begin
   result := replaceDefault(replacement);
   if (result) then exit;
@@ -1434,6 +1454,18 @@ begin
     replacement := CommentPreprocessor(TUConst(data).comment);
     result := true;
   end
+  else if (CompareText(replacement, 'const_declaration') = 0) then begin
+    source := TStringStream.Create('const '+TUConst(data).name+' = '+TUConst(data).value+';');
+    target := TStringStream.Create('');
+    try
+      parseCode(source, target, true, true, true);
+    	replacement := target.DataString;
+	    result := true;
+    finally
+    	target.Free;
+      source.Free;
+    end;
+  end
   else if (CompareText(replacement, 'has_comment_?') = 0) then begin
     if (TUConst(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '')
     else replacement := '';
@@ -1446,6 +1478,9 @@ begin
 end;
 
 function THTMLOutput.replaceClassVar(var replacement: string; data: TObject = nil): boolean;
+var
+	source,target: TStringStream;
+  tmp: string;
 begin
   result := replaceDefault(replacement);
   if (result) then exit;
@@ -1477,6 +1512,22 @@ begin
     replacement := CommentPreprocessor(TUProperty(data).comment);
     result := true;
   end
+  else if (CompareText(replacement, 'var_declaration') = 0) then begin
+  	tmp := 'var';
+    if (TUProperty(data).tag <> '') then tmp := tmp+'('+TUProperty(data).tag+')';
+    if (TUProperty(data).modifiers <> '') then tmp := tmp+' '+TUProperty(data).modifiers;
+		tmp := tmp+' '+TUProperty(data).ptype+' '+TUProperty(data).name+';';
+    source := TStringStream.Create(tmp);
+    target := TStringStream.Create('');
+    try
+      parseCode(source, target, true, true, true);
+    	replacement := target.DataString;
+	    result := true;
+    finally
+    	target.Free;
+      source.Free;
+    end;
+  end
   else if (CompareText(replacement, 'has_comment_?') = 0) then begin
     if (TUProperty(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '')
     else replacement := '';
@@ -1489,6 +1540,8 @@ begin
 end;
 
 function THTMLOutput.replaceClassEnum(var replacement: string; data: TObject = nil): boolean;
+var
+	source,target: TStringStream;
 begin
   result := replaceDefault(replacement);
   if (result) then exit;
@@ -1516,6 +1569,18 @@ begin
     replacement := CommentPreprocessor(TUEnum(data).comment);
     result := true;
   end
+  else if (CompareText(replacement, 'enum_declaration') = 0) then begin
+    source := TStringStream.Create('enum '+TUEnum(data).name);
+    target := TStringStream.Create('');
+    try
+      parseCode(source, target, true, true, true);
+    	replacement := target.DataString;
+	    result := true;
+    finally
+    	target.Free;
+      source.Free;
+    end;
+  end
   else if (CompareText(replacement, 'has_comment_?') = 0) then begin
     if (TUEnum(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '')
     else replacement := '';
@@ -1531,7 +1596,8 @@ function THTMLOutput.replaceClassStruct(var replacement: string; data: TObject =
 var
   i: integer;
   template: TFileStream;
-  target: TStringStream;
+  source, target: TStringStream;
+  tmp: string;
 begin
   result := replaceDefault(replacement);
   if (result) then exit;
@@ -1600,6 +1666,22 @@ begin
       target.Free;
     end;
   end
+  else if (IsReplacement(replacement, 'struct_declaration')) then begin
+  	tmp := 'struct';
+    if (TUStruct(data).modifiers <> '') then tmp := tmp+' '+TUStruct(data).modifiers;
+    tmp := tmp+' '+TUStruct(data).name;
+    if (TUStruct(data).parent <> '') then tmp := tmp+' extends '+TUStruct(data).parent;
+    source := TStringStream.Create(tmp);
+    target := TStringStream.Create('');
+    try
+      parseCode(source, target, true, true, true);
+    	replacement := target.DataString;
+	    result := true;
+    finally
+    	target.Free;
+      source.Free;
+    end;
+  end
   // same as above except only vars _with_ comments
   else if (IsReplacement(replacement, 'struct_properties_comment')) then begin
     template := TFileStream.Create(templatedir+replacement+'.html', fmOpenRead);
@@ -1635,6 +1717,7 @@ end;
 
 function THTMLOutput.replaceClassFunction(var replacement: string; data: TObject = nil): boolean;
 var
+	source, target: TStringStream;
   tmp, tmp2, tmp3: string;
   i, j: integer;
   pclass: TUClass;
@@ -1646,14 +1729,7 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'function_type') = 0) then begin
-    case TUFunction(data).ftype of
-      uftFunction:      replacement := 'function';
-      uftEvent:         replacement := 'event';
-      uftOperator:      replacement := 'operator';
-      uftPreOperator:   replacement := 'preoperator';
-      uftPostOperator:  replacement := 'postoperator';
-      uftDelegate:      replacement := 'delegate';
-    end;
+    replacement := functionTypeToString(TUFunction(data).ftype);
     result := true;
   end
   else if (CompareText(replacement, 'function_type_image') = 0) then begin
@@ -1712,6 +1788,24 @@ begin
   else if (CompareText(replacement, 'function_comment') = 0) then begin
     replacement := CommentPreprocessor(TUFunction(data).comment);
     result := true;
+  end
+  else if (CompareText(replacement, 'function_declaration') = 0) then begin
+  	tmp := '';
+    if (TUFunction(data).modifiers <> '') then tmp := tmp+TUFunction(data).modifiers;
+		if (tmp <> '') then tmp := tmp+' ';
+  	tmp := functionTypeToString(TUFunction(data).ftype);
+    if (TUFunction(data).return <> '') then tmp := tmp+' '+TUFunction(data).return;
+		tmp := tmp+' '+TUFunction(data).name+' ('+TUFunction(data).params+')';
+    source := TStringStream.Create(tmp);
+    target := TStringStream.Create('');
+    try
+      parseCode(source, target, true, true, true);
+    	replacement := target.DataString;
+	    result := true;
+    finally
+    	target.Free;
+      source.Free;
+    end;
   end
   else if (CompareText(replacement, 'function_init') = 0) then begin
     replacement := '';
@@ -2182,7 +2276,7 @@ begin
   end;
 end;
 
-procedure THTMLOutput.parseCode(input, output: TStream; nolineno: boolean = false);
+procedure THTMLOutput.parseCode(input, output: TStream; nolineno: boolean = false; notable: boolean = false; nopre: boolean = false);
 var
   p: TSourceParser;
   replacement, tmp: string;
@@ -2192,7 +2286,9 @@ begin
   ms := TMemoryStream.Create;
   p := TSourceParser.Create(input, ms, false);
   try
-    replacement := '<pre class="source"><a name="'+IntToStr(p.SourceLine-1)+'"></a>';
+  	replacement := '';
+    if (not nopre) then replacement := '<pre class="source">';
+    if (not nolineno) then replacement := replacement+'<a name="'+IntToStr(p.SourceLine-1)+'"></a>';
     p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
     while (p.Token <> toEOF) do begin
       if (p.Token = '<') then begin
@@ -2287,12 +2383,16 @@ begin
       else p.CopyTokenToOutput;
       p.SkipToken(true);
     end;
-    replacement := '</pre>';
-    p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+    if (not nopre) then begin
+	    replacement := '</pre>';
+  	  p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+    end;
 
     // finalize
-    replacement := '<div class="source"><table class="source"><tr>';
-    output.WriteBuffer(PChar(replacement)^, Length(replacement));
+    if (not notable) then begin
+    	replacement := '<div class="source"><table class="source"><tr>';
+    	output.WriteBuffer(PChar(replacement)^, Length(replacement));
+    end;
     if (not nolineno) then begin
     	replacement := '<td class="source_lineno"><font class="source_lineno">';
     	output.WriteBuffer(PChar(replacement)^, Length(replacement));
@@ -2303,11 +2403,15 @@ begin
     	replacement := '</font></td>';
       output.WriteBuffer(PChar(replacement)^, Length(replacement));
   	end;
-    replacement := '<td class="source">';
-    output.WriteBuffer(PChar(replacement)^, Length(replacement));
+    if (not notable) then begin
+	    replacement := '<td class="source">';
+  	  output.WriteBuffer(PChar(replacement)^, Length(replacement));
+    end;
     ms.SaveToStream(output);
-    replacement := '</td></tr></table></div>';
-    output.WriteBuffer(PChar(replacement)^, Length(replacement));
+    if (not notable) then begin
+	    replacement := '</td></tr></table></div>';
+  	  output.WriteBuffer(PChar(replacement)^, Length(replacement));
+    end;
   finally
     p.Free;
     ms.Free;
