@@ -6,7 +6,7 @@
     Purpose:
         UnrealScript class analyser
 
-    $Id: unit_analyse.pas,v 1.52 2004-11-29 14:46:09 elmuerte Exp $
+    $Id: unit_analyse.pas,v 1.53 2004-12-07 11:39:02 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -497,7 +497,10 @@ var
 begin
     guard('pVar '+IntToStr(p.SourceLine)+','+IntToStr(p.SourcePos));
     result := TUProperty.Create;
+    if (p.Token = '(') then last := EMPTY_TAG else last := '';
     result.tag := pBrackets(true);
+    // TODO: empty tag = classname
+    if ((result.tag = '') and (last <> '')) then result.tag := uclass.name;
     result.comment := trim(p.GetCopyData);
     result.srcline := p.SourceLine;
     result.definedIn := incFilename;

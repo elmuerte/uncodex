@@ -56,6 +56,7 @@ procedure SIRegister_TDefinitionList(CL: TPSPascalCompiler);
 procedure SIRegister_unit_uclasses(CL: TPSPascalCompiler);
  
 { run-time registration functions }
+procedure RIRegister_unit_uclasses_Routines(S: TPSExec);
 procedure RIRegister_TUPackageList(CL: TPSRuntimeClassImporter);
 procedure RIRegister_TUPackage(CL: TPSRuntimeClassImporter);
 procedure RIRegister_TUClassList(CL: TPSRuntimeClassImporter);
@@ -368,6 +369,7 @@ begin
     RegisterProperty('name', 'string', iptrw);
     RegisterProperty('comment', 'string', iptrw);
     RegisterProperty('CommentType', 'TUCommentType', iptrw);
+    RegisterMethod('Function declaration : string');
   end;
 end;
 
@@ -401,6 +403,7 @@ end;
 procedure SIRegister_unit_uclasses(CL: TPSPascalCompiler);
 begin
  CL.AddConstantN('UCLASSES_REV','LongInt').SetInt( 3);
+ CL.AddConstantN('EMPTY_TAG','string').SetString( #127);
   CL.AddTypeS('TUCommentType', '( ctSource, ctExtern, ctInherited )');
   CL.AddClassN(CL.FindClass('TOBJECT'),'TUClass');
   CL.AddClassN(CL.FindClass('TOBJECT'),'TUPackage');
@@ -429,6 +432,7 @@ begin
   SIRegister_TUClassList(CL);
   SIRegister_TUPackage(CL);
   SIRegister_TUPackageList(CL);
+ CL.AddDelphiFunction('Function UFunctionTypeToString( utype : TUFunctionType) : string');
 end;
 
 (* === run-time registration functions === *)
@@ -933,6 +937,12 @@ procedure TDefinitionListfowner_R(Self: TDefinitionList; var T: TUClass);
 Begin T := Self.fowner; end;
 
 (*----------------------------------------------------------------------------*)
+procedure RIRegister_unit_uclasses_Routines(S: TPSExec);
+begin
+ S.RegisterDelphiFunction(@UFunctionTypeToString, 'UFunctionTypeToString', cdRegister);
+end;
+
+(*----------------------------------------------------------------------------*)
 procedure RIRegister_TUPackageList(CL: TPSRuntimeClassImporter);
 begin
   with CL.Add(TUPackageList) do
@@ -1167,6 +1177,7 @@ begin
     RegisterPropertyHelper(@TUObjectname_R,@TUObjectname_W,'name');
     RegisterPropertyHelper(@TUObjectcomment_R,@TUObjectcomment_W,'comment');
     RegisterPropertyHelper(@TUObjectCommentType_R,@TUObjectCommentType_W,'CommentType');
+    RegisterVirtualMethod(@TUObject.declaration, 'declaration');
   end;
 end;
 
@@ -1251,6 +1262,7 @@ end;
 procedure TPSImport_unit_uclasses.ExecImport1(CompExec: TPSScript; const ri: TPSRuntimeClassImporter);
 begin
   RIRegister_unit_uclasses(ri);
+  RIRegister_unit_uclasses_Routines(CompExec.Exec); // comment it if no routines
 end;
 (*----------------------------------------------------------------------------*)
 procedure TPSImport_unit_uclasses.ExecImport2(CompExec: TPSScript; const ri: TPSRuntimeClassImporter);

@@ -19,6 +19,10 @@
 <li>bug fix: tags where not copied for multiple variable definitions in unrealscript.
 <li>#include macro's are now processed and the information is included in the class reference. However, line numbers of included entities are incorrect.
 <li>Fixed a bug in the HTML otuput comment parsing, some links where not converted correctly.
+<li>Added new function to UClasses: <code>function declaration: string;</code> This returns a valid unrealscript declaration of that function/variable/etc. Note: this may not be exact as the source declaration.
+<li>Variables with an empty tag (<code>var()</code>) now get their tag set to the class name.
+<li>source snoop component updates
+<li>more #include updates for the GUI
 </ul>
 
 <h2>Changes since 212</h2>

@@ -6,7 +6,7 @@
     Purpose:
         Class definitions for UnrealScript elements
 
-    $Id: unit_uclasses.pas,v 1.41 2004-11-29 14:46:10 elmuerte Exp $
+    $Id: unit_uclasses.pas,v 1.42 2004-12-07 11:39:02 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -38,7 +38,10 @@ uses
 
 const
     // used for output module compatibility testing
-    UCLASSES_REV: LongInt = 3;  
+    UCLASSES_REV: LongInt = 3;
+
+    // variable is declared with an empty (), use this value to signal that
+    EMPTY_TAG: string = #127;
 
 type
     TUCommentType = (ctSource, ctExtern, ctInherited);
@@ -74,6 +77,7 @@ type
         name:           string;
         comment:        string;
         CommentType:    TUCommentType;
+        function declaration: string; virtual;
     end;
 
     // used for declarations in classes(e.g. functions, variables)
@@ -92,6 +96,7 @@ type
 
     TUConst = class(TUDeclaration)
         value:  string;
+        function declaration: string; override;
     end;
 
     TUConstList = class(TUObjectList)
@@ -108,6 +113,7 @@ type
         ptype:      string;
         modifiers:  string;
         tag:        string;
+        function declaration: string; override;
     end;
 
     TUPropertyList = class(TUObjectList)
@@ -123,6 +129,7 @@ type
 
     TUEnum = class(TUDeclaration)
         options:    string;
+        function declaration: string; override;
     end;
 
     TUEnumList = class(TUObjectList)
@@ -141,6 +148,7 @@ type
         properties: TUPropertyList;
         constructor Create;
         destructor Destroy; override;
+        function declaration: string; override;
     end;
 
     TUStructList = class(TUObjectList)
@@ -159,6 +167,7 @@ type
         functions:  TUFunctionList;
         constructor Create;
         destructor Destroy; override;
+        function declaration: string; override;
     end;
 
     TUStateList = class(TUObjectList)
@@ -183,6 +192,7 @@ type
         locals:     TUPropertyList; // local variable delcrations (NOT USED)
         constructor Create;
         destructor Destroy; override;
+        function declaration: string; override;
     end;
 
     TUFunctionList = class(TUObjectList)
@@ -229,6 +239,7 @@ type
         destructor Destroy; override;
         function FullName: string;
         function FullFileName: string;
+        function declaration: string; override;
     end;
 
     TUClassList = class(TUObjectList)
@@ -250,6 +261,7 @@ type
         constructor Create;
         destructor Destroy; override;
         function PackageDir: string; // returns the actual package dir
+        function declaration: string; override;
     end;
 
     TUPackageList = class(TUObjectList)
@@ -263,9 +275,15 @@ type
         property Items[Index: Integer]: TUPackage read GetItem write SetItem; default;
     end;
 
+    function UFunctionTypeToString(utype: TUFunctionType): string;
+
 implementation
 
 { }
+
+function TUObject.declaration: string;
+begin
+end;
 
 function TUObjectList.Find(name: string): TUObject;
 var
@@ -278,6 +296,12 @@ begin
             exit;
         end;
     end;
+end;
+
+{ TUConst }
+function TUConst.declaration: string;
+begin
+    result := 'const '+name+' = '+value+';';
 end;
 
 { TUConstList }
@@ -306,6 +330,12 @@ begin
     inherited SetItem(index, AObject);
 end;
 
+{ TUEnum }
+function TUEnum.declaration: string;
+begin
+    result := 'enum '+name+' { '+options+' };';
+end;
+
 { TUEnumList }
 function TUEnumListCompare(Item1, Item2: Pointer): integer;
 begin
@@ -330,6 +360,18 @@ end;
 procedure TUEnumList.SetItem(Index: Integer; AObject: TUEnum);
 begin
     inherited SetItem(index, AObject);
+end;
+
+{ TUProperty }
+function TUProperty.declaration: string;
+begin
+    result := 'var';
+    if (tag <> '') then begin
+        result := result+'(';
+        if (tag <> EMPTY_TAG) then result := result+tag;
+        result := result+')';
+    end;
+    result := result + ' '+modifiers+' '+ptype+' '+name+';';
 end;
 
 { TUPropertyList }
@@ -381,6 +423,17 @@ begin
     properties.Free;
 end;
 
+function TUStruct.declaration: string;
+var
+    i: integer;
+begin
+    result := 'struct '+modifiers+' '+name;
+    if (parent <> '') then result := result+ ' extends '+parent;
+    result := result+ ' {';
+    for i := 0 to properties.Count-1 do result := result +' '+ properties[i].declaration;
+    result := result+ ' };';
+end;
+
 { TUStructList }
 function TUStructListCompare(Item1, Item2: Pointer): integer;
 begin
@@ -418,6 +471,12 @@ begin
     functions.Free;
 end;
 
+function TUState.declaration: string;
+begin
+    result := modifiers+' state '+name;
+    if (extends <> '') then result := ' extends '+extends;
+end;
+
 { TUStateList }
 function TUStateListCompare(Item1, Item2: Pointer): integer;
 begin
@@ -445,6 +504,18 @@ begin
 end;
 
 { TUFunction }
+function UFunctionTypeToString(utype: TUFunctionType): string;
+begin
+    case utype of
+       uftFunction:     result := 'function';
+       uftEvent:        result := 'event';
+       uftOperator:     result := 'operator';
+       uftPreOperator:  result := 'preoperator';
+       uftPostOperator: result := 'postoperator';
+       uftDelegate:     result := 'delegate';
+    end;
+end;
+
 constructor TUFunction.Create;
 begin
     locals := TUPropertyList.Create(true);
@@ -453,6 +524,11 @@ end;
 destructor TUFunction.Destroy;
 begin
     locals.Free;
+end;
+
+function TUFunction.declaration: string;
+begin
+    result := modifiers+' '+UFunctionTypeToString(ftype)+' '+return+' '+name+' ( '+params+' )';
 end;
 
 { TUFunctionList }
@@ -548,6 +624,17 @@ begin
     result := package.path+PathDelim+filename
 end;
 
+function TUClass.declaration: string;
+begin
+    case InterfaceType of
+        itNone:     result := 'class';
+        itTribesV:  result := 'interface';
+    end;
+    result := result + ' ' + name;
+    if (parentname <> '') then result := result + 'extends' + parentname;
+    result := result + ' ' + modifiers + ';'
+end;
+
 { TUClassList }
 function TUClassListCompare(Item1, Item2: Pointer): integer;
 begin
@@ -589,6 +676,10 @@ end;
 function TUPackage.PackageDir: string;
 begin
   result := ExtractFilePath(path);
+end;
+
+function TUPackage.declaration: string;
+begin
 end;
 
 { TUPackageList }
