@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   creates HTML output
- $Id: unit_htmlout.pas,v 1.54 2004-04-01 18:40:25 elmuerte Exp $
+ $Id: unit_htmlout.pas,v 1.55 2004-06-20 21:10:04 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -2653,7 +2653,9 @@ var
 begin
   if (input = '') then exit;
   if (IsCPP) then begin
+  	//Log('input: '+input);
     result := CPPPipe.Pipe(input);
+    //Log('result: '+result);
     exit;
   end;
   guard('CommentPreprocessor');
