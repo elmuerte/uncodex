@@ -20,6 +20,7 @@ ShowLanguageDialog=yes
 UninstallDisplayIcon={app}\UnCodeX.exe
 UninstallDisplayName=UnCodeX
 AppID={FDD6ED8B-DB77-43BC-B0B2-608A1F27AABC}
+VersionInfoVersion=2.0.0.176
 
 [Types]
 Name: full; Description: Full installation
