@@ -6,7 +6,7 @@
   Purpose:
     Global PascalScript routines and functionality
 
-  $Id: unit_pascalscript.pas,v 1.13 2004-12-20 22:22:31 elmuerte Exp $
+  $Id: unit_pascalscript.pas,v 1.14 2004-12-28 15:55:58 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -97,7 +97,12 @@ begin
 
   { Misc }
   //TODO: fix
+  ps.Comp.AddTypeS('TLogType', '(ltInfo, ltWarn, ltError, ltSearch);');
   ps.AddFunction(@Log, 'procedure Log(msg: string);');
+  ps.AddFunction(@Log, 'procedure LogType(msg: string; mt: TLogType);');
+  ps.AddFunction(@Log, 'procedure LogTypeObject(msg: string; mt: TLogType; obj: TObject);');
+  ps.AddFunction(@CreateLogEntry, 'function CreateLogEntry(filename: string; line: integer; pos: integer; obj: TObject): TLogEntry;');
+  ps.AddFunction(@ResolveFilename, 'function ResolveFilename(uclass: TUClass; udecl: TUDeclaration): string;');
 end;
 
 end.
