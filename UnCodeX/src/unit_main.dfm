@@ -601,6 +601,12 @@ object frm_UnCodeX: Tfrm_UnCodeX
       object mi_Joinserver: TMenuItem
         Action = ac_JoinServer
       end
+      object N2: TMenuItem
+        Caption = '-'
+      end
+      object mi_Run: TMenuItem
+        Action = ac_Run
+      end
     end
     object mi_Output: TMenuItem
       Caption = 'Output modules'
@@ -1084,6 +1090,13 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Category = 'Class Tree'
       Caption = 'Defaultproperties'
       OnExecute = ac_DefPropsExecute
+    end
+    object ac_Run: TAction
+      Category = 'Game Server'
+      Caption = 'Run...'
+      Hint = 'Prompt for run arguments'
+      ShortCut = 16472
+      OnExecute = ac_RunExecute
     end
   end
   object il_Small: TImageList

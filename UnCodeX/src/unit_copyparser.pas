@@ -4,7 +4,7 @@
  Purpose:   parser class based on CopyParser.pas used for processing the HTML
             templates, only token is '%'
             Based on the Borland's TCopyParser
- $Id: unit_copyparser.pas,v 1.7 2004-05-08 12:06:27 elmuerte Exp $
+ $Id: unit_copyparser.pas,v 1.8 2004-07-17 22:59:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -33,8 +33,6 @@ uses
   Classes;
 
 type
-{ TCopyParser }
-
   TCopyParser = class(TObject)
   private
     FStream: TStream;
@@ -69,8 +67,6 @@ implementation
 
 uses
   SysUtils;
-
-{ TCopyParser }
 
 const
   ParseBufSize = 4096;

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.36 2004-05-08 12:06:27 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.37 2004-07-17 22:59:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -526,7 +526,7 @@ begin
   end;
   result.name := last;
   result.data := p.TokenString;
-  {$DEFINE USTRUCT_FULLCOPY}
+  //{$DEFINE USTRUCT_FULLCOPY}
   {$IF USTRUCT_FULLCOPY}
   p.FullCopy := true;
   p.GetCopyData(true);// preflush
