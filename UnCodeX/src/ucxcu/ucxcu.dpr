@@ -6,7 +6,7 @@
     Purpose:
         UnCodeX Commandline Utility Client
 
-    $Id: ucxcu.dpr,v 1.10 2004-10-20 14:19:33 elmuerte Exp $
+    $Id: ucxcu.dpr,v 1.11 2004-11-17 08:57:22 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -28,12 +28,11 @@
 }
 program ucxcu;
 
-{$APPTYPE CONSOLE}
 {$IFDEF MSWINDOWS}
-{$I ..\defines.inc}
-{$ELSE}
-{$error ..}
+{$APPTYPE CONSOLE}
 {$ENDIF}
+
+{$I ..\defines.inc}
 
 uses
   SysUtils,
