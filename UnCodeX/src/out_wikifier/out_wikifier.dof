@@ -71,8 +71,8 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=1
 MinorVer=0
-Release=3
-Build=3
+Release=4
+Build=4
 Debug=0
 PreRelease=0
 Special=0
@@ -84,7 +84,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Michiel 'El Muerte' Hendriks
 FileDescription=Class wikifier
-FileVersion=1.0.3.3
+FileVersion=1.0.4.4
 InternalName=out_wikifier
 LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
 LegalTrademarks=
@@ -98,9 +98,11 @@ Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 
 [HistoryLists\hlUnitOutputDirectory]
-Count=1
+Count=2
 Item0=..\..\DCU\out_wikifier
+Item1=..\DCU
 
 [HistoryLists\hlOutputDirectorry]
-Count=1
+Count=2
 Item0=..\..\Bin
+Item1=..\BIN

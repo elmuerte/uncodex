@@ -72,7 +72,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=0
 Release=0
-Build=8
+Build=9
 Debug=0
 PreRelease=0
 Special=0
@@ -84,7 +84,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Michiel 'El Muerte' Hendriks
 FileDescription=sample output module
-FileVersion=1.0.0.8
+FileVersion=1.0.0.9
 InternalName=out_sample
 LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
 LegalTrademarks=
@@ -98,13 +98,11 @@ Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 
 [HistoryLists\hlUnitOutputDirectory]
-Count=4
-Item0=..\..\Dcu\ucxcpp
-Item1=..\..\Dcu\out_graphviz
-Item2=..\..\DCU\out_wikifier
-Item3=..\..\Dcu\out_sample
+Count=2
+Item0=..\DCU
+Item1=..\..\DCU\out_wikifier
 
 [HistoryLists\hlOutputDirectorry]
 Count=2
-Item0=..\..\Bin
-Item1=..\..\Bin\out_sample
+Item0=..\BIN
+Item1=..\..\Bin
