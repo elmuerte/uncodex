@@ -2038,10 +2038,13 @@ begin
   tr.chrg.cpMin := re_SourceSnoop.Perform(EM_FINDWORDBREAK, WB_LEFT, curpos);
   tr.chrg.cpMax := re_SourceSnoop.Perform(EM_FINDWORDBREAK, WB_RIGHT, curpos);
   tr.lpstrText := tmp;
-  re_SourceSnoop.Cursor := crDefault;
   if (re_SourceSnoop.Perform(EM_GETTEXTRANGE, 0, integer(@tr)) > 0) then begin
-    if unit_rtfhilight.ClassesHash.Exists(LowerCase(tmp)) then re_SourceSnoop.Cursor := crHandPoint;
+    if unit_rtfhilight.ClassesHash.Exists(LowerCase(tmp)) then begin
+      re_SourceSnoop.Cursor := crHandPoint;
+      exit;
+    end;
   end;
+  re_SourceSnoop.Cursor := crDefault;
 end;
 
 procedure Tfrm_UnCodeX.mi_ClearHilightClick(Sender: TObject);
