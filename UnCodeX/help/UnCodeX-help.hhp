@@ -39,12 +39,6 @@ x04_func.gif
 x00_const.gif
 templates.html
 templates_packages_table_entry.html
-templates_class_const_entry.html
-templates_class_enum_entry.html
-templates_class_function_entry.html
-templates_class_inherited.html
-templates_class_struct_entry.html
-templates_class_var_entry.html
 templates_classes_list.html
 templates_classes_list_entry.html
 templates_classtree.html
@@ -67,6 +61,13 @@ guidelines.html
 UnCodeX-toolbar.gif
 developer_cpp.html
 developer_dde.html
+template_class_entry_variable.html
+template_class_entry_const.html
+template_class_entry_enum.html
+template_class_entry_function.html
+template_class_entry_inherited.html
+template_class_entry_state.html
+template_class_entry_struct.html
 
 [INFOTYPES]
 

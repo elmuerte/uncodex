@@ -50,7 +50,7 @@ These replacements can only be used in class.html, classes_list_entry.html and p
 </tr>
 <tr>
 	<td><pre>%class_fileage%</pre></td>
-	<td>the last file change of the class's source, format is defined in the template.ini</td>
+	<td>the last file change of the class's source, format is defined in the <a href="templates_template.ini.html">template.ini</a></td>
 </tr>
 <tr>
 	<td><pre>%class_defaultproperties%</pre></td>
@@ -62,7 +62,7 @@ These replacements can only be used in class.html, classes_list_entry.html and p
 </tr>
 <tr>
 	<td><pre>%class_children%</pre></td>
-	<td>direct sub classes of this class, including links to their pages. The title from the template.ini is added to this</td>
+	<td>direct sub classes of this class, including links to their pages. The title from the <a href="templates_template.ini.html">template.ini</a> is added to this</td>
 </tr>
 <tr>
 	<td><pre>%class_previous%</pre></td>
@@ -85,7 +85,7 @@ Replacement: %class_block_const_summary%<br />
 Template used: class_block_const_summary.html <br />
 <br />
 Block replacements are replaced with an empty string when the current class does not contain any of the elements those block covers (e.g. for %class_block_const*% it checks the class's constants) <br />
-Parent classes will also be checked if they contain elements. The number of parent classes checked is controlled in the template.ini file by the "MaxInherit" value. This can be overwritten per template setting a value for this template in the [InheritCheck] block of the template.ini
+Parent classes will also be checked if they contain elements. The number of parent classes checked is controlled in the <a href="templates_template.ini.html">template.ini</a> file by the "MaxInherit" value. This can be overwritten per template setting a value for this template in the [InheritCheck] block of the <a href="templates_template.ini.html">template.ini</a>
 <table>
 <tr>
 	<th>replacement</th>
@@ -161,7 +161,7 @@ The entry templates are used to fill in the actual data,
 
 <h2>Inherited elements templates</h2>
 All inherited elements templates are cunstructed from the same template file: <a href="template_class_entry_inherited.html">class_entry_inherited.html</a><br />
-The depth is constrolled from the template.ini file with the "MaxInherit" value.
+The depth is constrolled from the <a href="templates_template.ini.html">template.ini</a> file with the "MaxInherit" value.
 <table>
 <tr>
 	<th>replacement</th>
@@ -169,7 +169,23 @@ The depth is constrolled from the template.ini file with the "MaxInherit" value.
 </tr>
 <tr>
 	<td>%inherited_entries_const%</td>
-	<td></td>
+	<td>constants</td>
+</tr>
+<tr>
+	<td>%inherited_entries_variable%</td>
+	<td>variables</td>
+</tr>
+<tr>
+	<td>%inherited_entries_enum%</td>
+	<td>enumerations</td>
+</tr>
+<tr>
+	<td>%inherited_entries_struct%</td>
+	<td>structs</td>
+</tr>
+<tr>
+	<td>%inherited_entries_function%</td>
+	<td>functions</td>
 </tr>
 </table>
 
