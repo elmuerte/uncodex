@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   about UnCodeX dialog
- $Id: unit_about.pas,v 1.9 2003-12-16 11:37:58 elmuerte Exp $
+ $Id: unit_about.pas,v 1.10 2003-12-24 11:16:19 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -34,7 +34,6 @@ uses
 
 type
   Tfrm_About = class(TForm)
-    img_Icons: TImage;
     lbl_Title: TLabel;
     lbl_TitleShadow: TLabel;
     lbl_TitleHighlight: TLabel;
@@ -48,6 +47,7 @@ type
     lbl_Homepage: TLabel;
     lbl_TimeStamp: TLabel;
     lbl_Platform: TLabel;
+    img_Logo: TImage;
     procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
@@ -87,7 +87,6 @@ begin
   lbl_TimeStamp.Visible := lbl_TimeStamp.Caption <> '';
   lbl_Version.Caption := 'version '+APPVERSION;
   lbl_Platform.Caption := APPPLATFORM;
-  img_Icons.Picture.Assign(Application.Icon);
 end;
 
 end.

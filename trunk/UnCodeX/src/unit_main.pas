@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.68 2003-12-22 16:08:37 elmuerte Exp $
+ $Id: unit_main.pas,v 1.69 2003-12-24 11:16:19 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -410,7 +410,8 @@ implementation
 
 uses unit_settings, unit_analyse, unit_htmlout, unit_definitions,
   unit_treestate, unit_about, unit_mshtmlhelp, unit_fulltextsearch,
-  unit_tags, unit_outputdefs, unit_rtfhilight, unit_utils, unit_license;
+  unit_tags, unit_outputdefs, unit_rtfhilight, unit_utils, unit_license,
+  unit_splash;
 
 const
   PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
@@ -2069,6 +2070,10 @@ begin
     else if (OpenFTS) then ac_FullTextSearch.Execute // TODO: fixed 'enter' bug
     else if (IsBatching) then NextBatchCommand
     else if (AnalyseModified) then ac_AnalyseModified.Execute
+  end;
+  if (frm_Splash <> nil) then begin
+    frm_Splash.Close;
+    frm_Splash := nil;
   end;
   if (InitialStartup) then begin
     if MessageDlg('This is the first time you start UnCodeX (with this config file),'+#13+#10+

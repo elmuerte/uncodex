@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
- $Id: UnCodeX.dpr,v 1.26 2003-12-03 19:49:31 elmuerte Exp $
+ $Id: UnCodeX.dpr,v 1.27 2003-12-24 11:16:19 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 program UnCodeX;
@@ -43,7 +43,8 @@ uses
   unit_utils in 'unit_utils.pas',
   unit_searchform in 'unit_searchform.pas' {frm_SearchForm},
   unit_clpipe in 'unit_clpipe.pas',
-  unit_license in 'unit_license.pas' {frm_License};
+  unit_license in 'unit_license.pas' {frm_License},
+  unit_splash in 'unit_splash.pas' {frm_Splash};
 
 {$R *.res}
 
@@ -161,12 +162,13 @@ begin
   CmdStack := TStringList.Create;
   if (ParamCount() > 0) then ProcessCommandline;
   if (not HasPrevInst) then begin
+    frm_Splash := Tfrm_Splash.Create(nil);
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-  Application.CreateForm(Tfrm_About, frm_About);
-  Application.CreateForm(Tfrm_License, frm_License);
-  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+    Application.CreateForm(Tfrm_About, frm_About);
+    Application.CreateForm(Tfrm_License, frm_License);
+    if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end;
   CmdStack.Free;
