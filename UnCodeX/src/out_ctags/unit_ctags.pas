@@ -4,7 +4,7 @@
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   setup dialog + actual file creation
  						http://ctags.sourceforge.net/FORMAT
- $Id: unit_ctags.pas,v 1.4 2004-05-14 12:16:25 elmuerte Exp $
+ $Id: unit_ctags.pas,v 1.5 2004-05-24 07:47:34 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -89,7 +89,7 @@ var
   frm_CTAGS: Tfrm_CTAGS;
 
 const
-  DLLVERSION = '101';
+  DLLVERSION = '102';
 
 implementation
 
@@ -146,7 +146,7 @@ begin
   	lst.Insert(1, '!_TAG_FILE_SORTED	2	/0=unsorted, 1=sorted, 2=foldcase/');
 	  lst.Insert(2, '!_TAG_PROGRAM_AUTHOR	Michiel Hendriks	/elmuerte@drunksnipers.com/');
   	lst.Insert(3, '!_TAG_PROGRAM_NAME	UnCodeX	CTAGS output module//');
-	  lst.Insert(4, '!_TAG_PROGRAM_URL	http://wiki.beyondunreal.com/wiki/UnCodeX	/official site/');
+	  lst.Insert(4, '!_TAG_PROGRAM_URL	http://wiki.beyondunreal.com/wiki/UnCodeX	/official UnCodeX site/');
   	lst.Insert(5, '!_TAG_PROGRAM_VERSION	'+DLLVERSION+'	//');
 	  lst.SaveToFile(ed_OutputFile.Text);
     info.AStatusReport('CTAGS saved to: '+ed_OutputFile.Text);
@@ -221,43 +221,90 @@ end;
 procedure Tfrm_CTAGS.AddClassToCTAGS(uclass: TUClass; lst: TStrings);
 var
 	i,j: integer;
+
+  function LineOffset(lineno: integer; linestr: string): string; overload;
+  var
+  	isn: boolean;
+  begin
+		if (uclass.tagged) then isn := cb_OTagged.Checked
+    else isn := cb_OUntagged.Checked;
+    if (isn) then result := IntToStr(lineno)
+    else result := linestr; 
+  end;
+
+  function LineOffset(): string; overload;
+  begin
+		result := LineOffset(0, '/class '+uclass.name+'/');
+  end;
+
+  function LineOffset(uprop: TUProperty; ext: string = ''): string; overload;
+  begin
+		result := LineOffset(uprop.srcline, '/var/;/'+uprop.name+'/');
+  end;
+
+  function LineOffset(uconst: TUConst): string; overload;
+  begin
+		result := LineOffset(uconst.srcline, '/const '+uconst.name+'/');
+  end;
+
+  function LineOffset(ustruct: TUStruct): string; overload;
+  begin
+		result := LineOffset(ustruct.srcline, '/struct '+ustruct.name+'/');
+  end;
+
+  function LineOffset(uenum: TUEnum): string; overload;
+  begin
+		result := LineOffset(uenum.srcline, '/enum '+uenum.name+'/');
+  end;
+
+  function LineOffset(ufunc: TUFunction): string; overload;
+  var
+  	tmp: string;
+  begin
+  	if (ufunc.state <> nil) then tmp := '/state '+ufunc.state.name+'/;';
+		if (ufunc.return <> '') then tmp := tmp+'/'+ufunc.return+'/;';
+    tmp := tmp+'/'+ufunc.name+'/';
+		result := LineOffset(ufunc.srcline, tmp);
+  end;
+
+
 begin
 	if (cb_IClass.Checked) then begin
-		lst.Add(uclass.name+#9+uclass.FullFileName()+#9'0;"'#9'c');
+		lst.Add(uclass.name+#9+uclass.FullFileName()+#9+LineOffset()+';"'#9'c');
   end;
   if (cb_IVar.Checked) then begin
 		for i := 0 to uclass.properties.Count-1 do begin
-			lst.Add(uclass.properties[i].name+#9+uclass.FullFileName()+#9+IntToStr(uclass.properties[i].srcline)+';"'#9'v'#9+'class:'+uclass.name);
+			lst.Add(uclass.properties[i].name+#9+uclass.FullFileName()+#9+LineOffset(uclass.properties[i])+';"'#9'v'#9+'class:'+uclass.name);
 	  end;
   end;
 	if (cb_IConst.Checked) then begin
 	  for i := 0 to uclass.consts.Count-1 do begin
-			lst.Add(uclass.consts[i].name+#9+uclass.FullFileName()+#9+IntToStr(uclass.consts[i].srcline)+';"'#9'd'#9+'class:'+uclass.name);
+			lst.Add(uclass.consts[i].name+#9+uclass.FullFileName()+#9+LineOffset(uclass.consts[i])+';"'#9'd'#9+'class:'+uclass.name);
 	  end;
   end;
 	if (cb_IStruct.Checked) then begin
 	  for i := 0 to uclass.structs.Count-1 do begin
-			lst.Add(uclass.structs[i].name+#9+uclass.FullFileName()+#9+IntToStr(uclass.structs[i].srcline)+';"'#9's'#9+'class:'+uclass.name);
+			lst.Add(uclass.structs[i].name+#9+uclass.FullFileName()+#9+LineOffset(uclass.structs[i])+';"'#9's'#9+'class:'+uclass.name);
 			if (cb_IVar.Checked) then begin
 				for j := 0 to uclass.structs[i].properties.Count-1 do begin
-					lst.Add(uclass.structs[i].properties[j].name+#9+uclass.FullFileName()+#9+IntToStr(uclass.structs[i].properties[j].srcline)+';"'#9'v'#9+'class:'+uclass.name+#9'struct:'+uclass.structs[i].name);
+					lst.Add(uclass.structs[i].properties[j].name+#9+uclass.FullFileName()+#9+LineOffset(uclass.structs[i].properties[j], LineOffset(uclass.structs[i]))+';"'#9'v'#9+'class:'+uclass.name+#9'struct:'+uclass.structs[i].name);
 			  end;
 		  end;
 	  end;
   end;
 	if (cb_IEnum.Checked) then begin
 	  for i := 0 to uclass.enums.Count-1 do begin
-			lst.Add(uclass.enums[i].name+#9+uclass.FullFileName()+#9+IntToStr(uclass.enums[i].srcline)+';"'#9'e'#9+'class:'+uclass.name);
+			lst.Add(uclass.enums[i].name+#9+uclass.FullFileName()+#9+LineOffset(uclass.enums[i])+';"'#9'e'#9+'class:'+uclass.name);
 	  end;
   end;
 	if (cb_IFunc.Checked) then begin
 	  for i := 0 to uclass.functions.Count-1 do begin
-			lst.Add(uclass.functions[i].name+#9+uclass.FullFileName()+#9+IntToStr(uclass.functions[i].srcline)+';"'#9'f'#9+'class:'+uclass.name);
+			lst.Add(uclass.functions[i].name+#9+uclass.FullFileName()+#9+LineOffset(uclass.functions[i])+';"'#9'f'#9+'class:'+uclass.name);
 	  end;
   end;
 	if (cb_IDelegates.Checked) then begin
 	  for i := 0 to uclass.delegates.Count-1 do begin
-			lst.Add(uclass.delegates[i].name+#9+uclass.FullFileName()+#9+IntToStr(uclass.delegates[i].srcline)+';"'#9'f'#9+'class:'+uclass.name);
+			lst.Add(uclass.delegates[i].name+#9+uclass.FullFileName()+#9+LineOffset(uclass.delegates[i])+';"'#9'f'#9+'class:'+uclass.name);
 	  end;
   end;
 end;
