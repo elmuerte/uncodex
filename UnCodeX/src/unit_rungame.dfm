@@ -561,7 +561,7 @@ object frm_Run: Tfrm_Run
         Width = 193
         Height = 21
         Hint = 'Selected gametype'
-        ItemHeight = 13
+        ItemHeight = 0
         Sorted = True
         TabOrder = 0
         OnChange = ed_MapChange

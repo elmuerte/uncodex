@@ -1,33 +1,34 @@
 {*******************************************************************************
-    Name:
-        ucxcu.pas
-    Author(s):
-        Michiel 'El Muerte' Hendriks
-    Purpose:
-        UnCodeX Commandline Utility Client
+  Name:
+    ucxcu.pas
+  Author(s):
+    Michiel 'El Muerte' Hendriks
+  Purpose:
+    UnCodeX Commandline Utility Client
 
-    $Id: ucxcu.dpr,v 1.12 2004-11-20 12:18:44 elmuerte Exp $
+  $Id: ucxcu.dpr,v 1.13 2004-12-08 09:25:44 elmuerte Exp $
 *******************************************************************************}
 {
-    UnCodeX - UnrealScript source browser & documenter
-    Copyright (C) 2003, 2004  Michiel Hendriks
+  UnCodeX - UnrealScript source browser & documenter
+  Copyright (C) 2003, 2004  Michiel Hendriks
 
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Lesser General Public
-    License as published by the Free Software Foundation; either
-    version 2.1 of the License, or (at your option) any later version.
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 2.1 of the License, or (at your option) any later version.
 
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Lesser General Public License for more details.
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
 program ucxcu;
 
+//TODO: not correct for Kylix builds
 {$IFDEF MSWINDOWS}
 {$APPTYPE CONSOLE}
 {$ENDIF}
@@ -62,30 +63,30 @@ uses
 begin
   if (HasCmdOption('V')) then PrintVersion
   else begin
-    if (HasCmdOption('q')) then Verbose := 0
-    else if (HasCmdOption('v')) then Verbose := 1
-    else if (HasCmdOption('vv')) then Verbose := 2;
+  if (HasCmdOption('q')) then Verbose := 0
+  else if (HasCmdOption('v')) then Verbose := 1
+  else if (HasCmdOption('vv')) then Verbose := 2;
 
-    if (Verbose > 0) then PrintBanner;
-    if (HasCmdOption('h')) then PrintHelp
-    else begin
-      {$IFDEF LINUX}
-      signal(SIGINT, SigProc);
-      signal(SIGABRT, SigProc);
-      {$ENDIF}
-    	HTMLOutputDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+'Output';
-    	TemplateDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+TEMPLATEPATH+PATHDELIM+DEFTEMPLATE;
-    	HTMLHelpFile := ExtractFilePath(ExpandFileName(ParamStr(0)))+'UnCodeX.chm';
-      PackageDescFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTPDF);
-      ExtCommentFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTECF);
+  if (Verbose > 0) then PrintBanner;
+  if (HasCmdOption('h')) then PrintHelp
+  else begin
+    {$IFDEF LINUX}
+    signal(SIGINT, SigProc);
+    signal(SIGABRT, SigProc);
+    {$ENDIF}
+  	HTMLOutputDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+'Output';
+  	TemplateDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+TEMPLATEPATH+PATHDELIM+DEFTEMPLATE;
+  	HTMLHelpFile := ExtractFilePath(ExpandFileName(ParamStr(0)))+'UnCodeX.chm';
+    PackageDescFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTPDF);
+    ExtCommentFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTECF);
 
-      ConfigFile := ExtractFilePath(ParamStr(0)) + 'UnCodeX.ini';
-      CmdOption('c', ConfigFile);
-      ConfigFile := iFindFile(ConfigFile);
-      if (not HasCmdOption('nc')) then LoadConfig();
-      ProcessCommandline();
-      Main();
-    end;
+    ConfigFile := ExtractFilePath(ParamStr(0)) + 'UnCodeX.ini';
+    CmdOption('c', ConfigFile);
+    ConfigFile := iFindFile(ConfigFile);
+    if (not HasCmdOption('nc')) then LoadConfig();
+    ProcessCommandline();
+    Main();
+  end;
   end;
 end.
  
