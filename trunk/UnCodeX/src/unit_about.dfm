@@ -122,9 +122,8 @@ object frm_About: Tfrm_About
   object lbl_TimeStamp: TLabel
     Left = 56
     Top = 29
-    Width = 69
+    Width = 3
     Height = 13
-    Caption = 'lbl_TimeStamp'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clGrayText
     Font.Height = -11

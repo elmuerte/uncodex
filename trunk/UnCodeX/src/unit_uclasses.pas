@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   definitions for Unreal Classes
- $Id: unit_uclasses.pas,v 1.25 2004-05-10 20:41:35 elmuerte Exp $
+ $Id: unit_uclasses.pas,v 1.26 2004-06-19 13:04:26 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -35,11 +35,15 @@ type
   TUPackage = class;
   TUFunctionList = class;
 
-  TUConst = class(TObject)
+  // general Unreal Object
+  TUObject = class(TObject)
     name:       string;
-    value:      string;
     srcline:    integer;
     comment:    string;
+  end;
+
+  TUConst = class(TUObject)
+    value:      string;
   end;
 
   TUConstList = class(TObjectList)
@@ -51,13 +55,10 @@ type
     property Items[Index: Integer]: TUConst read GetItem write SetItem; default;
   end;
 
-  TUProperty = class(TObject)
-    name:       string;
+  TUProperty = class(TUObject)
     ptype:      string;
     modifiers:  string;
     tag:        string;
-    srcline:    integer;
-    comment:    string;
   end;
 
   TUPropertyList = class(TObjectList)
@@ -70,11 +71,8 @@ type
     property Items[Index: Integer]: TUProperty read GetItem write SetItem; default;
   end;
 
-  TUEnum = class(TObject)
-    name:       string;
+  TUEnum = class(TUObject)
     options:    string;
-    srcline:    integer;
-    comment:    string;
   end;
 
   TUEnumList = class(TObjectList)
@@ -86,14 +84,11 @@ type
     property Items[Index: Integer]: TUEnum read GetItem write SetItem; default;
   end;
 
-  TUStruct = class(TObject)
-    name:       string;
+  TUStruct = class(TUObject)
     parent:     string;
     modifiers:  string;
     data:       string;
     properties: TUPropertyList;
-    srcline:    integer;
-    comment:    string;
     constructor Create;
     destructor Destroy; override;
   end;
@@ -107,12 +102,9 @@ type
     property Items[Index: Integer]: TUStruct read GetItem write SetItem; default;
   end;
 
-  TUState = class(TObject)
-    name:       string;
+  TUState = class(TUObject)
     extends:    string;
     modifiers:  string;
-    srcline:    integer;
-    comment:    string;
     functions:  TUFunctionList;
     constructor Create;
     destructor Destroy; override;
@@ -129,15 +121,12 @@ type
 
   TUFunctionType = (uftFunction, uftEvent, uftOperator, uftPreOperator, uftPostOperator, uftDelegate);
 
-  TUFunction = class(TObject)
-    name:       string;
+  TUFunction = class(TUObject)
     ftype:      TUFunctionType;
     return:     string;
     modifiers:  string;
     params:     string;
     state:      TUState;
-    srcline:    integer;
-    comment:    string;
   end;
 
   TUFunctionList = class(TObjectList)
@@ -151,9 +140,8 @@ type
 
   TUClassList = class;
 
-  TUClass = class(TObject)
+  TUClass = class(TUObject)
   public
-    name:       string;
     filename:   string;
     package:    TUPackage;
     parent:     TUClass;
@@ -171,7 +159,6 @@ type
     treenode2:  TObject; // the second tree node (PackageTree)
     filetime:   integer;
     defaultproperties: string;
-    comment:    string;
     tagged:     boolean;
     children:   TUClassList; // not owned, don't free, don't save
     constructor Create;
@@ -189,13 +176,11 @@ type
     property Items[Index: Integer]: TUClass read GetItem write SetItem; default;
   end;
 
-  TUPackage = class(TObject)
-    name:       string;
+  TUPackage = class(TUObject)
     classes:    TUClassList;
     priority:   integer;
     path:       string;
     treenode:   TObject;
-    comment:    string;
     tagged:     boolean;
     constructor Create;
     destructor Destroy; override;

@@ -3,11 +3,11 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   about UnCodeX dialog
- $Id: unit_about.pas,v 1.13 2004-05-05 08:14:08 elmuerte Exp $
+ $Id: unit_about.pas,v 1.14 2004-06-19 13:04:26 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
-    Copyright (C) 2003  Michiel Hendriks
+    Copyright (C) 2003, 2004  Michiel Hendriks
 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
@@ -64,13 +64,12 @@ var
 
 implementation
 
-uses unit_definitions {$IFDEF MSWINDOWS}, ImageHlp, unit_main{$ENDIF};
+uses unit_definitions {$IFDEF MSWINDOWS}, ImageHlp{$ENDIF}, unit_main;
 
 {$R *.dfm}
 
 {$IFDEF MSWINDOWS}
 // read TimeDateStamp from PE header, thanks to Petr Vones (PetrV)
-
 function LinkerTimeStamp: TDateTime;
 var
   LI: TLoadedImage;
@@ -84,10 +83,13 @@ end;
 {$ENDIF}
 
 procedure Tfrm_About.FormCreate(Sender: TObject);
+var
+	buildtime: TDateTime;
 begin
   img_Logo.Picture.Bitmap.LoadFromResourceName(HInstance, 'LOGOIMG');
   {$IFDEF MSWINDOWS}
-  lbl_TimeStamp.Caption := 'Build time: '+FormatDateTime('dd-mm-yyyy hh:nn:ss',LinkerTimeStamp);
+  buildtime := LinkerTimeStamp;
+  if (buildtime > UnixDateDelta) then lbl_TimeStamp.Caption := 'Build time: '+FormatDateTime('dd-mm-yyyy hh:nn:ss',buildtime);
   {$ENDIF}
   lbl_TimeStamp.Visible := lbl_TimeStamp.Caption <> '';
   lbl_Version.Caption := 'version '+APPVERSION;
