@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.25 2003-12-03 10:31:23 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.26 2003-12-22 16:08:37 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -49,6 +49,7 @@ type
     function pVar: TUProperty;
     function pEnum: TUEnum;
     function pStruct: TUStruct;
+    function isFunctionModifier(str: string): boolean;
     function pFunc: TUFunction;
     function pState(modifiers: string): TUState;
     function pBrackets(exclude: boolean = false): string;
@@ -90,6 +91,11 @@ const
   KEYWORD_Defaultproperties = 'defaultproperties';
   KEYWORD_Cpptext = 'cpptext';
   KEYWORD_Replication = 'replication';
+  KEYWORD_Array = 'array';
+  KEYWORD_Ignores = 'ignores';
+
+var
+	FunctionModifiers: TStringList;
 
 // Create for a class list
 constructor TClassAnalyser.Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false);
@@ -436,6 +442,12 @@ begin
   uclass.structs.Add(result);
 end;
 
+function TClassAnalyser.isFunctionModifier(str: string): boolean;
+begin
+	result := false;
+	if (FunctionModifiers <> nil) then result := FunctionModifiers.IndexOf(str) > -1;
+end;
+
 // <modifiers> function <return> <name> ( <params>, <param> )
 function TClassAnalyser.pFunc: TUFunction;
 var
@@ -495,6 +507,15 @@ begin
   result.comment := trim(p.GetCopyData);
   p.NextToken;
   pBrackets; // possible operator precendence
+  // function <mod> ...
+  last := '';
+  while (isFunctionModifier(p.TokenString)) do begin
+    if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
+    result.modifiers := result.modifiers+last;
+    last := p.TokenString;
+    p.NextToken;
+    last := last+pBrackets;
+  end;
   result.return := p.TokenString; // optional return
   p.NextToken;
   // check if Class.Type
@@ -504,7 +525,7 @@ begin
     p.NextToken;
   end;
   // check if return is array<> or class<>
-  if ((CompareText(result.return, 'array') = 0) or
+  if ((CompareText(result.return, KEYWORD_array) = 0) or
       (CompareText(result.return, KEYWORD_class) = 0)) then result.return := result.return+pAngleBrackets;
   if (p.Token = '(') then begin
     result.name := result.return;
@@ -570,7 +591,7 @@ begin
   if (p.Token = '{') then begin
     p.NextToken;
     instate := true;
-    if (p.TokenSymbolIs('ignores')) then begin
+    if (p.TokenSymbolIs(KEYWORD_ignores)) then begin
       while (p.Token <> ';') do p.NextToken;
     end;
   end;
@@ -667,4 +688,21 @@ begin
   end;
 end;
 
+initialization
+	FunctionModifiers := TStringList.Create;
+  FunctionModifiers.CaseSensitive := false;
+  FunctionModifiers.Add('native');
+  FunctionModifiers.Add('intrinsic');
+  FunctionModifiers.Add('final');
+  FunctionModifiers.Add('private');
+  FunctionModifiers.Add('protected');
+  FunctionModifiers.Add('public');
+  FunctionModifiers.Add('latent');
+  FunctionModifiers.Add('iterator');
+  FunctionModifiers.Add('singular');
+  FunctionModifiers.Add('static');
+  FunctionModifiers.Add('exec');
+  FunctionModifiers.Add('simulated');
+finalization
+	FunctionModifiers.Free;
 end.

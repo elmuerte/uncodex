@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.67 2003-12-16 11:37:58 elmuerte Exp $
+ $Id: unit_main.pas,v 1.68 2003-12-22 16:08:37 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -758,15 +758,22 @@ end;
 // run a program
 procedure Tfrm_UnCodeX.ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
 var
-  se: SHELLEXECUTEINFO;
+  se: TShellExecuteInfo;
 begin
-  se.cbSize := SizeOf(SHELLEXECUTEINFO);
-  se.Wnd := Handle;
+  se.cbSize := SizeOf(TShellExecuteInfo);
+  se.Wnd := 0;
   se.lpVerb := nil;
   se.lpFile := PChar(exe);
-  if (params <> nil) then se.lpParameters := PChar(params.DelimitedText);
+  if (params <> nil) then se.lpParameters := PChar(params.DelimitedText)
+  	else se.lpParameters := nil;
   se.nShow := show;
   se.fMask := SEE_MASK_NOCLOSEPROCESS;
+  se.lpDirectory := nil;
+  se.hInstApp := 0;
+  se.lpIDList := nil;
+  se.lpClass := nil;
+  se.dwHotKey := 0;
+  se.hIcon := 0;
   if (not ShellExecuteEx(@se)) then begin
     case (GetLastError) of
       ERROR_FILE_NOT_FOUND: statustext := 'File not found: '+exe;

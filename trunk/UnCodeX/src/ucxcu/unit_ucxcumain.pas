@@ -5,7 +5,9 @@ interface
 uses
   Classes, SysUtils, IniFiles, unit_uclasses;
 
+  {$IFDEF LINUX}
   procedure SigProc(signum: integer); cdecl;
+  {$ENDIF}
   procedure LoadConfig;
   procedure ProcessCommandline;
   procedure Main;
@@ -42,6 +44,7 @@ var
   Logging: boolean = false;
   ActiveThread: TThread;
 
+{$IFDEF LINUX}
 procedure SigProc(signum: integer);
 begin
   case (signum) of
@@ -54,6 +57,7 @@ begin
       end;
   end;
 end;
+{$ENDIF}
 
 procedure LoadConfig;
 var
