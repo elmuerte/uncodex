@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.32 2004-03-29 10:39:25 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.33 2004-03-30 09:46:17 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -25,6 +25,11 @@
 }
 
 unit unit_analyse;
+
+{$IFNDEF CONSOLE}
+  {$MESSAGE 'Compiling with __USE_TREEVIEW'}
+  {$DEFINE __USE_TREEVIEW}
+{$ENDIF}
 
 interface
 
@@ -57,7 +62,7 @@ type
     function pAngleBrackets: string;
     function pCurlyBrackets(ignoreFirst: boolean = false): string;
     procedure ExecuteList;
-    procedure ExecuteSingle;
+    function ExecuteSingle: integer;
   public
     constructor Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false); overload;
     constructor Create(uclass: TUClass; status: TStatusReport; onlynew: boolean = false); overload;
@@ -71,6 +76,9 @@ var
 implementation
 
 uses
+	{$IFDEF __USE_TREEVIEW}
+  ComCtrls,
+  {$ENDIF}
   unit_definitions;
 
 const
@@ -94,6 +102,10 @@ const
   KEYWORD_Array = 'array';
   KEYWORD_Ignores = 'ignores';
   UNREAL2_AT_NAME = '@';
+
+  RES_SUCCESS = 0;
+  RES_REMOVED = 1;
+  RES_ERROR = 2;
 
 var
 	FunctionModifiers: TStringList;
@@ -153,11 +165,14 @@ procedure TClassAnalyser.ExecuteList;
 var
   i, j: integer;
 begin
-  for i := 0 to classes.Count-1 do begin
+	i := 0;
+  while (i < classes.Count) do begin
     uclass := classes[i];
     Status('Analysing class '+uclass.name+' ...', round(i/(classes.count-1)*100));
     try
-	    ExecuteSingle;
+	    case ExecuteSingle of
+        RES_SUCCESS, RES_ERROR:	Inc(i);
+      end;
     except
       on E: Exception do begin
       	Log('Unhandled exception in class '+uclass.name+': '+E.Message);
@@ -171,15 +186,25 @@ begin
   end;
 end;
 
-procedure TClassAnalyser.ExecuteSingle;
+function TClassAnalyser.ExecuteSingle: integer;
 var
   filename: string;
   currenttime: Integer;
 begin
   resetguard;
+  Result := RES_SUCCESS;
   filename := uclass.package.path+PATHDELIM+uclass.filename;
   if (not FileExists(filename)) then begin
-    Log('Cant''t open file: '+filename);
+    Log('Class has been removed: '+uclass.name+' '+filename);
+    {$IFDEF __USE_TREEVIEW}
+    if (classes <> nil) then begin
+    	TTreeNode(uclass.TreeNode2).Delete;
+	    TTreeNode(uclass.TreeNode).Delete;
+    	uclass.package.classes.Remove(uclass);
+	    classes.Remove(uclass);
+      result := RES_REMOVED;
+    end;
+    {$ENDIF}
     exit;
   end;
   currenttime := FileAge(filename);

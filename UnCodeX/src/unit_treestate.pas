@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   loading/saving the tree state
- $Id: unit_treestate.pas,v 1.19 2004-03-29 10:39:26 elmuerte Exp $
+ $Id: unit_treestate.pas,v 1.20 2004-03-30 09:46:18 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -391,7 +391,8 @@ begin
       end;
       FClassList.Add(uclass);
       uclass.package.classes.Add(uclass);
-      with FPackageTree.Items.AddChildObject(TTreeNode(uclass.package.treenode), uclass.name, uclass) do begin
+      uclass.treenode2 := FPackageTree.Items.AddChildObject(TTreeNode(uclass.package.treenode), uclass.name, uclass);
+      with TTreenode(uclass.treenode2) do begin
         ImageIndex := TTreeNode(uclass.treenode).ImageIndex;
         StateIndex := TTreeNode(uclass.treenode).StateIndex;
         SelectedIndex := TTreeNode(uclass.treenode).SelectedIndex;
