@@ -1046,6 +1046,7 @@ object frm_Settings: Tfrm_Settings
     Top = 72
     Width = 75
     Height = 25
+    Anchors = [akTop, akRight]
     TabOrder = 4
     OnClick = btn_HelpClick
     Kind = bkHelp

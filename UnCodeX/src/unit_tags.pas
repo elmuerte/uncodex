@@ -187,6 +187,7 @@ begin
     pclass := pclass.parent;
     Inc(j);
   end;
+  lv_Properties.Columns[1].Width := lv_Properties.ClientWidth-lv_Properties.Columns[0].Width;
   lv_Properties.Items.EndUpdate;
   result := true;
 end;
@@ -265,6 +266,8 @@ begin
   else begin
     Left := Mouse.CursorPos.X-16;
     Top := Mouse.CursorPos.Y-16;
+    if (Left+Width > Screen.Width) then Left := Screen.Width-Width;
+    if (Top+Height > Screen.Height) then Top := Screen.Height-Height;
   end;
 end;
 

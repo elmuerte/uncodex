@@ -163,11 +163,10 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Top = 2
       Action = ac_FindNext
     end
-    object ToolButton2: TToolButton
+    object tb_Sep4: TToolButton
       Left = 69
       Top = 2
       Width = 8
-      Caption = 'ToolButton2'
       ImageIndex = 9
       Style = tbsSeparator
     end
@@ -222,11 +221,11 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Top = 2
       Action = ac_HTMLHelp
     end
-    object ToolButton4: TToolButton
+    object btn_Sep5: TToolButton
       Left = 254
       Top = 2
       Width = 8
-      Caption = 'ToolButton4'
+      Caption = 'btn_Sep5'
       ImageIndex = 11
       Style = tbsSeparator
     end

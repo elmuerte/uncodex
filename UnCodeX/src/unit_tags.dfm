@@ -43,8 +43,8 @@ object frm_Tags: Tfrm_Tags
         Width = 18
       end
       item
-        AutoSize = True
         Caption = 'Name'
+        Width = 179
       end
       item
         Caption = 'Line'
