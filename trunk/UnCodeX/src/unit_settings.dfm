@@ -41,7 +41,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_SourcePaths
+    ActivePage = ts_GameServer
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -485,6 +485,7 @@ object frm_Settings: Tfrm_Settings
           Width = 417
           Height = 21
           Style = csDropDownList
+          Anchors = [akLeft, akTop, akRight]
           ItemHeight = 13
           ItemIndex = 1
           TabOrder = 2

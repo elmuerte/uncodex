@@ -285,7 +285,7 @@ begin
     prev := last;
     last := p.TokenString;
     p.NextToken;
-    if (p.TokenSymbolIs('extends')) then begin
+    if (p.TokenSymbolIs('extends') or p.TokenSymbolIs('expands')) then begin
       p.NextToken;
       result.parent := p.TokenString;
       p.NextToken;
@@ -414,7 +414,7 @@ begin
   pBrackets;
   result.name := p.TokenString;
   p.NextToken;
-  if (p.TokenSymbolIs('extends')) then begin
+  if (p.TokenSymbolIs('extends') or p.TokenSymbolIs('expands')) then begin
     p.NextToken; // extends
     result.extends := p.TokenString;
     p.NextToken;
@@ -444,7 +444,7 @@ begin
         p.NextToken;
         uclass.name := p.TokenString;
         p.NextToken;
-        if (p.TokenSymbolIs('extends')) then begin
+        if (p.TokenSymbolIs('extends') or p.TokenSymbolIs('expands')) then begin
           p.NextToken;
           uclass.parentname := p.TokenString;
           if (p.NextToken = '.') then begin // package.class
