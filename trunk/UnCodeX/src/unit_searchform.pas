@@ -6,7 +6,7 @@
   Purpose:
     Search dialog
 
-  $Id: unit_searchform.pas,v 1.14 2005-04-05 07:58:08 elmuerte Exp $
+  $Id: unit_searchform.pas,v 1.15 2005-04-06 10:10:53 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -35,7 +35,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons, ExtCtrls, unit_uclasses, ComCtrls, IniFiles;
+  Dialogs, StdCtrls, Buttons, ExtCtrls, unit_uclasses, ComCtrls;
 
 type
   TSearchConfig = record
@@ -84,8 +84,8 @@ type
 
   function SearchForm(var cs: TSearchConfig): boolean;
 
-  procedure LoadSearchConfig(ini: TCustomIniFile; section: string; var searchconfig: TSearchConfig);
-  procedure SaveSearchConfig(ini: TCustomIniFile; section: string; searchconfig: TSearchConfig);
+  {procedure LoadSearchConfig(ini: TCustomIniFile; section: string; var searchconfig: TSearchConfig);
+  procedure SaveSearchConfig(ini: TCustomIniFile; section: string; searchconfig: TSearchConfig);}
 
 var
   frm_SearchForm: Tfrm_SearchForm;
@@ -122,6 +122,7 @@ begin
   end;
 end;
 
+{
 procedure LoadSearchConfig(ini: TCustomIniFile; section: string; var searchconfig: TSearchConfig);
 var
   i: integer;
@@ -159,6 +160,7 @@ begin
     ini.WriteString(section, 'ftshistory:'+IntToStr(i), searchconfig.ftshistory[i]);
   end;
 end;
+}
 
 { Tfrm_SearchForm }
 

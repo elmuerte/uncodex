@@ -2,7 +2,7 @@ object frm_Settings: Tfrm_Settings
   Left = 392
   Top = 185
   Width = 670
-  Height = 405
+  Height = 400
   AlphaBlendValue = 128
   Caption = 'Settings'
   Color = clBtnFace
@@ -25,7 +25,7 @@ object frm_Settings: Tfrm_Settings
   OnShow = FormShow
   DesignSize = (
     662
-    378)
+    373)
   PixelsPerInch = 96
   TextHeight = 13
   object btn_Ok: TBitBtn
@@ -70,8 +70,8 @@ object frm_Settings: Tfrm_Settings
     Left = 145
     Top = 24
     Width = 432
-    Height = 353
-    ActivePage = ts_SourceSnoop
+    Height = 348
+    ActivePage = ts_HTMLOutput
     Align = alCustom
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -85,7 +85,7 @@ object frm_Settings: Tfrm_Settings
       TabVisible = False
       DesignSize = (
         424
-        343)
+        338)
       object btn_SAdd: TBitBtn
         Left = 0
         Top = 0
@@ -126,7 +126,7 @@ object frm_Settings: Tfrm_Settings
         Left = 0
         Top = 32
         Width = 424
-        Height = 311
+        Height = 306
         Align = alBottom
         Anchors = [akLeft, akTop, akRight, akBottom]
         BevelKind = bkSoft
@@ -192,12 +192,12 @@ object frm_Settings: Tfrm_Settings
       TabVisible = False
       DesignSize = (
         424
-        343)
+        338)
       object clb_PackagePriority: TCheckListBox
         Left = 0
         Top = 0
         Width = 392
-        Height = 343
+        Height = 338
         OnClickCheck = clb_PackagePriorityClickCheck
         Anchors = [akLeft, akTop, akRight, akBottom]
         BevelKind = bkSoft
@@ -255,7 +255,7 @@ object frm_Settings: Tfrm_Settings
       end
       object btn_AddPackage: TBitBtn
         Left = 397
-        Top = 221
+        Top = 216
         Width = 27
         Height = 25
         Anchors = [akRight, akBottom]
@@ -279,7 +279,7 @@ object frm_Settings: Tfrm_Settings
       end
       object btn_DelPackage: TBitBtn
         Left = 397
-        Top = 253
+        Top = 248
         Width = 27
         Height = 25
         Hint = 'Remove package from the listing'
@@ -301,7 +301,7 @@ object frm_Settings: Tfrm_Settings
       end
       object btn_Ignore: TBitBtn
         Left = 397
-        Top = 285
+        Top = 280
         Width = 27
         Height = 25
         Hint = 'Ignore package'
@@ -320,7 +320,7 @@ object frm_Settings: Tfrm_Settings
       end
       object btn_Import: TBitBtn
         Left = 397
-        Top = 317
+        Top = 312
         Width = 27
         Height = 25
         Hint = 'Import priority list from an .ini file'
@@ -345,7 +345,7 @@ object frm_Settings: Tfrm_Settings
       TabVisible = False
       DesignSize = (
         424
-        343)
+        338)
       object btn_AddIgnore: TBitBtn
         Left = 397
         Top = 0
@@ -374,7 +374,7 @@ object frm_Settings: Tfrm_Settings
         Left = 0
         Top = 0
         Width = 392
-        Height = 343
+        Height = 338
         Anchors = [akLeft, akTop, akRight, akBottom]
         BevelKind = bkSoft
         BorderStyle = bsNone
@@ -439,17 +439,17 @@ object frm_Settings: Tfrm_Settings
       TabVisible = False
       DesignSize = (
         424
-        343)
+        338)
       object lbl_Template: TLabel
         Left = 0
-        Top = 48
+        Top = 40
         Width = 92
         Height = 13
         Caption = 'Templates directory'
       end
       object lbl_TabsToSpaces: TLabel
         Left = 0
-        Top = 192
+        Top = 160
         Width = 235
         Height = 13
         Caption = 'Tabs to spaces (0 = template default; -1 = disable)'
@@ -463,21 +463,21 @@ object frm_Settings: Tfrm_Settings
       end
       object lbl_HTMLTargetExt: TLabel
         Left = 0
-        Top = 144
+        Top = 120
         Width = 209
         Height = 13
         Caption = 'Target extention (leave blank for the default)'
       end
       object lbl_HTMLDefaultTitle: TLabel
         Left = 0
-        Top = 96
+        Top = 80
         Width = 228
         Height = 13
         Caption = 'Default title (leave blank for the template default)'
       end
       object lbl_CPP: TLabel
         Left = 0
-        Top = 240
+        Top = 200
         Width = 353
         Height = 13
         Caption = 
@@ -486,10 +486,17 @@ object frm_Settings: Tfrm_Settings
       end
       object lbl_GZCompress: TLabel
         Left = 0
-        Top = 288
+        Top = 240
         Width = 104
         Height = 13
         Caption = 'GZip compress output'
+      end
+      object lbl_CreateSource: TLabel
+        Left = 0
+        Top = 280
+        Width = 180
+        Height = 13
+        Caption = 'Create syntax highlighted source code'
       end
       object btn_HTMLOutputDir: TBitBtn
         Left = 399
@@ -503,7 +510,7 @@ object frm_Settings: Tfrm_Settings
       end
       object ud_TabsToSpaces: TUpDown
         Left = 408
-        Top = 208
+        Top = 176
         Width = 15
         Height = 21
         Anchors = [akTop, akRight]
@@ -516,7 +523,7 @@ object frm_Settings: Tfrm_Settings
       end
       object ed_TemplateDir: TEdit
         Left = 0
-        Top = 64
+        Top = 56
         Width = 400
         Height = 21
         Anchors = [akLeft, akTop, akRight]
@@ -527,7 +534,7 @@ object frm_Settings: Tfrm_Settings
       end
       object ed_TabsToSpaces: TEdit
         Left = 0
-        Top = 208
+        Top = 176
         Width = 408
         Height = 21
         Anchors = [akLeft, akTop, akRight]
@@ -538,7 +545,7 @@ object frm_Settings: Tfrm_Settings
       end
       object ed_HTMLTargetExt: TEdit
         Left = 0
-        Top = 160
+        Top = 136
         Width = 424
         Height = 21
         Anchors = [akLeft, akTop, akRight]
@@ -559,7 +566,7 @@ object frm_Settings: Tfrm_Settings
       end
       object ed_HTMLDefaultTitle: TEdit
         Left = 0
-        Top = 112
+        Top = 96
         Width = 424
         Height = 21
         Anchors = [akLeft, akTop, akRight]
@@ -569,7 +576,7 @@ object frm_Settings: Tfrm_Settings
       end
       object ed_CPPApp: TEdit
         Left = 0
-        Top = 256
+        Top = 216
         Width = 400
         Height = 21
         Anchors = [akLeft, akTop, akRight]
@@ -579,7 +586,7 @@ object frm_Settings: Tfrm_Settings
       end
       object btn_SelectTemplateDir: TBitBtn
         Left = 399
-        Top = 64
+        Top = 56
         Width = 25
         Height = 21
         Anchors = [akTop, akRight]
@@ -589,7 +596,7 @@ object frm_Settings: Tfrm_Settings
       end
       object btn_SelectCPP: TBitBtn
         Left = 399
-        Top = 256
+        Top = 216
         Width = 25
         Height = 21
         Anchors = [akTop, akRight]
@@ -599,7 +606,7 @@ object frm_Settings: Tfrm_Settings
       end
       object cb_GZCompress: TComboBox
         Left = 0
-        Top = 304
+        Top = 256
         Width = 425
         Height = 21
         Hint = 
@@ -609,6 +616,25 @@ object frm_Settings: Tfrm_Settings
         Anchors = [akLeft, akTop, akRight]
         ItemHeight = 13
         TabOrder = 10
+        Items.Strings = (
+          'Template default'
+          'Disabled (forced)'
+          'Enabled (forced)')
+      end
+      object cb_CreateSource: TComboBox
+        Left = -1
+        Top = 296
+        Width = 425
+        Height = 21
+        Hint = 
+          'Forces the creation of the syntax highlighted source code. It'#39's ' +
+          'not adviced to use this feature because the template might (not)' +
+          ' link to the created files. It'#39's better to use an other template' +
+          '.'
+        Style = csDropDownList
+        Anchors = [akLeft, akTop, akRight]
+        ItemHeight = 13
+        TabOrder = 11
         Items.Strings = (
           'Template default'
           'Disabled (forced)'
@@ -624,7 +650,7 @@ object frm_Settings: Tfrm_Settings
       TabVisible = False
       DesignSize = (
         424
-        343)
+        338)
       object lbl_Workshop: TLabel
         Left = 0
         Top = 0
@@ -707,7 +733,7 @@ object frm_Settings: Tfrm_Settings
       TabVisible = False
       DesignSize = (
         424
-        343)
+        338)
       object lbl_StateFile: TLabel
         Left = 0
         Top = 0
@@ -829,7 +855,7 @@ object frm_Settings: Tfrm_Settings
       TabVisible = False
       DesignSize = (
         424
-        343)
+        338)
       object lbl_gpdf: TLabel
         Left = 0
         Top = 0
@@ -896,7 +922,7 @@ object frm_Settings: Tfrm_Settings
       TabVisible = False
       DesignSize = (
         424
-        343)
+        338)
       object lbl_OpenResult: TLabel
         Left = 0
         Top = 48
@@ -1028,7 +1054,7 @@ object frm_Settings: Tfrm_Settings
       TabVisible = False
       DesignSize = (
         424
-        343)
+        338)
       object btn_SetHotKey: TBitBtn
         Left = 367
         Top = 0
@@ -1043,7 +1069,7 @@ object frm_Settings: Tfrm_Settings
         Left = 0
         Top = 32
         Width = 424
-        Height = 311
+        Height = 306
         Align = alBottom
         Anchors = [akLeft, akTop, akRight, akBottom]
         BevelKind = bkSoft
@@ -1107,7 +1133,7 @@ object frm_Settings: Tfrm_Settings
       TabVisible = False
       DesignSize = (
         424
-        343)
+        338)
       object lbl_ServerCommandline: TLabel
         Left = 0
         Top = 0
@@ -1131,7 +1157,7 @@ object frm_Settings: Tfrm_Settings
       end
       object lbl_RunHint: TLabel
         Left = 0
-        Top = 317
+        Top = 312
         Width = 424
         Height = 26
         Align = alBottom
@@ -1208,7 +1234,7 @@ object frm_Settings: Tfrm_Settings
       TabVisible = False
       DesignSize = (
         424
-        343)
+        338)
       object lbl_TreeFont: TLabel
         Left = 0
         Top = 0
@@ -1351,7 +1377,7 @@ object frm_Settings: Tfrm_Settings
       TabVisible = False
       DesignSize = (
         424
-        343)
+        338)
       object lbl_BackGround: TLabel
         Left = 232
         Top = 29
@@ -1400,7 +1426,7 @@ object frm_Settings: Tfrm_Settings
         Left = 0
         Top = 136
         Width = 424
-        Height = 207
+        Height = 202
         Align = alBottom
         Anchors = [akLeft, akTop, akRight, akBottom]
         ReadOnly = True
@@ -1509,7 +1535,7 @@ object frm_Settings: Tfrm_Settings
       TabVisible = False
       DesignSize = (
         424
-        343)
+        338)
       object lbl_UPSDIR: TLabel
         Left = 0
         Top = 32
@@ -1558,12 +1584,12 @@ object frm_Settings: Tfrm_Settings
       TabVisible = False
       DesignSize = (
         424
-        343)
+        338)
       object bvl_Keys: TBevel
         Left = 0
         Top = 0
         Width = 217
-        Height = 343
+        Height = 338
         Align = alLeft
         Shape = bsRightLine
       end
@@ -1585,7 +1611,7 @@ object frm_Settings: Tfrm_Settings
         Left = 224
         Top = 40
         Width = 200
-        Height = 303
+        Height = 298
         Hint = 'Press delete to remove the selected keyword'
         Anchors = [akLeft, akTop, akRight, akBottom]
         ItemHeight = 13
@@ -1598,7 +1624,7 @@ object frm_Settings: Tfrm_Settings
         Left = 0
         Top = 40
         Width = 209
-        Height = 303
+        Height = 298
         Hint = 'Press delete to remove the selected keyword'
         Anchors = [akLeft, akTop, akBottom]
         ItemHeight = 13
@@ -1661,7 +1687,7 @@ object frm_Settings: Tfrm_Settings
     Left = 0
     Top = 0
     Width = 145
-    Height = 378
+    Height = 373
     Align = alLeft
     BevelKind = bkSoft
     BorderStyle = bsNone

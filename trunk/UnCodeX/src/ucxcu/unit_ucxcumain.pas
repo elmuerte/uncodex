@@ -6,7 +6,7 @@
   Purpose:
     Main code for the commandline utility
 
-  $Id: unit_ucxcumain.pas,v 1.21 2005-03-20 12:43:39 elmuerte Exp $
+  $Id: unit_ucxcumain.pas,v 1.22 2005-04-06 10:11:03 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -34,7 +34,7 @@ unit unit_ucxcumain;
 interface
 
 uses
-  Classes, SysUtils, IniFiles, unit_uclasses;
+  Classes, SysUtils, IniFiles, unit_uclasses, unit_config;
 
   {$IFDEF LINUX}
   procedure SigProc(signum: integer); cdecl;
@@ -49,13 +49,14 @@ uses
 var
   Verbose: byte = 1;
   ConfigFile: string;
-  sourcepaths, packagepriority, ignorepackages: TStringList;
-  PackageDescFile, ExtCommentFile, UEini: string;
+  Config: TUCXConfig;
+  //sourcepaths, packagepriority, ignorepackages: TStringList;
+  {PackageDescFile, ExtCommentFile,} UEini: string;
   // HTML output config:
-  HTMLOutputDir, TemplateDir, HTMLTargetExt, CPPApp: string;
-  TabsToSpaces: integer;
+  //HTMLOutputDir, TemplateDir, HTMLTargetExt, CPPApp: string;
+  //TabsToSpaces: integer;
   // HTML Help config:
-  HHCPath, HTMLHelpFile, HHTitle: string;
+  //HHCPath, HTMLHelpFile, HHTitle: string;
 
 implementation
 
@@ -63,11 +64,12 @@ uses
   {$IFDEF LINUX}
   Libc,
   {$ENDIF}
-  unit_packages, unit_ascii, unit_definitions, unit_analyse, unit_htmlout;
+  unit_packages, unit_ascii, unit_definitions, unit_analyse, unit_htmlout,
+  unit_ucxinifiles;
 
 var
-  PackageList: TUPackageList;
-  ClassList: TUClassList;
+  {PackageList: TUPackageList;
+  ClassList: TUClassList;}
   PhaseLabel, StatusFormat: string;
   LogFile: TextFile;
   Logging: boolean = false;
@@ -95,12 +97,13 @@ end;
 {$ENDIF}
 
 procedure LoadConfig;
-var
+{var
   ini: TMemIniFile;
   tmp, tmp2: string;
   i: integer;
-  sl: TStringList;
+  sl: TStringList;}
 begin
+  (*
   ini := TMemIniFile.Create(ConfigFile);
   sl := TStringList.Create;
   try
@@ -146,17 +149,16 @@ begin
   finally
     sl.free;
     ini.Free;
-  end;
+  end;*)
 end;
 
 procedure ProcessCommandline;
 var
-  tmp, tmp2: string;
+  tmp: string;
   lst: TStringList;
   i: integer;
-  ini: TMemIniFile;
+  ini: TUCXIniFile;
 begin
-  SetExtCommentFile(ExtCommentFile);
   if (CmdOption('l', tmp)) then begin
     if (DirectoryExists(ExtractFilePath(tmp)) or (ExtractFilePath(tmp) = '')) then begin
       Assign(LogFile, tmp);
@@ -180,22 +182,13 @@ begin
   if (CmdOption('uc', tmp) or (tmp <> '')) then begin
     UEini := ExpandFileName(tmp);
     if (FileExists(UEini)) then begin
-      ini := TMemIniFile.Create(UEini);
+      ini := TUCXIniFile.Create(UEini);
       lst := TStringList.Create;
       try
-	    {$IFDEF FPC}
-		ini.ReadSectionRaw('Editor.EditorEngine', lst);
-		{$ELSE}
-        ini.ReadSectionValues('Editor.EditorEngine', lst);
-		{$ENDIF}
+        ini.ReadStringArray('Editor.EditorEngine', 'EditPackages', lst);
         for i := 0 to lst.Count-1 do begin
-          tmp := lst[i];
-          tmp2 := Copy(tmp, 1, Pos('=', tmp));
-          Delete(tmp, 1, Pos('=', tmp));
-          if (LowerCase(tmp2) = 'editpackages=') then begin
-            Log('Unreal Config: EditPackages = '+tmp);
-            PackagePriority.Add(LowerCase(tmp));
-          end;
+          Log('Unreal Config: EditPackages = '+lst[i]);
+          config.PackagesPriority.Add(LowerCase(lst[i]));
         end;
       finally
         ini.Free;
@@ -208,8 +201,8 @@ begin
     end;
   end;
 
-  CmdOption('o', HTMLOutputDir);
-  HTMLOutputDir := ExpandFileName(HTMLOutputDir);
+  CmdOption('o', config.HTMLOutput.Outputdir);
+  config.HTMLOutput.Outputdir := ExpandFileName(config.HTMLOutput.Outputdir);
 
   if (CmdOption('p', tmp)) then begin
     lst := TStringList.Create;
@@ -221,8 +214,8 @@ begin
       {$ELSE}
       {$MESSAGE warn 'FIX'}
       {$ENDIF}
-      packagepriority.Clear;
-      packagepriority.Assign(lst);
+      config.PackagesPriority.Clear;
+      config.PackagesPriority.Assign(lst);
     finally
       lst.Free;
     end;
@@ -237,7 +230,7 @@ begin
       {$ELSE}
       {$MESSAGE warn 'FIX'}
       {$ENDIF}
-      packagepriority.AddStrings(lst);
+      config.PackagesPriority.AddStrings(lst);
     finally
       lst.Free;
     end;
@@ -252,31 +245,33 @@ begin
       {$ELSE}
       {$MESSAGE warn 'FIX'}
       {$ENDIF}
-      ignorepackages.AddStrings(lst);
+      config.ignorepackages.AddStrings(lst);
     finally
       lst.Free;
     end;
   end;
   i := 0;
   while (CmdOption('s', tmp, i)) do begin
-    sourcepaths.Add(ExcludeTrailingPathDelimiter(ExpandFileName(tmp)));
+    config.sourcepaths.Add(ExcludeTrailingPathDelimiter(ExpandFileName(tmp)));
     i := i+1;
   end;
   // add current dir
-  if (sourcepaths.Count = 0) then begin
-    if (UEini <> '') then sourcepaths.Add(ExtractFilePath(ExcludeTrailingPathDelimiter(ExtractFilePath(UEini))))
+  if (config.sourcepaths.Count = 0) then begin
+    if (UEini <> '') then config.sourcepaths.Add(ExtractFilePath(ExcludeTrailingPathDelimiter(ExtractFilePath(UEini))))
   end;
 
-  CmdOption('t', TemplateDir);
-  if (not DirectoryExists(TemplateDir)) then begin
-	FatalError('Template directory does not exist: '+TemplateDir);
+  CmdOption('t', config.HTMLoutput.TemplateDir);
+  if (not DirectoryExists(config.HTMLoutput.TemplateDir)) then begin
+	  FatalError('Template directory does not exist: '+config.HTMLoutput.TemplateDir);
   end;
-  CmdOption('d', PackageDescFile);
-  CmdOption('e', ExtCommentFile);
+  CmdOption('d', config.Comments.Packages);
+  CmdOption('e', config.Comments.Declarations);
 
   // html help
-  CmdOption('mc', HHCPath);
-  CmdOption('mo', HTMLHelpFile);
+  CmdOption('mc', config.HTMLHelp.Compiler);
+  CmdOption('mo', config.HTMLHelp.OutputFile);
+
+  SetExtCommentFile(config.Comments.Declarations);
 end;
 
 procedure Main;
@@ -285,9 +280,8 @@ var
   ps: TPackageScanner;
   ca: TClassAnalyser;
   ho: THTMLOutput;
-  hoc: THTMLoutConfig;
 begin
-  if (sourcepaths.Count <= 0) then begin
+  if (config.sourcepaths.Count <= 0) then begin
     FatalError('No source paths defined');
   end;
 
@@ -296,13 +290,13 @@ begin
 
   PhaseLabel := format(StatusFormat, [1, 'Scanning packages']);
 
-  prec.paths := sourcepaths;
+  prec.paths := config.sourcepaths;
   prec.status := statusreport;
-  prec.packagelist := PackageList;
-  prec.classlist := ClassList;
-  prec.PackagePriority := packagepriority;
-  prec.IgnorePackages := ignorepackages;
-  prec.PDFile := PackageDescFile;
+  prec.packagelist := config.PackageList;
+  prec.classlist := config.ClassList;
+  prec.PackagePriority := config.packagespriority;
+  prec.IgnorePackages := config.ignorepackages;
+  prec.PDFile := config.Comments.Packages;
   prec.CHash := nil;
 
   ps := TPackageScanner.Create(prec);
@@ -316,12 +310,12 @@ begin
   end;
   if (Verbose > 0) then writeln('');
 
-  if (ClassList.Count <= 0) then begin
+  if (config.ClassList.Count <= 0) then begin
     FatalError('No classes found');
   end;
 
   PhaseLabel := format(StatusFormat, [2, 'Analyzing classes']);
-  ca := TClassAnalyser.Create(ClassList, statusreport);
+  ca := TClassAnalyser.Create(config.ClassList, statusreport);
   ActiveThread := ca;
   try
     ca.FreeOnTerminate := false;
@@ -333,15 +327,7 @@ begin
   if (Verbose > 0) then writeln('');
 
   PhaseLabel := format(StatusFormat, [3, 'Creating HTML files']);
-  hoc.PackageList := PackageList;
-  hoc.ClassList := ClassList;
-  hoc.outputdir := HTMLOutputDir;
-  hoc.TemplateDir := TemplateDir;
-  hoc.TabsToSpaces := TabsToSpaces;
-  hoc.TargetExtention := TargetExtention;
-  hoc.CPP := CPPApp;
-  hoc.CreateSource := true;
-  ho := THTMLOutput.Create(hoc, statusreport);
+  ho := THTMLOutput.Create(config.HTMLOutput, statusreport);
   ActiveThread := ho;
   try
     ho.FreeOnTerminate := false;
@@ -352,14 +338,14 @@ begin
   end;
   if (Verbose > 0) then writeln('');
 
-  if (HTMLHelpFile <> '') then begin
+  if (config.HTMLHelp.OutputFile <> '') then begin
     PhaseLabel := format(StatusFormat, [4, 'Compiling MS HTML Help']);
     Warning('Not implemented'); //TODO: implement
   end;
 
   if (HasCmdOption('me')) then begin
     PhaseLabel := format(StatusFormat, [5, 'Clean up HTML files']);
-    RecurseDelete(HTMLOutputDir);
+    RecurseDelete(config.HTMLOutput.OutputDir);
   end;
 end;
 
@@ -411,22 +397,12 @@ begin
 end;
 
 initialization
-  sourcepaths := TStringList.Create;
-  packagepriority := TStringList.Create;
-  ignorepackages := TStringList.Create;
-  PackageList := TUPackageList.Create(true);
-  ClassList := TUClassList.Create(true);
   unit_definitions.Log := Log;
   unit_analyse.GetExternalComment := unit_definitions.RetExternalComment;
   {$IFDEF FPC}
   ErrOutput := stderr;
   {$ENDIF}
 finalization
-  sourcepaths.Free;
-  packagepriority.Free;
-  ignorepackages.Free;
-  ClassList.Free;
-  PackageList.Free;
   if (Logging) then begin
     Flush(LogFile);
     WriteLn(LogFile, '--- Log closed on: '+DateTimeToStr(Now()));

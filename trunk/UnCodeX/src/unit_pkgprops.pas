@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Package properties viewer\editor
 
-  $Id: unit_pkgprops.pas,v 1.11 2005-04-04 21:31:57 elmuerte Exp $
+  $Id: unit_pkgprops.pas,v 1.12 2005-04-06 10:10:53 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -34,7 +34,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons, IniFiles, unit_uclasses;
+  Dialogs, StdCtrls, Buttons, unit_ucxIniFiles, unit_uclasses;
 
 type
   Tfrm_PackageProps = class(TForm)
@@ -51,7 +51,7 @@ type
     procedure FormShow(Sender: TObject);
   protected
     UPackage: TUPackage;
-    ini: TMemIniFile;
+    ini: TUCXIniFile;
   public
   end;
 
@@ -72,13 +72,13 @@ var
 begin
   with (Tfrm_PackageProps.Create(Application)) do begin
     UPackage := pkg;
-    ini := TMemIniFile.Create(pkg.path+PathDelim+pkg.name+PKGCFG);
+    ini := TUCXIniFile.Create(pkg.path+PathDelim+pkg.name+PKGCFG);
     try
       cb_AllowDownload.Checked := StrToBool(ini.ReadString('Flags', 'AllowDownload', BoolToStr(cb_AllowDownload.Checked)));
       cb_ServerSideOnly.Checked := StrToBool(ini.ReadString('Flags', 'ServerSideOnly', BoolToStr(cb_ServerSideOnly.Checked)));
       cb_ClientOptional.Checked := StrToBool(ini.ReadString('Flags', 'ClientOptional', BoolToStr(cb_ClientOptional.Checked)));
       cb_Official.Checked := StrToBool(ini.ReadString('Flags', 'Official', BoolToStr(cb_Official.Checked)));
-      ini.ReadSectionValues('Package_Description', mm_Desc.Lines);
+      ini.ReadSectionRaw('Package_Description', mm_Desc.Lines);
       if (mm_Desc.Lines.Count = 0) then begin
         mm_Desc.Lines.Text := pkg.comment;
         cb_ExternalDescription.Checked := mm_Desc.Lines.count > 0;
@@ -114,14 +114,11 @@ begin
 
     if (cb_ExternalDescription.Checked) then begin
       if (config.Comments.Packages <> '') then begin
-        ini := TMemIniFile.Create(config.Comments.Packages);
+        ini := TUCXIniFile.Create(config.Comments.Packages);
         sl := TStringList.Create;
         try
-          ini.EraseSection(pkg.name);
-          ini.GetStrings(sl);
-          sl.Add('['+pkg.name+']');
-          sl.AddStrings(mm_Desc.Lines);
-          ini.SetStrings(sl);
+          ini.WriteSectionRaw(pkg.name, mm_Desc.lines);
+          ini.UpdateFile;
         finally;
           sl.Free;
           ini.Free;

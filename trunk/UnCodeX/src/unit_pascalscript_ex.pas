@@ -7,7 +7,7 @@
     Defines additional PascalScript objects and functions. (Generation is
     automated)
 
-  $Id: unit_pascalscript_ex.pas,v 1.12 2005-03-25 16:01:29 elmuerte Exp $
+  $Id: unit_pascalscript_ex.pas,v 1.13 2005-04-06 10:10:53 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -71,6 +71,8 @@ procedure RIRegister_TLogEntry(CL: TPSRuntimeClassImporter);
 procedure RIRegister_miscclasses(CL: TPSRuntimeClassImporter);
 
 procedure Register;
+
+//TODO: make UCXIniFiles
 
 implementation
 

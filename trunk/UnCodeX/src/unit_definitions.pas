@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.143 2005-04-03 07:23:26 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.144 2005-04-06 10:10:48 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -35,7 +35,7 @@ unit unit_definitions;
 interface
 
 uses
-  Hashes, unit_uclasses, Classes, IniFiles
+  Hashes, unit_uclasses, Classes
   {$IFDEF WITH_ZLIB}
   {$IFNDEF FPC}
   , gzio
@@ -193,11 +193,11 @@ uses
 {$IFDEF MSWINDOWS}
   Windows,
 {$ENDIF}
-  SysUtils;
+  SysUtils, unit_UCXIniFiles;
 
 var
   sl, TmpExtCmt: TStringList;
-  ExtCommentIni: TMemIniFile;
+  ExtCommentIni: TUCXIniFile;
 
 {$IFDEF WITH_ZLIB}
 {$IFNDEF FPC}
@@ -423,7 +423,7 @@ function RetExternalComment(ref: string): string;
 begin
   if (ExtCommentIni = nil) then exit;
   TmpExtCmt.Clear;
-  ExtCommentIni.ReadSectionValues(ref, TmpExtCmt);
+  ExtCommentIni.ReadSectionRaw(ref, TmpExtCmt);
   result := trim(TmpExtCmt.Text);
 end;
 
@@ -431,7 +431,7 @@ procedure SetExtCommentFile(ini: string);
 begin
   if (not FileExists(ini)) then exit;
   if (ExtCommentIni <> nil) then FreeAndNil(ExtCommentIni);
-  ExtCommentIni := TMemIniFile.Create(ini);
+  ExtCommentIni := TUCXIniFile.Create(ini);
 end;
 
 function GetFiles(path: string; Attr: Integer; var files: TStringList): boolean;

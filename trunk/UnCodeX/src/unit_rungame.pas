@@ -6,7 +6,7 @@
   Purpose:
     Run dialog for the game\server
 
-  $Id: unit_rungame.pas,v 1.12 2005-04-04 21:31:58 elmuerte Exp $
+  $Id: unit_rungame.pas,v 1.13 2005-04-06 10:10:53 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -150,7 +150,7 @@ var
 
 implementation
 
-uses unit_main, inifiles;
+uses unit_main, unit_ucxinifiles;
 
 var
   IncI: integer = 0;
@@ -174,14 +174,14 @@ end;
 procedure Tfrm_Run.FormCreate(Sender: TObject);
 var
   i: integer;
-  ini: TMemIniFile;
+  ini: TUCXIniFile;
 begin
   pc_Args.ActivePage := ts_URL;
   for i := 0 to config.ClassList.Count-1 do begin
     if (CompareText(config.ClassList[i].name, 'gameinfo') = 0) then FillGameInfo(config.ClassList[i]);
     if (CompareText(config.ClassList[i].name, 'mutator') = 0) then FillMutator(config.ClassList[i])
   end;
-  ini := TMemIniFile.Create(ExtractFilePath(ParamStr(0))+'\runpresets.ini');
+  ini := TUCXIniFile.Create(ExtractFilePath(ParamStr(0))+'runpresets.ini');
   try
     cb_PreSets.Items.Clear;
     ini.ReadSections(cb_PreSets.Items);
@@ -273,12 +273,12 @@ end;
 
 procedure Tfrm_Run.LoadPreSet(sectionName: string; ininame: string);
 var
-  ini: TMemIniFile;
+  ini: TUCXIniFile;
   lst: TStringList;
   i: integer;
 begin
   if (sectionName = '') then exit;
-  ini := TMemIniFile.Create(ininame);
+  ini := TUCXIniFile.Create(ininame);
   lst := TStringList.Create;
   try
     // commandline
@@ -331,12 +331,12 @@ end;
 
 procedure Tfrm_Run.SavePreSet(sectionName: string; ininame: string);
 var
-  ini: TMemIniFile;
+  ini: TUCXIniFile;
   i: integer;
   lst: TStringList;
 begin
   if (sectionname = '') then exit;
-  ini := TMemIniFile.Create(ininame);
+  ini := TUCXIniFile.Create(ininame);
   lst := TStringList.Create;
   try
     ini.EraseSection(sectionname);
@@ -553,13 +553,13 @@ end;
 
 procedure Tfrm_Run.btn_DelPreClick(Sender: TObject);
 var
-  ini: TMemIniFile;
+  ini: TUCXIniFile;
   sectionName: string;
 begin
   if (cb_PreSets.ItemIndex <> -1) then sectionName := cb_PreSets.Items[cb_PreSets.itemindex];
   if (MessageDlg('Are you sure you want to delete the preset '''+sectionname+'''?', mtConfirmation, [mbYes, mbNo], 0) = mrNo) then exit;
 
-  ini := TMemIniFile.Create(ExtractFilePath(ParamStr(0))+'\runpresets.ini');
+  ini := TUCXIniFile.Create(ExtractFilePath(ParamStr(0))+'runpresets.ini');
   try
     ini.EraseSection(sectionname);
     ini.UpdateFile;

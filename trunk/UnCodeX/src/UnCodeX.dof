@@ -51,7 +51,7 @@ Conditionals=DEBUG_BUILD
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
-RunParams=-findmemleak -debug
+RunParams=-findmemleak -debug -config UDNUnrealEngine25.ini
 HostApplication=
 Launcher=
 UseLauncher=0

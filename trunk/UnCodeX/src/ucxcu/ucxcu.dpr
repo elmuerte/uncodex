@@ -6,7 +6,7 @@
   Purpose:
     UnCodeX Commandline Utility Client
 
-  $Id: ucxcu.dpr,v 1.19 2005-03-18 14:42:42 elmuerte Exp $
+  $Id: ucxcu.dpr,v 1.20 2005-04-06 10:11:03 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -63,7 +63,9 @@ uses
   unit_analyse in '..\unit_analyse.pas',
   Hashes in '..\Hashes.pas',
   unit_ascii in 'unit_ascii.pas',
-  unit_ucxcumain in 'unit_ucxcumain.pas';
+  unit_ucxcumain in 'unit_ucxcumain.pas',
+  unit_config in '..\unit_config.pas',
+  unit_ucxinifiles in '..\unit_ucxinifiles.pas';
 
 begin
   if (HasCmdOption('V')) then PrintVersion
@@ -79,11 +81,11 @@ begin
       signal(SIGINT, SigProc);
       signal(SIGABRT, SigProc);
       {$ENDIF}
-      HTMLOutputDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+'ucxcu-output';
-      TemplateDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+TEMPLATEPATH+PATHDELIM+DEFTEMPLATE;
-  	  HTMLHelpFile := ExtractFilePath(ExpandFileName(ParamStr(0)))+'UnCodeX.chm';
-      PackageDescFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTPDF);
-      ExtCommentFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTECF);
+      //HTMLOutputDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+'ucxcu-output';
+      //TemplateDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+TEMPLATEPATH+PATHDELIM+DEFTEMPLATE;
+  	  //HTMLHelpFile := ExtractFilePath(ExpandFileName(ParamStr(0)))+'UnCodeX.chm';
+      //PackageDescFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTPDF);
+      //ExtCommentFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTECF);
 
       ConfigFile := ExtractFilePath(ParamStr(0)) + 'UnCodeX.ini';
       if (CmdOption('c', ConfigFile)) then begin
@@ -92,7 +94,8 @@ begin
           Warning('Config file does not exist: '+ConfigFile);
         end;
       end;
-      if (not HasCmdOption('nc') and FileExists(ConfigFile)) then LoadConfig();
+      config := TUCXConfig.Create(ConfigFile);
+      if (not HasCmdOption('nc') and FileExists(ConfigFile)) then config.LoadFromIni;
       ProcessCommandline();
       Main();
     end;

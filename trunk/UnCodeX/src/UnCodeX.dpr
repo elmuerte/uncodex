@@ -6,7 +6,7 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.63 2005-04-05 07:58:06 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.64 2005-04-06 10:10:48 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -185,7 +185,8 @@ begin
       Inc(j);
       ConfigFile := ParamStr(j);
       if (ExtractFilePath(ConfigFile) = '') then ConfigFile := ExtractFilePath(ParamStr(0))+ConfigFile;
-      config.StateFile := ExtractFilePath(ConfigFile)+ChangeFileExt(ExtractFilename(ConfigFile), '.ucx');
+      //TODO: fix this
+      //config.StateFile := ExtractFilePath(ConfigFile)+ChangeFileExt(ExtractFilename(ConfigFile), '.ucx');
     end
     else if (LowerCase(ParamStr(j)) = '-handle') then begin
       Inc(j);
