@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   class properties window
- $Id: unit_tags.pas,v 1.16 2004-02-23 12:20:47 elmuerte Exp $
+ $Id: unit_tags.pas,v 1.17 2004-07-28 21:31:44 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -30,7 +30,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, unit_uclasses, unit_props, StdCtrls, Buttons;
+  Dialogs, unit_uclasses, unit_props, StdCtrls, Buttons, Menus;
 
 type
   Tfrm_Tags = class(TForm)
@@ -42,6 +42,7 @@ type
       Shift: TShiftState);
     procedure FormDblClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure fr_Mainmi_Editexternalcomment1Click(Sender: TObject);
   private
     FAsWindow: boolean;
     procedure WMActivate(var Message: TWMActivate); message WM_Activate;
@@ -170,6 +171,12 @@ end;
 procedure Tfrm_Tags.FormShow(Sender: TObject);
 begin
   SetActiveWindow(Handle);
+end;
+
+procedure Tfrm_Tags.fr_Mainmi_Editexternalcomment1Click(Sender: TObject);
+begin
+  fr_Main.mi_Editexternalcomment1Click(Sender);
+
 end;
 
 end.

@@ -44,6 +44,11 @@ object frm_Tags: Tfrm_Tags
     inherited pnl_Ctrls: TPanel
       Width = 201
     end
+    inherited pm_Props: TPopupMenu
+      inherited mi_Editexternalcomment1: TMenuItem
+        OnClick = fr_Mainmi_Editexternalcomment1Click
+      end
+    end
   end
   object btn_MakeWindow: TBitBtn
     Left = 190

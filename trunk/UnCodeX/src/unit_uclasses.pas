@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   definitions for Unreal Classes
- $Id: unit_uclasses.pas,v 1.27 2004-06-19 21:17:33 elmuerte Exp $
+ $Id: unit_uclasses.pas,v 1.28 2004-07-28 21:31:44 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -32,14 +32,17 @@ uses
   Classes, Contnrs, SysUtils;
 
 type
+	TUCommentType = (ctSource, ctExtern, ctInherited);
+
   TUPackage = class;
   TUFunctionList = class;
 
   // general Unreal Object
   TUObject = class(TObject)
-    name:       string;
-    srcline:    integer;
-    comment:    string;
+    name:       	string;
+    srcline:    	integer;
+    comment:    	string;
+    CommentType:	TUCommentType;
   end;
 
   TUConst = class(TUObject)
@@ -127,6 +130,7 @@ type
     modifiers:  string;
     params:     string;
     state:      TUState;
+    args:				TUPropertyList; // parsed argument list (NOT USED)
     locals:			TUPropertyList; // local variable delcrations (NOT USED)
     constructor Create;
     destructor Destroy; override;

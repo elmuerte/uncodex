@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.112 2004-07-27 10:59:50 elmuerte Exp $
+ $Id: unit_main.pas,v 1.113 2004-07-28 21:31:44 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -498,6 +498,7 @@ var
 	SelectedUClass: TUClass = nil;
   SelectedUPackage: TUPackage = nil;
   splRightHack: integer;
+  OutputModule: THandle;
 
 {$R *.dfm}
 
@@ -585,6 +586,10 @@ procedure Tfrm_UnCodeX.ThreadTerminate(Sender: TObject);
 begin
 	if (runningthread.ClassType = TMSHTMLHelp) then ac_OpenHTMLHelp.Enabled := FileExists(HTMLHelpFile);
   runningthread := nil;
+  {if (OutputModule <> 0) then begin
+	  FreeLibrary(OutputModule);
+    OutputModule := 0;
+  end;}
   ac_Abort.Enabled := false;
   if (IsBatching) then NextBatchCommand
   else begin
@@ -1155,7 +1160,6 @@ end;
 
 procedure Tfrm_UnCodeX.CallCustomOutputModule(module: string; selectedclass: TUClass = nil; issingle: boolean = false);
 var
-  omod: THandle;
   twait: boolean;
   waitt: TThread;
   res: boolean;
@@ -1168,7 +1172,7 @@ var
   begin
   	result := false;
 		@dfunc := nil;
-    @dfunc := GetProcAddress(omod, 'UCX_Output');
+    @dfunc := GetProcAddress(OutputModule, 'UCX_Output');
     if (@dfunc <> nil) then begin
       info.AClassList := ClassList;
       info.APackageList := PackageList;
@@ -1190,7 +1194,7 @@ var
   begin
   	result := false;
 		@dfunc := nil;
-    @dfunc := GetProcAddress(omod, 'UCX_Output2');
+    @dfunc := GetProcAddress(OutputModule, 'UCX_Output2');
     if (@dfunc <> nil) then begin
       info.AClassList := ClassList;
       info.APackageList := PackageList;
@@ -1208,8 +1212,14 @@ var
   end;
 
 begin
-  omod := LoadLibrary(PChar(module));
-  if (omod <> 0) then begin
+	if (runningthread <> nil) then exit;
+  
+	if (OutputModule <> 0) then begin
+		FreeLibrary(OutputModule);
+    OutputModule := 0;
+  end;
+  OutputModule := LoadLibrary(PChar(module));
+  if (OutputModule <> 0) then begin
     try
     	res := false;
       mver := StrToIntDef(Copy(OutputModules.Values[module], 1, 1), 0);
@@ -1219,13 +1229,17 @@ begin
         if (twait) then begin
           lb_Log.Items.Clear;
           runningthread := waitt;
+          //runningthread.OnTerminate := ThreadTerminate;
           runningthread.Resume;
         end
         else if (IsBatching) then NextBatchCommand;
       end
       else if (IsBatching) then NextBatchCommand;
     finally
-      FreeLibrary(omod);
+      if (not twait) then begin
+      	FreeLibrary(OutputModule);
+        OutputModule := 0;
+      end;
     end;
   end
   else begin
@@ -1919,7 +1933,9 @@ var
   tmp: string;
 begin
   tmp := statustext;
-  if (runningthread <> nil) then tmp := tmp+' ('+ShortCutToText(ac_Abort.ShortCut)+' to abort)';
+  if (runningthread <> nil) then begin
+  	tmp := tmp+' ('+ShortCutToText(ac_Abort.ShortCut)+' to abort)';
+  end;
   sb_Status.Panels[0].Text := tmp;
 end;
 

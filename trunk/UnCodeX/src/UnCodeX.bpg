@@ -10,7 +10,7 @@ DCC = $(ROOT)\bin\dcc32.exe $**
 BRCC = $(ROOT)\bin\brcc32.exe $**
 #------------------------------------------------------------------------------
 PROJECTS = out_sample.dll out_wikifier.dll out_graphviz.dll out_ctags.dll \
-  ucxc.exe ucxcpp.exe ucxcu.exe UnCodeX.exe
+  out_unrealwiki.dll ucxcpp.exe ucxcu.exe UnCodeX.exe
 #------------------------------------------------------------------------------
 default: $(PROJECTS)
 #------------------------------------------------------------------------------
@@ -24,9 +24,6 @@ out_sample.dll: out_sample\out_sample.dpr
 out_wikifier.dll: out_wikifier\out_wikifier.dpr
   $(DCC)
 
-ucxc.exe: ucxc\ucxc.dpr
-  $(DCC)
-
 ucxcpp.exe: ucxcpp\ucxcpp.dpr
   $(DCC)
 
@@ -37,6 +34,9 @@ ucxcu.exe: ucxcu\ucxcu.dpr
   $(DCC)
 
 out_ctags.dll: out_ctags\out_ctags.dpr
+  $(DCC)
+
+out_unrealwiki.dll: out_unrealwiki\out_unrealwiki.dpr
   $(DCC)
 
 
