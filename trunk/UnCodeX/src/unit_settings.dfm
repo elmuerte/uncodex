@@ -15,6 +15,7 @@ object frm_Settings: Tfrm_Settings
   OldCreateOrder = False
   Position = poScreenCenter
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   DesignSize = (
     663
     378)
@@ -1305,48 +1306,6 @@ object frm_Settings: Tfrm_Settings
         DesignSize = (
           425
           368)
-        object Label2: TLabel
-          Left = 8
-          Top = 181
-          Width = 34
-          Height = 13
-          Caption = 'Default'
-        end
-        object Label4: TLabel
-          Left = 8
-          Top = 205
-          Width = 87
-          Height = 13
-          Caption = 'Strings/Ints/Floats'
-        end
-        object Label5: TLabel
-          Left = 8
-          Top = 229
-          Width = 49
-          Height = 13
-          Caption = 'Comments'
-        end
-        object Label6: TLabel
-          Left = 224
-          Top = 181
-          Width = 30
-          Height = 13
-          Caption = 'Macro'
-        end
-        object Label7: TLabel
-          Left = 224
-          Top = 205
-          Width = 28
-          Height = 13
-          Caption = 'Name'
-        end
-        object Label8: TLabel
-          Left = 224
-          Top = 229
-          Width = 24
-          Height = 13
-          Caption = 'Type'
-        end
         object Label9: TLabel
           Left = 224
           Top = 45
@@ -1378,66 +1337,6 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 0
           OnClick = btn_SourceFontClick
         end
-        object cb_cf0: TColorBox
-          Left = 120
-          Top = 176
-          Width = 97
-          Height = 22
-          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
-          ItemHeight = 16
-          TabOrder = 2
-          OnChange = cb_cf0Change
-        end
-        object cb_cf1: TColorBox
-          Left = 120
-          Top = 200
-          Width = 97
-          Height = 22
-          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
-          ItemHeight = 16
-          TabOrder = 3
-          OnChange = cb_cf1Change
-        end
-        object cb_cf2: TColorBox
-          Left = 120
-          Top = 224
-          Width = 97
-          Height = 22
-          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
-          ItemHeight = 16
-          TabOrder = 4
-          OnChange = cb_cf2Change
-        end
-        object cb_cf3: TColorBox
-          Left = 320
-          Top = 176
-          Width = 97
-          Height = 22
-          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
-          ItemHeight = 16
-          TabOrder = 5
-          OnChange = cb_cf3Change
-        end
-        object cb_cf4: TColorBox
-          Left = 320
-          Top = 200
-          Width = 97
-          Height = 22
-          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
-          ItemHeight = 16
-          TabOrder = 6
-          OnChange = cb_cf4Change
-        end
-        object cb_cf5: TColorBox
-          Left = 320
-          Top = 224
-          Width = 97
-          Height = 22
-          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
-          ItemHeight = 16
-          TabOrder = 7
-          OnChange = cb_cf5Change
-        end
         object cb_Background: TColorBox
           Left = 320
           Top = 40
@@ -1445,7 +1344,7 @@ object frm_Settings: Tfrm_Settings
           Height = 22
           Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
           ItemHeight = 16
-          TabOrder = 8
+          TabOrder = 2
           OnChange = cb_BackgroundChange
         end
         object ud_TabSize: TUpDown
@@ -1457,7 +1356,7 @@ object frm_Settings: Tfrm_Settings
           Min = 0
           Max = 256
           Position = 4
-          TabOrder = 9
+          TabOrder = 3
           Thousands = False
           Wrap = False
         end
@@ -1470,11 +1369,11 @@ object frm_Settings: Tfrm_Settings
           BiDiMode = bdLeftToRight
           BorderStyle = bsNone
           ParentBiDiMode = False
-          TabOrder = 10
+          TabOrder = 4
           Text = '4'
           OnChange = ed_TabSizeChange
         end
-        object ListBox1: TListBox
+        object lb_Fonts: TListBox
           Left = 8
           Top = 48
           Width = 113
@@ -1482,47 +1381,56 @@ object frm_Settings: Tfrm_Settings
           ItemHeight = 13
           Items.Strings = (
             'Default'
+            'Keywords 1'
+            'Keywords 2'
             'Strings'
             'Numbers'
-            'Comments'
             'Macros'
+            'Comments'
             'Names'
             'Class Links')
-          TabOrder = 11
+          TabOrder = 5
+          OnClick = lb_FontsClick
         end
-        object CheckBox1: TCheckBox
+        object cb_fbold: TCheckBox
           Left = 136
           Top = 80
           Width = 97
           Height = 17
           Caption = 'Bold'
-          TabOrder = 12
+          TabOrder = 6
+          OnClick = cb_fboldClick
         end
-        object CheckBox2: TCheckBox
+        object cb_fitalic: TCheckBox
           Left = 136
           Top = 96
           Width = 97
           Height = 17
           Caption = 'Italic'
-          TabOrder = 13
+          TabOrder = 7
+          OnClick = cb_fboldClick
         end
-        object CheckBox3: TCheckBox
+        object cb_funderline: TCheckBox
           Left = 280
           Top = 80
           Width = 129
           Height = 17
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Underline'
-          TabOrder = 14
+          TabOrder = 8
+          OnClick = cb_fboldClick
         end
-        object ColorBox1: TColorBox
+        object cb_SelColor: TColorBox
           Left = 136
           Top = 116
           Width = 137
           Height = 22
-          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
+          DefaultColorColor = clWindowText
+          Selected = clWindowText
+          Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbIncludeNone, cbCustomColor, cbPrettyNames]
           ItemHeight = 16
-          TabOrder = 15
+          TabOrder = 9
+          OnChange = cb_SelColorChange
         end
         object re_Preview: TRichEditEx
           Left = 8
@@ -1535,14 +1443,15 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 1
           WordWrap = False
         end
-        object CheckBox4: TCheckBox
+        object cb_fstrikeout: TCheckBox
           Left = 280
           Top = 96
           Width = 129
           Height = 17
           Anchors = [akLeft, akTop, akRight]
           Caption = 'Strikeout'
-          TabOrder = 16
+          TabOrder = 10
+          OnClick = cb_fboldClick
         end
       end
     end
@@ -1585,6 +1494,7 @@ object frm_Settings: Tfrm_Settings
           Top = 56
           Width = 201
           Height = 305
+          Hint = 'Press delete to remove the selected keyword'
           ItemHeight = 13
           Sorted = True
           TabOrder = 0
@@ -1596,6 +1506,7 @@ object frm_Settings: Tfrm_Settings
           Top = 56
           Width = 193
           Height = 305
+          Hint = 'Press delete to remove the selected keyword'
           ItemHeight = 13
           Sorted = True
           TabOrder = 1
@@ -1607,6 +1518,7 @@ object frm_Settings: Tfrm_Settings
           Top = 32
           Width = 201
           Height = 21
+          Hint = 'Press enter to add this keyword'
           CharCase = ecLowerCase
           TabOrder = 2
           OnKeyUp = ed_AddPrimKeyKeyUp
@@ -1616,6 +1528,7 @@ object frm_Settings: Tfrm_Settings
           Top = 32
           Width = 193
           Height = 21
+          Hint = 'Press enter to add this keyword'
           CharCase = ecLowerCase
           TabOrder = 3
           OnKeyUp = ed_AddSecKeyKeyUp

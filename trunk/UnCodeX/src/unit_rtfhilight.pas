@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   UScript to RTF
- $Id: unit_rtfhilight.pas,v 1.15 2003-11-22 10:45:34 elmuerte Exp $
+ $Id: unit_rtfhilight.pas,v 1.16 2003-11-22 19:27:05 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -34,8 +34,7 @@ uses
   procedure RTFHilightUScript(input, output: TStream; uclass: TUClass);
 
 var
-  cf1,cf2,cf3,cf4,cf5,cf6: TColor;
-  textfont: TFont;
+  textfont: TFont; // default font
   tabs: integer;
   ClassesHash: TStringHash;
   // fonts
@@ -56,6 +55,18 @@ uses
 const
   RTFHeader: string = '{\rtf1\ansi\ansicpg1252\deff0\deflang1033';
 
+var
+  colorTable: string;
+  ctEntries: integer;
+  rfKeyword1: string;
+  rfKeyword2: string;
+  rfString: string;
+  rfNumber: string;
+  rfMacro: string;
+  rfComment: string;
+  rfName: string;
+  rfClassLink: string;
+
 function ColorToRTF(col: TColor): string;
 var
   L: longint;
@@ -67,17 +78,41 @@ begin
   result := result+';'
 end;
 
+function CreateRTFFontString(fnt: TFont): string;
+begin
+  ctEntries := ctEntries+1;
+  colorTable := colorTable+ColorToRTF(fnt.Color);
+  result := '{\cf'+IntToStr(ctEntries);
+  if (fsBold in fnt.Style) then result := result+'\b';
+  if (fsUnderline in fnt.Style) then result := result+'\ul';
+  if (fsStrikeout in fnt.Style) then result := result+'\strike';
+  if (fsItalic in fnt.Style) then result := result+'\i';
+  result := result+' ';
+end;
+
 procedure RTFHilightUScript(input, output: TStream; uclass: TUClass);
 var
   p: TSourceParser;
   replacement, tmp: string;
 begin
+  // create font strings
+  colorTable  := '{\colortbl;'+ColorToRTF(textfont.Color);
+  ctEntries   := 1;
+  rfKeyword1  := CreateRTFFontString(fntKeyword1);
+  rfKeyword2  := CreateRTFFontString(fntKeyword2);
+  rfString    := CreateRTFFontString(fntString);
+  rfNumber    := CreateRTFFontString(fntNumber);
+  rfMacro     := CreateRTFFontString(fntMacro);
+  rfComment   := CreateRTFFontString(fntComment);
+  rfName      := CreateRTFFontString(fntName);
+  rfClassLink := CreateRTFFontString(fntClassLink);
+  colorTable  := colorTable+'}';
   // must be absolute first to prevent reading the first char
   replacement := RTFHeader+
-    '\deftab'+IntToStr(textfont.size*(15*tabs)-(30*tabs))+ 
-    '{\fonttbl\f0\fmodren '+textfont.name+';}'+
-    '{\colortbl;'+ColorToRTF(cf1)+ColorToRTF(cf2)+ColorToRTF(cf3)+ColorToRTF(cf4)+ColorToRTF(cf5)+ColorToRTF(cf6)+'}'+
-    '{\f0\fs'+IntToStr(textfont.Size*2)+'\cf6 ';
+    '\deftab'+IntToStr(textfont.size*(15*tabs)-(30*tabs))+ // set tab size
+    '{\fonttbl\f0\fmodren '+textfont.name+';}'+ // set default font
+    colorTable+ // add color table
+    '{\f0\fs'+IntToStr(textfont.Size*2)+'\cf1 '; // set default fontsize/color
   Output.WriteBuffer(PChar(replacement)^, Length(replacement));
   p := TSourceParser.Create(input, output);
   try
@@ -99,7 +134,7 @@ begin
         replacement := StringReplace(replacement, '\', '\\', [rfReplaceAll]);
         replacement := StringReplace(replacement, '{', '\{', [rfReplaceAll]);
         replacement := StringReplace(replacement, '}', '\}', [rfReplaceAll]);
-        replacement := '{\cf1'+replacement+'}'; // cf1 = string
+        replacement := rfString+replacement+'}';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toComment) then begin
@@ -108,7 +143,7 @@ begin
         replacement := StringReplace(replacement, '{', '\{', [rfReplaceAll]);
         replacement := StringReplace(replacement, '}', '\}', [rfReplaceAll]);
         replacement := StringReplace(replacement, #10, '\par ', [rfReplaceAll]);
-        replacement := '{\cf2 '+replacement+'}'; // cf2 = comment
+        replacement := rfComment+replacement+'}';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toMCommentBegin) then begin
@@ -117,7 +152,7 @@ begin
         replacement := StringReplace(replacement, '{', '\{', [rfReplaceAll]);
         replacement := StringReplace(replacement, '}', '\}', [rfReplaceAll]);
         replacement := StringReplace(replacement, #10, '\par ', [rfReplaceAll]);
-        replacement := '{\cf2 '+replacement; // cf2 = comment
+        replacement := rfComment+replacement;
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
         while (p.Token <> toMCommentEnd) do begin
           p.SkipToken(true);
@@ -132,15 +167,15 @@ begin
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toInteger) then begin
-        replacement := '{\cf1 '+p.TokenString+'}';
+        replacement := rfNumber+p.TokenString+'}';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toFloat) then begin
-        replacement := '{\cf1 '+p.TokenString+'}';
+        replacement := rfNumber+p.TokenString+'}';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toName) then begin
-        replacement := '{\cf4 '+p.TokenString+'}'; // cf4 = name
+        replacement := rfName+p.TokenString+'}';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toMacro) then begin
@@ -148,20 +183,20 @@ begin
         replacement := StringReplace(replacement, '\', '\\', [rfReplaceAll]);
         replacement := StringReplace(replacement, '{', '\{', [rfReplaceAll]);
         replacement := StringReplace(replacement, '}', '\}', [rfReplaceAll]);
-        replacement := '{\cf3 '+replacement+'}\par '; // cf3 = macro
+        replacement := rfMacro+replacement+'}\par ';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toSymbol) then begin
         tmp := LowerCase(p.TokenString);
         replacement := p.TokenString;
         if (Keywords1.Exists(tmp)) then begin
-          replacement := '{\b '+replacement+'}'; // bold
+          replacement := rfKeyword1+replacement+'}';
         end
         else if (Keywords2.Exists(tmp)) then begin
-          replacement := '{\b '+replacement+'}'; // bold
+          replacement := rfKeyword2+replacement+'}';
         end
         else if (ClassesHash.Exists(tmp)) then begin
-          replacement := '{\protected\cf5 '+replacement+'}'; // cf5
+          replacement := '{\protected'+rfClassLink+replacement+'}}';
         end;
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
@@ -187,18 +222,46 @@ begin
 end;
 
 initialization
-  cf1 := $00FF0000;
-  cf2 := $00339900;
-  cf3 := $000000CC;
-  cf4 := $00000066;
-  cf5 := $00990000;
-  cf6 := $00000000;
   textfont := TFont.Create;
   textfont.Name := 'Courier New';
   textfont.Size := 9;
+  textfont.Color := $00000000;
   tabs := 4;
+  // create fonts
+  fntKeyword1 := TFont.Create;
+  fntKeyword1.Color := $00000000;
+  fntKeyword1.Style := [fsBold];
+  fntKeyword2 := TFont.Create;
+  fntKeyword2.Color := $00555555;
+  fntKeyword2.Style := [fsBold];
+  fntString := TFont.Create;
+  fntString.Color := $00FF0000;
+  fntString.Style := [];
+  fntNumber := TFont.Create;
+  fntNumber.Color := $00FF0000;
+  fntNumber.Style := [];
+  fntMacro := TFont.Create;
+  fntMacro.Color := $000000CC;
+  fntMacro.Style := [];
+  fntComment := TFont.Create;
+  fntComment.Color := $00339900;
+  fntComment.Style := [fsItalic];
+  fntName := TFont.Create;
+  fntName.Color := $00000066;
+  fntName.Style := [];
+  fntClassLink := TFont.Create;
+  fntClassLink.Color := $00990000;
+  fntClassLink.Style := [fsUnderline];
   ClassesHash := TStringHash.Create;
 finalization
   ClassesHash.Clear;
   textfont.Free;
+  fntKeyword1.Free;
+  fntKeyword2.Free;
+  fntString.Free;
+  fntNumber.Free;
+  fntMacro.Free;
+  fntComment.Free;
+  fntName.Free;
+  fntClassLink.Free;
 end.

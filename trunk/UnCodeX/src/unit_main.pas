@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.61 2003-11-22 10:45:34 elmuerte Exp $
+ $Id: unit_main.pas,v 1.62 2003-11-22 19:27:05 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -458,6 +458,25 @@ begin
   // redirect status if set
   if (StatusHandle <> -1) then SendStatusMsg(msg, cxstStatus, progress);
 end;
+
+function FontStylesToInt(style: TFontStyles): cardinal;
+begin
+  result := 0;
+  if (fsBold in style) then result := result or 1;
+  if (fsItalic in style) then result := result or 2;
+  if (fsUnderline in style) then result := result or 4;
+  if (fsStrikeout in style) then result := result or 8;
+end;
+
+function IntToFontStyles(style: cardinal): TFontStyles;
+begin
+  result := [];
+  if (1 and style <> 0) then result := result + [fsBold];
+  if (2 and style <> 0) then result := result + [fsItalic];
+  if (4 and style <> 0) then result := result + [fsUnderline];
+  if (8 and style <> 0) then result := result + [fsStrikeout];
+end;
+
 
 { Tfrm_UnCodeX }
 { Custom methods }
@@ -1165,15 +1184,22 @@ begin
     MinimizeOnClose := ini.ReadBool('Layout', 'MinimizeOnClose', MinimizeOnClose);
     
     re_SourceSnoop.Color := ini.ReadInteger('Layout', 'Source.Color', re_SourceSnoop.Color);
-    unit_rtfhilight.cf1 := ini.ReadInteger('Layout', 'Source.CF1', unit_rtfhilight.cf1);
-    unit_rtfhilight.cf2 := ini.ReadInteger('Layout', 'Source.CF2', unit_rtfhilight.cf2);
-    unit_rtfhilight.cf3 := ini.ReadInteger('Layout', 'Source.CF3', unit_rtfhilight.cf3);
-    unit_rtfhilight.cf4 := ini.ReadInteger('Layout', 'Source.CF4', unit_rtfhilight.cf4);
-    unit_rtfhilight.cf5 := ini.ReadInteger('Layout', 'Source.CF5', unit_rtfhilight.cf5);
-    unit_rtfhilight.cf6 := ini.ReadInteger('Layout', 'Source.CF6', unit_rtfhilight.cf6);
-    unit_rtfhilight.textfont.Name := ini.ReadString('Layout', 'Source.Font.Name', unit_rtfhilight.textfont.Name);
-    unit_rtfhilight.textfont.Size := ini.ReadInteger('Layout', 'Source.Font.Size', unit_rtfhilight.textfont.Size);
-    unit_rtfhilight.tabs := ini.ReadInteger('Layout', 'Source.Tabs', unit_rtfhilight.tabs);
+    unit_rtfhilight.fntKeyword1.Color := ini.ReadInteger('Layout', 'Source.Keyword1.Color', unit_rtfhilight.fntKeyword1.Color);
+    unit_rtfhilight.fntKeyword1.Style := IntToFontStyles(ini.ReadInteger('Layout', 'Source.Keyword1.Style', FontStylesToInt(unit_rtfhilight.fntKeyword1.Style)));
+    unit_rtfhilight.fntKeyword2.Color := ini.ReadInteger('Layout', 'Source.Keyword2.Color', unit_rtfhilight.fntKeyword2.Color);
+    unit_rtfhilight.fntKeyword2.Style := IntToFontStyles(ini.ReadInteger('Layout', 'Source.Keyword2.Style', FontStylesToInt(unit_rtfhilight.fntKeyword2.Style)));
+    unit_rtfhilight.fntString.Color := ini.ReadInteger('Layout', 'Source.String.Color', unit_rtfhilight.fntString.Color);
+    unit_rtfhilight.fntString.Style := IntToFontStyles(ini.ReadInteger('Layout', 'Source.String.Style', FontStylesToInt(unit_rtfhilight.fntString.Style)));
+    unit_rtfhilight.fntNumber.Color := ini.ReadInteger('Layout', 'Source.Number.Color', unit_rtfhilight.fntNumber.Color);
+    unit_rtfhilight.fntNumber.Style := IntToFontStyles(ini.ReadInteger('Layout', 'Source.Number.Style', FontStylesToInt(unit_rtfhilight.fntNumber.Style)));
+    unit_rtfhilight.fntMacro.Color := ini.ReadInteger('Layout', 'Source.Macro.Color', unit_rtfhilight.fntMacro.Color);
+    unit_rtfhilight.fntMacro.Style := IntToFontStyles(ini.ReadInteger('Layout', 'Source.Macro.Style', FontStylesToInt(unit_rtfhilight.fntMacro.Style)));
+    unit_rtfhilight.fntComment.Color := ini.ReadInteger('Layout', 'Source.Comment.Color', unit_rtfhilight.fntComment.Color);
+    unit_rtfhilight.fntComment.Style := IntToFontStyles(ini.ReadInteger('Layout', 'Source.Comment.Style', FontStylesToInt(unit_rtfhilight.fntComment.Style)));
+    unit_rtfhilight.fntName.Color := ini.ReadInteger('Layout', 'Source.Name.Color', unit_rtfhilight.fntName.Color);
+    unit_rtfhilight.fntName.Style := IntToFontStyles(ini.ReadInteger('Layout', 'Source.Name.Style', FontStylesToInt(unit_rtfhilight.fntName.Style)));
+    unit_rtfhilight.fntClassLink.Color := ini.ReadInteger('Layout', 'Source.ClassLink.Color', unit_rtfhilight.fntClassLink.Color);
+    unit_rtfhilight.fntClassLink.Style := IntToFontStyles(ini.ReadInteger('Layout', 'Source.ClassLink.Style', FontStylesToInt(unit_rtfhilight.fntClassLink.Style)));
     { Color and fonts -- END }
     { Load layout -- END }
     { Program configuration }
@@ -1507,12 +1533,22 @@ begin
         data.Add('MinimizeOnClose='+BoolToStr(MinimizeOnClose));
 
         data.Add('Source.Color='+IntToStr(re_SourceSnoop.Color));
-        data.Add('Source.CF1='+IntToStr(unit_rtfhilight.cf1));
-        data.Add('Source.CF2='+IntToStr(unit_rtfhilight.cf2));
-        data.Add('Source.CF3='+IntToStr(unit_rtfhilight.cf3));
-        data.Add('Source.CF4='+IntToStr(unit_rtfhilight.cf4));
-        data.Add('Source.CF5='+IntToStr(unit_rtfhilight.cf5));
-        data.Add('Source.CF6='+IntToStr(unit_rtfhilight.cf6));
+        data.Add('Source.Keyword1.Color='+IntToStr(unit_rtfhilight.fntKeyword1.Color));
+        data.Add('Source.Keyword1.Style='+IntToStr(FontStylesToInt(unit_rtfhilight.fntKeyword1.Style)));
+        data.Add('Source.Keyword2.Color='+IntToStr(unit_rtfhilight.fntKeyword2.Color));
+        data.Add('Source.Keyword2.Style='+IntToStr(FontStylesToInt(unit_rtfhilight.fntKeyword2.Style)));
+        data.Add('Source.String.Color='+IntToStr(unit_rtfhilight.fntString.Color));
+        data.Add('Source.String.Style='+IntToStr(FontStylesToInt(unit_rtfhilight.fntString.Style)));
+        data.Add('Source.Number.Color='+IntToStr(unit_rtfhilight.fntNumber.Color));
+        data.Add('Source.Number.Style='+IntToStr(FontStylesToInt(unit_rtfhilight.fntNumber.Style)));
+        data.Add('Source.Macro.Color='+IntToStr(unit_rtfhilight.fntMacro.Color));
+        data.Add('Source.Macro.Style='+IntToStr(FontStylesToInt(unit_rtfhilight.fntMacro.Style)));
+        data.Add('Source.Comment.Color='+IntToStr(unit_rtfhilight.fntComment.Color));
+        data.Add('Source.Comment.Style='+IntToStr(FontStylesToInt(unit_rtfhilight.fntComment.Style)));
+        data.Add('Source.Name.Color='+IntToStr(unit_rtfhilight.fntName.Color));
+        data.Add('Source.Name.Style='+IntToStr(FontStylesToInt(unit_rtfhilight.fntName.Style)));
+        data.Add('Source.ClassLink.Color='+IntToStr(unit_rtfhilight.fntClassLink.Color));
+        data.Add('Source.ClassLink.Style='+IntToStr(FontStylesToInt(unit_rtfhilight.fntClassLink.Style)));
         data.Add('Source.Font.Name='+unit_rtfhilight.textfont.Name);
         data.Add('Source.Font.Size='+IntToStr(unit_rtfhilight.textfont.Size));
         data.Add('Source.Tabs='+IntToStr(unit_rtfhilight.tabs));
