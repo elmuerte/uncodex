@@ -19,6 +19,15 @@ object frm_CreateNewClass: Tfrm_CreateNewClass
     271)
   PixelsPerInch = 96
   TextHeight = 13
+  object bvl_MsgBorder: TBevel
+    Left = 8
+    Top = 136
+    Width = 337
+    Height = 97
+    Anchors = [akLeft, akTop, akRight]
+    ParentShowHint = False
+    ShowHint = True
+  end
   object lbl_Package: TLabel
     Left = 8
     Top = 8
@@ -40,7 +49,7 @@ object frm_CreateNewClass: Tfrm_CreateNewClass
     Height = 13
     Caption = 'New class'
   end
-  object Label1: TLabel
+  object lbl_FileName: TLabel
     Left = 16
     Top = 144
     Width = 45
@@ -52,6 +61,9 @@ object frm_CreateNewClass: Tfrm_CreateNewClass
     Top = 208
     Width = 321
     Height = 17
+    Hint = 
+      'There is already a class with that name. You are advised to use ' +
+      'an unique class name.'
     Alignment = taCenter
     Anchors = [akLeft, akTop, akRight]
     AutoSize = False
@@ -64,21 +76,11 @@ object frm_CreateNewClass: Tfrm_CreateNewClass
     Font.Style = [fsBold]
     ParentColor = False
     ParentFont = False
+    ParentShowHint = False
     ShowAccelChar = False
+    ShowHint = True
     Layout = tlCenter
     Visible = False
-  end
-  object bvl_MsgBorder: TBevel
-    Left = 8
-    Top = 136
-    Width = 337
-    Height = 97
-    Hint = 
-      'There is already a class with that name. You are advised to use ' +
-      'an unique class name.'
-    Anchors = [akLeft, akTop, akRight]
-    ParentShowHint = False
-    ShowHint = True
   end
   object cb_Package: TComboBox
     Left = 8

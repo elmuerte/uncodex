@@ -23,7 +23,7 @@ type
     btn_Cancel: TBitBtn;
     bvl_MsgBorder: TBevel;
     ed_Filename: TEdit;
-    Label1: TLabel;
+    lbl_FileName: TLabel;
     cb_NewPackage: TCheckBox;
     lbl_Duplicate: TLabel;
     ed_NewClass: TEdit;
@@ -41,6 +41,7 @@ type
   end;
 
   procedure CreateSubUClass(uparent: TObject);
+  procedure MoveUClass(mclass: TUClass);
 
 var
   frm_CreateNewClass: Tfrm_CreateNewClass;
@@ -48,9 +49,57 @@ var
 implementation
 
 uses unit_main, unit_copyparser, unit_definitions, unit_analyse,
-  unit_rtfhilight;
+  unit_rtfhilight, unit_moveclass, shellapi;
 
 {$R *.dfm}
+
+function CreatePackageDir(name: string; var seldir: string): boolean;
+var
+	i: integer;
+begin
+	result := false;
+  for i := 0 to SourcePaths.Count-1 do begin
+		if (FileExists(SourcePaths[i]+PathDelim+'System'+PathDelim+'ucc.exe')) then begin
+      seldir := SourcePaths[i];
+      break;
+    end;
+  end;
+  if (seldir = '') then seldir := SourcePaths[0];
+  if (SelectDirectory('Select the base directory for the new package: '+name, '', seldir)) then begin
+  	seldir := seldir+PathDelim+name+PathDelim+'Classes';
+    if (not ForceDirectories(seldir)) then begin
+      MessageDlg('Could not create package directory:'+#13+#10+seldir, mtError, [mbOK], 0);
+      exit;
+    end;
+    result := true;
+  end
+end;
+
+function CreateUPackage(name, seldir: string): TUPackage;
+begin
+	result := TUPackage.Create;
+  result.name := name;
+  result.priority := PackageList.Count;
+  result.path := seldir;
+  result.treenode := frm_UnCodeX.tv_Packages.Items.AddObject(nil, result.name, result);
+  PackageList.Add(result);
+  PackagePriority.Add(result.name);
+  frm_UnCodeX.tv_Packages.AlphaSort();
+  Log('Adding new package '''+result.name+''' to priority list, check the package priority list');
+end;
+
+function moveFile(filename, dest: string): boolean;
+var
+  fos: TSHFileOpStruct;
+begin
+  Log('Moving file "'+filename+'" to "'+dest+'"');
+  FillChar(fos, sizeof(fos), 0);
+  fos.wFunc := FO_MOVE;
+  fos.pFrom := PChar(filename);
+  fos.pTo := PChar(dest);
+  fos.fFlags := FOF_ALLOWUNDO or FOF_NOCONFIRMATION;
+  result := ShFileOperation(fos) = 0;
+end;
 
 procedure CreateSubUClass(uparent: TObject);
 var
@@ -77,6 +126,51 @@ begin
     end;
     ed_NewClassChange(nil);
     ShowModal;
+  end;
+end;
+
+procedure MoveUClass(mclass: TUClass);
+var
+	i: integer;
+  seldir: string;
+  upkg, opkg: TUPackage;
+begin
+  with (Tfrm_MoveClass.Create(Application)) do begin
+    cb_NewPkg.Items.Clear;
+    for i := 0 to PackageList.Count-1 do begin
+      cb_NewPkg.Items.AddObject(PackageList[i].name, PackageList[i]);
+    end;
+    ed_Class.Text := mclass.name;
+    ed_OldPkg.Text := mclass.package.name;
+    uclass := mclass;
+    if (ShowModal = mrOk) then begin
+			if (cb_NewPackage.Checked) then begin
+    		if (not CreatePackageDir(cb_NewPkg.Text, seldir)) then exit;
+        upkg := CreateUPackage(cb_NewPkg.Text, seldir);
+  		end
+      else begin
+      	upkg := TUPackage(cb_NewPkg.Items.Objects[cb_NewPkg.Items.IndexOf(cb_NewPkg.Text)]);
+      	seldir := upkg.path;
+      end;
+      opkg := uclass.package;
+      moveFile(opkg.path+PathDelim+uclass.filename, seldir);
+      uclass.package := upkg;
+      upkg.classes.Add(uclass);
+      upkg.classes.Sort;
+      opkg.classes.Remove(uclass);
+      TTreeNode(uclass.treenode2).MoveTo(TTreeNode(upkg.treenode), naAddChild);
+      TTreeNode(upkg.treenode).AlphaSort();
+      TreeUpdated := true;
+      if MessageDlg('Do you want to search all classes for references to the old '+#13+#10+'location of this class?'+#13+#10+'e.g.: '+opkg.name+'.'+uclass.name, mtConfirmation, [mbYes,mbNo], 0) = mrYes then begin
+				SearchConfig.query := opkg.name+'.'+uclass.name;
+        SearchConfig.Wrapped := true;
+        SearchConfig.isFTS := true;
+        SearchConfig.isRegex := false;
+        SearchConfig.Scope := 0;
+        SearchConfig.searchtree := frm_UnCodeX.tv_Classes;
+        frm_UnCodeX.ac_FindNext.Execute;
+      end;
+    end;
   end;
 end;
 
@@ -130,28 +224,13 @@ end;
 procedure Tfrm_CreateNewClass.btn_OkClick(Sender: TObject);
 var
   seldir: string;
-  i: integer;
   fs, ft: TFileStream;
   p: TCopyParser;
   replacement: string;
   newclass: TUClass;
 begin
 	if (cb_NewPackage.Checked) then begin
-		for i := 0 to SourcePaths.Count-1 do begin
-			if (FileExists(SourcePaths[i]+PathDelim+'System'+PathDelim+'ucc.exe')) then begin
-        seldir := SourcePaths[i];
-        break;
-      end;
-    end;
-    if (seldir = '') then seldir := SourcePaths[0];
-    if (SelectDirectory('Select the base directory for the new package: '+cb_Package.Text, '', seldir)) then begin
-    	seldir := seldir+PathDelim+cb_Package.Text+PathDelim+'Classes';
-      if (not ForceDirectories(seldir)) then begin
-        MessageDlg('Could not create package directory:'+#13+#10+seldir, mtError, [mbOK], 0);
-        exit;
-      end;
-    end
-    else exit;
+    if (not CreatePackageDir(cb_Package.Text, seldir)) then exit;
   end
   else seldir := TUPackage(cb_Package.Items.Objects[cb_Package.Items.IndexOf(cb_Package.Text)]).path;
   if (FileExists(seldir+PathDelim+ed_NewClass.Text+UCEXT)) then begin
@@ -193,15 +272,7 @@ begin
   frm_UnCodeX.ExecuteProgram(seldir+PathDelim+ed_NewClass.Text+UCEXT);
 
   if ((uclass <> nil) and (upackage = nil)) then begin // new package
-    upackage := TUPackage.Create;
-    upackage.name := cb_Package.Text;
-    upackage.priority := PackageList.Count;
-    upackage.path := seldir;
-    upackage.treenode := frm_UnCodeX.tv_Packages.Items.AddObject(nil, upackage.name, upackage);
-    PackageList.Add(upackage);
-    PackagePriority.Add(upackage.name);
-    frm_UnCodeX.tv_Packages.AlphaSort();
-    Log('Adding new package '''+upackage.name+''' to priority list, check the package priority list');
+    upackage := CreateUPackage(cb_Package.Text, seldir);
   end;
 
   if ((upackage <> nil) and (uclass <> nil)) then begin
@@ -217,12 +288,12 @@ begin
     newclass.priority := upackage.priority;
     newclass.tagged := upackage.tagged;
 
-    newclass.treenode := frm_UnCodeX.tv_Packages.Items.AddChildObject(TTreeNode(upackage.treenode), newclass.name, newclass);
-    if (newclass.tagged) then TTreeNode(newclass.treenode).ImageIndex := ICON_CLASS_TAGGED
-    else TTreeNode(newclass.treenode).ImageIndex := ICON_CLASS;
-    TTreeNode(newclass.treenode).SelectedIndex := TTreeNode(newclass.treenode).ImageIndex;
-    TTreeNode(newclass.treenode).StateIndex := TTreeNode(newclass.treenode).ImageIndex;
-    TTreeNode(newclass.treenode).Parent.AlphaSort();
+    newclass.treenode2 := frm_UnCodeX.tv_Packages.Items.AddChildObject(TTreeNode(upackage.treenode), newclass.name, newclass);
+    if (newclass.tagged) then TTreeNode(newclass.treenode2).ImageIndex := ICON_CLASS_TAGGED
+    else TTreeNode(newclass.treenode2).ImageIndex := ICON_CLASS;
+    TTreeNode(newclass.treenode2).SelectedIndex := TTreeNode(newclass.treenode2).ImageIndex;
+    TTreeNode(newclass.treenode2).StateIndex := TTreeNode(newclass.treenode2).ImageIndex;
+    TTreeNode(newclass.treenode2).Parent.AlphaSort();
 
     newclass.treenode := frm_UnCodeX.tv_Classes.Items.AddChildObject(TTreeNode(uclass.treenode), newclass.name, newclass);
     if (newclass.tagged) then TTreeNode(newclass.treenode).ImageIndex := ICON_CLASS_TAGGED
