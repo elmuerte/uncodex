@@ -954,7 +954,7 @@ object frm_Settings: Tfrm_Settings
         end
         object cb_MinimzeOnClose: TCheckBox
           Left = 8
-          Top = 56
+          Top = 80
           Width = 113
           Height = 17
           Caption = 'Minimize on close'
@@ -1016,6 +1016,14 @@ object frm_Settings: Tfrm_Settings
           InvalidKeys = [hcNone]
           Modifiers = []
           TabOrder = 5
+        end
+        object cb_ModifiedOnStartup: TCheckBox
+          Left = 8
+          Top = 56
+          Width = 193
+          Height = 17
+          Caption = 'Analyse modified classes on startup'
+          TabOrder = 6
         end
       end
     end

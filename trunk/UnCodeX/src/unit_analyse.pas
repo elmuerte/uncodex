@@ -9,6 +9,7 @@ uses
 type
   TClassAnalyser = class(TThread)
   private
+    onlynew: boolean;
     instate: boolean;
     currentState: TUState;
     classes: TUClassList;
@@ -30,8 +31,8 @@ type
     procedure ExecuteList;
     procedure ExecuteSingle;
   public
-    constructor Create(classes: TUClassList; status: TStatusReport); overload;
-    constructor Create(uclass: TUClass; status: TStatusReport); overload;
+    constructor Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false); overload;
+    constructor Create(uclass: TUClass; status: TStatusReport; onlynew: boolean = false); overload;
     destructor Destroy; override;
     procedure Execute; override;
   end;
@@ -40,28 +41,28 @@ implementation
 
 uses unit_main;
 
-constructor TClassAnalyser.Create(classes: TUClassList; status: TStatusReport);
+constructor TClassAnalyser.Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false);
 begin
   self.classes := classes;
   Self.status := status;
+  Self.onlynew := onlynew;
   Self.FreeOnTerminate := true;
   instate := false;
   inherited Create(true);
 end;
 
-constructor TClassAnalyser.Create(uclass: TUClass; status: TStatusReport);
+constructor TClassAnalyser.Create(uclass: TUClass; status: TStatusReport; onlynew: boolean = false);
 begin
   self.classes := nil;
   self.uclass := uclass;
   Self.status := status;
+  Self.onlynew := onlynew;
   Self.FreeOnTerminate := true;
   inherited Create(true);
 end;
 
 destructor TClassAnalyser.Destroy;
 begin
-  p.Free;
-  fs.Free;
   inherited Destroy();
 end;
 
@@ -91,29 +92,40 @@ begin
 end;
 
 procedure TClassAnalyser.ExecuteSingle;
+var
+  filename: string;
+  currenttime: Integer;
 begin
-  if (not FileExists(uclass.package.path+PATHDELIM+CLASSDIR+PATHDELIM+uclass.filename)) then begin
-    Log('Cant''t open file: '+uclass.package.path+PATHDELIM+CLASSDIR+PATHDELIM+uclass.filename);
+  filename := uclass.package.path+PATHDELIM+CLASSDIR+PATHDELIM+uclass.filename;
+  if (not FileExists(filename)) then begin
+    Log('Cant''t open file: '+filename);
     exit;
   end;
-  uclass.filetime := FileAge(uclass.package.path+PATHDELIM+CLASSDIR+PATHDELIM+uclass.filename);
-  fs := TFileStream.Create(uclass.package.path+PATHDELIM+CLASSDIR+PATHDELIM+uclass.filename, fmOpenRead or fmShareDenyWrite);
+  currenttime := FileAge(filename);
+  if (onlynew and (currenttime <= uclass.filetime)) then exit;
+  if (onlynew) then Log('Class changed since last time: '+uclass.name);
+  uclass.filetime := currenttime;
+  fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
   p := TUCParser.Create(fs);
-
-  uclass.consts.Clear;
-  uclass.properties.Clear;
-  uclass.enums.Clear;
-  uclass.structs.Clear;
-  uclass.functions.Clear;
-  uclass.states.Clear;
-  AnalyseClass();
-  if (not Self.Terminated) then begin
-    uclass.consts.Sort;
-    uclass.properties.Sort;
-    uclass.enums.Sort;
-    uclass.structs.Sort;
-    uclass.functions.Sort;
-    uclass.states.Sort;
+  try
+    uclass.consts.Clear;
+    uclass.properties.Clear;
+    uclass.enums.Clear;
+    uclass.structs.Clear;
+    uclass.functions.Clear;
+    uclass.states.Clear;
+    AnalyseClass();
+    if (not Self.Terminated) then begin
+      uclass.consts.Sort;
+      uclass.properties.Sort;
+      uclass.enums.Sort;
+      uclass.structs.Sort;
+      uclass.functions.Sort;
+      uclass.states.Sort;
+    end;
+  finally
+    p.Free;
+    fs.Free;
   end;
 end;
 
