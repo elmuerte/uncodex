@@ -158,7 +158,7 @@ type
     mi_Output: TMenuItem;
     mi_SingleOutput: TMenuItem;
     ac_SourceSnoop: TAction;
-    mi_Test: TMenuItem;
+    ac_VSourceSnoop: TAction;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -217,6 +217,12 @@ type
     procedure tv_ClassesMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure ac_SourceSnoopExecute(Sender: TObject);
+    procedure tv_ClassesChange(Sender: TObject; Node: TTreeNode);
+    procedure ac_VSourceSnoopExecute(Sender: TObject);
+    procedure re_SourceSnoopKeyDown(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure re_SourceSnoopKeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -924,6 +930,9 @@ begin
     lb_Log.Height := ini.ReadInteger('Layout', 'LogHeight', lb_Log.Height);
     mi_Log.Checked := ini.ReadBool('Layout', 'Log', true);
     mi_Log.OnClick(Sender);
+    mi_SourceSnoop.Checked := ini.ReadBool('Layout', 'SourceSnoop', false);
+    re_SourceSnoop.Width := ini.ReadInteger('Layout', 'SourceSnoopWidth', re_SourceSnoop.Width);
+    mi_SourceSnoop.OnClick(Sender);
     mi_StayOnTop.Checked := ini.ReadBool('Layout', 'StayOnTop', false);
     if (mi_StayOnTop.Checked) then FormStyle := fsStayOnTop;
     mi_Saveposition.Checked := ini.ReadBool('Layout', 'SavePosition', false);
@@ -1369,6 +1378,8 @@ begin
       //ini.WriteBool('Layout', 'ClassTree', mi_ClassTree.Checked);
       ini.WriteBool('Layout', 'Log', mi_Log.Checked);
       ini.WriteInteger('Layout', 'LogHeight', lb_Log.Height);
+      ini.WriteBool('Layout', 'SourceSnoop', mi_SourceSnoop.Checked);
+      ini.WriteInteger('Layout', 'SourceSnoopWidth', re_SourceSnoop.Width);
       ini.WriteBool('Layout', 'StayOnTop', mi_StayOnTop.Checked);
       ini.WriteBool('Layout', 'SavePosition', mi_Saveposition.Checked);
       ini.WriteBool('Layout', 'SaveSize', mi_Savesize.Checked);
@@ -1853,6 +1864,7 @@ var
   ms: TMemoryStream;
   fs: TFileStream;
   filename: string;
+  tmpdir: array[0..MAX_PATH] of char;
 begin
   if (ActiveControl.ClassType = TTreeView) then begin
     with (ActiveControl as TTreeView) do begin
@@ -1866,9 +1878,12 @@ begin
           RTFHilightUScript(fs, ms);
           re_SourceSnoop.Lines.Clear;
           //re_SourceSnoop.PlainText := false;
-          re_SourceSnoop.Lines.LoadFromStream(ms);
-          //ms.SaveToFile('e:\test.rtf');
-          //re_SourceSnoop.Lines.LoadFromFile('e:\test.rtf');
+          //re_SourceSnoop.Lines.LoadFromStream(ms);
+          // TODO: FIXME:
+          GetTempPath(MAX_PATH-1, tmpdir);
+          ms.SaveToFile(tmpdir+'\uncodex.rtf');
+          re_SourceSnoop.Lines.LoadFromFile(tmpdir+'\uncodex.rtf');
+          DeleteFile(tmpdir+'\uncodex.rtf');
         finally
           ms.Free;
           fs.Free;
@@ -1876,6 +1891,32 @@ begin
       end;
     end;
   end;
+end;
+
+procedure Tfrm_UnCodeX.tv_ClassesChange(Sender: TObject; Node: TTreeNode);
+begin
+  if (re_SourceSnoop.Visible) then ac_SourceSnoop.Execute;
+end;
+
+procedure Tfrm_UnCodeX.ac_VSourceSnoopExecute(Sender: TObject);
+begin
+  re_SourceSnoop.Left := ClientWidth;
+  spl_Main3.Left := ClientWidth-1;
+  spl_Main3.Visible := mi_SourceSnoop.Checked;
+  re_SourceSnoop.Visible := mi_SourceSnoop.Checked;
+  if (mi_SourceSnoop.Checked and not DoInit) then ac_SourceSnoop.Execute;
+end;
+
+procedure Tfrm_UnCodeX.re_SourceSnoopKeyDown(Sender: TObject;
+  var Key: Word; Shift: TShiftState);
+begin
+  //if (ssCtrl in Shift) then re_SourceSnoop.Cursor := crHandPoint;
+end;
+
+procedure Tfrm_UnCodeX.re_SourceSnoopKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  //re_SourceSnoop.Cursor := crDefault;
 end;
 
 end.
