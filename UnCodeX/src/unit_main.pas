@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.121 2004-08-09 13:25:15 elmuerte Exp $
+ $Id: unit_main.pas,v 1.122 2004-08-25 20:31:59 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -256,6 +256,8 @@ type
     mi_Refresh: TMenuItem;
     mi_PluginDiv1: TMenuItem;
     ps_dll: TPSDllPlugin;
+    ac_FindNewClasses: TAction;
+    mi_FindNew: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -371,6 +373,7 @@ type
     procedure ac_PSEditorExecute(Sender: TObject);
     procedure ps_MainExecute(Sender: TPSScript);
     procedure ac_PluginRefreshExecute(Sender: TObject);
+    procedure ac_FindNewClassesExecute(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -1011,6 +1014,7 @@ begin
   if (cmd = 'rebuild') then ac_RecreateTree.Execute
   else if (cmd = 'analyse') then ac_AnalyseAll.Execute
   else if (cmd = 'analysemodified') then ac_AnalyseModified.Execute
+  else if (cmd = 'findnew') then ac_FindNewClasses.Execute
   else if (cmd = 'createhtml') then ac_CreateHTMLfiles.Execute
   else if (cmd = 'htmlhelp') then ac_HTMLHelp.Execute
   else if (cmd = 'close') then Close
@@ -2088,7 +2092,7 @@ begin
   if (ThreadCreate) then begin
     lb_Log.Items.Clear;
     LastAnalyseTime := Now;
-    runningthread := TClassAnalyser.Create(ClassList, statusReport);
+    runningthread := TClassAnalyser.Create(ClassList, statusReport, false, unit_rtfhilight.ClassesHash);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
   end;
@@ -2681,7 +2685,14 @@ begin
     end
     else if (OpenFTS) then ac_FullTextSearch.Execute // TODO: fixed 'enter' bug
     else if (IsBatching) then NextBatchCommand
-    else if (AnalyseModified) then ac_AnalyseModified.Execute
+    else if (AnalyseModified) then begin
+    	if (runningthread = nil) then begin
+	  		IsBatching := true;
+				CmdStack.Add('findnew');
+  			CmdStack.Add('analysemodified');
+  			NextBatchCommand;
+      end;
+    end;
   end;
   if (frm_Splash <> nil) then begin
     frm_Splash.Close;
@@ -2852,7 +2863,7 @@ begin
   if (ThreadCreate) then begin
     lb_Log.Items.Clear;
     LastAnalyseTime := Now;
-    runningthread := TClassAnalyser.Create(ClassList, statusReport, true);
+    runningthread := TClassAnalyser.Create(ClassList, statusReport, true, unit_rtfhilight.ClassesHash);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
   end;
@@ -3283,7 +3294,7 @@ begin
 	CmdStack.Add('rebuild');
   CmdStack.Add('orphanstop');
   CmdStack.Add('analyse');
-  NextBatchCommand;  
+  NextBatchCommand;
 end;
 
 procedure Tfrm_UnCodeX.ac_OpenHTMLHelpExecute(Sender: TObject);
@@ -3487,6 +3498,16 @@ procedure Tfrm_UnCodeX.ac_PluginRefreshExecute(Sender: TObject);
 begin
   LoadOutputModules;
   LoadPascalScripts;
+end;
+
+procedure Tfrm_UnCodeX.ac_FindNewClassesExecute(Sender: TObject);
+begin
+	if (ThreadCreate) then begin
+    lb_Log.Items.Clear;
+    runningthread := TNewClassScanner.Create(PackageList, ClassList, StatusReport, ClassesHash);
+    runningthread.OnTerminate := ThreadTerminate;
+    runningthread.Resume;
+  end;
 end;
 
 initialization

@@ -451,6 +451,9 @@ object frm_UnCodeX: Tfrm_UnCodeX
       object mi_AnalyseModifiedClasses: TMenuItem
         Action = ac_AnalyseModified
       end
+      object mi_FindNew: TMenuItem
+        Action = ac_FindNewClasses
+      end
       object mi_N6: TMenuItem
         Caption = '-'
       end
@@ -1121,6 +1124,11 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Caption = 'Refresh plug-ins'
       Hint = 'Refresh the plug-in list'
       OnExecute = ac_PluginRefreshExecute
+    end
+    object ac_FindNewClasses: TAction
+      Category = 'Class Tree'
+      Caption = 'Find new classes'
+      OnExecute = ac_FindNewClassesExecute
     end
   end
   object il_Small: TImageList

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Unreal Package scanner, searches for classes in directories
- $Id: unit_packages.pas,v 1.26 2004-05-14 12:16:25 elmuerte Exp $
+ $Id: unit_packages.pas,v 1.27 2004-08-25 20:31:59 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -62,7 +62,6 @@ type
     {$ELSE}
     procedure CreateClassTree(classlist: TUClassList; parent: TUClass = nil);
     {$ENDIF}
-    function GetClassName(filename: string): TUClass;
   public
     {$IFDEF __USE_TREEVIEW}
     constructor Create(paths: TStringList; packagetree, classtree: TTreeNodes;
@@ -77,7 +76,19 @@ type
     procedure Execute; override;
   end;
 
+  TNewClassScanner = class(TThread)
+    packagelist: TUPackageList;
+    classlist: TUClassList;
+    ClassHash: TObjectHash;
+    status: TStatusReport;
+    procedure FindNew;
+	public
+    constructor Create(mypackagelist: TUPackageList; myclasslist: TUClassList; mystatus: TStatusReport; CHash: TObjectHash = nil);
+    procedure Execute; override;
+  end;
+
   function CountOrphans(ClassList: TUClassList): integer;
+  function GetUClassName(filename: string): TUClass;
 
 var
 	// orphan counter
@@ -86,7 +97,7 @@ var
 implementation
 
 uses
-  unit_parser, unit_definitions;
+  unit_parser, unit_definitions, unit_analyse;
 
 function CountOrphans(ClassList: TUClassList): integer;
 var
@@ -103,6 +114,43 @@ begin
 		Log(IntToStr(ClassOrphanCount)+' orphan classes detected, check the package priority');
   end;
   result := ClassOrphanCount;
+end;
+
+function GetUClassName(filename: string): TUClass;
+var
+  fs: TFileStream;
+  p: TUCParser;
+  token: char;
+begin
+  result := nil;
+  fs := TFileStream.Create(filename, fmOpenRead	or fmShareDenyWrite);
+  p := TUCParser.Create(fs);
+  try
+    token := p.Token;
+    while (token <> toEOF) do begin
+      if (token <> toComment) then begin
+        if (p.TokenSymbolIs('class')) then begin
+          p.NextToken;
+          result := TUClass.Create;
+          result.name := p.TokenString;
+          p.NextToken;
+          if (p.TokenSymbolIs('extends') or p.TokenSymbolIs('expands')) then begin
+            p.NextToken;
+            result.parentname := p.TokenString;
+            if (p.NextToken = '.') then begin // package.class
+              p.NextToken;                    // (should work with checking package)
+              result.parentname := result.parentname+'.'+p.TokenString;
+            end;
+          end;
+          break; // we don't need to parse the rest
+        end;
+      end;
+      token := p.NextToken;
+    end;
+  finally
+    p.free;
+    fs.free;
+  end;
 end;
 
 {$IFDEF __USE_TREEVIEW}
@@ -149,7 +197,7 @@ begin
   except
     on E: Exception do Log('Unhandled exception: '+E.Message);
   end;
-  Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds, '+IntToStr(classlist.Count)+' classes');
+  Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds, '+IntToStr(classlist.Count)+' classes - '+IntToStr(packagelist.Count)+' packages');
 end;
 
 procedure TPackageScanner.ScanPackages;
@@ -277,7 +325,7 @@ begin
         repeat
           Status('Parsing file '+Packagelist[i].path+PATHDELIM+sr.Name);
           try
-            uclass := GetClassName(Packagelist[i].path+PATHDELIM+sr.Name);
+            uclass := GetUClassName(Packagelist[i].path+PATHDELIM+sr.Name);
           except
             on E: Exception do log('Parser: error: '+E.Message);
           end;
@@ -403,40 +451,140 @@ begin
   end;
 end;
 
-function TPackageScanner.GetClassName(filename: string): TUClass;
-var
-  fs: TFileStream;
-  p: TUCParser;
-  token: char;
+{ TNewClassScanner }
+
+constructor TNewClassScanner.Create(mypackagelist: TUPackageList; myclasslist: TUClassList; mystatus: TStatusReport; CHash: TObjectHash = nil);
 begin
-  result := nil;
-  fs := TFileStream.Create(filename, fmOpenRead	or fmShareDenyWrite);
-  p := TUCParser.Create(fs);
+  packagelist := mypackagelist;
+  classlist := myclasslist;
+  ClassHash := CHash;
+  status := mystatus;
+	inherited Create(true);
+end;
+
+procedure TNewClassScanner.Execute;
+var
+  stime: TDateTime;
+begin
+  stime := Now();
   try
-    token := p.Token;
-    while (token <> toEOF) do begin
-      if (token <> toComment) then begin
-        if (p.TokenSymbolIs('class')) then begin
-          p.NextToken;
-          result := TUClass.Create;
-          result.name := p.TokenString;
-          p.NextToken;
-          if (p.TokenSymbolIs('extends') or p.TokenSymbolIs('expands')) then begin
-            p.NextToken;
-            result.parentname := p.TokenString;
-            if (p.NextToken = '.') then begin // package.class
-              p.NextToken;                    // (should work with checking package)
-              result.parentname := result.parentname+'.'+p.TokenString;
-            end;
-          end;
-          break; // we don't need to parse the rest
+	  FindNew();
+  except
+    on E: Exception do Log('Unhandled exception: '+E.Message);
+  end;
+  Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds, '+IntToStr(classlist.Count)+' classes');
+end;
+
+procedure TNewClassScanner.FindNew;
+var
+	i, j: integer;
+  sl: TStringList;
+  uclass: TUClass;
+  newclasses: TUClassList;
+
+  procedure SortNewClasses;
+  var
+  	i,j: integer;
+    tmpc: TUClass;
+  begin
+    for i := 0 to newclasses.Count-2 do begin
+			for j := i+1 to newclasses.Count-1 do begin
+				if (CompareText(newclasses[i].parentname, newclasses[j].name) = 0) then begin
+          tmpc := newclasses[j];
+          newclasses[j] := newclasses[i];
+          newclasses[i] := tmpc;
         end;
       end;
-      token := p.NextToken;
     end;
+  end;
+
+begin
+	sl := TStringList.Create;
+  newclasses := TUClassList.Create(false);
+  try
+		for i := 0 to packagelist.Count-1 do begin
+    	status('Scanning package '+packagelist[i].name+' for new classes', (i+1)*100 div packagelist.Count);
+      
+      GetFiles(packagelist[i].path+PathDelim+SOURCECARD, faAnyFile and not faDirectory, sl);
+      for j := 0 to sl.Count-1 do begin
+      	uclass := nil;
+      	try
+	      	uclass := GetUClassName(sl[j]);
+        except
+          on E: Exception do log('Parser: error: '+E.Message);
+        end;
+        if (not Assigned(uclass)) then continue;
+				if (packagelist[i].classes.Find(uclass.name) = nil) then begin
+          classlist.Add(uclass);
+          packagelist[i].classes.Add(uclass);
+          newclasses.Add(uclass);
+          uclass.package := PackageList[i];
+          uclass.tagged := UClass.package.tagged;
+          uclass.filename := ExtractFileName(sl[j]);
+          uclass.priority := PackageList[i].priority;
+          {$IFDEF __USE_TREEVIEW}
+          uclass.treenode2 := TTreeNode(packagelist[i].treenode).Owner.AddChildObject(TTreeNode(packagelist[i].treenode), uclass.name, uclass);
+          with TTreeNode(uclass.treenode2) do begin
+            if (uclass.tagged) then begin
+              ImageIndex := ICON_CLASS_TAGGED;
+              StateIndex := ICON_CLASS_TAGGED;
+              SelectedIndex := ICON_CLASS_TAGGED;
+            end
+            else begin
+              ImageIndex := ICON_CLASS;
+              StateIndex := ICON_CLASS;
+              SelectedIndex := ICON_CLASS;
+            end;
+          end;
+          TTreeNode(packagelist[i].treenode).AlphaSort();
+          {$ENDIF}
+          if (ClassHash <> nil) then begin
+          	if (ClassHash.Exists(LowerCase(uclass.name))) then begin
+            	LogClass('Scanner: (Warning) duplicate class name: '+uclass.FullName, uclass);
+            	//DuplicateHash[LowerCase(uclass.name)] := '-'
+            end
+            else ClassHash.Items[LowerCase(uclass.name)] := uclass;
+          end;
+          logclass('New class found: '+uclass.FullName, uclass);
+        end
+        else begin
+					uclass.Free;
+        end;
+      end;
+  	end;
+    if (newclasses.Count > 0) then begin
+			Log('Found '+IntToStr(newclasses.Count)+' new class(es)');
+      SortNewClasses;
+      for i := 0 to newclasses.Count-1 do begin
+				uclass := classlist.Find(newclasses[i].parentname);
+        if (Assigned(uclass)) then begin
+          newclasses[i].parent := uclass;
+          uclass.children.Add(newclasses[i]);
+        	{$IFDEF __USE_TREEVIEW}
+        	newclasses[i].treenode := TTreeNode(uclass.treenode).Owner.AddChildObject(TTreeNode(uclass.treenode), newclasses[i].name, newclasses[i]);
+        	if (newclasses[i].tagged) then begin
+          	TTreeNode(newclasses[i].treenode).ImageIndex := ICON_CLASS_TAGGED;
+          	TTreeNode(newclasses[i].treenode).StateIndex := ICON_CLASS_TAGGED;
+          	TTreeNode(newclasses[i].treenode).SelectedIndex := ICON_CLASS_TAGGED;
+        	end
+        	else begin
+          	TTreeNode(newclasses[i].treenode).ImageIndex := ICON_CLASS;
+          	TTreeNode(classlist[i].treenode).StateIndex := ICON_CLASS;
+          	TTreeNode(newclasses[i].treenode).SelectedIndex := ICON_CLASS;
+        	end;
+          TTreeNode(uclass.treenode).AlphaSort();
+        	{$ENDIF}
+        end;
+      end;
+    end;
+    {$IFDEF __USE_TREEVIEW}
+    TreeUpdated := true;
+    {$ENDIF}
+    packagelist.Sort;
+    classlist.Sort;
   finally
-    p.free;
-    fs.free;
+  	sl.Free;
+    newclasses.Free;
   end;
 end;
 

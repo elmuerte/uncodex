@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   class anaylser
- $Id: unit_analyse.pas,v 1.40 2004-08-09 13:25:15 elmuerte Exp $
+ $Id: unit_analyse.pas,v 1.41 2004-08-25 20:31:59 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -35,7 +35,7 @@ interface
 
 uses
   SysUtils, Classes, DateUtils, unit_uclasses, unit_parser, unit_outputdefs,
-  unit_definitions;
+  unit_definitions, Hashes;
 
 type
   TClassAnalyser = class(TThread)
@@ -50,6 +50,7 @@ type
     fs: TFileStream;
     p: TUCParser;
     status: TStatusReport;
+    ClassHash: TObjectHash;
     procedure AnalyseClass();
     function pConst: TUConst;
     function pVar: TUProperty;
@@ -66,8 +67,8 @@ type
     function ExecuteSingle: integer;
     function GetSecondaryComment(ref :string): string;
   public
-    constructor Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false); overload;
-    constructor Create(uclass: TUClass; status: TStatusReport; onlynew: boolean = false); overload;
+    constructor Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false; myClassList: TObjectHash = nil); overload;
+    constructor Create(uclass: TUClass; status: TStatusReport; onlynew: boolean = false; myClassList: TObjectHash = nil); overload;
     destructor Destroy; override;
     procedure Execute; override;
   end;
@@ -119,24 +120,26 @@ var
 	FunctionModifiers: TStringList;
 
 // Create for a class list
-constructor TClassAnalyser.Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false);
+constructor TClassAnalyser.Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false; myClassList: TObjectHash = nil);
 begin
   self.classes := classes;
   Self.status := status;
   Self.onlynew := onlynew;
   Self.FreeOnTerminate := true;
+  ClassHash := myClassList;
   instate := false;
   inherited Create(true);
 end;
 
 // Create for a single class
-constructor TClassAnalyser.Create(uclass: TUClass; status: TStatusReport; onlynew: boolean = false);
+constructor TClassAnalyser.Create(uclass: TUClass; status: TStatusReport; onlynew: boolean = false; myClassList: TObjectHash = nil);
 begin
   self.classes := nil;
   self.uclass := uclass;
   Self.status := status;
   Self.onlynew := onlynew;
   Self.FreeOnTerminate := true;
+  ClassHash := myClassList;
   inherited Create(true);
 end;
 
@@ -224,6 +227,8 @@ begin
     if (classes <> nil) then begin
     	TTreeNode(uclass.TreeNode2).Delete;
 	    TTreeNode(uclass.TreeNode).Delete;
+      if (ClassHash <> nil) then ClassHash.Delete(LowerCase(uclass.name));
+      if (uclass.parent <> nil) then uclass.parent.children.Remove(uclass);
     	uclass.package.classes.Remove(uclass);
 	    classes.Remove(uclass);
       result := RES_REMOVED;
