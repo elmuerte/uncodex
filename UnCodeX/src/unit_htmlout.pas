@@ -205,7 +205,7 @@ function THTMLOutput.replaceDefault(var replacement: string; data: TObject = nil
 begin
   result := false;
   if (CompareText(replacement, 'default_title') = 0) then begin
-    replacement := default_title;
+    replacement := ini.ReadString('titles', 'DefaultTitle', default_title);
     result := true;
   end
   else if (CompareText(replacement, 'create_time') = 0) then begin
@@ -237,7 +237,11 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'VERSION') = 0) then begin
-    replacement := VERSION;
+    replacement := APPVERSION;
+    result := true;
+  end
+  else if (CompareText(replacement, 'UNCODEX') = 0) then begin
+    replacement := APPTITLE;
     result := true;
   end
 end;
@@ -545,6 +549,18 @@ begin
   end
   else if (CompareText(replacement, 'class_modifiers') = 0) then begin
     replacement := TUClass(data).modifiers;
+    result := true;
+  end
+  else if (CompareText(replacement, 'class_parent') = 0) then begin
+    if (TUClass(data).parent <> nil) then
+      replacement := '<a href="'+ClassLink(TUClass(data).parent)+'">'+TUClass(data).parent.name+'</a>'
+      else replacement := '';
+    result := true;
+  end
+  else if (CompareText(replacement, 'class_parent_plain') = 0) then begin
+    if (TUClass(data).parent <> nil) then
+      replacement := ClassLink(TUClass(data).parent)
+      else replacement := '';
     result := true;
   end
   else if (CompareText(replacement, 'class_parent_tree') = 0) then begin
@@ -1014,6 +1030,9 @@ begin
 end;
 
 function THTMLOutput.replaceClassFunction(var replacement: string; data: TObject = nil): boolean;
+var
+  tmp, tmp2, tmp3: string;
+  i: integer;
 begin
   result := replaceDefault(replacement);
   if (result) then exit;
@@ -1030,6 +1049,23 @@ begin
     result := true;
   end
   else if (CompareText(replacement, 'function_params') = 0) then begin
+    replacement := '';
+    tmp := TUFunction(data).params;
+    while (tmp <> '') do begin
+      if (replacement <> '') then replacement := replacement+', ';
+      i := Pos(',', tmp);
+      if (i = 0) then i := Length(tmp)+1;
+      tmp2 := trim(Copy(tmp, 1, i-1));
+      Delete(tmp, 1, i+1);
+      i := LastDelimiter(' ', tmp2);
+      tmp3 := Copy(tmp2, i, MaxInt); // param name
+      Delete(tmp2, i, MaxInt);
+      i := LastDelimiter(' ', tmp2); // type
+      replacement := replacement+Copy(tmp2, 1, i)+GetTypeLink(Copy(tmp2, i+1, MaxInt))+tmp3;
+    end;
+    result := true;
+  end
+  else if (CompareText(replacement, 'function_params_plain') = 0) then begin
     replacement := HTMLChars(TUFunction(data).params);
     result := true;
   end
