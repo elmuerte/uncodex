@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   definitions for Unreal Classes
- $Id: unit_uclasses.pas,v 1.15 2003-11-04 19:35:28 elmuerte Exp $
+ $Id: unit_uclasses.pas,v 1.16 2003-11-09 11:01:27 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -168,6 +168,7 @@ type
     defaultproperties: string;
     comment:    string;
     tagged:     boolean;
+    children:   TUClassList; // not owned, don't free, don't save
     constructor Create;
     destructor Destroy; override;
   end;
@@ -371,6 +372,7 @@ begin
   structs := TUStructList.Create(true);
   states := TUStateList.Create(true);
   functions := TUFunctionList.Create(true);
+  children := TUClassList.Create(false);
 end;
 
 destructor TUClass.Destroy;
@@ -381,6 +383,7 @@ begin
   structs.Free;
   states.Free;
   functions.Free;
+  children.Free;
 end;
 
 { TUClassList }

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Unreal Package scanner, searches for classes in directories
- $Id: unit_packages.pas,v 1.12 2003-11-04 19:35:27 elmuerte Exp $
+ $Id: unit_packages.pas,v 1.13 2003-11-09 11:01:27 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -220,6 +220,7 @@ begin
       (classlist[i].priority >= pprio)) then begin
       if (CompareText(classlist[i].parentname, tmp) = 0) then begin
         classlist[i].parent := parent;
+        if (parent <> nil) then parent.children.Add(classlist[i]);
         classlist[i].treenode := classtree.AddChildObject(pnode, classlist[i].name, classlist[i]);
         if (classlist[i].tagged) then begin
           TTreeNode(classlist[i].treenode).ImageIndex := ICON_CLASS_TAGGED;
