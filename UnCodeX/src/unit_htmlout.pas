@@ -29,6 +29,7 @@ type
     ClassList: TUClassList;
     ClassTree: TTreeView;
     outputdir, TemplateDir: string;
+    CreateSource: boolean;
   end;
 
   // General replace function
@@ -39,12 +40,15 @@ type
     MaxInherit: integer;
     HTMLOutputDir: string;
     TemplateDir: string;
+    CreateSource: boolean;
     TypeCache: Hashes.TStringHash;
     ConstCache: Hashes.TStringHash;
     VarCache: Hashes.TStringHash;
     EnumCache: Hashes.TStringHash;
     StructCache: Hashes.TStringHash;
     FunctionCache: Hashes.TStringHash;
+
+    Keywords: Hashes.TStringHash;
     
     PackageList: TUPackageList;
     ClassList: TUClassList;
@@ -80,6 +84,8 @@ type
     function replaceGlossary(var replacement: string; data: TObject = nil): boolean;
     procedure CopyFiles;
     function ProcComment(input: string): string;
+    procedure SourceCode;
+    procedure parseCode(input, output: TStream);
   public
     constructor Create(config: THTMLoutConfig; status: TStatusReport);
     destructor Destroy; override;
@@ -95,13 +101,15 @@ const
   overview_filename = 'overview.html';
   classtree_filename = 'classtree.html';
   glossary_filename = 'glossary_A.html';
+  SOURCEPRE = 'Source_';
 
 implementation
 
-uses unit_copyparser, unit_main;
+uses unit_copyparser, unit_main, unit_sourceparser;
 
 var
   currentClass: TUClass;
+  curPos, maxPos: integer;
 
 function ClassLink(uclass: TUClass): string;
 begin
@@ -126,12 +134,14 @@ begin
   Self.status := status;
   Self.HTMLOutputDir := Config.outputdir;
   Self.TemplateDir := Config.TemplateDir+PATHDELIM;
+  Self.CreateSource := config.CreateSource;
   TypeCache := Hashes.TStringHash.Create;
   ConstCache := Hashes.TStringHash.Create;
   VarCache := Hashes.TStringHash.Create;
   EnumCache := Hashes.TStringHash.Create;
   StructCache := Hashes.TStringHash.Create;
   FunctionCache := Hashes.TStringHash.Create;
+  Keywords := Hashes.TStringHash.Create;
   ini := TMemIniFile.Create(TemplateDir+'template.ini');
   MaxInherit := ini.ReadInteger('Settings', 'MaxInherit', MaxInt);
   if (MaxInherit <= 0) then MaxInherit := MaxInt;
@@ -147,6 +157,7 @@ begin
   EnumCache.Clear;
   StructCache.Clear;
   FunctionCache.Clear;
+  Keywords.Clear;
   ini.Free;
 end;
 
@@ -155,6 +166,11 @@ var
   stime: Cardinal;
   i: integer;
 begin
+  curPos := 0;
+  maxPos := PackageList.Count+ClassList.Count;
+  if (ini.ReadBool('Settings', 'CreateClassTree', true)) then maxPos := maxPos+1;
+  if (ini.ReadBool('Settings', 'CreateGlossary', true)) then maxPos := maxPos+26;
+  if (ini.ReadBool('Settings', 'SourceCode', true)) then maxPos := maxPos+ClassList.Count;
   Status('Working ...', 0);
   stime := GetTickCount();
   forcedirectories(htmloutputdir);
@@ -182,6 +198,7 @@ begin
   if (ini.ReadBool('Settings', 'CreateClassTree', true) and (not Self.Terminated)) then htmlTree; // create class tree
   if (ini.ReadBool('Settings', 'CreateGlossary', true) and (not Self.Terminated)) then htmlGlossary; // iglossery
   if (not Self.Terminated) then CopyFiles;
+  if (ini.ReadBool('Settings', 'SourceCode', true) and (not Self.Terminated) and CreateSource) then SourceCode; //
   Status('Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds');
 end;
 
@@ -466,7 +483,8 @@ begin
   template := TFileStream.Create(templatedir+'package_overview.html', fmOpenRead or fmShareDenyWrite);
   try
     for i := 0 to PackageList.Count-1 do begin
-      Status('Creating package_'+PackageList[i].name+'.html');
+      Status('Creating package_'+PackageList[i].name+'.html', round(curPos/maxPos*100));
+      curPos := curPos+1;
       PackageList[i].classes.Sort;
       target := TFileStream.Create(htmloutputdir+PATHDELIM+LowerCase('package_'+PackageList[i].name+'.html'), fmCreate);
       try
@@ -516,7 +534,8 @@ begin
   template := TFileStream.Create(templatedir+'class.html', fmOpenRead or fmShareDenyWrite);
   try
     for i := 0 to ClassList.Count-1 do begin
-      Status('Creating '+ClassLink(ClassList[i]), round(i/(classlist.count-1)*100));
+      Status('Creating '+ClassLink(ClassList[i]), round(curPos/maxPos*100));
+      curPos := curPos+1;
       currentClass := ClassList[i];
       target := TFileStream.Create(htmloutputdir+PATHDELIM+ClassLink(ClassList[i]), fmCreate);
       try
@@ -599,6 +618,10 @@ begin
   else if (CompareText(replacement, 'class_comment') = 0) then begin
     if (Copy(TUClass(data).comment, 1, 2) = '//') then replacement := ProcComment(TUClass(data).comment)
     else replacement := TUClass(data).comment;
+    result := true;
+  end
+  else if (CompareText(replacement, 'class_source') = 0) then begin
+    replacement := SOURCEPRE+ClassLink(TUClass(data));
     result := true;
   end
   else if (CompareText(replacement, 'class_children') = 0) then begin
@@ -1348,7 +1371,8 @@ begin
     for i := Low(glossaryitems) to high(glossaryitems) do begin
       if (Self.Terminated) then break;
       gli.item := glossaryitems[i];
-      Status('Creating glossary_'+glossaryitems[i]+'.html');
+      Status('Creating glossary_'+glossaryitems[i]+'.html', round(curPos/maxPos*100));
+      curPos := curPos+1;
       template.Position := 0;
       target := TFileStream.Create(htmloutputdir+PATHDELIM+'glossary_'+glossaryitems[i]+'.html', fmCreate);
       try
@@ -1423,6 +1447,180 @@ begin
     result := sl.Text;
   finally
     sl.Free;
+  end;
+end;
+
+procedure THTMLOutput.SourceCode;
+var
+  template1, template2, target, source: TFileStream;
+  i: integer;
+begin
+  // fill keyword table
+  Keywords.Items['abstract'] := '';
+  Keywords.Items['array'] := '';
+  Keywords.Items['bool'] := '';
+  Keywords.Items['break'] := '';
+  Keywords.Items['byte'] := '';
+  Keywords.Items['case'] := '';
+  Keywords.Items['class'] := '';
+  Keywords.Items['coerce'] := '';
+  Keywords.Items['collapsecategories'] := '';
+  Keywords.Items['config'] := '';
+  Keywords.Items['const'] := '';
+  Keywords.Items['continue'] := '';
+  Keywords.Items['defaultproperties'] := '';
+  Keywords.Items['do'] := '';
+  Keywords.Items['editconst'] := '';
+  Keywords.Items['editinline'] := '';
+  Keywords.Items['else'] := '';
+  Keywords.Items['enum'] := '';
+  Keywords.Items['event'] := '';
+  Keywords.Items['exec'] := '';
+  Keywords.Items['export'] := '';
+  Keywords.Items['exportstructs'] := '';
+  Keywords.Items['extends'] := '';
+  Keywords.Items['false'] := '';
+  Keywords.Items['final'] := '';
+  Keywords.Items['float'] := '';
+  Keywords.Items['for'] := '';
+  Keywords.Items['forEach'] := '';
+  Keywords.Items['function'] := '';
+  Keywords.Items['globalconfig'] := '';
+  Keywords.Items['hidecategories'] := '';
+  Keywords.Items['if'] := '';
+  Keywords.Items['ignores'] := '';
+  Keywords.Items['input'] := '';
+  Keywords.Items['int'] := '';
+  Keywords.Items['latent'] := '';
+  Keywords.Items['local'] := '';
+  Keywords.Items['localized'] := '';
+  Keywords.Items['name'] := '';
+  Keywords.Items['native'] := '';
+  Keywords.Items['nativereplication'] := '';
+  Keywords.Items['new'] := '';
+  Keywords.Items['noexport'] := '';
+  Keywords.Items['operator'] := '';
+  Keywords.Items['optional'] := '';
+  Keywords.Items['out'] := '';
+  Keywords.Items['placeable'] := '';
+  Keywords.Items['postoperator'] := '';
+  Keywords.Items['preoperator'] := '';
+  Keywords.Items['private'] := '';
+  Keywords.Items['protected'] := '';
+  Keywords.Items['reliable'] := '';
+  Keywords.Items['replication'] := '';
+  Keywords.Items['return'] := '';
+  Keywords.Items['simulated'] := '';
+  Keywords.Items['skip'] := '';
+  Keywords.Items['spawn'] := '';
+  Keywords.Items['state'] := '';
+  Keywords.Items['static'] := '';
+  Keywords.Items['string'] := '';
+  Keywords.Items['struct'] := '';
+  Keywords.Items['switch'] := '';
+  Keywords.Items['then'] := '';
+  Keywords.Items['transient'] := '';
+  Keywords.Items['true'] := '';
+  Keywords.Items['unreliable'] := '';
+  Keywords.Items['until'] := '';
+  Keywords.Items['var'] := '';
+  Keywords.Items['while'] := '';
+  // fill keyword table -- end
+
+  template1 := TFileStream.Create(templatedir+'sourcecode-1.html', fmOpenRead or fmShareDenyWrite);
+  template2 := TFileStream.Create(templatedir+'sourcecode-2.html', fmOpenRead or fmShareDenyWrite);
+  try
+    for i := 0 to ClassList.Count-1 do begin
+      Status('Creating source '+ClassLink(ClassList[i]), round(curPos/maxPos*100));
+      curPos := curPos+1;
+      currentClass := ClassList[i];
+      target := TFileStream.Create(htmloutputdir+PATHDELIM+SOURCEPRE+ClassLink(ClassList[i]), fmCreate);
+      try
+        template1.Position := 0;
+        parseTemplate(template1, target, replaceClass, ClassList[i]);
+        if (Self.Terminated) then break;
+        source := TFileStream.Create(ClassList[i].package.path+PATHDELIM+CLASSDIR+PATHDELIM+ClassList[i].filename, fmOpenRead or fmShareDenyWrite);
+        try
+          parseCode(source, target);
+        finally
+          source.Free;
+        end;
+        if (Self.Terminated) then break;
+        template2.Position := 0;
+        parseTemplate(template2, target, replaceClass, ClassList[i]);
+      finally
+        target.Free;
+      end;
+    end;
+  finally
+    template1.Free;
+    template2.Free;
+  end;
+end;
+
+procedure THTMLOutput.parseCode(input, output: TStream);
+var
+  p: TSourceParser;
+  replacement, tmp: string;
+begin
+  p := TSourceParser.Create(input, output);
+  try
+    {replacement := '<font class="source_linenr">'+Format('%.5d', [p.SourceLine])+'</font>  ';
+    p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));}
+    while (p.Token <> toEOF) do begin
+      if (p.Token = '<') then begin
+        replacement := '&lt;';
+        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+      end
+      else if (p.Token = '>') then begin
+        replacement := '&gt;';
+        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+      end
+      else if (p.Token = toString) then begin
+        replacement := '<font class="source_string">'+p.TokenString+'</font>';
+        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+      end
+      else if (p.Token = toComment) then begin
+        replacement := '<font class="source_comment">'+p.TokenString+'</font>';
+        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+      end
+      else if (p.Token = toInteger) then begin
+        replacement := '<font class="source_int">'+p.TokenString+'</font>';
+        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+      end
+      else if (p.Token = toFloat) then begin
+        replacement := '<font class="source_int">'+p.TokenString+'</font>';
+        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+      end
+      else if (p.Token = toName) then begin
+        replacement := '<font class="source_name">'+p.TokenString+'</font>';
+        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+      end
+      else if (p.Token = toMacro) then begin
+        replacement := '<font class="source_macro">'+p.TokenString+'</font>';
+        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+      end
+      else if (p.Token = toSymbol) then begin
+        tmp := LowerCase(p.TokenString);
+        replacement := p.TokenString;
+        if (Keywords.Exists(tmp)) then begin
+          replacement := '<font class="source_keyword">'+replacement+'</font>';
+        end
+        else if (TypeCache.Exists(tmp)) then begin
+          if (TypeCache.Items[tmp] <> '-') then replacement := '<font class="source_type"><a href="'+TypeCache.Items[tmp]+'" class="source">'+replacement+'</a></font>'
+          else replacement := '<font class="source_type">'+replacement+'</font>';
+        end;
+        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+      end
+      {else if (p.Token = toEOL) then begin
+        replacement := p.TokenString+'<font class="source_linenr">'+Format('%.5d', [p.SourceLine])+'</font>  ';
+        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+      end}
+      else p.CopyTokenToOutput;
+      p.SkipToken(true);
+    end;
+  finally
+    p.Free;
   end;
 end;
 

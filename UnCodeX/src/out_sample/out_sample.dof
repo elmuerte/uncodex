@@ -44,7 +44,7 @@ ImageBase=4194304
 ExeDescription=
 
 [Directories]
-OutputDir=E:\Program Files\Borland\Projects\UnCodeX\Bin
+OutputDir=E:\Program Files\Borland\Projects\UnCodeX\Bin\out_sample
 UnitOutputDir=E:\Program Files\Borland\Projects\UnCodeX\Dcu\out_sample
 PackageDLLOutputDir=
 PackageDCPOutputDir=

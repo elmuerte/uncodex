@@ -1112,6 +1112,7 @@ begin
     htmlconfig.ClassTree := tv_Classes;
     htmlconfig.outputdir := HTMLOutputDir;
     htmlconfig.TemplateDir := TemplateDir;
+    htmlconfig.CreateSource := true; // TODO: make configurable
     runningthread := THTMLoutput.Create(htmlconfig, StatusReport);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
