@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.51 2005-03-28 09:56:20 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.52 2005-03-30 07:21:50 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -637,7 +637,9 @@ begin
   includes := TStringList.Create;
   replication.expressions := TStringList.Create;
   replication.symbols := TStringList.Create;
+  {$IFNDEF FPC}
   replication.symbols.CaseSensitive := false;
+  {$ENDIF}
   replication.symbols.Duplicates := dupIgnore; //TODO: might need to be an error?
 end;
 
