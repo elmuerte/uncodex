@@ -1,6 +1,6 @@
 object frm_Settings: Tfrm_Settings
-  Left = 482
-  Top = 152
+  Left = 392
+  Top = 185
   Width = 670
   Height = 405
   AlphaBlendValue = 128
@@ -71,7 +71,7 @@ object frm_Settings: Tfrm_Settings
     Top = 24
     Width = 432
     Height = 353
-    ActivePage = ts_HotKeys
+    ActivePage = ts_HTMLOutput
     Align = alCustom
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -484,6 +484,13 @@ object frm_Settings: Tfrm_Settings
           'Comment PreProcessor (leave empty for template default, or none ' +
           'for none)'
       end
+      object lbl_GZCompress: TLabel
+        Left = 0
+        Top = 288
+        Width = 104
+        Height = 13
+        Caption = 'GZip compress output'
+      end
       object btn_HTMLOutputDir: TBitBtn
         Left = 399
         Top = 16
@@ -589,6 +596,23 @@ object frm_Settings: Tfrm_Settings
         Caption = '...'
         TabOrder = 9
         OnClick = btn_SelectCPPClick
+      end
+      object cb_GZCompress: TComboBox
+        Left = 0
+        Top = 304
+        Width = 425
+        Height = 21
+        Hint = 
+          'With GZip compression enabled the target extention will be post-' +
+          'fixed with .gz (unless already present)'
+        Style = csDropDownList
+        Anchors = [akLeft, akTop, akRight]
+        ItemHeight = 13
+        TabOrder = 10
+        Items.Strings = (
+          'Template default'
+          'Disabled (forced)'
+          'Enabled (forced)')
       end
     end
     object ts_HTMLHelp: TTabSheet

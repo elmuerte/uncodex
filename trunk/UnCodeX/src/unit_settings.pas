@@ -6,7 +6,7 @@
   Purpose:
     Program settings dialog
 
-  $Id: unit_settings.pas,v 1.47 2005-03-28 12:22:52 elmuerte Exp $
+  $Id: unit_settings.pas,v 1.48 2005-03-31 16:41:49 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -209,6 +209,8 @@ type
     ed_ExtCmtFile: TEdit;
     btn_ExtCmtFile: TBitBtn;
     mi_Resultfilename1: TMenuItem;
+    lbl_GZCompress: TLabel;
+    cb_GZCompress: TComboBox;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);

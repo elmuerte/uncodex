@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.74 2005-03-31 11:01:12 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.75 2005-03-31 16:41:48 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -68,7 +68,7 @@ type
     TargetExtention: string;
     CPP: string;
     DefaultTitle: string;
-    GZCompress: boolean;
+    GZCompress: integer;
   end;
 
   // General replace function
@@ -92,7 +92,7 @@ type
     DelegateCache: Hashes.TStringHash;
     CPPPipe: TCLPipe;
     ConfDefaultTitle: string;
-    GZCompress: boolean;
+    GZCompress: integer;
     
     PackageList: TUPackageList;
     ClassList: TUClassList;
@@ -331,9 +331,10 @@ begin
 	{$ENDIF}
 	MaxInherit := ini.ReadInteger('Settings', 'MaxInherit', MaxInt);
 	if (TargetExtention = '') then TargetExtention := ini.ReadString('Settings', 'TargetExt', 'html');
+  if (GZCompress = -1) then GZCompress := ini.ReadInteger('Settings', 'GZCompress', 0);
 
   root_filename := 'index.'+TargetExtention;
-  if (GZCompress) then begin
+  if (GZCompress > 0) then begin
     if (not SameText(Copy(TargetExtention, Length(TargetExtention)-3, 3), '.gz')) then begin
       TargetExtention := TargetExtention+'.gz';
     end
@@ -418,7 +419,7 @@ end;
 
 function THTMLOutput.CreateOutputStream(filename: string; forceNoCompress: boolean = false): TStream;
 begin
-  if (GZCompress and not forceNoCompress) then begin
+  if ((GZCompress > 0) and not forceNoCompress) then begin
     {$IFDEF WITH_ZLIB}
     result := TGZFileStream.Create(filename, gzOpenWrite);
     {$ELSE}

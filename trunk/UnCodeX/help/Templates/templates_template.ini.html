@@ -140,6 +140,10 @@ This file configures the template used.
 	<td>The target extention, this can be overwritten from within UnCodeX</td>
 </tr>
 <tr>
+	<td><pre>GZCompress=</pre></td>
+	<td>Either 0 (disabled) or 1 (enabled). When enabled all HTML files will be compressed with gzip (all except index.html). If the target extion doesn't end on .gz it will be appended. This option is usefull when there's not a lot of diskspace available. Most browsers support gzip compressed files when they are opened online, however it doesn't always work when opened from disk in MS Windows. Default: 0</td>
+</tr>
+<tr>
 	<td><pre>TabsToSpaces=</pre></td>
 	<td>Convert tabs to # spaces, when lower or equal to 0 don't convert</td>
 </tr>
