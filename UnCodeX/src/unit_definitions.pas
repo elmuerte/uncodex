@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   General definitions
- $Id: unit_definitions.pas,v 1.102 2004-06-07 08:15:37 elmuerte Exp $
+ $Id: unit_definitions.pas,v 1.103 2004-06-15 07:34:57 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -58,7 +58,7 @@ type
 
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '204';
+  APPVERSION = '205';
   {$IFDEF MSWINDOWS}
   APPPLATFORM = 'MS Windows';
   {$ENDIF}

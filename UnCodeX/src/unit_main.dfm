@@ -530,10 +530,12 @@ object frm_UnCodeX: Tfrm_UnCodeX
       object mi_Savesize: TMenuItem
         Action = ac_VSaveSize
         AutoCheck = True
+        Checked = True
       end
       object mi_Saveposition: TMenuItem
         Action = ac_VSavePosition
         AutoCheck = True
+        Checked = True
       end
       object mi_N12: TMenuItem
         Caption = '-'
