@@ -143,6 +143,7 @@ type
     ac_VTLeft: TAction;
     mi_AnalyseModifiedClasses: TMenuItem;
     ac_AnalyseModified: TAction;
+    btn_AnalyseModified: TToolButton;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_OpenClassClick(Sender: TObject);
@@ -924,7 +925,6 @@ end;
 procedure Tfrm_UnCodeX.ac_AnalyseAllExecute(Sender: TObject);
 begin
   if (ThreadCreate) then begin
-    TreeUpdated := true;
     lb_Log.Items.Clear;
     runningthread := TClassAnalyser.Create(ClassList, statusReport);
     runningthread.OnTerminate := ThreadTerminate;
@@ -1606,7 +1606,6 @@ end;
 procedure Tfrm_UnCodeX.ac_AnalyseModifiedExecute(Sender: TObject);
 begin
   if (ThreadCreate) then begin
-    TreeUpdated := true;
     lb_Log.Items.Clear;
     runningthread := TClassAnalyser.Create(ClassList, statusReport, true);
     runningthread.OnTerminate := ThreadTerminate;

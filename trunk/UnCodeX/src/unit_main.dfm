@@ -198,8 +198,13 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Top = 2
       Action = ac_AnalyseAll
     end
-    object btn_Sep2: TToolButton
+    object btn_AnalyseModified: TToolButton
       Left = 177
+      Top = 2
+      Action = ac_AnalyseModified
+    end
+    object btn_Sep2: TToolButton
+      Left = 200
       Top = 2
       Width = 8
       Caption = 'btn_Sep2'
@@ -207,22 +212,22 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Style = tbsSeparator
     end
     object btn_CreateHTML: TToolButton
-      Left = 185
+      Left = 208
       Top = 2
       Action = ac_CreateHTMLfiles
     end
     object btn_OpenOutput: TToolButton
-      Left = 208
+      Left = 231
       Top = 2
       Action = ac_OpenOutput
     end
     object btn_HTMLHelp: TToolButton
-      Left = 231
+      Left = 254
       Top = 2
       Action = ac_HTMLHelp
     end
     object btn_Sep5: TToolButton
-      Left = 254
+      Left = 277
       Top = 2
       Width = 8
       Caption = 'btn_Sep5'
@@ -230,17 +235,17 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Style = tbsSeparator
     end
     object tb_RunServer: TToolButton
-      Left = 262
+      Left = 285
       Top = 2
       Action = ac_RunServer
     end
     object tb_JoinServer: TToolButton
-      Left = 285
+      Left = 308
       Top = 2
       Action = ac_JoinServer
     end
     object btn_Sep3: TToolButton
-      Left = 308
+      Left = 331
       Top = 2
       Width = 8
       Caption = 'btn_Sep3'
@@ -248,12 +253,12 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Style = tbsSeparator
     end
     object btn_Settings: TToolButton
-      Left = 316
+      Left = 339
       Top = 2
       Action = ac_Settings
     end
     object btn_Sep4: TToolButton
-      Left = 339
+      Left = 362
       Top = 2
       Width = 8
       Caption = 'btn_Sep4'
@@ -261,7 +266,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Style = tbsSeparator
     end
     object btn_Abort: TToolButton
-      Left = 347
+      Left = 370
       Top = 2
       Action = ac_Abort
     end

@@ -104,6 +104,7 @@ begin
   currenttime := FileAge(filename);
   if (onlynew and (currenttime <= uclass.filetime)) then exit;
   if (onlynew) then Log('Class changed since last time: '+uclass.name);
+  TreeUpdated := true;
   uclass.filetime := currenttime;
   fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
   p := TUCParser.Create(fs);

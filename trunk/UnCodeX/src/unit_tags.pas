@@ -83,6 +83,7 @@ begin
     exit;
   end;
   Caption := uclass.name;
+
   lv_Properties.Items.BeginUpdate;
   lv_Properties.Items.Clear;
 
@@ -187,8 +188,14 @@ begin
     pclass := pclass.parent;
     Inc(j);
   end;
-  lv_Properties.Columns[1].Width := lv_Properties.ClientWidth-lv_Properties.Columns[0].Width;
   lv_Properties.Items.EndUpdate;
+
+  lv_Properties.Columns.BeginUpdate;
+  if (Visible) then lv_Properties.Columns[1].Width := lv_Properties.ClientWidth-lv_Properties.Columns[0].Width
+  else if (lv_Properties.Items.Count > lv_Properties.VisibleRowCount) then lv_Properties.Columns[1].Width := lv_Properties.ClientWidth-lv_Properties.Columns[0].Width-GetSystemMetrics(SM_CXVSCROLL);
+  lv_Properties.Columns.EndUpdate;
+
+  Caption := IntToStr(lv_Properties.Columns[1].Width);
   result := true;
 end;
 
@@ -210,10 +217,6 @@ begin
       end
       else close;
     end;
-  end
-  else begin
-    // workaround of the auto size column.. doesn't work
-    lv_Properties.Columns[1].Width := lv_Properties.ClientWidth-lv_Properties.Columns[0].Width;
   end;
 end;
 
