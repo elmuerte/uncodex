@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   about UnCodeX dialog
- $Id: unit_about.pas,v 1.14 2004-06-19 13:04:26 elmuerte Exp $
+ $Id: unit_about.pas,v 1.15 2004-10-08 09:18:30 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -50,9 +50,12 @@ type
     img_Logo: TImage;
     btn_EmailGo: TBitBtn;
     btn_HPGo: TBitBtn;
+    ed_Homepage2: TEdit;
+    btn_HPGo2: TBitBtn;
     procedure FormCreate(Sender: TObject);
     procedure btn_EmailGoClick(Sender: TObject);
     procedure btn_HPGoClick(Sender: TObject);
+    procedure btn_HPGo2Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -104,6 +107,11 @@ end;
 procedure Tfrm_About.btn_HPGoClick(Sender: TObject);
 begin
 	frm_UnCodeX.ExecuteProgram(ed_Homepage.Text);
+end;
+
+procedure Tfrm_About.btn_HPGo2Click(Sender: TObject);
+begin
+	frm_UnCodeX.ExecuteProgram(ed_Homepage2.Text);
 end;
 
 end.

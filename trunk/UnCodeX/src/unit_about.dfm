@@ -5,8 +5,8 @@ object frm_About: Tfrm_About
   BorderStyle = bsDialog
   BorderWidth = 5
   Caption = 'About ...'
-  ClientHeight = 308
-  ClientWidth = 322
+  ClientHeight = 320
+  ClientWidth = 331
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,27 +17,28 @@ object frm_About: Tfrm_About
   Position = poScreenCenter
   OnCreate = FormCreate
   DesignSize = (
-    322
-    308)
+    331
+    320)
   PixelsPerInch = 96
   TextHeight = 13
   object img_Logo: TImage
     Left = 0
     Top = 0
-    Width = 49
-    Height = 308
+    Width = 57
+    Height = 321
+    Anchors = [akLeft, akTop, akBottom]
     Stretch = True
   end
   object bvl_Border: TBevel
     Left = 0
     Top = 0
-    Width = 49
-    Height = 308
+    Width = 57
+    Height = 320
     Align = alLeft
     Shape = bsFrame
   end
   object lbl_TitleHighlight: TLabel
-    Left = 55
+    Left = 63
     Top = -1
     Width = 138
     Height = 32
@@ -51,7 +52,7 @@ object frm_About: Tfrm_About
     Transparent = True
   end
   object lbl_TitleShadow: TLabel
-    Left = 57
+    Left = 65
     Top = 1
     Width = 138
     Height = 32
@@ -65,7 +66,7 @@ object frm_About: Tfrm_About
     Transparent = True
   end
   object lbl_Title: TLabel
-    Left = 56
+    Left = 64
     Top = 0
     Width = 138
     Height = 32
@@ -79,7 +80,7 @@ object frm_About: Tfrm_About
     Transparent = True
   end
   object lbl_Version: TLabel
-    Left = 208
+    Left = 216
     Top = 3
     Width = 63
     Height = 13
@@ -93,14 +94,14 @@ object frm_About: Tfrm_About
     Transparent = True
   end
   object lbl_Author: TLabel
-    Left = 56
+    Left = 64
     Top = 48
     Width = 34
     Height = 13
     Caption = 'Author:'
   end
   object lbl_Author2: TLabel
-    Left = 72
+    Left = 80
     Top = 64
     Width = 159
     Height = 13
@@ -113,16 +114,16 @@ object frm_About: Tfrm_About
     ParentFont = False
   end
   object lbl_Homepage: TLabel
-    Left = 56
+    Left = 64
     Top = 104
     Width = 55
     Height = 13
     Caption = 'Homepage:'
   end
   object lbl_TimeStamp: TLabel
-    Left = 56
+    Left = 64
     Top = 29
-    Width = 3
+    Width = 265
     Height = 13
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clGrayText
@@ -134,7 +135,7 @@ object frm_About: Tfrm_About
     Visible = False
   end
   object lbl_Platform: TLabel
-    Left = 208
+    Left = 216
     Top = 17
     Width = 54
     Height = 13
@@ -142,10 +143,10 @@ object frm_About: Tfrm_About
     Transparent = True
   end
   object mm_LegalShit: TMemo
-    Left = 56
-    Top = 152
-    Width = 265
-    Height = 156
+    Left = 64
+    Top = 168
+    Width = 266
+    Height = 152
     Alignment = taCenter
     Anchors = [akLeft, akTop, akRight, akBottom]
     BevelKind = bkSoft
@@ -168,9 +169,9 @@ object frm_About: Tfrm_About
     WantReturns = False
   end
   object ed_Email: TEdit
-    Left = 72
+    Left = 80
     Top = 80
-    Width = 249
+    Width = 250
     Height = 19
     Anchors = [akLeft, akTop, akRight]
     BevelKind = bkSoft
@@ -187,9 +188,9 @@ object frm_About: Tfrm_About
     Text = 'elmuerte@drunksnipers.com'
   end
   object ed_Homepage: TEdit
-    Left = 72
+    Left = 80
     Top = 120
-    Width = 249
+    Width = 250
     Height = 19
     Anchors = [akLeft, akTop, akRight]
     BevelKind = bkSoft
@@ -206,7 +207,7 @@ object frm_About: Tfrm_About
     Text = 'http://wiki.beyondunreal.com/wiki/UnCodeX'
   end
   object btn_EmailGo: TBitBtn
-    Left = 303
+    Left = 312
     Top = 81
     Width = 17
     Height = 17
@@ -221,7 +222,7 @@ object frm_About: Tfrm_About
     OnClick = btn_EmailGoClick
   end
   object btn_HPGo: TBitBtn
-    Left = 303
+    Left = 312
     Top = 121
     Width = 17
     Height = 17
@@ -234,5 +235,39 @@ object frm_About: Tfrm_About
     ParentFont = False
     TabOrder = 4
     OnClick = btn_HPGoClick
+  end
+  object ed_Homepage2: TEdit
+    Left = 80
+    Top = 144
+    Width = 250
+    Height = 19
+    Anchors = [akLeft, akTop, akRight]
+    BevelKind = bkSoft
+    BorderStyle = bsNone
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clHighlight
+    Font.Height = -11
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsUnderline]
+    ParentColor = True
+    ParentFont = False
+    ReadOnly = True
+    TabOrder = 5
+    Text = 'http://sourceforge.net/projects/uncodex'
+  end
+  object btn_HPGo2: TBitBtn
+    Left = 312
+    Top = 145
+    Width = 17
+    Height = 17
+    Caption = '8'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -11
+    Font.Name = 'Marlett'
+    Font.Style = []
+    ParentFont = False
+    TabOrder = 6
+    OnClick = btn_HPGo2Click
   end
 end
