@@ -3,8 +3,11 @@ object frm_Run: Tfrm_Run
   Top = 131
   Width = 583
   Height = 509
+  BorderIcons = [biSystemMenu, biHelp]
   Caption = 'Run'
   Color = clBtnFace
+  Constraints.MinHeight = 482
+  Constraints.MinWidth = 575
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -63,7 +66,7 @@ object frm_Run: Tfrm_Run
     Top = 93
     Width = 575
     Height = 356
-    ActivePage = ts_URL
+    ActivePage = TabSheet1
     Anchors = [akLeft, akTop, akRight, akBottom]
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clMenuText
@@ -72,7 +75,7 @@ object frm_Run: Tfrm_Run
     Font.Style = [fsBold]
     ParentFont = False
     Style = tsFlatButtons
-    TabIndex = 2
+    TabIndex = 3
     TabOrder = 0
     object ts_Commandline: TTabSheet
       Caption = 'Commandline'
@@ -744,6 +747,39 @@ object frm_Run: Tfrm_Run
         OnChange = ed_MapChange
       end
     end
+    object TabSheet1: TTabSheet
+      Caption = 'Replacements'
+      ImageIndex = 3
+      object mm_Replacements: TMemo
+        Left = 0
+        Top = 0
+        Width = 567
+        Height = 325
+        Cursor = crArrow
+        Align = alClient
+        BorderStyle = bsNone
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clMenuText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        Lines.Strings = (
+          
+            'The following replacement variables are accepted in any of the a' +
+            'rguments:'
+          '%url%'#9#9'the information from the URL tab'
+          '%swith%'#9#9'the information from the Switched tab'
+          '%rand%'#9#9'a random number'
+          
+            '%inc%'#9#9'this number is increased on every run, and reset when the' +
+            ' application is restarted')
+        ParentColor = True
+        ParentFont = False
+        ReadOnly = True
+        TabOrder = 0
+        WantTabs = True
+      end
+    end
   end
   object ed_Exe: TEdit
     Left = 8
@@ -785,6 +821,7 @@ object frm_Run: Tfrm_Run
     Anchors = [akRight, akBottom]
     Enabled = False
     TabOrder = 4
+    OnClick = btn_okClick
     Kind = bkOK
   end
   object btn_Cancel: TBitBtn

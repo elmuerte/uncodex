@@ -1,3 +1,28 @@
+{-----------------------------------------------------------------------------
+ Unit Name: UnCodeX
+ Author:    elmuerte
+ Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
+ Purpose:   Advanced "run..." dialog
+ $Id: unit_rungame.pas,v 1.3 2004-07-20 12:09:13 elmuerte Exp $
+-----------------------------------------------------------------------------}
+{
+    UnCodeX - UnrealScript source browser & documenter
+    Copyright (C) 2003, 2004  Michiel Hendriks
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+}
 unit unit_rungame;
 
 interface
@@ -83,6 +108,8 @@ type
     cb_Priority: TComboBox;
     Label2: TLabel;
     btn_Default: TBitBtn;
+    TabSheet1: TTabSheet;
+    mm_Replacements: TMemo;
     procedure FormCreate(Sender: TObject);
     procedure ed_MapChange(Sender: TObject);
     procedure btn_AddMutClick(Sender: TObject);
@@ -99,6 +126,7 @@ type
     procedure cb_PreSetsChange(Sender: TObject);
     procedure btn_DelPreClick(Sender: TObject);
     procedure btn_DefaultClick(Sender: TObject);
+    procedure btn_okClick(Sender: TObject);
   private
     procedure FillGameInfo(uclass: TUClass);
     procedure FillMutator(uclass: TUClass);
@@ -117,6 +145,9 @@ var
 implementation
 
 uses unit_main, inifiles;
+
+var
+	IncI: integer = 0;
 
 {$R *.dfm}
 
@@ -228,6 +259,9 @@ begin
   ed_Args.Text := ed_Format.Text; //fixme
   ed_Args.Text := StringReplace(ed_Args.Text, '%url%', arg, [rfReplaceAll, rfIgnoreCase]);
   ed_Args.Text := StringReplace(ed_Args.Text, '%switch%', arg2, [rfReplaceAll, rfIgnoreCase]);
+  Randomize;
+  ed_Args.Text := StringReplace(ed_Args.Text, '%rand%', IntToStr(Random(MaxInt)), [rfReplaceAll, rfIgnoreCase]);
+  ed_Args.Text := StringReplace(ed_Args.Text, '%inc%', IntToStr(IncI), [rfReplaceAll, rfIgnoreCase]);
 end;
 
 procedure Tfrm_Run.LoadPreSet(sectionName: string; ininame: string);
@@ -533,6 +567,11 @@ end;
 procedure Tfrm_Run.btn_DefaultClick(Sender: TObject);
 begin
   SavePreSet('Default Run', ConfigFile);
+end;
+
+procedure Tfrm_Run.btn_okClick(Sender: TObject);
+begin
+	Inc(IncI);
 end;
 
 end.
