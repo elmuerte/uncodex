@@ -141,6 +141,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     ParentShowHint = False
     ShowHint = True
     TabOrder = 0
+    Visible = False
     object btn_OpenClass: TToolButton
       Left = 0
       Top = 2
@@ -300,7 +301,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
     ReadOnly = True
     ScrollBars = ssBoth
     TabOrder = 3
-    Visible = False
     WordWrap = False
     OnEndDock = re_SourceSnoopEndDock
     OnMouseMove = re_SourceSnoopMouseMove
@@ -519,6 +519,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
       object mi_SourceSnoop: TMenuItem
         Action = ac_VSourceSnoop
         AutoCheck = True
+        Checked = True
       end
       object mi_Log: TMenuItem
         Action = ac_VLog

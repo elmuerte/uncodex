@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.108 2004-07-17 22:59:51 elmuerte Exp $
+ $Id: unit_main.pas,v 1.109 2004-07-18 09:36:50 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -1335,8 +1335,10 @@ begin
   end;
 
   //Don't try to hide a panel which has visible dock clients.
-  if not MakeVisible and (APanel.VisibleDockClientCount > 1) then
-    Exit;
+  if not MakeVisible then begin
+  	if (not Client.Visible and (APanel.VisibleDockClientCount >= 1)) then Exit
+	  else if (APanel.VisibleDockClientCount > 1) then Exit;
+  end;
 
   if APanel.Align = alLeft then
     splLeft.Visible := MakeVisible
@@ -1360,24 +1362,32 @@ begin
 		if APanel.Align = alLeft then begin
     	if (makeWidth > pnlCenter.Width) then makeWidth := pnlCenter.Width-splLeft.MinSize;
       if (makeWidth < splLeft.MinSize) then makeWidth := splLeft.MinSize;
-    	APanel.Width := makeWidth;
-			splLeft.Left := APanel.Width + splLeft.Width;
+      if (makeWidth > APanel.Width) then begin
+	    	APanel.Width := makeWidth;
+				splLeft.Left := APanel.Width + splLeft.Width;
+      end;
 		end
 		else if APanel.Align = alRight then begin
     	if (makeWidth > pnlCenter.Width) then makeWidth := pnlCenter.Width-splRight.MinSize;
       if (makeWidth < splRight.MinSize) then makeWidth := splRight.MinSize;
-			APanel.Width := makeWidth;
-			splRight.Left := APanel.Width - splRight.Width;
+      if (makeWidth > APanel.Width) then begin
+				APanel.Width := makeWidth;
+				splRight.Left := APanel.Width - splRight.Width;
+      end;
 		end
 		else if APanel.Align = alBottom then begin
-      APanel.Height := makeHeight;
-			APanel.Top := pb_Scan.Top-APanel.Height-1;
+    	if (APanel.Height < makeHeight) then begin
+      	APanel.Height := makeHeight;
+				APanel.Top := pb_Scan.Top-APanel.Height-1;
 
-			splBottom.Top := APanel.Top - splBottom.Height-1;
+				splBottom.Top := APanel.Top - splBottom.Height-1;
+      end;
 		end
 		else if APanel.Align = alTop then begin
-			APanel.Height := makeHeight;
-			splTop.Top := APanel.Top + APanel.Height;
+    	if (APanel.Height < makeHeight) then begin
+				APanel.Height := makeHeight;
+				splTop.Top := APanel.Top + APanel.Height;
+      end;
 		end
 	end
 	else begin
@@ -3194,7 +3204,7 @@ begin
 	if (Sender as TPanel).VisibleDockClientCount > 0 then ShowDockPanel(Sender as TPanel, True, Source.Control)
   else if (visible) then ShowDockPanel(Sender as TPanel, True, Source.Control);
 
-  (Sender as TPanel).DockManager.ResetBounds(True);
+  if (visible) then (Sender as TPanel).DockManager.ResetBounds(True);
 end;
 
 procedure Tfrm_UnCodeX.dckLeftUnDock(Sender: TObject; Client: TControl;

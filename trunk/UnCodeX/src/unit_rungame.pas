@@ -10,7 +10,7 @@ type
   Tfrm_Run = class(TForm)
     pc_Args: TPageControl;
     ts_Switches: TTabSheet;
-    TabSheet2: TTabSheet;
+    ts_URL: TTabSheet;
     clb_MainSwitches: TCheckListBox;
     cb_INI: TCheckBox;
     ed_INI: TEdit;
@@ -82,6 +82,7 @@ type
     od_Log: TOpenDialog;
     cb_Priority: TComboBox;
     Label2: TLabel;
+    btn_Default: TBitBtn;
     procedure FormCreate(Sender: TObject);
     procedure ed_MapChange(Sender: TObject);
     procedure btn_AddMutClick(Sender: TObject);
@@ -97,10 +98,13 @@ type
     procedure btn_AddPreClick(Sender: TObject);
     procedure cb_PreSetsChange(Sender: TObject);
     procedure btn_DelPreClick(Sender: TObject);
+    procedure btn_DefaultClick(Sender: TObject);
   private
     procedure FillGameInfo(uclass: TUClass);
     procedure FillMutator(uclass: TUClass);
     procedure UpdateCommandLine();
+    procedure LoadPreSet(sectionName: string; ininame: string);
+    procedure SavePreSet(sectionName: string; ininame: string);
   public
   	relpath: string;
     function IsAbstract(props: string): boolean;
@@ -147,6 +151,7 @@ begin
   finally
 		ini.Free;
   end;
+  LoadPreSet('Default Run', ConfigFile);
 end;
 
 procedure Tfrm_Run.FillGameInfo(uclass: TUClass);
@@ -223,6 +228,126 @@ begin
   ed_Args.Text := ed_Format.Text; //fixme
   ed_Args.Text := StringReplace(ed_Args.Text, '%url%', arg, [rfReplaceAll, rfIgnoreCase]);
   ed_Args.Text := StringReplace(ed_Args.Text, '%switch%', arg2, [rfReplaceAll, rfIgnoreCase]);
+end;
+
+procedure Tfrm_Run.LoadPreSet(sectionName: string; ininame: string);
+var
+	ini: TMemIniFile;
+  lst: TStringList;
+  i: integer;
+begin
+  if (sectionName = '') then exit;
+  ini := TMemIniFile.Create(ininame);
+  lst := TStringList.Create;
+	try
+  	// commandline
+    ed_Exe.Text := ini.ReadString(sectionname, 'cmd.Exe', '');
+    cb_Priority.ItemIndex := ini.ReadInteger(sectionname, 'cmd.Priority', 1);
+    ed_Format.Text := ini.ReadString(sectionname, 'cmd.Format', '%url% %switch%');
+    ed_Mapfilter.Text := ini.ReadString(sectionname, 'cmd.MapFilter', '*.unr;*.ut2');
+    ed_GameTypeOptionName.Text := ini.ReadString(sectionname, 'cmd.GameTypeOption', 'Game');
+    ed_MutOptName.Text := ini.ReadString(sectionname, 'cmd.MutatorOption', 'Mutator');
+    cb_MutCSL.Checked := ini.ReadBool(sectionname, 'cmd.MutCSL', true);
+    // switches
+    cb_INI.Checked := ini.ReadBool(sectionname, 'switch.INI', false);
+    ed_INI.Text := ini.ReadString(sectionname, 'switch.INI.value', '');
+    cb_READINI.Checked := ini.ReadBool(sectionname, 'switch.READINI', false);
+    ed_READINI.Text := ini.ReadString(sectionname, 'switch.READINI.value', '');
+    cb_USERINI.Checked := ini.ReadBool(sectionname, 'switch.USERINI', false);
+    ed_USERINI.Text := ini.ReadString(sectionname, 'switch.USERINI.value', '');
+    cb_MULTIHOME.Checked := ini.ReadBool(sectionname, 'switch.MULTIHOME', false);
+    ed_MULTIHOME.Text := ini.ReadString(sectionname, 'switch.MULTIHOME.value', '');
+    cb_PORT.Checked := ini.ReadBool(sectionname, 'switch.PORT', false);
+    ed_PORT.Text := ini.ReadString(sectionname, 'switch.PORT.value', '');
+    cb_MOD.Checked := ini.ReadBool(sectionname, 'switch.MOD', false);
+    ed_MOD.Text := ini.ReadString(sectionname, 'switch.MOD.value', '');
+    cb_LOG.Checked := ini.ReadBool(sectionname, 'switch.LOG', false);
+    ed_LOG.Text := ini.ReadString(sectionname, 'switch.LOG.value', '');
+   	lst.Clear;
+    lst.CommaText := ini.ReadString(sectionname,	'switches', '');
+    for i := 0 to clb_MainSwitches.Items.Count-1 do begin
+			clb_MainSwitches.Checked[i] := false
+    end;
+    for i := 0 to lst.Count-1 do begin
+			if (clb_MainSwitches.Items.IndexOf(lst[i]) = -1) then clb_MainSwitches.Items.Add(lst[i]);
+      clb_MainSwitches.Checked[clb_MainSwitches.Items.IndexOf(lst[i])] := true; 
+    end;
+    mm_AddSwitches.Lines.Text := ini.ReadString(sectionname, 	'switch.Additional', '');
+    // url
+    rb_Map.Checked := ini.ReadBool(sectionname,	'url.UseMap', true);
+    if (not rb_Map.Checked) then rb_Location.Checked := true;
+    ed_Map.Text := ini.ReadString(sectionname, 'url.Map', '');
+    ed_Loc.Text := ini.ReadString(sectionname, 'url.Location', '');
+    cb_Gametype.Text := ini.ReadString(sectionname,	'url.Gametype', '');
+    lb_SelMut.Items.CommaText := ini.ReadString(sectionname, 'url.Mutators', '');
+    mm_AddOptions.Lines.Text := ini.ReadString(sectionname,	'url.Additional', '');
+    UpdateCommandLine;
+  finally
+  	lst.Free;
+		ini.Free;
+  end;
+end;
+
+procedure Tfrm_Run.SavePreSet(sectionName: string; ininame: string);
+var
+	ini: TMemIniFile;
+  i: integer;
+  lst: TStringList;
+begin
+  if (sectionname = '') then exit;
+	ini := TMemIniFile.Create(ininame);
+  lst := TStringList.Create;
+  try
+    ini.EraseSection(sectionname);
+    // commandline
+    ini.WriteString(sectionname, 	'cmd.Exe', ed_Exe.Text);
+    ini.WriteInteger(sectionname, 'cmd.Priority', cb_Priority.ItemIndex);
+    ini.WriteString(sectionname, 	'cmd.Format', ed_Format.Text);
+    ini.WriteString(sectionname, 	'cmd.MapFilter', ed_Mapfilter.Text);
+    ini.WriteString(sectionname, 	'cmd.GameTypeOption', ed_GameTypeOptionName.Text);
+    ini.WriteString(sectionname, 	'cmd.MutatorOption', ed_MutOptName.Text);
+    ini.WriteBool(sectionname, 		'cmd.MutCSL', cb_MutCSL.Checked);
+    // switches
+    ini.WriteBool(sectionname, 		'switch.INI', cb_INI.Checked);
+    ini.WriteString(sectionname, 	'switch.INI.value', ed_INI.Text);
+    ini.WriteBool(sectionname, 		'switch.READINI', cb_READINI.Checked);
+    ini.WriteString(sectionname, 	'switch.READINI.value', ed_READINI.Text);
+    ini.WriteBool(sectionname, 		'switch.USERINI', cb_USERINI.Checked);
+    ini.WriteString(sectionname, 	'switch.USERINI.value', ed_USERINI.Text);
+    ini.WriteBool(sectionname, 		'switch.MULTIHOME', cb_MULTIHOME.Checked);
+    ini.WriteString(sectionname, 	'switch.MULTIHOME.value', ed_MULTIHOME.Text);
+    ini.WriteBool(sectionname, 		'switch.PORT', cb_PORT.Checked);
+    ini.WriteString(sectionname, 	'switch.PORT.value', ed_PORT.Text);
+    ini.WriteBool(sectionname, 		'switch.MOD', cb_MOD.Checked);
+    ini.WriteString(sectionname, 	'switch.MOD.value', ed_MOD.Text);
+    ini.WriteBool(sectionname, 		'switch.LOG', cb_LOG.Checked);
+    ini.WriteString(sectionname, 	'switch.LOG.value', ed_LOG.Text);
+   	lst.Clear;
+    for i := 0 to clb_MainSwitches.Items.Count-1 do begin
+			if (clb_MainSwitches.Checked[i]) then lst.Add(clb_MainSwitches.Items[i]);
+    end;
+    ini.WriteString(sectionname,	'switches', lst.CommaText);
+    ini.WriteString(sectionname, 	'switch.Additional', mm_AddSwitches.Lines.Text);
+    // url
+    ini.WriteBool(sectionname,		'url.UseMap', rb_Map.Checked);
+    ini.WriteString(sectionname,	'url.Map', ed_Map.Text);
+    ini.WriteString(sectionname,	'url.Location', ed_Loc.Text);
+    ini.WriteString(sectionname,	'url.Gametype', cb_Gametype.Text);
+    ini.WriteString(sectionname,	'url.Mutators', lb_SelMut.Items.CommaText);
+    ini.WriteString(sectionname,	'url.Additional', mm_AddOptions.Lines.Text);
+
+
+		ini.UpdateFile;
+    if (ininame <> ConfigFile) then begin
+	    cb_PreSets.Items.Clear;
+			ini.ReadSections(cb_PreSets.Items);
+	    cb_PreSets.Items.Insert(0, '');
+  	  cb_PreSets.ItemIndex := cb_PreSets.Items.IndexOf(sectionname);
+    end;
+  finally
+		ini.Free;
+    lst.Free;
+  end;
 end;
 
 procedure Tfrm_Run.ed_MapChange(Sender: TObject);
@@ -364,10 +489,7 @@ end;
 
 procedure Tfrm_Run.btn_AddPreClick(Sender: TObject);
 var
-	ini: TMemIniFile;
   sectionName: string;
-  i: integer;
-  lst: TStringList;
 begin
 	if (cb_PreSets.ItemIndex <> -1) then sectionName := cb_PreSets.Items[cb_PreSets.itemindex];
 	if (not InputQuery('Enter a name', 'Enter the name of the preset', sectionname)) then exit;
@@ -375,119 +497,17 @@ begin
   if (cb_PreSets.Items.IndexOf(sectionName) > 0) then begin
 		if (MessageDlg('A preset with this name already exists.'+#13+#10+'Do you want to overwrite it?', mtConfirmation, [mbYes, mbNo], 0) = mrNo) then exit;
   end;
-
-	ini := TMemIniFile.Create(ExtractFilePath(ParamStr(0))+'\runpresets.ini');
-  lst := TStringList.Create;
-  try
-    ini.EraseSection(sectionname);
-    // commandline
-    ini.WriteString(sectionname, 	'cmd.Exe', ed_Exe.Text);
-    ini.WriteInteger(sectionname, 'cmd.Priority', cb_Priority.ItemIndex);
-    ini.WriteString(sectionname, 	'cmd.Format', ed_Format.Text);
-    ini.WriteString(sectionname, 	'cmd.MapFilter', ed_Mapfilter.Text);
-    ini.WriteString(sectionname, 	'cmd.GameTypeOption', ed_GameTypeOptionName.Text);
-    ini.WriteString(sectionname, 	'cmd.MutatorOption', ed_MutOptName.Text);
-    ini.WriteBool(sectionname, 		'cmd.MutCSL', cb_MutCSL.Checked);
-    // switches
-    ini.WriteBool(sectionname, 		'switch.INI', cb_INI.Checked);
-    ini.WriteString(sectionname, 	'switch.INI.value', ed_INI.Text);
-    ini.WriteBool(sectionname, 		'switch.READINI', cb_READINI.Checked);
-    ini.WriteString(sectionname, 	'switch.READINI.value', ed_READINI.Text);
-    ini.WriteBool(sectionname, 		'switch.USERINI', cb_USERINI.Checked);
-    ini.WriteString(sectionname, 	'switch.USERINI.value', ed_USERINI.Text);
-    ini.WriteBool(sectionname, 		'switch.MULTIHOME', cb_MULTIHOME.Checked);
-    ini.WriteString(sectionname, 	'switch.MULTIHOME.value', ed_MULTIHOME.Text);
-    ini.WriteBool(sectionname, 		'switch.PORT', cb_PORT.Checked);
-    ini.WriteString(sectionname, 	'switch.PORT.value', ed_PORT.Text);
-    ini.WriteBool(sectionname, 		'switch.MOD', cb_MOD.Checked);
-    ini.WriteString(sectionname, 	'switch.MOD.value', ed_MOD.Text);
-    ini.WriteBool(sectionname, 		'switch.LOG', cb_LOG.Checked);
-    ini.WriteString(sectionname, 	'switch.LOG.value', ed_LOG.Text);
-   	lst.Clear;
-    for i := 0 to clb_MainSwitches.Items.Count-1 do begin
-			if (clb_MainSwitches.Checked[i]) then lst.Add(clb_MainSwitches.Items[i]);
-    end;
-    ini.WriteString(sectionname,	'switches', lst.CommaText);
-    ini.WriteString(sectionname, 	'switch.Additional', mm_AddSwitches.Lines.Text);
-    // url
-    ini.WriteBool(sectionname,		'url.UseMap', rb_Map.Checked);
-    ini.WriteString(sectionname,	'url.Map', ed_Map.Text);
-    ini.WriteString(sectionname,	'url.Location', ed_Loc.Text);
-    ini.WriteString(sectionname,	'url.Gametype', cb_Gametype.Text);
-    ini.WriteString(sectionname,	'url.Mutators', lb_SelMut.Items.CommaText);
-    ini.WriteString(sectionname,	'url.Additional', mm_AddOptions.Lines.Text);
-
-
-		ini.UpdateFile;
-    cb_PreSets.Items.Clear;
-		ini.ReadSections(cb_PreSets.Items);
-    cb_PreSets.Items.Insert(0, '');
-    cb_PreSets.ItemIndex := cb_PreSets.Items.IndexOf(sectionname);
-  finally
-		ini.Free;
-    lst.Free;
-  end;
+  SavePreSet(sectionname, ExtractFilePath(ParamStr(0))+'\runpresets.ini');
 end;
 
 procedure Tfrm_Run.cb_PreSetsChange(Sender: TObject);
 var
-	ini: TMemIniFile;
   sectionName: string;
-  lst: TStringList;
-  i: integer;
 begin
   if (cb_PreSets.ItemIndex = -1) then exit;
   sectionName := cb_PreSets.Items[cb_PreSets.itemindex];
   if (sectionName = '') then exit;
-  ini := TMemIniFile.Create(ExtractFilePath(ParamStr(0))+'\runpresets.ini');
-  lst := TStringList.Create;
-	try
-  	// commandline
-    ed_Exe.Text := ini.ReadString(sectionname, 'cmd.Exe', '');
-    cb_Priority.ItemIndex := ini.ReadInteger(sectionname, 'cmd.Priority', 1);
-    ed_Format.Text := ini.ReadString(sectionname, 'cmd.Format', '%url% %switch%');
-    ed_Mapfilter.Text := ini.ReadString(sectionname, 'cmd.MapFilter', '*.unr;*.ut2');
-    ed_GameTypeOptionName.Text := ini.ReadString(sectionname, 'cmd.GameTypeOption', 'Game');
-    ed_MutOptName.Text := ini.ReadString(sectionname, 'cmd.MutatorOption', 'Mutator');
-    cb_MutCSL.Checked := ini.ReadBool(sectionname, 'cmd.MutCSL', true);
-    // switches
-    cb_INI.Checked := ini.ReadBool(sectionname, 'switch.INI', false);
-    ed_INI.Text := ini.ReadString(sectionname, 'switch.INI.value', '');
-    cb_READINI.Checked := ini.ReadBool(sectionname, 'switch.READINI', false);
-    ed_READINI.Text := ini.ReadString(sectionname, 'switch.READINI.value', '');
-    cb_USERINI.Checked := ini.ReadBool(sectionname, 'switch.USERINI', false);
-    ed_USERINI.Text := ini.ReadString(sectionname, 'switch.USERINI.value', '');
-    cb_MULTIHOME.Checked := ini.ReadBool(sectionname, 'switch.MULTIHOME', false);
-    ed_MULTIHOME.Text := ini.ReadString(sectionname, 'switch.MULTIHOME.value', '');
-    cb_PORT.Checked := ini.ReadBool(sectionname, 'switch.PORT', false);
-    ed_PORT.Text := ini.ReadString(sectionname, 'switch.PORT.value', '');
-    cb_MOD.Checked := ini.ReadBool(sectionname, 'switch.MOD', false);
-    ed_MOD.Text := ini.ReadString(sectionname, 'switch.MOD.value', '');
-    cb_LOG.Checked := ini.ReadBool(sectionname, 'switch.LOG', false);
-    ed_LOG.Text := ini.ReadString(sectionname, 'switch.LOG.value', '');
-   	lst.Clear;
-    lst.CommaText := ini.ReadString(sectionname,	'switches', '');
-    for i := 0 to clb_MainSwitches.Items.Count-1 do begin
-			clb_MainSwitches.Checked[i] := false
-    end;
-    for i := 0 to lst.Count-1 do begin
-			if (clb_MainSwitches.Items.IndexOf(lst[i]) = -1) then clb_MainSwitches.Items.Add(lst[i]);
-      clb_MainSwitches.Checked[clb_MainSwitches.Items.IndexOf(lst[i])] := true; 
-    end;
-    mm_AddSwitches.Lines.Text := ini.ReadString(sectionname, 	'switch.Additional', '');
-    // url
-    rb_Map.Checked := ini.ReadBool(sectionname,	'url.UseMap', true);
-    if (not rb_Map.Checked) then rb_Location.Checked := true;
-    ed_Map.Text := ini.ReadString(sectionname, 'url.Map', '');
-    ed_Loc.Text := ini.ReadString(sectionname, 'url.Location', '');
-    cb_Gametype.Text := ini.ReadString(sectionname,	'url.Gametype', '');
-    lb_SelMut.Items.CommaText := ini.ReadString(sectionname, 'url.Mutators', '');
-    mm_AddOptions.Lines.Text := ini.ReadString(sectionname,	'url.Additional', '');
-    UpdateCommandLine;
-  finally
-  	lst.Free;
-		ini.Free;
-  end;
+  LoadPreSet(sectionName, ExtractFilePath(ParamStr(0))+'\runpresets.ini');
 end;
 
 procedure Tfrm_Run.btn_DelPreClick(Sender: TObject);
@@ -508,6 +528,11 @@ begin
   finally
 		ini.Free;
   end;
+end;
+
+procedure Tfrm_Run.btn_DefaultClick(Sender: TObject);
+begin
+  SavePreSet('Default Run', ConfigFile);
 end;
 
 end.
