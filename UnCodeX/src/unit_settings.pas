@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   program settings window
- $Id: unit_settings.pas,v 1.25 2003-06-10 12:00:27 elmuerte Exp $
+ $Id: unit_settings.pas,v 1.26 2003-06-15 19:51:13 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_settings;
@@ -172,6 +172,10 @@ type
     lbl_CPP: TLabel;
     ed_CPPApp: TEdit;
     btn_SelectCPP: TBitBtn;
+    mi_N7: TMenuItem;
+    mi_SearchQuery: TMenuItem;
+    mi_Inlinesearchquery: TMenuItem;
+    mi_Classsearchquery: TMenuItem;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -231,6 +235,9 @@ type
     procedure btn_UnIgnoreClick(Sender: TObject);
     procedure clb_PackagePriorityClickCheck(Sender: TObject);
     procedure btn_SelectCPPClick(Sender: TObject);
+    procedure mi_SearchQueryClick(Sender: TObject);
+    procedure mi_InlinesearchqueryClick(Sender: TObject);
+    procedure mi_ClasssearchqueryClick(Sender: TObject);
   private
   public
     TagChanged: boolean;
@@ -725,6 +732,21 @@ procedure Tfrm_Settings.btn_SelectCPPClick(Sender: TObject);
 begin
   od_BrowseExe.FileName := ed_CPPApp.Text;
   if (od_BrowseExe.Execute) then ed_CPPApp.Text := od_BrowseExe.FileName;
+end;
+
+procedure Tfrm_Settings.mi_SearchQueryClick(Sender: TObject);
+begin
+  ed_OpenResultCmd.Text := ed_OpenResultCmd.Text+' %searchquery%';
+end;
+
+procedure Tfrm_Settings.mi_InlinesearchqueryClick(Sender: TObject);
+begin
+  ed_OpenResultCmd.Text := ed_OpenResultCmd.Text+' %inlinesearch%';
+end;
+
+procedure Tfrm_Settings.mi_ClasssearchqueryClick(Sender: TObject);
+begin
+  ed_OpenResultCmd.Text := ed_OpenResultCmd.Text+' %classsearch%';
 end;
 
 initialization

@@ -42,7 +42,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_HotKeys
+    ActivePage = ts_FullTextSearch
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -1561,6 +1561,21 @@ object frm_Settings: Tfrm_Settings
     object mi_Resultposition1: TMenuItem
       Caption = 'Result position'
       OnClick = mi_Resultposition1Click
+    end
+    object mi_N7: TMenuItem
+      Caption = '-'
+    end
+    object mi_SearchQuery: TMenuItem
+      Caption = 'Search query'
+      OnClick = mi_SearchQueryClick
+    end
+    object mi_Classsearchquery: TMenuItem
+      Caption = 'Class search query'
+      OnClick = mi_ClasssearchqueryClick
+    end
+    object mi_Inlinesearchquery: TMenuItem
+      Caption = 'Inline search query'
+      OnClick = mi_InlinesearchqueryClick
     end
   end
   object od_BrowseIni: TOpenDialog

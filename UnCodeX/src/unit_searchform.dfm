@@ -1,6 +1,7 @@
 object frm_SearchForm: Tfrm_SearchForm
   Left = 314
   Top = 224
+  ActiveControl = cb_History
   BorderStyle = bsDialog
   Caption = 'frm_SearchForm'
   ClientHeight = 154
@@ -34,6 +35,7 @@ object frm_SearchForm: Tfrm_SearchForm
     DropDownCount = 10
     ItemHeight = 13
     TabOrder = 0
+    OnChange = cb_HistoryChange
   end
   object cb_SearchBody: TCheckBox
     Left = 8
