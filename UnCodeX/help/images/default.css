@@ -1,34 +1,31 @@
 BODY { 
-	background-color: #BDC6CE;	
+	background-color: #B0C4DE;	
 }
 
 FONT, DIV, TD { 
 	vertical-align: top;
-	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;  
+	font-family: sans-serif;  
 	font-size: 10pt;  
-	line-height: 16pt;	
-	color: #000000;   
+	line-height: 13.2pt;
+	color: WindowText;   
 }
 
 DIV.main { 
 	position: absolute;  
-	top: 0;  
-	left: 0;   
+	top: 0px;  
+	left: 0px;   
 	width: 100%;
 }
 
 DIV.head {
-	background-color: #A6CADB;
-	border-bottom: 2px groove silver;
-	width: 100%;
-	padding: 10px;
+	background-color: #D5E0EE;
+	border-bottom: 2px groove #D5E0EE;
+	padding: 5px;
 }
 
 DIV.title {
-	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif; 
 	font-size: 22pt;  
 	line-height: normal;
-	color: #00FCFF;
 	font-weight: bold;
 	font-style: italic;
 	position: absolute;
@@ -36,30 +33,30 @@ DIV.title {
 }
 
 DIV.subject {
-	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif; 
 	font-size: 16pt;  
 	line-height: normal;
-	color: #000000;
+	color: #7A5B12;
 	font-weight: bold;
 	position: relative;
 	display: inline;
-	Left: 175px;
-	top: 5px;
+	Left: 5px;
+	top: 32px;
 }
 
 SPAN.title {
 	position: absolute;
+	color: #D5E0EE;
 }
 
 SPAN.title_high {
-	color: #E1FFFF;
+	color: #F4F5F7;
 	position: absolute;	
 	left: -1px;
 	top: -1px;
 }
 
 SPAN.title_low {
-	color: #004E4F;
+	color: #4D5A63;
 	position: absolute;
 	left: 1px;
 	top: 1px;
@@ -71,46 +68,57 @@ DIV.content {
 }
 
 H1 {
-	font-size: 14pt;
+	font-size: 16pt;
 	line-height: normal;
-	border-bottom: 2px solid #396782;
-	background-color: #B4BEC6;
+	margin: 5px;
+	margin-top: 10px;
+	margin-left: -5px;
+	padding-left: 5px;
+	border-left: 10px solid #906C15;
+	border-bottom: 1px solid #906C15;
 }
 
 H2 {
-	font-size: 12pt;
+	font-size: 14pt;
 	line-height: normal;
-	margin: 2px;
-	margin-top: 10pt;
-	border-bottom: 2px solid #598DC3;
 	font-style: italic;
-	background-color: #ACB7C0;
+	margin: 5px;
+	margin-left: -5px;
+	margin-top: 15px;
+	padding-left: 5px;
+	border-left: 7px solid #AD8119;
+	border-bottom: 1px solid #AD8119;
 }
 
 H3 {
-	font-size: 10pt;
+	font-size: 12pt;
 	line-height: normal;
-	margin: 2px;
-	margin-top: 5pt;
-	border-bottom: 1px solid #6E9BCB;
-	background-color: #B4BEC6;
+	margin: 5px;
+	margin-left: -5px;
+	margin-top: 10px;
+	padding-left: 5px;
+	border-left: 5px solid #B8891B;
+	border-bottom: 1px solid #B8891B;
 }
 
 H4 {
 	font-size: 10pt;
 	line-height: normal;
-	margin: 2px;
-	margin-top: 5pt;
 	font-style: italic;
-	background-color: #BAC3CB;
+	margin: 5px;
+	margin-left: -5px;
+	margin-top: 10px;
+	padding-left: 5px;
+	border-left: 3px solid #D59F1F;
+	border-bottom: 1px solid #D59F1F;
 }
 
 PRE {
-	background-color: #BCCFDA;
-	margin: 2px;
-	padding-left: 10px;
+	background-color: #E1DED1;
+	margin: 5px;
+	padding-left: 5px;
 	padding-right: 5px;
-	border: 1px inset silver;
+	border: 2px inset #DCDCDC;
 }
 
 PRE.indent {
@@ -118,22 +126,30 @@ PRE.indent {
 }
 
 TH {
+	/* TODO */
 	font-weight: bold;
 	font-size: 10pt;
 	line-height: normal;
 	border-bottom: 2px inset silver;
 }
 
-A { 
+A {
+	padding: 2px;
 	text-decoration: none;
-	color: #566085;
-	border: 1px solid #BDC6CE;
-	border-bottom: 1px solid #718495;
-	padding: 1px;
+	background-color: inherited;
+	color: #3E6596;
 }
 
-A:Hover { 
-	border: 1px solid #718495;
-	background-color: #99A8B3;
-	color: black;
+A:Hover {
+	color: #987301;
+}
+
+U {
+	text-decoration: none;
+	border-bottom: 1px solid #916C15;
+}
+
+P {
+	margin-top: 5px;
+	margin-bottom: 5px;
 }
