@@ -44,8 +44,8 @@ ExeDescription=
 DynamicLoader=/lib/ld-linux.so.2
 
 [Directories]
-OutputDir=../../Bin
-UnitOutputDir=../../Dcu/ucxcu
+OutputDir=../../bin
+UnitOutputDir=../../dcu/ucxcu
 PackageDLLOutputDir=
 PackageDCPOutputDir=
 SearchPath=
@@ -62,10 +62,12 @@ UseLauncher=0
 DebugCWD=/ext/F/projects/Delphi Projects/UnCodeX/bin/
 
 [HistoryLists\hlUnitOutputDirectory]
-Count=1
-Item0=../../Dcu/ucxcu
+Count=2
+Item0=../../dcu/ucxcu
+Item1=../../Dcu/ucxcu
 
 [HistoryLists\hlOutputDirectorry]
-Count=1
-Item0=../../Bin
+Count=2
+Item0=../../bin
+Item1=../../Bin
 
