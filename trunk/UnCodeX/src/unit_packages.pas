@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Unreal Package scanner, searches for classes in directories
- $Id: unit_packages.pas,v 1.23 2004-03-30 09:46:18 elmuerte Exp $
+ $Id: unit_packages.pas,v 1.24 2004-04-02 10:33:26 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -54,6 +54,7 @@ type
     PackagePriority: TStringList;
     IgnorePackages: TStringList;
     ClassHash: TStringHash;
+    DuplicateHash: TStringHash;
     PDF: TMemIniFile;
     procedure ScanPackages;
     {$IFDEF __USE_TREEVIEW}
@@ -127,11 +128,13 @@ begin
   Self.FreeOnTerminate := true;
   Self.ClassHash := CHash;
   if (FileExists(PDFile)) then Self.PDF := TMemIniFile.Create(PDFile);
+  DuplicateHash := TStringHash.Create;
   inherited Create(true);
 end;
 
 destructor TPackageScanner.Destroy;
 begin
+	DuplicateHash.Clear;
   if (PDF <> nil) then PDF.Free;
   inherited Destroy();
 end;
@@ -300,7 +303,13 @@ begin
               end;
             end;
             {$ENDIF}
-            if (ClassHash <> nil) then ClassHash.Items[LowerCase(uclass.name)] := '-';
+            if (ClassHash <> nil) then begin
+            	if (ClassHash.Exists(LowerCase(uclass.name))) then begin
+              	LogClass('Scanner: (Warning) duplicate class name: '+uclass.FullName, uclass);
+              	DuplicateHash[LowerCase(uclass.name)] := '-'
+              end
+              else ClassHash.Items[LowerCase(uclass.name)] := '-';
+            end;
           end
           else log('Scanner: No class found in this file: '+sr.Name);
         until (FindNext(sr) <> 0) or (Self.Terminated);
@@ -318,15 +327,17 @@ begin
           packagelist.Remove(Packagelist[i]);
         end;
       end;
-      {$IFDEF __USE_TREEVIEW}
-      packagetree.AlphaSort(true); // sorting
-      {$ENDIF}
       CreateClassTree(classlist);
       {$IFDEF __USE_TREEVIEW}
+      packagetree.AlphaSort(true); // sorting
       classtree.AlphaSort(true); // sorting
       {$ENDIF}
       classlist.Sort;
       CountOrphans(ClassList);
+    end;
+    if (DuplicateHash.ItemCount > 0) then begin
+			Log('(Warning) One or more duplicate class names detected. The class tree might be incorrect.');
+      Log('(Warning) You should always use unique class names to avoid confusion.');
     end;
   finally
     knownpackages.Free;
@@ -358,8 +369,9 @@ begin
   if (Pos('.', tmp) > 0) then log(tmp);
   Status('Creating class tree for '+tmp);
   for i := 0 to classlist.Count-1 do begin
-    if ((classlist[i].parent = nil) and
-      (classlist[i].priority >= pprio)) then begin
+    if (classlist[i].parent = nil) then begin
+    	if (DuplicateHash.Exists(LowerCase(classlist[i].name))) then
+      	if (classlist[i].priority < pprio) then continue;
       pname := classlist[i].parentname;
       j := Pos('.', pname);
       if (j > 0) then begin

@@ -14,6 +14,7 @@ object frm_Settings: Tfrm_Settings
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  ShowHint = True
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   DesignSize = (
@@ -64,7 +65,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 433
     Height = 378
-    ActivePage = ts_Command
+    ActivePage = ts_PackagePriority
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -308,8 +309,6 @@ object frm_Settings: Tfrm_Settings
           Font.Name = 'MS Sans Serif'
           Font.Style = [fsBold]
           ParentFont = False
-          ParentShowHint = False
-          ShowHint = True
           TabOrder = 4
           OnClick = btn_ImportClick
         end
@@ -332,8 +331,6 @@ object frm_Settings: Tfrm_Settings
           Height = 25
           Hint = 'Ignore package'
           Anchors = [akRight, akBottom]
-          ParentShowHint = False
-          ShowHint = False
           TabOrder = 6
           OnClick = btn_IgnoreClick
           Glyph.Data = {
