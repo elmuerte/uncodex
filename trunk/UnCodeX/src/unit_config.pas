@@ -6,7 +6,7 @@
   Purpose:
     Contains the configuration of UnCodeX
 
-  $Id: unit_config.pas,v 1.4 2005-04-04 15:12:19 elmuerte Exp $
+  $Id: unit_config.pas,v 1.5 2005-04-04 21:31:35 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -37,7 +37,7 @@ uses
   {$IFNDEF CONSOLE}
   Graphics, Controls, unit_searchform,
   {$ENDIF}
-  unit_htmlout, Classes, SysUtils, unit_ucxinifiles;
+  unit_htmlout, Classes, SysUtils, unit_ucxinifiles, unit_uclasses;
 
 type
   TUCXConfig = class(TObject)
@@ -55,6 +55,8 @@ type
       Pre:                TStringList;
       Post:               TStringList;
     end;
+    PackageList:          TUPackageList;
+    ClassList:            TUClassList;
 
     PackagesPriority:     TStringList;
     IgnorePackages:       TStringList;
@@ -85,7 +87,7 @@ type
     property Color;
   end;
 
-  TComponentSettgins = class(TObject)
+  TComponentSettings = class(TObject)
   public
     Font: record
       Color:              TColor;
@@ -108,6 +110,10 @@ type
     procedure UpgradeConfig; override;
     procedure InternalLoadFromIni; override;
     procedure InternalSaveToIni; override;
+    procedure LoadComponentSettings(ident: string; cs: TComponentSettings);
+    procedure LoadSourcePreviewFont(ident: string; var target: TSourcePreviewFont);
+    procedure SaveComponentSettings(ident: string; cs: TComponentSettings);
+    procedure SaveSourcePreviewFont(ident: string; var target: TSourcePreviewFont);
   public
     StateFile:            string;
     NewClassTemplate:     string;
@@ -132,8 +138,8 @@ type
       PropertyInspector:  boolean;
       MinimizeOnClose:    boolean;
       ExpandObject:       boolean;
-      TreeView:           TComponentSettgins;
-      LogWindow:          TComponentSettgins;
+      TreeView:           TComponentSettings;
+      LogWindow:          TComponentSettings;
       InlineSearchTimeout:integer;
     end;
     DockState: record
@@ -212,6 +218,8 @@ begin
   ConfigFile := filename;
   ConfigVersion := 0;
   iniStack := Tlist.Create;
+  PackageList := TUPackageList.Create(true);
+  ClassList := TUClassList.Create(true);
 
   IncludeConfig.Pre := TStringList.Create;
   IncludeConfig.Post := TStringList.Create;
@@ -223,6 +231,9 @@ begin
   IgnorePackages := TStringList.Create;
   SourcePaths := TStringList.Create;
 
+  HTMLOutput.PackageList := PackageList;
+  HTMLOutput.ClassList := ClassList;
+   
   HTMLOutput.OutputDir := ExtractFilePath(ParamStr(0))+'UnCodeX-Output';
   HTMLOutput.TemplateDir := ExtractFilePath(ParamStr(0))+TEMPLATEPATH+PATHDELIM+DEFTEMPLATE;
   HTMLOutput.CreateSource := tbMaybe;
@@ -246,6 +257,8 @@ begin
   FreeAndNil(IgnorePackages);
   FreeAndNil(SourcePaths);
   FreeAndNil(iniStack);
+  FreeAndNil(PackageList);
+  FreeAndNil(ClassList);
 end;
 
 procedure TUCXConfig.LoadFromIni;
@@ -348,6 +361,8 @@ procedure TUCXConfig.InternalSaveToIni;
 var
   i: integer;
 begin
+  ini.WriteInteger('Configuration', 'Version', CURRENT_CONFIG_VERSION);
+
   ini.WriteStringArray('Packages', 'EditPackage', PackagesPriority);
   ini.DeleteKey('Packages', 'Tag');
   for i := 0 to PackagesPriority.Count-1 do begin
@@ -399,7 +414,7 @@ begin
 
   sl := TStringList.Create;
   try
-    ini.ReadSectionValues('PackagePriority', sl);
+    ini.ReadSectionRaw('PackagePriority', sl);
     for i := 0 to sl.Count-1 do begin
       tmp := sl[i];
       tmp2 := Copy(tmp, 1, Pos('=', tmp));
@@ -417,13 +432,13 @@ begin
         PackagesPriority.Objects[PackagesPriority.IndexOf(LowerCase(tmp))] := PackagesPriority;
       end;
     end;
-    ini.ReadSectionValues('IgnorePackages', sl);
+    ini.ReadSectionRaw('IgnorePackages', sl);
     for i := 0 to sl.Count-1 do begin
       tmp := sl[i];
       Delete(tmp, 1, Pos('=', tmp));
       IgnorePackages.Add(LowerCase(tmp));
     end;
-    ini.ReadSectionValues('SourcePaths', sl);
+    ini.ReadSectionRaw('SourcePaths', sl);
     for i := 0 to sl.Count-1 do begin
       tmp := sl[i];
       Delete(tmp, 1, Pos('=', tmp));
@@ -454,14 +469,38 @@ begin
 end;
 
 {$IFNDEF CONSOLE}
+
+function StringToFontStyles(style: string): TFontStyles;
+var
+  tmp: string;
+begin
+  result := [];
+  while (style <> '') do begin
+    tmp := GetToken(style, ';');
+    if (SameText(tmp, 'fsBold')) then Include(result, fsBold)
+    else if (SameText(tmp, 'fsItalic')) then Include(result, fsItalic)
+    else if (SameText(tmp, 'fsUnderline')) then Include(result, fsUnderline)
+    else if (SameText(tmp, 'fsStrikeout')) then Include(result, fsStrikeout);
+  end;
+end;
+
+function FontStylesToString(style: TFontStyles): string;
+begin
+  result := '';
+  if (fsBold in style) then result := result+'fsBold;';
+  if (fsItalic in style) then result := result+'fsItalic;';
+  if (fsUnderline in style) then result := result+'fsUnderline;';
+  if (fsStrikeout in style) then result := result+'fsStrikeout;';
+end;
+
 { TUCXGUIConfig }
 
 constructor TUCXGUIConfig.Create(filename: string);
 begin
   inherited Create(filename);
   
-  Layout.TreeView := TComponentSettgins.Create;
-  Layout.LogWindow := TComponentSettgins.Create;
+  Layout.TreeView := TComponentSettings.Create;
+  Layout.LogWindow := TComponentSettings.Create;
   DockState.data.Center := TMemoryStream.Create;
   DockState.data.Top := TMemoryStream.Create;
   DockState.data.Bottom := TMemoryStream.Create;
@@ -469,6 +508,8 @@ begin
   DockState.data.Right := TMemoryStream.Create;
   HotKeys := TStringList.Create;
 
+  Plugins.LoadDLLs := true;
+  Plugins.PascalScriptPath := ExtractFilePath(ParamStr(0))+UPSDIR+PathDelim;
   Layout.StayOnTop := false;
   Layout.SavePosition := true;
   Layout.SaveSize := true;
@@ -536,6 +577,13 @@ begin
   Commands.Client := '';
   Commands.Compiler := '';
   Commands.OpenClass := '';
+  SearchConfig.isFromTop := false;
+  SearchConfig.isStrict := false;
+  SearchConfig.isRegex := false;
+  SearchConfig.isFindFirst := false;
+  SearchConfig.Scope := 0;
+  SearchConfig.history := TStringList.Create;
+  SearchConfig.ftshistory := TStringList.Create;
   StateFile := ChangeFileExt(ExtractFilename(ConfigFile), '.ucx');
   NewClassTemplate := ExtractFilePath(ParamStr(0))+TEMPLATEPATH+PathDelim+'NewClass.uc';
 end;
@@ -543,6 +591,8 @@ end;
 destructor TUCXGUIConfig.Destroy;
 begin
   inherited Destroy;
+  FreeAndNil(SearchConfig.history);
+  FreeAndNil(SearchConfig.ftshistory);
   FreeAndNil(Layout.TreeView);
   FreeAndNil(Layout.LogWindow);
   FreeAndNil(DockState.data.Center);
@@ -556,11 +606,220 @@ end;
 procedure TUCXGUIConfig.InternalLoadFromIni;
 begin
   inherited InternalLoadFromIni;
+  with Plugins do begin
+    LoadDLLs := ini.ReadBool('GUI.Plugins', 'LoadDLLs', LoadDLLs);
+    PascalScriptPath := ini.ReadString('GUI.Plugins', 'PascalScriptPath', PascalScriptPath);
+  end;
+  with Layout do begin
+    StayOnTop := ini.ReadBool('GUI.Layout', 'Option.StayOnTop', StayOnTop);
+    SavePosition := ini.ReadBool('GUI.Layout', 'Option.SavePosition', SavePosition);
+    SaveSize := ini.ReadBool('GUI.Layout', 'Option.SaveSize', SaveSize);
+    IsMaximized := ini.ReadBool('GUI.Layout', 'Option.IsMaximized', IsMaximized);
+    MinimizeOnClose := ini.ReadBool('GUI.Layout', 'Option.MinimizeOnClose', MinimizeOnClose);
+    ExpandObject := ini.ReadBool('GUI.Layout', 'Option.ExpandObject', ExpandObject);
+    Top := ini.ReadInteger('GUI.Layout', 'Position.Top', Top);
+    Left := ini.ReadInteger('GUI.Layout', 'Position.Left', Left);
+    Width := ini.ReadInteger('GUI.Layout', 'Position.Width', Width);
+    Height := ini.ReadInteger('GUI.Layout', 'Position.Height', Height);
+    MenuBar := ini.ReadBool('GUI.Layout', 'Show.MenuBar', MenuBar);
+    Toolbar := ini.ReadBool('GUI.Layout', 'Show.Toolbar', Toolbar);
+    PackageTree := ini.ReadBool('GUI.Layout', 'Show.PackageTree', PackageTree);
+    Log := ini.ReadBool('GUI.Layout', 'Show.Log', Log);
+    SourcePreview := ini.ReadBool('GUI.Layout', 'Show.SourcePreview', SourcePreview);
+    PropertyInspector := ini.ReadBool('GUI.Layout', 'Show.PropertyInspector', PropertyInspector);
+    LoadComponentSettings('TreeView', TreeView);
+    LoadComponentSettings('LogWindow', LogWindow);
+    InlineSearchTimeout := ini.ReadInteger('GUI.Layout', 'InlineSearchTimeout', InlineSearchTimeout);
+  end;
+  with DockState do begin
+    data.Center.Clear;
+    ini.ReadBinaryStream('GUI.DockState', 'data.Center', data.Center);
+    data.Top.Clear;
+    ini.ReadBinaryStream('GUI.DockState', 'data.Top', data.Top);
+    data.Bottom.Clear;
+    ini.ReadBinaryStream('GUI.DockState', 'data.Bottom', data.Bottom);
+    data.Left.Clear;
+    ini.ReadBinaryStream('GUI.DockState', 'data.Left', data.Left);
+    data.Right.Clear;
+    ini.ReadBinaryStream('GUI.DockState', 'data.Right', data.Right);
+    size.Top := ini.ReadInteger('GUI.DockState', 'size.Top', size.Top);
+    size.Bottom := ini.ReadInteger('GUI.DockState', 'size.Bottom', size.Bottom);
+    size.Left := ini.ReadInteger('GUI.DockState', 'size.Left', size.Left);
+    size.Right := ini.ReadInteger('GUI.DockState', 'size.Right', size.Right);
+    host.Classes := ini.ReadString('GUI.DockState', 'host.Classes', host.Classes);
+    host.Packages := ini.ReadString('GUI.DockState', 'host.Packages', host.Packages);
+    host.Log := ini.ReadString('GUI.DockState', 'host.Log', host.Log);
+    host.SourcePreview := ini.ReadString('GUI.DockState', 'host.SourcePreview', host.SourcePreview);
+    host.PropertyInspector := ini.ReadString('GUI.DockState', 'host.Classes', host.PropertyInspector);
+  end;
+  with ApplicationBar do begin
+    Width := ini.ReadInteger('GUI.ApplicationBar', 'Width', Width);
+    AutoHide := ini.ReadBool('GUI.ApplicationBar', 'AutoHide', AutoHide);
+    Location := TAppBarLocation(ini.ReadInteger('GUI.ApplicationBar','Location', ord(Location)));
+  end;
+  with SourcePreview do begin
+    Color := ini.ReadInteger('GUI.SourcePreview', 'Color', Color);
+    FontName := ini.ReadString('GUI.SourcePreview', 'FontName', FontName);
+    FontSize := ini.ReadInteger('GUI.SourcePreview', 'FontSize', FontSize);
+    FontColor := ini.ReadInteger('GUI.SourcePreview', 'FontColor', FontColor);
+    TabSize := ini.ReadInteger('GUI.SourcePreview', 'TabSize', TabSize);
+    LoadSourcePreviewFont('Keyword1', Keyword1);
+    LoadSourcePreviewFont('Keyword2', Keyword2);
+    LoadSourcePreviewFont('StringType', StringType);
+    LoadSourcePreviewFont('Number', Number);
+    LoadSourcePreviewFont('Comment', Comment);
+    LoadSourcePreviewFont('Macro', Macro);
+    LoadSourcePreviewFont('ClassLink', ClassLink);
+  end;
+  with PropertyInspector do begin
+    InheritenceDepth := ini.ReadInteger('GUI.PropertyInspector', 'InheritenceDepth', InheritenceDepth);
+    AlwaysWindow := ini.ReadBool('GUI.PropertyInspector', 'AlwaysWindow', AlwaysWindow);
+  end;
+  ini.ReadSectionRaw('GUI.HotKeys', HotKeys);
+  with Commands do begin
+    Server := ini.ReadString('GUI.Commands', 'Server', Server);
+    ServerPriority := ini.ReadInteger('GUI.Commands', 'ServerPriority', ServerPriority);
+    Client := ini.ReadString('GUI.Commands', 'Client', Client);
+    Compiler := ini.ReadString('GUI.Commands', 'Compiler', Compiler);
+    OpenClass := ini.ReadString('GUI.Commands', 'OpenClass', OpenClass);
+  end;
+  with SearchConfig do begin
+    isFromTop := ini.ReadBool('GUI.Search', 'isFromTop', isFromTop);
+    isStrict := ini.ReadBool('GUI.Search', 'isStrict', isStrict);
+    isRegex := ini.ReadBool('GUI.Search', 'isRegex', isRegex);
+    isFindFirst := ini.ReadBool('GUI.Search', 'isFindFirst', isFindFirst);
+    Scope := ini.ReadInteger('GUI.Search', 'Scope', Scope);
+    ini.ReadStringArray('GUI.Search', 'history', history);
+    ini.ReadStringArray('GUI.Search', 'ftshistory', ftshistory);
+  end;
+  StateFile := ini.ReadString('GUI.General', 'StateFile', StateFile);
+  NewClassTemplate := ini.ReadString('GUI.General', 'NewClassTemplate', NewClassTemplate);
+end;
+
+procedure TUCXGUIConfig.LoadComponentSettings(ident: string; cs: TComponentSettings);
+begin
+  with cs do begin
+    with font do begin
+      Color := ini.ReadInteger('GUI.Layout', ident+'.Font.Color', Color);
+      Name := ini.ReadString('GUI.Layout', ident+'.Font.Name', Name);
+      Style := StringToFontStyles(ini.ReadString('GUI.Layout', ident+'.Font.Style', FontStylesToString(Style)));
+      Size := ini.ReadInteger('GUI.Layout', ident+'.Font.Size', Size);
+    end;
+    Color := ini.ReadInteger('GUI.Layout', ident+'.Color', Color);
+  end;
+end;
+
+procedure TUCXGUIConfig.LoadSourcePreviewFont(ident: string; var target: TSourcePreviewFont);
+begin
+  with target do begin
+    Color := ini.ReadInteger('GUI.SourcePreview', ident+'.Color', Color);
+    Style := StringToFontStyles(ini.ReadString('GUI.SourcePreview', ident+'.Style', FontStylesToString(Style)));
+  end;
 end;
 
 procedure TUCXGUIConfig.InternalSaveToIni;
 begin
   inherited InternalSaveToIni;
+  with Layout do begin
+    ini.WriteBool('GUI.Layout', 'Option.StayOnTop', StayOnTop);
+    ini.WriteBool('GUI.Layout', 'Option.SavePosition', SavePosition);
+    ini.WriteBool('GUI.Layout', 'Option.SaveSize', SaveSize);
+    ini.WriteBool('GUI.Layout', 'Option.IsMaximized', IsMaximized);
+    ini.WriteBool('GUI.Layout', 'Option.MinimizeOnClose', MinimizeOnClose);
+    ini.WriteBool('GUI.Layout', 'Option.ExpandObject', ExpandObject);
+    ini.WriteInteger('GUI.Layout', 'Position.Top', Top);
+    ini.WriteInteger('GUI.Layout', 'Position.Left', Left);
+    ini.WriteInteger('GUI.Layout', 'Position.Width', Width);
+    ini.WriteInteger('GUI.Layout', 'Position.Height', Height);
+    ini.WriteBool('GUI.Layout', 'Show.MenuBar', MenuBar);
+    ini.WriteBool('GUI.Layout', 'Show.Toolbar', Toolbar);
+    ini.WriteBool('GUI.Layout', 'Show.PackageTree', PackageTree);
+    ini.WriteBool('GUI.Layout', 'Show.Log', Log);
+    ini.WriteBool('GUI.Layout', 'Show.SourcePreview', SourcePreview);
+    ini.WriteBool('GUI.Layout', 'Show.PropertyInspector', PropertyInspector);
+    SaveComponentSettings('TreeView', TreeView);
+    SaveComponentSettings('LogWindow', LogWindow);
+    ini.WriteInteger('GUI.Layout', 'InlineSearchTimeout', InlineSearchTimeout);
+  end;
+  with DockState do begin
+    ini.WriteBinaryStream('GUI.DockState', 'data.Center', data.Center);
+    ini.WriteBinaryStream('GUI.DockState', 'data.Top', data.Top);
+    ini.WriteBinaryStream('GUI.DockState', 'data.Bottom', data.Bottom);
+    ini.WriteBinaryStream('GUI.DockState', 'data.Left', data.Left);
+    ini.WriteBinaryStream('GUI.DockState', 'data.Right', data.Right);
+    ini.WriteInteger('GUI.DockState', 'size.Top', size.Top);
+    ini.WriteInteger('GUI.DockState', 'size.Bottom', size.Bottom);
+    ini.WriteInteger('GUI.DockState', 'size.Left', size.Left);
+    ini.WriteInteger('GUI.DockState', 'size.Right', size.Right);
+    ini.WriteString('GUI.DockState', 'host.Classes', host.Classes);
+    ini.WriteString('GUI.DockState', 'host.Packages', host.Packages);
+    ini.WriteString('GUI.DockState', 'host.Log', host.Log);
+    ini.WriteString('GUI.DockState', 'host.SourcePreview', host.SourcePreview);
+    ini.WriteString('GUI.DockState', 'host.Classes', host.PropertyInspector);
+  end;
+  with ApplicationBar do begin
+    ini.WriteInteger('GUI.ApplicationBar', 'Width', Width);
+    ini.WriteBool('GUI.ApplicationBar', 'AutoHide', AutoHide);
+    ini.WriteInteger('GUI.ApplicationBar','Location', ord(Location));
+  end;
+  with SourcePreview do begin
+    ini.WriteInteger('GUI.SourcePreview', 'Color', Color);
+    ini.WriteString('GUI.SourcePreview', 'FontName', FontName);
+    ini.WriteInteger('GUI.SourcePreview', 'FontSize', FontSize);
+    ini.WriteInteger('GUI.SourcePreview', 'FontColor', FontColor);
+    ini.WriteInteger('GUI.SourcePreview', 'TabSize', TabSize);
+    SaveSourcePreviewFont('Keyword1', Keyword1);
+    SaveSourcePreviewFont('Keyword2', Keyword2);
+    SaveSourcePreviewFont('StringType', StringType);
+    SaveSourcePreviewFont('Number', Number);
+    SaveSourcePreviewFont('Comment', Comment);
+    SaveSourcePreviewFont('Macro', Macro);
+    SaveSourcePreviewFont('ClassLink', ClassLink);
+  end;
+  with PropertyInspector do begin
+    ini.WriteInteger('GUI.PropertyInspector', 'InheritenceDepth', InheritenceDepth);
+    ini.WriteBool('GUI.PropertyInspector', 'AlwaysWindow', AlwaysWindow);
+  end;
+  ini.WriteSectionRaw('GUI.HotKeys', HotKeys);
+  with Commands do begin
+    ini.WriteString('GUI.Commands', 'Server', Server);
+    ini.WriteInteger('GUI.Commands', 'ServerPriority', ServerPriority);
+    ini.WriteString('GUI.Commands', 'Client', Client);
+    ini.WriteString('GUI.Commands', 'Compiler', Compiler);
+    ini.WriteString('GUI.Commands', 'OpenClass', OpenClass);
+  end;
+  with SearchConfig do begin
+    ini.WriteBool('GUI.Search', 'isFromTop', isFromTop);
+    ini.WriteBool('GUI.Search', 'isStrict', isStrict);
+    ini.WriteBool('GUI.Search', 'isRegex', isRegex);
+    ini.WriteBool('GUI.Search', 'isFindFirst', isFindFirst);
+    ini.WriteInteger('GUI.Search', 'Scope', Scope);
+    ini.WriteStringArray('GUI.Search', 'history', history);
+    ini.WriteStringArray('GUI.Search', 'ftshistory', ftshistory);
+  end;
+  ini.WriteString('GUI.General', 'StateFile', StateFile);
+  ini.WriteString('GUI.General', 'NewClassTemplate', NewClassTemplate);
+end;
+
+procedure TUCXGUIConfig.SaveComponentSettings(ident: string; cs: TComponentSettings);
+begin
+  with cs do begin
+    with font do begin
+      ini.WriteInteger('GUI.Layout', ident+'.Font.Color', Color);
+      ini.WriteString('GUI.Layout', ident+'.Font.Name', Name);
+      ini.WriteString('GUI.Layout', ident+'.Font.Style', FontStylesToString(Style));
+      ini.WriteInteger('GUI.Layout', ident+'.Font.Size', Size);
+    end;
+    ini.WriteInteger('GUI.Layout', ident+'.Color', Color);
+  end;
+end;
+
+procedure TUCXGUIConfig.SaveSourcePreviewFont(ident: string; var target: TSourcePreviewFont);
+begin
+  with target do begin
+    ini.WriteInteger('GUI.SourcePreview', ident+'.Color', Color);
+    ini.WriteString('GUI.SourcePreview', ident+'.Style', FontStylesToString(Style));
+  end;
 end;
 
 procedure TUCXGUIConfig.UpgradeConfig;
@@ -651,7 +910,7 @@ begin
   SourcePreview.ClassLink.Style := IntToFontStyles(ini.ReadInteger('Layout', 'Source.ClassLink.Style', FontStylesToInt(SourcePreview.ClassLink.Style)));
   PropertyInspector.InheritenceDepth := ini.ReadInteger('Config', 'DefaultInheritanceDepth', PropertyInspector.InheritenceDepth);
   PropertyInspector.AlwaysWindow := ini.ReadBool('config', 'ClassPropertiesWindow', PropertyInspector.AlwaysWindow);
-  ini.ReadSectionValues('HotKeys', HotKeys);
+  ini.ReadSectionRaw('HotKeys', HotKeys);
   Commands.Server := ini.ReadString('Config', 'ServerCmd', Commands.Server);
   Commands.ServerPriority := ini.ReadInteger('Config', 'ServerPrio', Commands.ServerPriority);
   Commands.Client := ini.ReadString('Config', 'ClientCmd', Commands.Client);
@@ -677,7 +936,7 @@ end;
 
 { TComponentSettgins }
 
-procedure TComponentSettgins.Assign(target: TControl);
+procedure TComponentSettings.Assign(target: TControl);
 begin
   try
     TStoreControl(target).Font.Name := Font.Name;

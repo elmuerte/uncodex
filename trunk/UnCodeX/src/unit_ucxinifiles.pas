@@ -9,7 +9,7 @@
     classes. The code is mostly based on the FreePascalCompiler implementation.
     Most of changes for UCX have been put in the subclass TUCXIniFile
 
-  $Id: unit_ucxinifiles.pas,v 1.1 2005-04-04 15:12:20 elmuerte Exp $
+  $Id: unit_ucxinifiles.pas,v 1.2 2005-04-04 21:31:59 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -140,6 +140,7 @@ type
 
   TUCXIniFile = class(TMemIniFile)
   public
+    procedure WriteSectionRaw(const Section: string; Strings: TStrings); virtual;
     procedure DeleteKey(const Section, Ident: String); override;
     procedure ReadStringArray(const section, ident: string; output: TStrings; append: boolean = false);
     procedure WriteStringArray(const section, ident: string; input: TStrings);
@@ -781,6 +782,25 @@ end;
 
 { TUCXIniFile }
 
+procedure TUCXIniFile.WriteSectionRaw(const Section: string; Strings: TStrings);
+var
+  oSection: TIniFileSection;
+  oKey: TIniFileKey;
+  i: integer;
+begin
+  if (section = '') then exit;
+  oSection := FSectionList.SectionByName(Section);
+  if (oSection = nil) then begin
+    oSection := TIniFileSection.Create(Section);
+    FSectionList.Add(oSection);
+  end;
+  oSection.KeyList.Clear;
+  for i := 0 to Strings.count-1 do begin
+    oKey := TIniFileKey.Create(Strings.Names[i], Strings.Values[Strings.Names[i]]);
+    oSection.KeyList.Add(oKey);
+  end;
+end;
+
 procedure TUCXIniFile.DeleteKey(const Section, Ident: String);
 var
   oSection: TIniFileSection;
@@ -826,7 +846,13 @@ begin
     oSection := TIniFileSection.Create(section);
     FSectionList.Add(oSection);
   end;
-  DeleteKey(section, ident); // remove old entries
+  repeat
+    oKey := oSection.KeyList.KeyByName(Ident);
+    if oKey <> nil then begin
+      oSection.KeyList.Remove(oKey);
+      oKey.Free;
+    end;
+  until (oKey = nil);
   for i := 0 to input.count-1 do begin
     if (input[i] = '') then continue;
     oKey := TIniFileKey.Create(ident, input[i]);

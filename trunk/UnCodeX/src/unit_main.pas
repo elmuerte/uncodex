@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.157 2005-04-04 15:12:19 elmuerte Exp $
+  $Id: unit_main.pas,v 1.158 2005-04-04 21:31:38 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -399,10 +399,8 @@ type
     OldSize: TRect;
     OldWindowState: TWindowState;
     IsAppBar: boolean;
-    ABAutoHide: boolean;
     abd: APPBARDATA;
     WorkArea: TRect;
-    ABWidth: integer;
     // AppBar vars -- end;
     function ThreadCreate: boolean;
     procedure ThreadTerminate(Sender: TObject);
@@ -482,9 +480,8 @@ var
   InitialStartup:   boolean; // is first run
   hh_Help:          THookHelpSystem; // help system
   OutputModules:    TStringList; // custom output modules
+  config:           TUCXGUIConfig; // system configuration
   // UScript data
-  PackageList:      TUPackageList;
-  ClassList:        TUClassList;
   SelectedUClass:   TUClass = nil;
   SelectedUPackage: TUPackage = nil;
   // class search vars
@@ -510,12 +507,6 @@ var
 // config vars
 var
   // general
-  StateFile,
-  GPDF,
-  ExtCommentFile:         string;
-  SourcePaths:            TStringList;
-  PackagePriority:        TStringList;
-  IgnorePackages:         TStringList;
   MinimizeOnClose:        boolean = false;
   ClassPropertiesWindow:  boolean = false;
   PascalScriptDir:        string;
@@ -648,6 +639,7 @@ begin
   if (fsStrikeout in style) then result := result or 8;
 end;
 
+//TODO: useless
 function IntToFontStyles(style: cardinal): TFontStyles;
 begin
   result := [];
@@ -714,12 +706,12 @@ procedure Tfrm_UnCodeX.SaveState;
 var
   fs: TFileStream;
 begin
-  StatusReport('Saving state to '+StateFile);
+  StatusReport('Saving state to '+config.StateFile);
   tmr_StatusText.OnTimer(nil);
   Application.ProcessMessages;
-  fs := TFileStream.Create(StateFile, fmCreate or fmShareExclusive);
+  fs := TFileStream.Create(config.StateFile, fmCreate or fmShareExclusive);
   try
-    with (TUnCodeXState.Create(ClassList, tv_Classes, PackageList, tv_Packages)) do begin
+    with (TUnCodeXState.Create(config.ClassList, tv_Classes, config.PackageList, tv_Packages)) do begin
       SaveTreeToStream(fs);
       Free;
     end;
@@ -735,7 +727,7 @@ var
   res: boolean;
   node: TTreeNode;
 begin
-  if (not FileExists(StateFile)) then begin
+  if (not FileExists(config.StateFile)) then begin
     if (not tv_Packages.Visible) then begin
       // required for some reason
       // when it's docked hidden things go wrong
@@ -744,19 +736,19 @@ begin
     end;
     exit;
   end;
-  StatusReport('Loading state from '+StateFile);
+  StatusReport('Loading state from '+config.StateFile);
   tmr_StatusText.OnTimer(nil);
   Application.ProcessMessages;
-  fs := TFileStream.Create(StateFile, fmOpenRead or fmShareExclusive);
+  fs := TFileStream.Create(config.StateFile, fmOpenRead or fmShareExclusive);
   try
-    with (TUnCodeXState.Create(ClassList, tv_Classes, PackageList, tv_Packages)) do begin
+    with (TUnCodeXState.Create(config.ClassList, tv_Classes, config.PackageList, tv_Packages)) do begin
       res := LoadTreeFromStream(fs);
       Free;
     end;
     if (res) then begin
-      PackageList.Sort;
+      config.PackageList.Sort;
       tv_Packages.Items.AlphaSort(true);
-      ClassList.Sort;
+      config.ClassList.Sort;
       tv_Classes.Items.AlphaSort(true);
       tv_Classes.Tag := TV_ALWAYSEXPAND;
       tv_Packages.Tag := TV_ALWAYSEXPAND;
@@ -770,11 +762,11 @@ begin
       StatusReport('State loaded');
     end
     else begin
-      PackageList.Clear;
-      ClassList.Clear;
+      config.PackageList.Clear;
+      config.ClassList.Clear;
       tv_Packages.Items.Clear;
       tv_Classes.Items.Clear;
-      StatusReport('State '''+StateFile+''' file is corrupt');
+      StatusReport('State '''+config.StateFile+''' file is corrupt');
     end;
   finally
     fs.Free;
@@ -832,10 +824,10 @@ begin
   inherited;
   if (IsAppBar) then begin
     // show bar
-    if ((Msg.Result = HTLEFT) and ABAutoHide and (abd.uEdge = ABE_RIGHT)) then begin
+    if ((Msg.Result = HTLEFT) and config.ApplicationBar.AutoHide and (abd.uEdge = ABE_RIGHT)) then begin
       Left := abd.rc.Right-Width;
     end
-    else if ((Msg.Result = HTRIGHT) and ABAutoHide and (abd.uEdge = ABE_LEFT)) then begin
+    else if ((Msg.Result = HTRIGHT) and config.ApplicationBar.AutoHide and (abd.uEdge = ABE_LEFT)) then begin
       Left := abd.rc.Left;
     end
     // prevent resizing
@@ -858,9 +850,9 @@ var
   pt: TPoint;
 begin
   inherited;
-  if (IsAppBar and ABAutoHide and GetCursorPos(pt)) then begin
+  if (IsAppBar and config.ApplicationBar.AutoHide and GetCursorPos(pt)) then begin
     if ((pt.X < Left) or (pt.Y > abd.rc.Bottom) and (abd.uEdge = ABE_RIGHT)) then Left := abd.rc.Left
-    else if ((pt.X > Left+Width) or (pt.Y > abd.rc.Bottom) and (abd.uEdge = ABE_LEFT)) then Left := AUTOHIDEEXPOSURE-ABWidth;
+    else if ((pt.X > Left+Width) or (pt.Y > abd.rc.Bottom) and (abd.uEdge = ABE_LEFT)) then Left := AUTOHIDEEXPOSURE-config.ApplicationBar.Width;
   end;
 end;
 
@@ -888,21 +880,21 @@ begin
   SHAppBarMessage(ABM_NEW, abd);
 
   if (abd.uEdge = ABE_RIGHT) then begin
-    abd.rc.Left := WorkArea.Right-ABWidth;
+    abd.rc.Left := WorkArea.Right-config.ApplicationBar.Width;
     abd.rc.Right := WorkArea.Right;
   end
   else if (abd.uEdge = ABE_Left) then begin
     abd.rc.Left := WorkArea.Left;
-    abd.rc.Right := WorkArea.Left+ABWidth;
+    abd.rc.Right := WorkArea.Left+config.ApplicationBar.Width;
   end;
   abd.rc.Top := WorkArea.Top;
   abd.rc.Bottom := WorkArea.Bottom;
   Top := abd.rc.Top;
   Left := abd.rc.Left;
   Height := abd.rc.Bottom-abd.rc.Top;
-  Width := ABWidth;
-  if (not ABAutoHide) then shAppBarMessage(ABM_setPos, abd);
-  if (ABAutoHide) then RegisterABAutoHide;
+  Width := config.ApplicationBar.Width;
+  if (not config.ApplicationBar.AutoHide) then shAppBarMessage(ABM_setPos, abd);
+  if (config.ApplicationBar.AutoHide) then RegisterABAutoHide;
   abd.lParam := 1;
   shAppBarMessage(ABM_ACTIVATE, abd);
   IsAppBar := true;
@@ -946,10 +938,10 @@ begin
   abd.lParam := 0;
   if (shAppBarMessage(ABM_SETAUTOHIDEBAR, abd) <> 0) then begin
     if (abd.uEdge = ABE_RIGHT) then begin
-      abd.rc.Left := WorkArea.Right-ABWidth;
+      abd.rc.Left := WorkArea.Right-config.ApplicationBar.Width;
     end
     else if (abd.uEdge = ABE_LEFT) then begin
-      abd.rc.Right := WorkArea.Left+ABWidth;
+      abd.rc.Right := WorkArea.Left+config.ApplicationBar.Width;
     end;
     shAppBarMessage(ABM_setPos, abd);
     Left := abd.rc.Left;
@@ -958,13 +950,13 @@ end;
 
 procedure Tfrm_UnCodeX.ABResize;
 begin
-  if (IsAppBar) then ABWidth := Width;
-  if (IsAppBar and not ABAutoHide) then begin
+  if (IsAppBar) then config.ApplicationBar.Width := Width;
+  if (IsAppBar and not config.ApplicationBar.AutoHide) then begin
     if (abd.uEdge = ABE_RIGHT) then begin
-      abd.rc.Left := WorkArea.Right-ABWidth;
+      abd.rc.Left := WorkArea.Right-config.ApplicationBar.Width;
     end
     else if (abd.uEdge = ABE_LEFT) then begin
-      abd.rc.Right := WorkArea.Left+ABWidth;
+      abd.rc.Right := WorkArea.Left+config.ApplicationBar.Width;
     end;
     SHAppBarMessage(ABM_setPos, abd);
   end;
@@ -1296,8 +1288,8 @@ var
     @dfunc := nil;
     @dfunc := GetProcAddress(OutputModule, 'UCX_Output');
     if (@dfunc <> nil) then begin
-      info.AClassList := ClassList;
-      info.APackageList := PackageList;
+      info.AClassList := config.ClassList;
+      info.APackageList := config.PackageList;
       info.AStatusReport := StatusReport;
       info.AThreadTerminated := ThreadTerminate;
       info.WaitForTerminate := false;
@@ -1642,7 +1634,7 @@ begin
   uclass.package.classes.Remove(uclass);
   if (uclass.treenode <> nil) then TTreeNode(uclass.treenode).Delete;
   if (uclass.treenode2 <> nil) then TTreeNode(uclass.treenode2).Delete;
-  ClassList.Remove(uclass);
+  config.ClassList.Remove(uclass);
   TreeUpdated := true;
 end;
 
@@ -1772,15 +1764,15 @@ begin
     ini.WriteString('Config', 'CompilerCmd', CompilerCmd);
     ini.WriteString('Config', 'OpenResultCmd', OpenResultCmd);
     ini.WriteString('Config', 'NewClassTemplate', NewClassTemplate);
-    ini.WriteString('Config', 'StateFile', ExtractFileName(StateFile));
+    ini.WriteString('Config', 'StateFile', ExtractFileName(config.StateFile));
     ini.WriteBool('Config', 'AnalyseModified', AnalyseModified);
     ini.WriteInteger('Config', 'DefaultInheritanceDepth', DefaultInheritanceDepth);
     ini.WriteBool('Config', 'LoadOutputModules', LoadCustomOutputModules);
     ini.WriteString('Config', 'PascalScriptDir', PascalScriptDir);
     ini.WriteBool('Config', 'ClassPropertiesWindow', ClassPropertiesWindow);
     ini.WriteInteger('Config', 'InlineSearchTimeout', tmr_InlineSearch.Interval div 1000);
-    ini.WriteString('Config', 'PackageDescriptionFile', GPDF);
-    ini.WriteString('Config', 'ExternalCommentFile', ExtCommentFile);
+    ini.WriteString('Config', 'PackageDescriptionFile', config.Comments.Packages);
+    ini.WriteString('Config', 'ExternalCommentFile', config.Comments.Declarations);
 
     ini.WriteString('Layout', 'Log.Font.Name', lb_Log.Font.Name);
     ini.WriteInteger('Layout', 'Log.Font.Color', lb_Log.Font.Color);
@@ -1824,16 +1816,16 @@ begin
     ini.GetStrings(data);
 
     data.Add('[SourcePaths]');
-    for i := 0 to SourcePaths.Count-1 do data.Add('Path='+SourcePaths[i]);
+    for i := 0 to config.SourcePaths.Count-1 do data.Add('Path='+config.SourcePaths[i]);
 
     data.Add('[PackagePriority]');
-    for i := 0 to PackagePriority.Count-1 do data.Add('Packages='+PackagePriority[i]);
-    for i := 0 to PackagePriority.Count-1 do begin
-      if (PackagePriority.Objects[i] <> nil) then
-        data.Add('Tag='+PackagePriority[i]);
+    for i := 0 to config.PackagesPriority.Count-1 do data.Add('Packages='+config.PackagesPriority[i]);
+    for i := 0 to config.PackagesPriority.Count-1 do begin
+      if (config.PackagesPriority.Objects[i] <> nil) then
+        data.Add('Tag='+config.PackagesPriority[i]);
     end;
     data.Add('[IgnorePackages]');
-    for i := 0 to IgnorePackages.Count-1 do data.Add('Package='+IgnorePackages[i]);
+    for i := 0 to config.IgnorePackages.Count-1 do data.Add('Package='+config.IgnorePackages[i]);
 
     ini.SetStrings(data);
     ini.UpdateFile;
@@ -1918,7 +1910,7 @@ begin
         ini.WriteInteger('Layout', 'Height', Height);
       end;
     end;
-    ini.WriteInteger('Layout', 'ABWidth', ABWidth);
+    ini.WriteInteger('Layout', 'ABWidth', config.ApplicationBar.Width);
     ini.WriteBool('Layout', 'AutoHide', mi_AutoHide.Checked);
     ini.WriteBool('Layout', 'ABRight', mi_Right.Checked);
     ini.WriteBool('Layout', 'ABLeft', mi_Left.Checked);
@@ -1932,226 +1924,123 @@ end;
 
 procedure Tfrm_UnCodeX.LoadSettings;
 var
-  ini: TMemIniFile;
-  tmp, tmp2: string;
-  sl: TStringList;
   i: integer;
-  dockData: TMemoryStream;
   dckHost: TPanel;
 begin
-  ini := TMemIniFile.Create(ConfigFile);
-  sl := TStringList.Create;
-  dockData := TMemoryStream.Create;
-  try
-    { Load layout }
-    ac_VStayOnTop.Checked := ini.ReadBool('Layout', 'StayOnTop', ac_VStayOnTop.Checked);
-    if (ac_VStayOnTop.Checked) then FormStyle := fsStayOnTop;
-    ac_VSaveposition.Checked := ini.ReadBool('Layout', 'SavePosition', ac_VSaveposition.Checked);
-    ac_VSavesize.Checked := ini.ReadBool('Layout', 'SaveSize', ac_VSavesize.Checked);
-    if (ac_VSaveposition.Checked) then begin
-      Position := poDesigned;
-      Top := ini.ReadInteger('Layout', 'Top', Top);
-      Left := ini.ReadInteger('Layout', 'Left', Left);
-    end;
-    if (ac_VSavesize.Checked) then begin
-      Width := ini.ReadInteger('Layout', 'Width', Width);
-      Height := ini.ReadInteger('Layout', 'Height', Height);
-    end;
-    if (ini.ReadBool('Layout', 'IsMaximized', false)) then WindowState := wsMaximized;
-    ac_VMenuBar.Checked := ini.ReadBool('Layout', 'MenuBar', ac_VMenuBar.Checked);
-    ac_VToolbar.Checked := ini.ReadBool('Layout', 'Toolbar', ac_VToolbar.Checked);
-    mi_Toolbar.OnClick(nil);
+  ac_VStayOnTop.Checked := config.Layout.StayOnTop;
+  if (ac_VStayOnTop.Checked) then FormStyle := fsStayOnTop;
+  ac_VSaveposition.Checked := config.Layout.SavePosition;
+  ac_VSavesize.Checked := config.Layout.SaveSize;
+  if (ac_VSaveposition.Checked) then begin
+    Position := poDesigned;
+    Top := config.Layout.Top;
+    Left := config.Layout.Left;
+  end;
+  if (ac_VSavesize.Checked) then begin
+    Width := config.Layout.Width;
+    Height := config.Layout.Height;
+  end;
+  if (config.Layout.IsMaximized) then WindowState := wsMaximized;
+  ac_VMenuBar.Checked := config.Layout.MenuBar;
+  ac_VToolbar.Checked := config.Layout.Toolbar;
+  mi_Toolbar.OnClick(nil);
 
-    ac_VPackageTree.Checked := ini.ReadBool('Layout', 'PackageTree', ac_VPackageTree.Checked);
-    ac_VLog.Checked := ini.ReadBool('Layout', 'Log', ac_VLog.Checked);
-    ac_VSourceSnoop.Checked := ini.ReadBool('Layout', 'SourceSnoop', ac_VSourceSnoop.Checked);
-    mi_Browse.Visible := ac_VSourceSnoop.Checked;
-    ac_PropInspector.Checked := ini.ReadBool('Layout', 'PropertyInspector', ac_PropInspector.Checked);
+  ac_VPackageTree.Checked := config.Layout.PackageTree;
+  ac_VLog.Checked := config.Layout.Log;
+  ac_VSourceSnoop.Checked := config.Layout.SourcePreview;
+  mi_Browse.Visible := ac_VSourceSnoop.Checked;
+  ac_PropInspector.Checked := config.Layout.PropertyInspector;
 
-    { load dock settings }
-    ini.ReadBinaryStream('pnlCenter.DockManager', 'data', dockData);
-    if (dockData.Size > 0) then pnlCenter.DockManager.LoadFromStream(dockData);
-    dockData.Clear;
+  { load dock settings }
+  if (config.DockState.data.Center.Size > 0) then pnlCenter.DockManager.LoadFromStream(config.DockState.data.Center);
+  if (config.DockState.data.Top.Size > 0) then dckTop.DockManager.LoadFromStream(config.DockState.data.Top);
+  dckTop.Height := config.DockState.size.Top;
+  if (config.DockState.data.Bottom.Size > 0) then dckBottom.DockManager.LoadFromStream(config.DockState.data.Bottom);
+  dckBottom.Height := config.DockState.size.Bottom;
+  dckBottom.Top := pb_Scan.Top-dckBottom.Height;
+  splBottom.Top := dckBottom.Top-1;
+  if (config.DockState.data.Left.Size > 0) then dckLeft.DockManager.LoadFromStream(config.DockState.data.Left);
+  dckLeft.Width := config.DockState.size.Left;
+  if (config.DockState.data.Right.Size > 0) then dckRight.DockManager.LoadFromStream(config.DockState.data.Right);
+  dckRight.Width := config.DockState.size.Right;
 
-    ini.ReadBinaryStream('dckTop.DockManager', 'data', dockData);
-    if (dockData.Size > 0) then dckTop.DockManager.LoadFromStream(dockData);
-    dockData.Clear;
-    dckTop.Height := ini.ReadInteger('dckTop.DockManager', 'height', dckTop.Height);
+  { find dock hosts }
+  if (tv_Classes.HostDockSite = nil) then begin
+    dckHost := (FindComponent(config.DockState.host.Classes) as TPanel);
+    tv_Classes.ManualDock(dckHost);
+  end;
+  if (tv_Packages.HostDockSite = nil) then begin
+    dckHost := (FindComponent(config.DockState.host.Packages) as TPanel);
+    tv_Packages.ManualDock(dckHost);
+  end;
+  if (lb_Log.HostDockSite = nil) then begin
+    dckHost := (FindComponent(config.DockState.host.Log) as TPanel);
+    lb_Log.ManualDock(dckHost);
+  end;
+  if (re_SourceSnoop.HostDockSite = nil) then begin
+    dckHost := (FindComponent(config.DockState.host.SourcePreview) as TPanel);
+    re_SourceSnoop.ManualDock(dckHost);
+  end;
+  if (fr_Props.HostDockSite = nil) then begin
+    dckHost := (FindComponent(config.DockState.host.PropertyInspector) as TPanel);
+    fr_Props.ManualDock(dckHost);
+  end;
 
-    ini.ReadBinaryStream('dckBottom.DockManager', 'data', dockData);
-    if (dockData.Size > 0) then dckBottom.DockManager.LoadFromStream(dockData);
-    dockData.Clear;
-    dckBottom.Height := ini.ReadInteger('dckBottom.DockManager', 'height', dckBottom.Height);
-    dckBottom.Top := pb_Scan.Top-dckBottom.Height;
-    splBottom.Top := dckBottom.Top-1;
+  if (not ac_VPackageTree.Checked) then tv_Packages.Visible := false;
+  if (not ac_VLog.Checked) then lb_Log.Visible := false;
+  if (not ac_VSourceSnoop.Checked) then re_SourceSnoop.Visible := false;
+  if (not ac_PropInspector.Checked) then fr_Props.Visible := false;
 
-    ini.ReadBinaryStream('dckLeft.DockManager', 'data', dockData);
-    if (dockData.Size > 0) then dckLeft.DockManager.LoadFromStream(dockData);
-    dockData.Clear;
-    dckLeft.Width := ini.ReadInteger('dckLeft.DockManager', 'width', dckLeft.Width);
+  ac_VAutoHide.Checked := config.ApplicationBar.AutoHide;
+  mi_AutoHide.OnClick(nil);
+  ac_VTRight.Checked := config.ApplicationBar.Location = abRight;
+  if (ac_VTRight.Checked) then mi_Right.OnClick(nil);
+  ac_VTLeft.Checked := config.ApplicationBar.Location = abLeft;
+  if (ac_VTLeft.Checked) then mi_Left.OnClick(nil);
 
-    ini.ReadBinaryStream('dckRight.DockManager', 'data', dockData);
-    if (dockData.Size > 0) then dckRight.DockManager.LoadFromStream(dockData);
-    dockData.Clear;
-    dckRight.Width := ini.ReadInteger('dckRight.DockManager', 'width', dckRight.Width);
+  { Color and fonts }
+  config.Layout.LogWindow.Assign(lb_Log);
+  config.Layout.TreeView.Assign(tv_Classes);
+  config.Layout.TreeView.Assign(tv_Packages);
 
-    { find dock hosts }
-    if (tv_Classes.HostDockSite = nil) then begin
-      dckHost := (FindComponent(ini.ReadString('DockHosts', 'tv_Classes', 'pnlCenter')) as TPanel);
-      tv_Classes.ManualDock(dckHost);
-    end;
-    if (tv_Packages.HostDockSite = nil) then begin
-      dckHost := (FindComponent(ini.ReadString('DockHosts', 'tv_Packages', 'dckLeft')) as TPanel);
-      tv_Packages.ManualDock(dckHost);
-    end;
-    if (lb_Log.HostDockSite = nil) then begin
-      dckHost := (FindComponent(ini.ReadString('DockHosts', 'lb_Log', 'dckBottom')) as TPanel);
-      lb_Log.ManualDock(dckHost);
-    end;
-    if (re_SourceSnoop.HostDockSite = nil) then begin
-      dckHost := (FindComponent(ini.ReadString('DockHosts', 're_SourceSnoop', 'dckRight')) as TPanel);
-      re_SourceSnoop.ManualDock(dckHost);
-    end;
-    if (fr_Props.HostDockSite = nil) then begin
-      dckHost := (FindComponent(ini.ReadString('DockHosts', 'fr_Props', 'pnlCenter')) as TPanel);
-      fr_Props.ManualDock(dckHost);
-    end;
+  re_SourceSnoop.Color := config.SourcePreview.Color;
+  unit_rtfhilight.textfont.Color := config.SourcePreview.FontColor;
+  unit_rtfhilight.textfont.Name := config.SourcePreview.FontName;
+  unit_rtfhilight.textfont.Size := config.SourcePreview.FontSize;
+  unit_rtfhilight.tabs := config.SourcePreview.TabSize;
+  unit_rtfhilight.fntKeyword1.Color := config.SourcePreview.Keyword1.Color;
+  unit_rtfhilight.fntKeyword1.Style := config.SourcePreview.Keyword1.Style;
+  unit_rtfhilight.fntKeyword2.Color := config.SourcePreview.Keyword2.Color;
+  unit_rtfhilight.fntKeyword2.Style := config.SourcePreview.Keyword2.Style;
+  unit_rtfhilight.fntString.Color := config.SourcePreview.StringType.Color;
+  unit_rtfhilight.fntString.Style := config.SourcePreview.StringType.Style;
+  unit_rtfhilight.fntNumber.Color := config.SourcePreview.Number.Color;
+  unit_rtfhilight.fntNumber.Style := config.SourcePreview.Number.Style;
+  unit_rtfhilight.fntMacro.Color := config.SourcePreview.Macro.Color;
+  unit_rtfhilight.fntMacro.Style := config.SourcePreview.Macro.Style;
+  unit_rtfhilight.fntComment.Color := config.SourcePreview.Comment.Color;
+  unit_rtfhilight.fntComment.Style := config.SourcePreview.Comment.Style;
+  unit_rtfhilight.fntName.Color := config.SourcePreview.Name.Color;
+  unit_rtfhilight.fntName.Style := config.SourcePreview.Name.Style;
+  unit_rtfhilight.fntClassLink.Color := config.SourcePreview.ClassLink.Color;
+  unit_rtfhilight.fntClassLink.Style := config.SourcePreview.ClassLink.Style;
 
-    if (not ac_VPackageTree.Checked) then tv_Packages.Visible := false;
-    if (not ac_VLog.Checked) then lb_Log.Visible := false;
-    if (not ac_VSourceSnoop.Checked) then re_SourceSnoop.Visible := false;
-    if (not ac_PropInspector.Checked) then fr_Props.Visible := false;
+  ac_OpenOutput.Enabled :=  DirectoryExists(config.HTMLOutput.OutputDir);
+  ac_HTMLHelp.Enabled := FileExists(config.HTMLHelp.Compiler);
+  ac_OpenHTMLHelp.Enabled := FileExists(config.HTMLHelp.OutputFile);
+  ac_RunServer.Enabled := config.Commands.Server <> '';
+  ac_JoinServer.Enabled := config.Commands.Client <> '';
+  ac_CompileClass.Enabled := config.Commands.Compiler <> '';
 
-    ABWidth := ini.ReadInteger('Layout', 'ABWidth', 150);
-    ac_VAutoHide.Checked := ini.ReadBool('Layout', 'AutoHide', false);
-    mi_AutoHide.OnClick(nil);
-    ac_VTRight.Checked := ini.ReadBool('Layout', 'ABRight', false);
-    if (ac_VTRight.Checked) then mi_Right.OnClick(nil);
-    ac_VTLeft.Checked := ini.ReadBool('Layout', 'ABLeft', false);
-    if (ac_VTLeft.Checked) then mi_Left.OnClick(nil);
-    { Color and fonts }
-    lb_Log.Font.Name := ini.ReadString('Layout', 'Log.Font.Name', lb_Log.Font.Name);
-    lb_Log.Font.Color := ini.ReadInteger('Layout', 'Log.Font.Color', lb_Log.Font.Color);
-    lb_Log.Font.Size := ini.ReadInteger('Layout', 'Log.Font.Size', lb_Log.Font.Size);
-    lb_Log.Color := ini.ReadInteger('Layout', 'Log.Color', lb_Log.Color);
-    tv_Classes.Font.Name := ini.ReadString('Layout', 'Tree.Font.Name', tv_Classes.Font.Name);
-    tv_Classes.Font.Color := ini.ReadInteger('Layout', 'Tree.Font.Color', tv_Classes.Font.Color);
-    tv_Classes.Font.Size := ini.ReadInteger('Layout', 'Tree.Font.Size', tv_Classes.Font.Size);
-    tv_Classes.Color := ini.ReadInteger('Layout', 'Tree.Color', tv_Classes.Color);
-    tv_Packages.Font.Name := ini.ReadString('Layout', 'Tree.Font.Name', tv_Packages.Font.Name);
-    tv_Packages.Font.Color := ini.ReadInteger('Layout', 'Tree.Font.Color', tv_Packages.Font.Color);
-    tv_Packages.Font.Size := ini.ReadInteger('Layout', 'Tree.Font.Size', tv_Packages.Font.Size);
-    tv_Packages.Color := ini.ReadInteger('Layout', 'Tree.Color', tv_Packages.Color);
-    ExpandObject := ini.ReadBool('Layout', 'ExpandObject', true);
-    MinimizeOnClose := ini.ReadBool('Layout', 'MinimizeOnClose', MinimizeOnClose);
-    
-    re_SourceSnoop.Color := ini.ReadInteger('Layout', 'Source.Color', re_SourceSnoop.Color);
-    unit_rtfhilight.fntKeyword1.Color := ini.ReadInteger('Layout', 'Source.Keyword1.Color', unit_rtfhilight.fntKeyword1.Color);
-    unit_rtfhilight.fntKeyword1.Style := IntToFontStyles(ini.ReadInteger('Layout', 'Source.Keyword1.Style', FontStylesToInt(unit_rtfhilight.fntKeyword1.Style)));
-    unit_rtfhilight.fntKeyword2.Color := ini.ReadInteger('Layout', 'Source.Keyword2.Color', unit_rtfhilight.fntKeyword2.Color);
-    unit_rtfhilight.fntKeyword2.Style := IntToFontStyles(ini.ReadInteger('Layout', 'Source.Keyword2.Style', FontStylesToInt(unit_rtfhilight.fntKeyword2.Style)));
-    unit_rtfhilight.fntString.Color := ini.ReadInteger('Layout', 'Source.String.Color', unit_rtfhilight.fntString.Color);
-    unit_rtfhilight.fntString.Style := IntToFontStyles(ini.ReadInteger('Layout', 'Source.String.Style', FontStylesToInt(unit_rtfhilight.fntString.Style)));
-    unit_rtfhilight.fntNumber.Color := ini.ReadInteger('Layout', 'Source.Number.Color', unit_rtfhilight.fntNumber.Color);
-    unit_rtfhilight.fntNumber.Style := IntToFontStyles(ini.ReadInteger('Layout', 'Source.Number.Style', FontStylesToInt(unit_rtfhilight.fntNumber.Style)));
-    unit_rtfhilight.fntMacro.Color := ini.ReadInteger('Layout', 'Source.Macro.Color', unit_rtfhilight.fntMacro.Color);
-    unit_rtfhilight.fntMacro.Style := IntToFontStyles(ini.ReadInteger('Layout', 'Source.Macro.Style', FontStylesToInt(unit_rtfhilight.fntMacro.Style)));
-    unit_rtfhilight.fntComment.Color := ini.ReadInteger('Layout', 'Source.Comment.Color', unit_rtfhilight.fntComment.Color);
-    unit_rtfhilight.fntComment.Style := IntToFontStyles(ini.ReadInteger('Layout', 'Source.Comment.Style', FontStylesToInt(unit_rtfhilight.fntComment.Style)));
-    unit_rtfhilight.fntName.Color := ini.ReadInteger('Layout', 'Source.Name.Color', unit_rtfhilight.fntName.Color);
-    unit_rtfhilight.fntName.Style := IntToFontStyles(ini.ReadInteger('Layout', 'Source.Name.Style', FontStylesToInt(unit_rtfhilight.fntName.Style)));
-    unit_rtfhilight.fntClassLink.Color := ini.ReadInteger('Layout', 'Source.ClassLink.Color', unit_rtfhilight.fntClassLink.Color);
-    unit_rtfhilight.fntClassLink.Style := IntToFontStyles(ini.ReadInteger('Layout', 'Source.ClassLink.Style', FontStylesToInt(unit_rtfhilight.fntClassLink.Style)));
-    { Color and fonts -- END }
-    { Load layout -- END }
-    { Program configuration }
-    HTMLOutputDir := ini.ReadString('Config', 'HTMLOutputDir', ExtractFilePath(ParamStr(0))+'Output');
-    ac_OpenOutput.Enabled := HTMLOutputDir <> '';
-    TemplateDir := ini.ReadString('Config', 'TemplateDir', ExtractFilePath(ParamStr(0))+'Templates'+PATHDELIM+DEFTEMPLATE);
-    GZCompress := TTriBool(ini.ReadInteger('Config', 'GZCompress', -1));    
-    HTMLTargetExt := ini.ReadString('Config', 'HTMLTargetExt', '');
-    TabsToSpaces := ini.ReadInteger('Config', 'TabsToSpaces', 0);
-    CPPApp := ini.ReadString('Config', 'CPP', '');
-    HTMLdefaultTitle := ini.ReadString('Config', 'HTMLDefaultTitle', '');
-    HHCPath := ini.ReadString('Config', 'HHCPath', '');
-    ac_HTMLHelp.Enabled := HHCPath <> '';
-    HTMLHelpFile := ini.ReadString('Config', 'HTMLHelpFile', ExtractFilePath(ParamStr(0))+'UnCodeX.chm');
-    ac_OpenHTMLHelp.Enabled := FileExists(HTMLHelpFile);
-    HHTitle := ini.ReadString('Config', 'HHTitle', '');
-    ServerCmd := ini.ReadString('Config', 'ServerCmd', '');
-    ac_RunServer.Enabled := ServerCmd <> '';
-    ServerPrio := ini.ReadInteger('Config', 'ServerPrio', 1);
-    ClientCmd := ini.ReadString('Config', 'ClientCmd', '');
-    ac_JoinServer.Enabled := ClientCmd <> '';
-    CompilerCmd := ini.ReadString('Config', 'CompilerCmd', '');
-    ac_CompileClass.Enabled := CompilerCmd <> '';
-    OpenResultCmd := ini.ReadString('Config', 'OpenResultCmd', '');
-    //ac_OpenClass.Enabled := OpenResultCmd <> '';
-    NewClassTemplate := ini.ReadString('Config', 'NewClassTemplate', ExtractFilePath(ParamStr(0))+TEMPLATEPATH+PathDelim+'NewClass.uc');
-    ac_CreateSubClass.Enabled := FileExists(NewClassTemplate);
-    StateFile := ini.ReadString('Config', 'StateFile', StateFile);
-    if (StateFile = '') then begin
-      StateFile := ChangeFileExt(ExtractFilename(ConfigFile), '.ucx');
-    end;
-    GPDF := ini.ReadString('Config', 'PackageDescriptionFile', ExtractFilePath(ParamStr(0))+DefaultPDF);
-    ExtCommentFile := ini.ReadString('Config', 'ExternalCommentFile', ExtractFilePath(ParamStr(0))+DefaultECF);
-    SetExtCommentFile(ExtCommentFile);
-    AnalyseModified := ini.ReadBool('Config', 'AnalyseModified', true);
-    DefaultInheritanceDepth := ini.ReadInteger('Config', 'DefaultInheritanceDepth', 0);
-    if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ConfigFile)+StateFile;
-    LoadCustomOutputModules := ini.ReadBool('config', 'LoadOutputModules', LoadCustomOutputModules);
-    PascalScriptDir := ini.ReadString('Config', 'PascalScriptDir', ExtractFilePath(ParamStr(0))+UPSDIR+PathDelim);
-    ClassPropertiesWindow := ini.ReadBool('config', 'ClassPropertiesWindow', ClassPropertiesWindow);
-    tmr_InlineSearch.Interval := ini.ReadInteger('config', 'InlineSearchTimeout', (tmr_InlineSearch.Interval div 1000)) * 1000;
-    { Program configuration -- END }
-    for i := 0 to al_Main.ActionCount-1 do begin
-      TAction(al_Main.Actions[i]).ShortCut := TextToShortCut(ini.ReadString('HotKeys', TAction(al_Main.Actions[i]).Caption, ShortCutToText(TAction(al_Main.Actions[i]).ShortCut)));
-    end;
-    { Unreal Packages }
-    ini.ReadSectionValues('PackagePriority', sl);
-    for i := 0 to sl.Count-1 do begin
-      tmp := sl[i];
-      tmp2 := Copy(tmp, 1, Pos('=', tmp));
-      Delete(tmp, 1, Pos('=', tmp));
-      if (LowerCase(tmp2) = 'packages=') then begin
-        Log('Config: Package = '+tmp);
-        PackagePriority.Add(LowerCase(tmp));
-      end;
-    end;
-    // must be after Package= listing
-    for i := 0 to sl.Count-1 do begin
-      tmp := sl[i];
-      tmp2 := Copy(tmp, 1, Pos('=', tmp));
-      Delete(tmp, 1, Pos('=', tmp));
-      if (LowerCase(tmp2) = 'tag=') then begin
-        Log('Config: Tagged package = '+tmp);
-        PackagePriority.Objects[PackagePriority.IndexOf(LowerCase(tmp))] := PackagePriority;
-      end;
-    end;
-    ini.ReadSectionValues('IgnorePackages', sl);
-    for i := 0 to sl.Count-1 do begin
-      tmp := sl[i];
-      Delete(tmp, 1, Pos('=', tmp));
-      Log('Config: Ignore = '+tmp);
-      IgnorePackages.Add(LowerCase(tmp));
-    end;
-    { Unreal Packages -- END }
-    { Source paths }
-    ini.ReadSectionValues('SourcePaths', sl);
-    for i := 0 to sl.Count-1 do begin
-      tmp := sl[i];
-      Delete(tmp, 1, Pos('=', tmp));
-      Log('Config: Path = '+tmp);
-      SourcePaths.Add(LowerCase(tmp));
-    end;
-    { Source paths -- END }
-    { Search history }
-    LoadSearchConfig(ini, 'search', DefaultSC);
-    { Search history -- END }
-  finally
-    ini.Free;
-    sl.Free;
-    dockData.Free;
+  ac_CreateSubClass.Enabled := FileExists(config.NewClassTemplate);
+  SetExtCommentFile(config.Comments.Declarations);
+
+  if (ExtractFilePath(config.StateFile) = '') then config.StateFile := ExtractFilePath(ConfigFile)+config.StateFile; //TODO: fix this?
+  tmr_InlineSearch.Interval := config.Layout.InlineSearchTimeout * 1000;
+
+  for i := 0 to al_Main.ActionCount-1 do begin
+    if (config.HotKeys.IndexOfName(TAction(al_Main.Actions[i]).Caption) > -1) then
+      TAction(al_Main.Actions[i]).ShortCut := TextToShortCut(config.HotKeys.Values[TAction(al_Main.Actions[i]).Caption]);
   end;
 end;
 
@@ -2233,35 +2122,35 @@ procedure Tfrm_UnCodeX.FormCreate(Sender: TObject);
 begin
   OnChangeVisibility := OnDockVisChange;
   OnStartDockDrag := OnDockDragStart;
-  
+
   Mouse.DragImmediate := false;
   Mouse.DragThreshold := 5;
   hh_Help := THookHelpSystem.Create(ExtractFilePath(ParamStr(0))+'UnCodeX-help.chm', '', htHHAPI);
   Caption := APPTITLE;
   if (ConfigFile = '') then ConfigFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ini'
   else Caption := Caption+' ['+ExtractFileName(ConfigFile)+']';
+  Config := TUCXGUIConfig.Create(ConfigFile);
+  Config.LoadFromIni;
+  
   Caption := Caption+' - version '+APPVERSION;
   Application.Title := Caption;
   if (DEBUGBUILD) then Application.Title := Application.Title+' (debug)';
   InitialStartup := not FileExists(ConfigFile);
   { StringLists }
-  PackagePriority := TStringList.Create;
-  SourcePaths := TStringList.Create;
-  IgnorePackages := TStringList.Create;
-  DefaultSC.ftshistory := TStringList.Create;
-  DefaultSC.history := TStringList.Create;
+  DefaultSC.ftshistory := TStringList.Create; //TODO: obsolete
+  DefaultSC.history := TStringList.Create; //TODO: obsolete
   OutputModules := TStringList.Create;
   { StringLists -- END }
 
   LoadSettings;
-  if (StateFile = '') then StateFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ucx';
+  if (config.StateFile = '') then config.StateFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ucx'; //TODO: change
 
-  if (LoadCustomOutputModules) then begin
+  if (config.Plugins.LoadDLLs) then begin
     LoadOutputModules;
     LoadPascalScripts;
   end;
-  PackageList := TUPackageList.Create(true);
-  ClassList := TUClassList.Create(true);
+  config.PackageList := TUPackageList.Create(true); //TODO: obsolete
+  config.ClassList := TUClassList.Create(true); //TODO: obsolete
   UpdateSystemMenu;
   mi_MenuBar.OnClick(Sender); // has to be here or else it won't work
 end;
@@ -2312,19 +2201,19 @@ begin
 
     tv_Packages.Items.Clear;
     tv_Classes.Items.Clear;
-    PackageList.Clear;
-    ClassList.Clear;
+    config.PackageList.Clear;
+    config.ClassList.Clear;
 
-    rec.paths := SourcePaths;
+    rec.paths := config.SourcePaths;
     rec.packagetree := tv_Packages.Items;
     rec.classtree := tv_Classes.items;
     rec.status := statusReport;
-    rec.packagelist := PackageList;
-    rec.classlist := ClassList;
-    rec.PackagePriority := PackagePriority;
-    rec.IgnorePackages := IgnorePackages;
+    rec.packagelist := config.PackageList;
+    rec.classlist := config.ClassList;
+    rec.PackagePriority := config.PackagesPriority;
+    rec.IgnorePackages := config.IgnorePackages;
     rec.CHash := unit_rtfhilight.ClassesHash;
-    rec.PDFile := GPDF;
+    rec.PDFile := config.Comments.Packages;
 
     runningthread := TPackageScanner.Create(rec);
     runningthread.OnTerminate := ThreadTerminate;
@@ -2335,7 +2224,7 @@ end;
 procedure Tfrm_UnCodeX.ac_FindOrphansExecute(Sender: TObject);
 begin
   ClearLog;
-  CountOrphans(ClassList);
+  CountOrphans(config.ClassList);
   if ClassOrphanCount > 0 then begin
     Log(IntToStr(ClassOrphanCount)+' orphans found', ltWarn);
     MessageDlg(IntToStr(ClassOrphanCount)+' orphan classes found.'+#13+#10+
@@ -2353,7 +2242,7 @@ begin
     fr_Props.uclass := nil;
     if (fr_Props.Visible) then fr_Props.LoadClass;
 
-    runningthread := TClassAnalyser.Create(ClassList, statusReport, false,
+    runningthread := TClassAnalyser.Create(config.ClassList, statusReport, false,
                       unit_rtfhilight.ClassesHash);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
@@ -2366,8 +2255,8 @@ var
 begin
   if (ThreadCreate) then begin
     ClearLog;
-    htmlconfig.PackageList := PackageList;
-    htmlconfig.ClassList := ClassList;
+    htmlconfig.PackageList := config.PackageList;
+    htmlconfig.ClassList := config.ClassList;
     htmlconfig.outputdir := HTMLOutputDir;
     htmlconfig.TemplateDir := TemplateDir;
     htmlconfig.CreateSource := tbMaybe; // TODO: make configurable
@@ -2388,13 +2277,13 @@ var
   newtag: boolean;
 begin
   with Tfrm_Settings.Create(nil) do begin
-    lb_Paths.Items := SourcePaths;
+    lb_Paths.Items := config.SourcePaths;
     { Packages }
-    clb_PackagePriority.Items := PackagePriority;
-    for i := 0 to PackagePriority.Count-1 do begin
-      clb_PackagePriority.Checked[i] := PackagePriority.Objects[i] <> nil;
+    clb_PackagePriority.Items := config.PackagesPriority;
+    for i := 0 to config.PackagesPriority.Count-1 do begin
+      clb_PackagePriority.Checked[i] := config.PackagesPriority.Objects[i] <> nil;
     end;
-    lb_IgnorePackages.Items := IgnorePackages;
+    lb_IgnorePackages.Items := config.IgnorePackages;
     { HTML output }
     ed_HTMLOutputDir.Text := HTMLOutputDir;
     ed_TemplateDir.Text := TemplateDir;
@@ -2428,7 +2317,7 @@ begin
     re_Preview.Color := re_SourceSnoop.Color;
     cb_Background.Selected := re_Preview.Color;
     { Program options }
-    ed_StateFilename.Text := ExtractFilename(StateFile);
+    ed_StateFilename.Text := ExtractFilename(config.StateFile);
     cb_MinimzeOnClose.Checked := MinimizeOnClose;
     cb_ModifiedOnStartup.Checked := AnalyseModified;
     ud_DefInheritDepth.Position := DefaultInheritanceDepth;
@@ -2436,8 +2325,8 @@ begin
     ed_UPSDIR.Text := PascalScriptDir;
     cb_CPAsWindow.Checked := ClassPropertiesWindow;
     ud_InlineSearchTimeout.Position := tmr_InlineSearch.Interval div 1000;
-    ed_gpdf.text := GPDF;
-    ed_ExtCmtFile.Text := ExtCommentFile;
+    ed_gpdf.text := config.Comments.Packages;
+    ed_ExtCmtFile.Text := config.Comments.Declarations;
     if (ShowModal = mrOk) then begin
       { HTML output }
       HTMLOutputDir := ed_HTMLOutputDir.Text;
@@ -2468,9 +2357,9 @@ begin
       NewClassTemplate := ed_NewClassTemplate.Text;
       mi_CreateSubClass.Enabled := FileExists(NewClassTemplate);
       { Program options }
-      StateFile := ed_StateFilename.Text;
+      config.StateFile := ed_StateFilename.Text;
       AnalyseModified := cb_ModifiedOnStartup.Checked;
-      if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ConfigFile)+StateFile;
+      if (ExtractFilePath(config.StateFile) = '') then config.StateFile := ExtractFilePath(ConfigFile)+config.StateFile;
       ExpandObject := cb_ExpandObject.Checked;
       MinimizeOnClose := cb_MinimzeOnClose.Checked;
       DefaultInheritanceDepth := ud_DefInheritDepth.Position;
@@ -2478,22 +2367,22 @@ begin
       PascalScriptDir := ed_UPSDIR.Text;
       ClassPropertiesWindow := cb_CPAsWindow.Checked;
       tmr_InlineSearch.Interval := ud_InlineSearchTimeout.Position * 1000;
-      GPDF := ed_gpdf.Text;
-      ExtCommentFile := ed_ExtCmtFile.Text;
-      SetExtCommentFile(ExtCommentFile);
+      config.Comments.Packages := ed_gpdf.Text;
+      config.Comments.Declarations := ed_ExtCmtFile.Text;
+      SetExtCommentFile(config.Comments.Declarations);
       { Source paths }
-      SourcePaths.Clear;
-      SourcePaths.AddStrings(lb_Paths.Items);
+      config.SourcePaths.Clear;
+      config.SourcePaths.AddStrings(lb_Paths.Items);
       { Packages }
-      PackagePriority.Clear;
-      PackagePriority.AddStrings(clb_PackagePriority.Items);
+      config.PackagesPriority.Clear;
+      config.PackagesPriority.AddStrings(clb_PackagePriority.Items);
       for i := 0 to clb_PackagePriority.Items.Count-1 do begin
         if (clb_PackagePriority.Checked[i]) then
-          PackagePriority.Objects[i] := PackagePriority
-          else PackagePriority.Objects[i] := nil;
+          config.PackagesPriority.Objects[i] := config.PackagesPriority
+          else config.PackagesPriority.Objects[i] := nil;
       end;
-      IgnorePackages.Clear;
-      IgnorePackages.AddStrings(lb_IgnorePackages.Items);
+      config.IgnorePackages.Clear;
+      config.IgnorePackages.AddStrings(lb_IgnorePackages.Items);
       { Layout settings }
       lb_Log.Color := lb_LogLayout.Color;
       lb_Log.Font := lb_LogLayout.Font;
@@ -2518,49 +2407,49 @@ begin
         tv_Packages.Items.BeginUpdate;
         tv_Classes.Items.BeginUpdate;
         TreeUpdated := true;
-        for i := 0 to PackageList.Count-1 do begin
+        for i := 0 to config.PackageList.Count-1 do begin
           Application.ProcessMessages;
-          if (clb_PackagePriority.Items.IndexOf(LowerCase(PackageList[i].name)) > -1) then
-            newtag := clb_PackagePriority.Checked[clb_PackagePriority.Items.IndexOf(LowerCase(PackageList[i].name))]
+          if (clb_PackagePriority.Items.IndexOf(LowerCase(config.PackageList[i].name)) > -1) then
+            newtag := clb_PackagePriority.Checked[clb_PackagePriority.Items.IndexOf(LowerCase(config.PackageList[i].name))]
             else newtag := false;
-          PackageList[i].tagged := newtag;
-          for j := 0 to PackageList[i].classes.Count-1 do begin
+          config.PackageList[i].tagged := newtag;
+          for j := 0 to config.PackageList[i].classes.Count-1 do begin
             Application.ProcessMessages;
-            PackageList[i].classes[j].tagged := newtag;
-            if (PackageList[i].classes[j].treenode <> nil) then begin
+            config.PackageList[i].classes[j].tagged := newtag;
+            if (config.PackageList[i].classes[j].treenode <> nil) then begin
               if (newtag) then begin
-                TTreeNode(PackageList[i].classes[j].treenode).ImageIndex := ICON_CLASS_TAGGED;
-                TTreeNode(PackageList[i].classes[j].treenode).SelectedIndex := ICON_CLASS_TAGGED;
-                TTreeNode(PackageList[i].classes[j].treenode).StateIndex := ICON_CLASS_TAGGED;
+                TTreeNode(config.PackageList[i].classes[j].treenode).ImageIndex := ICON_CLASS_TAGGED;
+                TTreeNode(config.PackageList[i].classes[j].treenode).SelectedIndex := ICON_CLASS_TAGGED;
+                TTreeNode(config.PackageList[i].classes[j].treenode).StateIndex := ICON_CLASS_TAGGED;
               end
               else begin
-                TTreeNode(PackageList[i].classes[j].treenode).ImageIndex := ICON_CLASS;
-                TTreeNode(PackageList[i].classes[j].treenode).SelectedIndex := ICON_CLASS;
-                TTreeNode(PackageList[i].classes[j].treenode).StateIndex := ICON_CLASS;
+                TTreeNode(config.PackageList[i].classes[j].treenode).ImageIndex := ICON_CLASS;
+                TTreeNode(config.PackageList[i].classes[j].treenode).SelectedIndex := ICON_CLASS;
+                TTreeNode(config.PackageList[i].classes[j].treenode).StateIndex := ICON_CLASS;
               end;
             end;
           end;
-          if (PackageList[i].treenode <> nil) then begin
+          if (config.PackageList[i].treenode <> nil) then begin
             if (newtag) then begin
-              TTreeNode(PackageList[i].treenode).ImageIndex := ICON_PACKAGE_TAGGED;
-              TTreeNode(PackageList[i].treenode).SelectedIndex := ICON_PACKAGE_TAGGED;
-              TTreeNode(PackageList[i].treenode).StateIndex := ICON_PACKAGE_TAGGED;
+              TTreeNode(config.PackageList[i].treenode).ImageIndex := ICON_PACKAGE_TAGGED;
+              TTreeNode(config.PackageList[i].treenode).SelectedIndex := ICON_PACKAGE_TAGGED;
+              TTreeNode(config.PackageList[i].treenode).StateIndex := ICON_PACKAGE_TAGGED;
             end
             else begin
-              TTreeNode(PackageList[i].treenode).ImageIndex := ICON_PACKAGE;
-              TTreeNode(PackageList[i].treenode).SelectedIndex := ICON_PACKAGE;
-              TTreeNode(PackageList[i].treenode).StateIndex := ICON_PACKAGE;
+              TTreeNode(config.PackageList[i].treenode).ImageIndex := ICON_PACKAGE;
+              TTreeNode(config.PackageList[i].treenode).SelectedIndex := ICON_PACKAGE;
+              TTreeNode(config.PackageList[i].treenode).StateIndex := ICON_PACKAGE;
             end;
-            for j := 0 to TTreeNode(PackageList[i].treenode).Count-1 do begin
+            for j := 0 to TTreeNode(config.PackageList[i].treenode).Count-1 do begin
               if (newtag) then begin
-                TTreeNode(PackageList[i].treenode).Item[j].ImageIndex := ICON_CLASS_TAGGED;
-                TTreeNode(PackageList[i].treenode).Item[j].SelectedIndex := ICON_CLASS_TAGGED;
-                TTreeNode(PackageList[i].treenode).Item[j].StateIndex := ICON_CLASS_TAGGED;
+                TTreeNode(config.PackageList[i].treenode).Item[j].ImageIndex := ICON_CLASS_TAGGED;
+                TTreeNode(config.PackageList[i].treenode).Item[j].SelectedIndex := ICON_CLASS_TAGGED;
+                TTreeNode(config.PackageList[i].treenode).Item[j].StateIndex := ICON_CLASS_TAGGED;
               end
               else begin
-                TTreeNode(PackageList[i].treenode).Item[j].ImageIndex := ICON_CLASS;
-                TTreeNode(PackageList[i].treenode).Item[j].SelectedIndex := ICON_CLASS;
-                TTreeNode(PackageList[i].treenode).Item[j].StateIndex := ICON_CLASS;
+                TTreeNode(config.PackageList[i].treenode).Item[j].ImageIndex := ICON_CLASS;
+                TTreeNode(config.PackageList[i].treenode).Item[j].SelectedIndex := ICON_CLASS;
+                TTreeNode(config.PackageList[i].treenode).Item[j].StateIndex := ICON_CLASS;
               end;
             end;
           end;
@@ -2618,14 +2507,10 @@ begin
   hh_Help.Free;
   HHCloseAll;
   UnregisterAppBar;
-  PackagePriority.Free;
-  PackageList.Free;
-  ClassList.Free;
-  SourcePaths.Free;
-  IgnorePackages.Free;
   DefaultSC.ftshistory.Free;
   DefaultSC.history.Free;
   OutputModules.Free;
+  config.Free;
 end;
 
 procedure Tfrm_UnCodeX.ac_OpenClassExecute(Sender: TObject);
@@ -2699,7 +2584,7 @@ begin
     ClearLog;
     if (HHTitle <> '') then tmp := HHTitle
     else tmp := HHTitle;
-    runningthread := TMSHTMLHelp.Create(HHCPath, HTMLOutputDir, HTMLHelpFile, tmp, PackageList, ClassList, StatusReport);
+    runningthread := TMSHTMLHelp.Create(HHCPath, HTMLOutputDir, HTMLHelpFile, tmp, config.PackageList, config.ClassList, StatusReport);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
   end;
@@ -3058,9 +2943,9 @@ end;
 
 procedure Tfrm_UnCodeX.ac_VAutoHideExecute(Sender: TObject);
 begin
-  ABAutoHide := mi_AutoHide.Checked;
+  config.ApplicationBar.AutoHide := mi_AutoHide.Checked;
   if (IsAppBar) then begin
-    if (ABAutoHide) then RegisterABAutoHide
+    if (config.ApplicationBar.AutoHide) then RegisterABAutoHide
       else UnregisterABAutoHide;
   end;
 end;
@@ -3113,7 +2998,7 @@ begin
   if (ThreadCreate) then begin
     ClearLog;
     LastAnalyseTime := Now;
-    runningthread := TClassAnalyser.Create(ClassList, statusReport, true, unit_rtfhilight.ClassesHash);
+    runningthread := TClassAnalyser.Create(config.ClassList, statusReport, true, unit_rtfhilight.ClassesHash);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
   end;
@@ -3770,7 +3655,7 @@ procedure Tfrm_UnCodeX.ac_FindNewClassesExecute(Sender: TObject);
 begin
   if (ThreadCreate) then begin
     ClearLog;
-    runningthread := TNewClassScanner.Create(PackageList, ClassList, StatusReport, ClassesHash);
+    runningthread := TNewClassScanner.Create(config.PackageList, config.ClassList, StatusReport, ClassesHash);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
   end;

@@ -6,7 +6,7 @@
   Purpose:
     Class properties window
 
-  $Id: unit_tags.pas,v 1.23 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_tags.pas,v 1.24 2005-04-04 21:31:58 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -192,7 +192,7 @@ end;
 procedure Tfrm_Tags.FormActivate(Sender: TObject);
 begin
   if (LastBuildTime > MyLastBuildTime) then begin
-    fr_Main.uclass := ClassList.Find(MyClass);
+    fr_Main.uclass := config.ClassList.Find(MyClass);
     LoadClass;
   end
   else if (LastAnalyseTime > MyLastAnalyseTime) then begin
