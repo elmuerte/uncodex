@@ -487,8 +487,23 @@ object frm_UnCodeX: Tfrm_UnCodeX
   end
   object pm_ClassTree: TPopupMenu
     Images = il_Small
+    OnPopup = pm_ClassTreePopup
     Left = 40
     Top = 72
+    object mi_ClassName: TMenuItem
+      AutoHotkeys = maManual
+      AutoLineReduction = maManual
+      Caption = 'Classname'
+      Enabled = False
+      OnDrawItem = mi_ClassNameDrawItem
+    end
+    object mi_PackageName: TMenuItem
+      AutoHotkeys = maManual
+      AutoLineReduction = maManual
+      Caption = 'Packagename'
+      Enabled = False
+      OnDrawItem = mi_PackageNameDrawItem
+    end
     object mi_OpenClass: TMenuItem
       Action = ac_OpenClass
       Default = True

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.58 2003-10-26 21:30:19 elmuerte Exp $
+ $Id: unit_main.pas,v 1.59 2003-10-27 10:25:02 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_main;
@@ -176,6 +176,8 @@ type
     tmr_InlineSearch: TTimer;
     EXEC: TDdeServerConvEx;
     cmd: TDdeServerItemEx;
+    mi_ClassName: TMenuItem;
+    mi_PackageName: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -251,6 +253,11 @@ type
     procedure tv_ClassesExit(Sender: TObject);
     procedure ae_AppEventMessage(var Msg: tagMSG; var Handled: Boolean);
     procedure cmdPokeData(Sender: TObject);
+    procedure mi_ClassNameDrawItem(Sender: TObject; ACanvas: TCanvas;
+      ARect: TRect; Selected: Boolean);
+    procedure pm_ClassTreePopup(Sender: TObject);
+    procedure mi_PackageNameDrawItem(Sender: TObject; ACanvas: TCanvas;
+      ARect: TRect; Selected: Boolean);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -459,6 +466,7 @@ var
   fs: TFileStream;
 begin
   StatusReport('Saving state to '+StateFile);
+  tmr_StatusText.OnTimer(nil);
   Application.ProcessMessages;
   fs := TFileStream.Create(StateFile, fmCreate or fmShareExclusive);
   try
@@ -479,6 +487,7 @@ var
 begin
   if (not FileExists(StateFile)) then exit;
   StatusReport('Loading state from '+StateFile);
+  tmr_StatusText.OnTimer(nil);
   Application.ProcessMessages;
   fs := TFileStream.Create(StateFile, fmOpenRead or fmShareExclusive);
   try
@@ -1650,6 +1659,7 @@ begin
     Action := caMinimize;
   end
   else begin
+    tmr_StatusText.Enabled := false;
     if (TreeUpdated) then SaveState;
     ini := TMemIniFile.Create(ConfigFile);
     try
@@ -2182,6 +2192,7 @@ begin
       if (Selected <> nil) then begin
         if (TObject(Selected.Data).ClassType <> TUClass) then exit;
         filename := TUClass(Selected.Data).package.path+PATHDELIM+CLASSDIR+PATHDELIM+TUClass(Selected.Data).filename;
+        re_SourceSnoop.Hint := filename;
         if (not FileExists(filename)) then exit;
         fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
         ms := TMemoryStream.Create;
@@ -2202,7 +2213,9 @@ end;
 procedure Tfrm_UnCodeX.tv_ClassesChange(Sender: TObject; Node: TTreeNode);
 begin
   ActiveControl := (Sender as TWinControl);
-  if (re_SourceSnoop.Visible) then ac_SourceSnoop.Execute;
+  if (re_SourceSnoop.Visible) then begin
+    ac_SourceSnoop.Execute;
+  end;
 end;
 
 procedure Tfrm_UnCodeX.ac_VSourceSnoopExecute(Sender: TObject);
@@ -2434,6 +2447,49 @@ begin
     lst.Free;
   end;
   cmd.Text := '';
+end;
+
+procedure Tfrm_UnCodeX.mi_ClassNameDrawItem(Sender: TObject;
+  ACanvas: TCanvas; ARect: TRect; Selected: Boolean);
+var
+  capt: string;
+begin
+  ACanvas.Brush.Color := clActiveCaption;
+  ACanvas.FillRect(ARect);
+  ACanvas.Font.Style := [fsBold];
+  ACanvas.Font.Color := clCaptionText;
+  capt := (Sender as TMenuItem).Caption;
+  capt := StringReplace(capt, '&', '', []);
+  ACanvas.TextRect(ARect, ARect.Left + 5, ARect.Top+(ARect.Bottom-ARect.Top-ACanvas.TextHeight(capt)) div 2, capt);
+end;
+
+procedure Tfrm_UnCodeX.pm_ClassTreePopup(Sender: TObject);
+begin
+  with (ActiveControl as TTreeView) do begin
+    if (TObject(Selected.Data).ClassType = TUClass) then begin
+      mi_ClassName.Visible := true;
+      mi_ClassName.Caption := TUClass(Selected.Data).name;
+      mi_PackageName.Caption := TUClass(Selected.Data).package.name;
+    end
+    else if (TObject(Selected.Data).ClassType = TUPackage) then begin
+      mi_ClassName.Visible := false;
+      mi_PackageName.Caption := TUPackage(Selected.Data).name;
+    end;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.mi_PackageNameDrawItem(Sender: TObject;
+  ACanvas: TCanvas; ARect: TRect; Selected: Boolean);
+var
+  capt: string;
+begin
+  ACanvas.Brush.Color := clInactiveCaptionText;
+  ACanvas.FillRect(ARect);
+  ACanvas.Font.Style := [fsBold];
+  ACanvas.Font.Color := clCaptionText;
+  capt := (Sender as TMenuItem).Caption;
+  capt := StringReplace(capt, '&', '', []);
+  ACanvas.TextRect(ARect, ARect.Left + 5, ARect.Top+(ARect.Bottom-ARect.Top-ACanvas.TextHeight(capt)) div 2, capt);
 end;
 
 initialization

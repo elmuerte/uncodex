@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   we need RichEdit control version 2
- $Id: unit_richeditex.pas,v 1.10 2003-06-11 18:56:22 elmuerte Exp $
+ $Id: unit_richeditex.pas,v 1.11 2003-10-27 10:25:02 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 unit unit_richeditex;
@@ -203,6 +203,9 @@ begin
       DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_RIGHT or DT_SINGLELINE);
       DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_RIGHT or DT_SINGLELINE or DT_CALCRECT);
       FillRect(Rect(0, r.Bottom, FGutterWidth-10, height));
+    end
+    else if (lines.Count = 0) then begin
+      FillRect(Rect(0, 0, FGutterWidth-10, height));
     end;
   end;
 end;
