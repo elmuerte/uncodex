@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.69 2005-03-18 08:42:20 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.70 2005-03-18 14:42:42 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -228,12 +228,13 @@ end;
 
 constructor THTMLOutput.Create(config: THTMLoutConfig; status: TStatusReport);
 begin
-  resetguard;
+  resetguard;  
   Self.PackageList := Config.PackageList;
   Self.ClassList := Config.ClassList;
   Self.status := status;
   Self.HTMLOutputDir := Config.outputdir;
-  iFindDir(Config.TemplateDir+PATHDELIM, Self.TemplateDir);
+  iFindDir(Config.TemplateDir, TemplateDir);
+  TemplateDir := IncludeTrailingPathDelimiter(TemplateDir);
   Self.CreateSource := config.CreateSource;
   Self.TabsToSpaces := config.TabsToSpaces;
   Self.CPP := config.CPP;
@@ -245,34 +246,7 @@ begin
   EnumCache := Hashes.TStringHash.Create;
   StructCache := Hashes.TStringHash.Create;
   FunctionCache := Hashes.TStringHash.Create;
-  DelegateCache := Hashes.TStringHash.Create;
-  ini := TMemIniFile.Create(iFindFile(TemplateDir+'template.ini'));
-  {$IFNDEF FPC}
-  ini.CaseSensitive := false;
-  {$ENDIF}
-  MaxInherit := ini.ReadInteger('Settings', 'MaxInherit', MaxInt);
-  if (TargetExtention = '') then TargetExtention := ini.ReadString('Settings', 'TargetExt', 'html');
-  if (MaxInherit <= 0) then MaxInherit := MaxInt;
-  // 0 = use template default
-  // -1 = disable
-  if (TabsToSpaces = 0) then TabsToSpaces := ini.ReadInteger('Settings', 'TabsToSpaces', TabsToSpaces);
-  if (Self.CPP = '') then begin
-    Self.CPP := Ini.ReadString('Setting', 'CPP', '');
-    if (Self.CPP <> '') then Self.CPP := TemplateDir+Self.CPP;
-  end;
-  if (CompareText(trim(Self.CPP), 'none') = 0) then Self.CPP := '';
-  if (CPP <> '') then begin
-    if (FileExists(CPP)) then begin
-      CPPPipe := TCLPipe.Create(Self.CPP);
-      IsCPP := CPPPipe.Open;
-    end
-    else Log('Comment Preprocessor "'+CPP+'" not found');
-  end;
-  GlossaryElipse := ini.ReadString('Settings', 'GlossaryElipse', ASCII_GLOSSARY_ELIPSE);
-  TreeNone := ini.ReadString('Settings', 'TreeNone', ASCII_TREE_NONE);
-  TreeT := ini.ReadString('Settings', 'TreeT', ASCII_TREE_T);
-  TreeL := ini.ReadString('Settings', 'TreeL', ASCII_TREE_L);
-  TreeI := ini.ReadString('Settings', 'TreeI', ASCII_TREE_I);
+  DelegateCache := Hashes.TStringHash.Create;  
   inherited Create(true);
   FreeOnTerminate := true;
 end;
@@ -296,12 +270,42 @@ var
   i: integer;
 begin
   try
+	Status('Working ...', 0);
+
+	ini := TMemIniFile.Create(iFindFile(TemplateDir+'template.ini'));
+	{$IFNDEF FPC}
+	ini.CaseSensitive := false;
+	{$ENDIF}
+	MaxInherit := ini.ReadInteger('Settings', 'MaxInherit', MaxInt);
+	if (TargetExtention = '') then TargetExtention := ini.ReadString('Settings', 'TargetExt', 'html');
+	if (MaxInherit <= 0) then MaxInherit := MaxInt;
+	// 0 = use template default
+	// -1 = disable
+	if (TabsToSpaces = 0) then TabsToSpaces := ini.ReadInteger('Settings', 'TabsToSpaces', TabsToSpaces);
+	if (Self.CPP = '') then begin
+	  Self.CPP := Ini.ReadString('Setting', 'CPP', '');
+	  if (Self.CPP <> '') then Self.CPP := TemplateDir+Self.CPP;
+    end;
+    if (CompareText(trim(Self.CPP), 'none') = 0) then Self.CPP := '';
+    if (CPP <> '') then begin
+      if (FileExists(CPP)) then begin
+        CPPPipe := TCLPipe.Create(Self.CPP);
+        IsCPP := CPPPipe.Open;
+      end
+      else Log('Comment Preprocessor "'+CPP+'" not found');
+    end;
+    GlossaryElipse := ini.ReadString('Settings', 'GlossaryElipse', ASCII_GLOSSARY_ELIPSE);
+    TreeNone := ini.ReadString('Settings', 'TreeNone', ASCII_TREE_NONE);
+    TreeT := ini.ReadString('Settings', 'TreeT', ASCII_TREE_T);
+	TreeL := ini.ReadString('Settings', 'TreeL', ASCII_TREE_L);
+	TreeI := ini.ReadString('Settings', 'TreeI', ASCII_TREE_I);
+
     curPos := 0;
     maxPos := (PackageList.Count*2)+ClassList.Count;
     if (ini.ReadBool('Settings', 'CreateClassTree', true)) then maxPos := maxPos+1;
     if (ini.ReadBool('Settings', 'CreateGlossary', true)) then maxPos := maxPos+26;
     if (ini.ReadBool('Settings', 'SourceCode', true)) then maxPos := maxPos+ClassList.Count;
-    Status('Working ...', 0);
+	
     stime := Now();
     forcedirectories(htmloutputdir);
     PackageList.AlphaSort;

@@ -6,7 +6,7 @@
   Purpose:
     Main code for the commandline utility
 
-  $Id: unit_ucxcumain.pas,v 1.19 2005-03-17 14:14:46 elmuerte Exp $
+  $Id: unit_ucxcumain.pas,v 1.20 2005-03-18 14:42:42 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -82,7 +82,10 @@ begin
   case (signum) of
     SIGINT, SIGABRT:
       begin
-        if (ActiveThread <> nil) then ActiveThread.Terminate;
+        if (ActiveThread <> nil) then begin
+			ActiveThread.Terminate;
+			ActiveThread.WaitFor;
+		end;
         writeln('');
         writeln(#9'process aborted (signal: '+IntToStr(signum)+')');
         Halt(signum);
@@ -190,7 +193,11 @@ begin
       ini := TMemIniFile.Create(UEini);
       lst := TStringList.Create;
       try
+	    {$IFDEF FPC}
+		ini.ReadSectionRaw('Editor.EditorEngine', lst);
+		{$ELSE}
         ini.ReadSectionValues('Editor.EditorEngine', lst);
+		{$ENDIF}
         for i := 0 to lst.Count-1 do begin
           tmp := lst[i];
           tmp2 := Copy(tmp, 1, Pos('=', tmp));
@@ -256,6 +263,9 @@ begin
   end;
 
   CmdOption('t', TemplateDir);
+  if (not DirectoryExists(TemplateDir)) then begin
+	FatalError('Template directory does not exist: '+TemplateDir);
+  end;
   CmdOption('d', PackageDescFile);
   CmdOption('e', ExtCommentFile);
 

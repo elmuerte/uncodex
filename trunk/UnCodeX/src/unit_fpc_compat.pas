@@ -6,7 +6,7 @@
   Purpose:
     FreePascalCompile compatibility unit
 
-  $Id: unit_fpc_compat.pas,v 1.7 2005-03-18 08:42:20 elmuerte Exp $
+  $Id: unit_fpc_compat.pas,v 1.8 2005-03-18 14:42:42 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -53,7 +53,7 @@ begin
   {$IFDEF MSWINDOWS}
   if (Length(Dir) < 3) or DirectoryExists(Dir) or (ExtractFilePath(Dir) = Dir) then exit;
   {$ENDIF}
-  {$IFDEF LINUX}
+  {$IFDEF UNIX}
   if (Length(Dir) = 0) or DirectoryExists(Dir) then Exit;
   {$ENDIF}
   Result := ForceDirectories(ExtractFilePath(Dir)) and CreateDir(Dir);
@@ -66,7 +66,7 @@ var
   sr: TSearchRec;
   path, base: string;
   found: boolean;
-  {$IFDEF LINUX}
+  {$IFDEF UNIX}
   i: integer;
   first: string;
   {$ENDIF}
@@ -97,7 +97,7 @@ begin
 
   found := false;
 
-  {$IFDEF LINUX}
+  {$IFDEF UNIX}
   first := LowerCase(base[1]);
   for i := 0 to 1 do begin
     if (FindFirst(path + first + '*', faAnyFile, SR) = 0) then begin
