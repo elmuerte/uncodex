@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   loading/saving the tree state
- $Id: unit_treestate.pas,v 1.17 2003-11-12 22:57:07 elmuerte Exp $
+ $Id: unit_treestate.pas,v 1.18 2003-11-27 17:01:55 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -107,6 +107,7 @@ const
   UCXheader150 = UCXheader+'150'+UCXHTail;
   UCXheader151 = UCXheader+'151'+UCXHTail;
   UCXheader153 = UCXheader+'153'+UCXHTail;
+  UCXheader156 = UCXheader+'156'+UCXHTail;
 
 procedure TUnCodeXState.SavePackageToStream(upackage: TUPackage; stream: TStream);
 var
@@ -118,6 +119,7 @@ begin
     Writer.WriteInteger(upackage.priority);
     Writer.WriteString(upackage.path);
     Writer.WriteBoolean(upackage.tagged);
+    Writer.WriteString(upackage.comment);
   finally
     Writer.Free;
   end;
@@ -404,6 +406,9 @@ begin
         TTreeNode(package.treenode).StateIndex := ICON_PACKAGE;
         TTreeNode(package.treenode).SelectedIndex := ICON_PACKAGE;
       end;
+      if (version > 155) then begin
+        package.comment := Reader.ReadString;
+      end;
       FPackageList.Add(package);
     end;
   finally
@@ -477,6 +482,7 @@ begin
     else if (StrComp(tmp, UCXHeader150) = 0) then fversion := 150
     else if (StrComp(tmp, UCXHeader151) = 0) then fversion := 151
     else if (StrComp(tmp, UCXHeader153) = 0) then fversion := 153
+    else if (StrComp(tmp, UCXHeader156) = 0) then fversion := 156
     else begin
       Log('Unsupported file version, header: '+tmp);
       exit;
@@ -498,7 +504,7 @@ var
   c: cardinal;
 begin
   try
-    stream.WriteBuffer(UCXHeader153, 9);
+    stream.WriteBuffer(UCXHeader156, 9);
     // packages
     c := FPackageList.Count;
     stream.WriteBuffer(c, 4);

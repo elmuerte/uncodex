@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   General definitions
- $Id: unit_definitions.pas,v 1.68 2003-11-25 22:08:03 elmuerte Exp $
+ $Id: unit_definitions.pas,v 1.69 2003-11-27 17:01:55 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -51,13 +51,18 @@ type
 
 const
   APPTITLE = 'UnCodeX';
-  APPVERSION = '155';
+  APPVERSION = '156';
 
   PATHDELIM = '\';
   WILDCARD = '*.*';
   SOURCECARD = '*.uc';
   CLASSDIR = 'Classes';
   TEMPLATEPATH = 'Templates';
+  DEFTEMPLATE = 'DocStyle2';
+  UCXPACKAGEINFO = 'uncodex.ini';
+  DEFAULTPDF = 'PackageDescriptions.ini';
+  KEYWORDFILE1 = 'keywords1.list';
+  KEYWORDFILE2 = 'keywords1.list';
 
   // Full Text search tokens
   FTS_LN_BEGIN = ' #';
@@ -118,11 +123,11 @@ procedure ReloadKeywords;
 var
   i: integer;
 begin
-  if (FileExists(ExtractFilePath(ParamStr(0))+'keywords1.list')) then begin
+  if (FileExists(ExtractFilePath(ParamStr(0))+KEYWORDFILE1)) then begin
     Keywords1.Clear;
     sl := TStringList.Create;
     try
-      sl.LoadFromFile(ExtractFilePath(ParamStr(0))+'keywords1.list');
+      sl.LoadFromFile(ExtractFilePath(ParamStr(0))+KEYWORDFILE1);
       for i := 0 to sl.Count-1 do begin
         if (sl[i] <> '') then Keywords1.Items[LowerCase(sl[i])] := '-';
       end;
@@ -130,11 +135,11 @@ begin
       sl.Free;
     end;
   end;
-  if (FileExists(ExtractFilePath(ParamStr(0))+'keywords2.list')) then begin
+  if (FileExists(ExtractFilePath(ParamStr(0))+KEYWORDFILE2)) then begin
     Keywords2.Clear;
     sl := TStringList.Create;
     try
-      sl.LoadFromFile(ExtractFilePath(ParamStr(0))+'keywords2.list');
+      sl.LoadFromFile(ExtractFilePath(ParamStr(0))+KEYWORDFILE2);
       for i := 0 to sl.Count-1 do begin
         if (sl[i] <> '') then Keywords2.Items[LowerCase(sl[i])] := '-';
       end;
@@ -236,7 +241,7 @@ initialization
       while (Keywords1.Next) do begin
         if (Keywords1.CurrentKey <> '') then sl.Add(Keywords1.CurrentKey)
       end;
-      sl.SaveToFile(ExtractFilePath(ParamStr(0))+'keywords1.list');
+      sl.SaveToFile(ExtractFilePath(ParamStr(0))+KEYWORDFILE2);
     finally
       sl.Free;
     end;

@@ -64,7 +64,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 433
     Height = 378
-    ActivePage = ts_HTMLHelp
+    ActivePage = ts_ProgramOptions
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -576,7 +576,7 @@ object frm_Settings: Tfrm_Settings
         end
         object ud_TabsToSpaces: TUpDown
           Left = 401
-          Top = 152
+          Top = 192
           Width = 15
           Height = 21
           Anchors = [akTop, akRight]
@@ -1114,14 +1114,14 @@ object frm_Settings: Tfrm_Settings
         end
         object Label1: TLabel
           Left = 8
-          Top = 176
+          Top = 224
           Width = 210
           Height = 13
           Caption = 'Default inheritance depth for class properties'
         end
         object bvl_Sep1: TBevel
           Left = 8
-          Top = 160
+          Top = 208
           Width = 409
           Height = 9
           Anchors = [akLeft, akTop, akRight]
@@ -1129,10 +1129,17 @@ object frm_Settings: Tfrm_Settings
         end
         object lbl_InlineSearchTimeout: TLabel
           Left = 8
-          Top = 120
+          Top = 168
           Width = 157
           Height = 13
           Caption = 'Inline search timeout (in seconds)'
+        end
+        object lbl_gpdf: TLabel
+          Left = 8
+          Top = 80
+          Width = 152
+          Height = 13
+          Caption = 'General package description file'
         end
         object ed_StateFilename: TEdit
           Left = 8
@@ -1146,7 +1153,7 @@ object frm_Settings: Tfrm_Settings
         end
         object cb_MinimzeOnClose: TCheckBox
           Left = 8
-          Top = 80
+          Top = 128
           Width = 113
           Height = 17
           Caption = 'Minimize on close'
@@ -1162,7 +1169,7 @@ object frm_Settings: Tfrm_Settings
         end
         object ed_DefInheritanceDepth: TEdit
           Left = 8
-          Top = 192
+          Top = 240
           Width = 393
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -1173,7 +1180,7 @@ object frm_Settings: Tfrm_Settings
         end
         object ud_DefInheritDepth: TUpDown
           Left = 401
-          Top = 192
+          Top = 240
           Width = 16
           Height = 21
           Anchors = [akTop, akRight]
@@ -1187,7 +1194,7 @@ object frm_Settings: Tfrm_Settings
         end
         object cb_LoadCustomModules: TCheckBox
           Left = 8
-          Top = 96
+          Top = 144
           Width = 161
           Height = 17
           Caption = 'Load custom output modules'
@@ -1197,7 +1204,7 @@ object frm_Settings: Tfrm_Settings
         end
         object cb_CPAsWindow: TCheckBox
           Left = 8
-          Top = 216
+          Top = 264
           Width = 177
           Height = 17
           Caption = 'Open class properties as window'
@@ -1205,7 +1212,7 @@ object frm_Settings: Tfrm_Settings
         end
         object ed_InlineSearchTimeout: TEdit
           Left = 8
-          Top = 136
+          Top = 184
           Width = 393
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -1216,7 +1223,7 @@ object frm_Settings: Tfrm_Settings
         end
         object ud_InlineSearchTimeout: TUpDown
           Left = 401
-          Top = 136
+          Top = 184
           Width = 16
           Height = 21
           Anchors = [akTop, akRight]
@@ -1227,6 +1234,27 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 8
           Thousands = False
           Wrap = False
+        end
+        object ed_gpdf: TEdit
+          Left = 8
+          Top = 96
+          Width = 385
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          ReadOnly = True
+          TabOrder = 9
+        end
+        object btn_BrowseGPDF: TBitBtn
+          Left = 392
+          Top = 96
+          Width = 25
+          Height = 21
+          Anchors = [akTop, akRight]
+          Caption = '...'
+          TabOrder = 10
+          OnClick = btn_BrowseGPDFClick
         end
       end
     end
@@ -1690,12 +1718,6 @@ object frm_Settings: Tfrm_Settings
     MaxFontSize = 0
     Options = [fdForceFontExist]
     Left = 592
-    Top = 200
-  end
-  object cd_Color: TColorDialog
-    Ctl3D = True
-    Options = [cdFullOpen, cdAnyColor]
-    Left = 624
     Top = 200
   end
 end

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   program settings window
- $Id: unit_settings.pas,v 1.30 2003-11-26 21:15:36 elmuerte Exp $
+ $Id: unit_settings.pas,v 1.31 2003-11-27 17:01:55 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -30,8 +30,13 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Buttons {$IFDEF MSWINDOWS},FileCtrl{$ENDIF}, ComCtrls,
-  Menus, ExtCtrls, IniFiles, CheckLst, ActnList, unit_richeditex;
+  Dialogs, StdCtrls, Buttons,
+  {$WARN UNIT_PLATFORM OFF}
+  {$IFDEF MSWINDOWS}
+  FileCtrl,
+  {$ENDIF}
+  {$WARN UNIT_PLATFORM ON}
+  ComCtrls, Menus, ExtCtrls, IniFiles, CheckLst, ActnList, unit_richeditex;
 
 type
   
@@ -125,7 +130,6 @@ type
     tv_TreeLayout: TTreeView;
     btn_FontSelect: TBitBtn;
     fd_Font: TFontDialog;
-    cd_Color: TColorDialog;
     lbl_LogLayout: TLabel;
     btn_LogFont: TBitBtn;
     lb_LogLayout: TListBox;
@@ -200,6 +204,9 @@ type
     lbl_SecondKey: TLabel;
     ed_HTMLDefaultTitle: TEdit;
     lbl_HTMLDefaultTitle: TLabel;
+    ed_gpdf: TEdit;
+    lbl_gpdf: TLabel;
+    btn_BrowseGPDF: TBitBtn;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -270,6 +277,7 @@ type
     procedure lb_FontsClick(Sender: TObject);
     procedure cb_fboldClick(Sender: TObject);
     procedure cb_SelColorChange(Sender: TObject);
+    procedure btn_BrowseGPDFClick(Sender: TObject);
   private
   public
     TagChanged: boolean;
@@ -281,7 +289,7 @@ var
 
 implementation
 
-uses unit_main, unit_rtfhilight;
+uses unit_main, unit_rtfhilight, unit_definitions;
 
 {$R *.dfm}
 
@@ -478,10 +486,10 @@ begin
   ud_TabSize.Position := unit_rtfhilight.tabs;
   ReloadPreview;
   
-  if (FileExists(ExtractFilePath(ParamStr(0))+'keywords1.list')) then
-    lb_PrimKey.Items.LoadFromFile(ExtractFilePath(ParamStr(0))+'keywords1.list');
-  if (FileExists(ExtractFilePath(ParamStr(0))+'keywords2.list')) then
-    lb_SecKey.Items.LoadFromFile(ExtractFilePath(ParamStr(0))+'keywords2.list');
+  if (FileExists(ExtractFilePath(ParamStr(0))+KEYWORDFILE1)) then
+    lb_PrimKey.Items.LoadFromFile(ExtractFilePath(ParamStr(0))+KEYWORDFILE1);
+  if (FileExists(ExtractFilePath(ParamStr(0))+KEYWORDFILE2)) then
+    lb_SecKey.Items.LoadFromFile(ExtractFilePath(ParamStr(0))+KEYWORDFILE2);
 end;
 
 procedure Tfrm_Settings.lb_SettingsClick(Sender: TObject);
@@ -870,6 +878,12 @@ begin
   tmpfnt := TFont(lb_Fonts.Items.Objects[lb_Fonts.ItemIndex]);
   tmpfnt.Color := cb_SelColor.Selected;
   ReloadPreview;
+end;
+
+procedure Tfrm_Settings.btn_BrowseGPDFClick(Sender: TObject);
+begin
+  od_BrowseIni.FileName := ed_gpdf.Text;
+  if (od_BrowseIni.Execute) then ed_gpdf.Text := od_BrowseIni.FileName;
 end;
 
 end.
