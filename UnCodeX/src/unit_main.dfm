@@ -4,8 +4,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
   HelpType = htKeyword
   ActiveControl = tv_Classes
   AutoScroll = False
-  ClientHeight = 570
-  ClientWidth = 658
+  ClientHeight = 545
+  ClientWidth = 742
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -15,7 +15,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
   KeyPreview = True
   Menu = mm_Main
   OldCreateOrder = False
-  Position = poDefaultPosOnly
+  Position = poDefault
   Scaled = False
   OnActivate = FormActivate
   OnClose = FormClose
@@ -30,7 +30,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Left = 0
     Top = 34
     Width = 4
-    Height = 505
+    Height = 480
     Cursor = crHSplit
     AutoSnap = False
     Visible = False
@@ -38,7 +38,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
   object splTop: TSplitter
     Left = 0
     Top = 30
-    Width = 658
+    Width = 742
     Height = 4
     Cursor = crVSplit
     Align = alTop
@@ -47,8 +47,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
   end
   object splBottom: TSplitter
     Left = 0
-    Top = 539
-    Width = 658
+    Top = 514
+    Width = 742
     Height = 4
     Cursor = crVSplit
     Align = alBottom
@@ -56,10 +56,10 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Visible = False
   end
   object splRight: TSplitter
-    Left = 654
+    Left = 738
     Top = 34
     Width = 4
-    Height = 505
+    Height = 480
     Cursor = crHSplit
     Align = alRight
     AutoSnap = False
@@ -70,8 +70,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
   object pnlCenter: TPanel
     Left = 4
     Top = 34
-    Width = 650
-    Height = 505
+    Width = 734
+    Height = 480
     Align = alClient
     BevelOuter = bvNone
     BevelWidth = 0
@@ -108,8 +108,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
   end
   object sb_Status: TStatusBar
     Left = 0
-    Top = 551
-    Width = 658
+    Top = 526
+    Width = 742
     Height = 19
     Panels = <
       item
@@ -120,8 +120,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
   end
   object pb_Scan: TProgressBar
     Left = 0
-    Top = 543
-    Width = 658
+    Top = 518
+    Width = 742
     Height = 8
     Align = alBottom
     Min = 0
@@ -131,7 +131,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
   object tb_Tools: TToolBar
     Left = 0
     Top = 0
-    Width = 658
+    Width = 742
     Height = 30
     HelpType = htKeyword
     HelpKeyword = 'window_main.html#toolbar'
@@ -141,7 +141,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
     ParentShowHint = False
     ShowHint = True
     TabOrder = 0
-    Visible = False
     object btn_OpenClass: TToolButton
       Left = 0
       Top = 2
@@ -335,7 +334,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
   object dckTop: TPanel
     Left = 0
     Top = 34
-    Width = 658
+    Width = 742
     Height = 0
     Align = alTop
     BevelOuter = bvNone
@@ -346,8 +345,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
   end
   object dckBottom: TPanel
     Left = 0
-    Top = 543
-    Width = 658
+    Top = 518
+    Width = 742
     Height = 0
     Align = alBottom
     BevelOuter = bvNone
@@ -360,7 +359,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Left = 4
     Top = 34
     Width = 0
-    Height = 505
+    Height = 480
     Align = alLeft
     BevelOuter = bvNone
     DockSite = True
@@ -369,10 +368,10 @@ object frm_UnCodeX: Tfrm_UnCodeX
     OnUnDock = dckLeftUnDock
   end
   object dckRight: TPanel
-    Left = 658
+    Left = 742
     Top = 34
     Width = 0
-    Height = 505
+    Height = 480
     Align = alRight
     BevelOuter = bvNone
     DockSite = True
@@ -519,7 +518,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
       object mi_SourceSnoop: TMenuItem
         Action = ac_VSourceSnoop
         AutoCheck = True
-        Checked = True
       end
       object mi_Log: TMenuItem
         Action = ac_VLog
@@ -531,12 +529,10 @@ object frm_UnCodeX: Tfrm_UnCodeX
       object mi_Savesize: TMenuItem
         Action = ac_VSaveSize
         AutoCheck = True
-        Checked = True
       end
       object mi_Saveposition: TMenuItem
         Action = ac_VSavePosition
         AutoCheck = True
-        Checked = True
       end
       object mi_N12: TMenuItem
         Caption = '-'
@@ -572,6 +568,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
       AutoHotkeys = maManual
       AutoLineReduction = maAutomatic
       Caption = 'Browse history'
+      Enabled = False
       Hint = 'Past viewed lines'
       Visible = False
     end
@@ -936,7 +933,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Category = 'Layout'
       AutoCheck = True
       Caption = 'Toolbar'
-      Checked = True
       ShortCut = 49236
       OnExecute = ac_VToolbarExecute
     end
@@ -960,12 +956,14 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Category = 'Layout'
       AutoCheck = True
       Caption = 'Save size'
+      Checked = True
       OnExecute = ac_VSaveSizeExecute
     end
     object ac_VSavePosition: TAction
       Category = 'Layout'
       AutoCheck = True
       Caption = 'Save position'
+      Checked = True
       OnExecute = ac_VSavePositionExecute
     end
     object ac_VStayOnTop: TAction
@@ -1006,6 +1004,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Category = 'Layout'
       AutoCheck = True
       Caption = 'Source Snoop'
+      Checked = True
       Hint = 'View the source code of a file'
       ShortCut = 49219
       OnExecute = ac_VSourceSnoopExecute
