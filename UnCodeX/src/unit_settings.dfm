@@ -1,6 +1,6 @@
 object frm_Settings: Tfrm_Settings
-  Left = 243
-  Top = 181
+  Left = 254
+  Top = 180
   Width = 679
   Height = 405
   Caption = 'Settings'
@@ -11,7 +11,7 @@ object frm_Settings: Tfrm_Settings
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OldCreateOrder = False
-  Position = poMainFormCenter
+  Position = poScreenCenter
   OnCreate = FormCreate
   DesignSize = (
     671
@@ -378,7 +378,7 @@ object frm_Settings: Tfrm_Settings
         DesignSize = (
           433
           368)
-        object Label1: TLabel
+        object lbl_CompilerCommandline: TLabel
           Left = 8
           Top = 16
           Width = 105
@@ -390,6 +390,7 @@ object frm_Settings: Tfrm_Settings
           Top = 32
           Width = 17
           Height = 21
+          Anchors = [akTop, akRight]
           Caption = 'u'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -400,7 +401,7 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 2
           OnClick = btn_CompilerPlaceholdersClick
         end
-        object Edit1: TEdit
+        object ed_CompilerCommandline: TEdit
           Left = 8
           Top = 32
           Width = 377
@@ -408,10 +409,9 @@ object frm_Settings: Tfrm_Settings
           Anchors = [akLeft, akTop, akRight]
           BevelKind = bkSoft
           BorderStyle = bsNone
-          ReadOnly = True
           TabOrder = 0
         end
-        object BitBtn1: TBitBtn
+        object btn_BrowseCompiler: TBitBtn
           Left = 400
           Top = 32
           Width = 25
@@ -419,6 +419,7 @@ object frm_Settings: Tfrm_Settings
           Anchors = [akTop, akRight]
           Caption = '...'
           TabOrder = 1
+          OnClick = btn_BrowseCompilerClick
         end
       end
     end
@@ -437,7 +438,7 @@ object frm_Settings: Tfrm_Settings
         DesignSize = (
           433
           368)
-        object Label2: TLabel
+        object lbl_ServerCommandline: TLabel
           Left = 8
           Top = 16
           Width = 96
@@ -451,7 +452,14 @@ object frm_Settings: Tfrm_Settings
           Height = 13
           Caption = 'Server priority'
         end
-        object Edit2: TEdit
+        object lbl_ClientCommandline: TLabel
+          Left = 8
+          Top = 112
+          Width = 91
+          Height = 13
+          Caption = 'Client commandline'
+        end
+        object ed_ServerCommandline: TEdit
           Left = 8
           Top = 32
           Width = 393
@@ -459,10 +467,9 @@ object frm_Settings: Tfrm_Settings
           Anchors = [akLeft, akTop, akRight]
           BevelKind = bkSoft
           BorderStyle = bsNone
-          ReadOnly = True
           TabOrder = 0
         end
-        object BitBtn2: TBitBtn
+        object btn_BrowseServer: TBitBtn
           Left = 400
           Top = 32
           Width = 25
@@ -470,20 +477,43 @@ object frm_Settings: Tfrm_Settings
           Anchors = [akTop, akRight]
           Caption = '...'
           TabOrder = 1
+          OnClick = btn_BrowseServerClick
         end
-        object ComboBox1: TComboBox
+        object cb_ServerPriority: TComboBox
           Left = 8
           Top = 72
           Width = 417
           Height = 21
           Style = csDropDownList
           ItemHeight = 13
+          ItemIndex = 1
           TabOrder = 2
+          Text = 'Normal'
           Items.Strings = (
             'Low'
             'Normal'
             'High'
             'Real time')
+        end
+        object ed_ClientCommandline: TEdit
+          Left = 8
+          Top = 128
+          Width = 393
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          TabOrder = 3
+        end
+        object btn_ClientCommandline: TBitBtn
+          Left = 400
+          Top = 128
+          Width = 25
+          Height = 21
+          Anchors = [akTop, akRight]
+          Caption = '...'
+          TabOrder = 4
+          OnClick = btn_ClientCommandlineClick
         end
       end
     end
@@ -512,23 +542,36 @@ object frm_Settings: Tfrm_Settings
   object pm_CompilerPlaceholders: TPopupMenu
     Left = 592
     Top = 104
-    object Classname1: TMenuItem
+    object mi_Classname: TMenuItem
       Caption = 'Class name'
+      OnClick = mi_ClassnameClick
     end
-    object Classfilename1: TMenuItem
+    object mi_Classfilename: TMenuItem
       Caption = 'Class filename'
+      OnClick = mi_ClassfilenameClick
     end
-    object Fullclasspath1: TMenuItem
+    object mi_Fullclasspath: TMenuItem
       Caption = 'Full class path'
+      OnClick = mi_FullclasspathClick
     end
     object N1: TMenuItem
       Caption = '-'
     end
-    object Packagename1: TMenuItem
+    object mi_Packagename: TMenuItem
       Caption = 'Package name'
+      OnClick = mi_PackagenameClick
     end
-    object Packagepath1: TMenuItem
+    object mi_Packagepath: TMenuItem
       Caption = 'Package path'
+      OnClick = mi_PackagepathClick
     end
+  end
+  object od_BrowseExe: TOpenDialog
+    DefaultExt = '*.exe'
+    Filter = 'Programs|*.exe;*.bat;*.com|All Files (*.*)|*.*'
+    Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
+    Title = 'Select executable'
+    Left = 624
+    Top = 72
   end
 end

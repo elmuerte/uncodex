@@ -99,6 +99,9 @@ type
     mi_Menubar: TMenuItem;
     mi_Toolwindow: TMenuItem;
     mi_Right: TMenuItem;
+    ac_CompileClass: TAction;
+    ac_RunServer: TAction;
+    ac_JoinServer: TAction;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_OpenClassClick(Sender: TObject);
@@ -134,6 +137,9 @@ type
     procedure FormCanResize(Sender: TObject; var NewWidth,
       NewHeight: Integer; var Resize: Boolean);
     procedure mi_RightClick(Sender: TObject);
+    procedure ac_RunServerExecute(Sender: TObject);
+    procedure ac_JoinServerExecute(Sender: TObject);
+    procedure ac_CompileClassExecute(Sender: TObject);
   private
     OldStyleEx: Cardinal;
     OldStyle: Cardinal;
@@ -158,18 +164,27 @@ type
 
 var
   frm_UnCodeX: Tfrm_UnCodeX;
-  PackageList: TUPackageList;
-  ClassList: TUClassList;
-  PackagePriority: TStringList;
-  SourcePaths: TStringList;
-  HTMLOutputDir, TemplateDir, HHCPath, HTMLHelpFile: string;
   runningthread: TThread;
   DoInit: boolean = true;
+  PackageList: TUPackageList;
+  ClassList: TUClassList;
+
+// config vars
+var
+  HTMLOutputDir, TemplateDir, HHCPath, HTMLHelpFile, ServerCmd, CompilerCmd,
+    ClientCmd: string;
+  ServerPrio: integer;
+  SourcePaths: TStringList;
+  PackagePriority: TStringList;
 
 implementation
 
 uses unit_settings, unit_definitions, unit_analyse, unit_htmlout,
   unit_treestate, unit_about, unit_mshtmlhelp;
+
+const
+  PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
+                                       HIGH_PRIORITY_CLASS, REALTIME_PRIORITY_CLASS);
 
 {$R *.dfm}
 
@@ -364,11 +379,15 @@ begin
       frm_UnCodeX.Height := ini.ReadInteger('Layout', 'Height', frm_UnCodeX.Height);
     end;
 
-
     HTMLOutputDir := ini.ReadString('Config', 'HTMLOutputDir', ExtractFilePath(ParamStr(0))+'Output');
     TemplateDir := ini.ReadString('Config', 'TemplateDir', ExtractFilePath(ParamStr(0))+'Templates\UnrealWiki');
     HHCPath := ini.ReadString('Config', 'HHCPath', '');
     HTMLHelpFile := ini.ReadString('Config', 'HTMLHelpFile', ExtractFilePath(ParamStr(0))+'UnCodeX.chm');
+    ServerCmd := ini.ReadString('Config', 'ServerCmd', '');
+    ServerPrio := ini.ReadInteger('Config', 'ServerPrio', 1);
+    ClientCmd := ini.ReadString('Config', 'ClientCmd', '');
+    CompilerCmd := ini.ReadString('Config', 'CompilerCmd', '');
+
     ini.ReadSectionValues('PackagePriority', sl);
     for i := 0 to sl.Count-1 do begin
       tmp := sl[i];
@@ -495,11 +514,19 @@ begin
     ed_TemplateDir.Text := TemplateDir;
     ed_WorkshopPath.Text := HHCPath;
     ed_HTMLHelpOutput.Text := HTMLHelpFile;
+    ed_ServerCommandline.Text := ServerCmd;
+    cb_ServerPriority.ItemIndex := ServerPrio;
+    ed_ClientCommandline.Text := ClientCmd;
+    ed_CompilerCommandline.Text := CompilerCmd;
     if (ShowModal = mrOk) then begin
       HTMLOutputDir := ed_HTMLOutputDir.Text;
       TemplateDir := ed_TemplateDir.Text;
       HHCPath := ed_WorkshopPath.Text;
       HTMLHelpFile := ed_HTMLHelpOutput.Text;
+      ServerCmd := ed_ServerCommandline.Text;
+      ServerPrio := cb_ServerPriority.ItemIndex;
+      ClientCmd := ed_ClientCommandline.Text;
+      CompilerCmd := ed_CompilerCommandline.Text;
       SourcePaths.Clear;
       SourcePaths.AddStrings(lb_Paths.Items);
       PackagePriority.Clear;
@@ -512,6 +539,10 @@ begin
         data.Add('TemplateDir='+TemplateDir);
         data.Add('HHCPath='+HHCPath);
         data.Add('HTMLHelpFile='+HTMLHelpFile);
+        data.Add('ServerCmd='+ServerCmd);
+        data.Add('ServerPrio='+IntToStr(ServerPrio));
+        data.Add('ClientCmd='+ClientCmd);
+        data.Add('CompilerCmd='+CompilerCmd);
         data.Add('[SourcePaths]');
         for i := 0 to SourcePaths.Count-1 do data.Add('Path='+SourcePaths[i]);
         data.Add('[PackagePriority]');
@@ -740,6 +771,123 @@ procedure Tfrm_UnCodeX.mi_RightClick(Sender: TObject);
 begin
   if (mi_Right.Checked) then RegisterAppBar
     else UnregisterAppBar;
+end;
+
+procedure Tfrm_UnCodeX.ac_RunServerExecute(Sender: TObject);
+var
+  se: SHELLEXECUTEINFO;
+  lst: TStringList;
+begin
+  lst := TStringList.Create;
+  try
+    lst.Delimiter := ' ';
+    lst.QuoteChar := '"';
+    lst.DelimitedText := ServerCmd;
+    if (lst.Count > 0) then begin
+      se.cbSize := SizeOf(SHELLEXECUTEINFO);
+      se.Wnd := Handle;
+      se.lpVerb := nil;
+      se.lpFile := PChar(lst[0]);
+      lst.Delete(0);
+      se.lpParameters := PChar(lst.DelimitedText);
+      se.nShow := SW_SHOW;
+      se.fMask := SEE_MASK_NOCLOSEPROCESS;
+      if (not ShellExecuteEx(@se)) then begin
+        case (GetLastError) of
+          ERROR_FILE_NOT_FOUND: statustext := 'File not found: '+se.lpFile;
+          ERROR_PATH_NOT_FOUND: statustext := 'Path not found: '+se.lpFile;
+          SE_ERR_ACCESSDENIED : statustext := 'Access denied: '+se.lpFile;
+        end;
+      end
+      else begin
+        SetPriorityClass(se.hProcess, PROCPRIO[ServerPrio]);
+      end;
+    end;
+  finally
+    lst.Free;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.ac_JoinServerExecute(Sender: TObject);
+var
+  se: SHELLEXECUTEINFO;
+  lst: TStringList;
+begin
+  lst := TStringList.Create;
+  try
+    lst.Delimiter := ' ';
+    lst.QuoteChar := '"';
+    lst.DelimitedText := ClientCmd;
+    if (lst.Count > 0) then begin
+      se.cbSize := SizeOf(SHELLEXECUTEINFO);
+      se.Wnd := Handle;
+      se.lpVerb := nil;
+      se.lpFile := PChar(lst[0]);
+      lst.Delete(0);
+      se.lpParameters := PChar(lst.DelimitedText);
+      se.nShow := SW_SHOW;
+      se.fMask := SEE_MASK_NOCLOSEPROCESS;
+      if (not ShellExecuteEx(@se)) then begin
+        case (GetLastError) of
+          ERROR_FILE_NOT_FOUND: statustext := 'File not found: '+se.lpFile;
+          ERROR_PATH_NOT_FOUND: statustext := 'Path not found: '+se.lpFile;
+          SE_ERR_ACCESSDENIED : statustext := 'Access denied: '+se.lpFile;
+        end;
+      end;
+    end;
+  finally
+    lst.Free;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.ac_CompileClassExecute(Sender: TObject);
+var
+  se: SHELLEXECUTEINFO;
+  lst: TStringList;
+  i: integer;
+begin
+  if (CompilerCmd = '') then exit;
+  if (ActiveControl.ClassType = TTreeView) then begin
+    with (ActiveControl as TTreeView) do begin
+      if ((Selected <> nil) and (TObject(Selected.Data).ClassType = TUClass)) then begin
+        lst := TStringList.Create;
+        try
+          lst.Delimiter := ' ';
+          lst.QuoteChar := '"';
+          lst.DelimitedText := CompilerCmd;
+          se.cbSize := SizeOf(SHELLEXECUTEINFO);
+          se.Wnd := Handle;
+          se.lpVerb := nil;
+          se.lpFile := PChar(lst[0]);
+          lst.Delete(0);
+          for i := 0 to lst.Count-1 do begin
+            if (CompareText(lst[i], '%classname%') = 0) then
+              lst[i] := TUClass(Selected.Data).name
+            else if (CompareText(lst[i], '%classfile%') = 0) then
+              lst[i] := TUClass(Selected.Data).filename
+            else if (CompareText(lst[i], '%classpath%') = 0) then
+              lst[i] := TUClass(Selected.Data).package.path+PATHDELIM+CLASSDIR+PATHDELIM+TUClass(Selected.Data).filename
+            else if (CompareText(lst[i], '%packagename%') = 0) then
+              lst[i] := TUClass(Selected.Data).package.name
+            else if (CompareText(lst[i], '%packagepath%') = 0) then
+              lst[i] := TUClass(Selected.Data).package.path;
+          end;
+          se.lpParameters := PChar(lst.DelimitedText);
+          se.nShow := SW_SHOW;
+          se.fMask := SEE_MASK_NOCLOSEPROCESS;
+          if (not ShellExecuteEx(@se)) then begin
+            case (GetLastError) of
+              ERROR_FILE_NOT_FOUND: statustext := 'File not found: '+se.lpFile;
+              ERROR_PATH_NOT_FOUND: statustext := 'Path not found: '+se.lpFile;
+              SE_ERR_ACCESSDENIED : statustext := 'Access denied: '+se.lpFile;
+            end;
+          end;
+        finally
+          lst.Free;
+        end;
+      end;
+    end;
+  end;
 end;
 
 end.

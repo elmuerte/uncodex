@@ -48,24 +48,28 @@ type
     lb_Settings: TListBox;
     ts_Compile: TTabSheet;
     gb_Compile: TGroupBox;
-    Label1: TLabel;
-    Edit1: TEdit;
-    BitBtn1: TBitBtn;
+    lbl_CompilerCommandline: TLabel;
+    ed_CompilerCommandline: TEdit;
+    btn_BrowseCompiler: TBitBtn;
     ts_GameServer: TTabSheet;
     gb_GameServer: TGroupBox;
-    Label2: TLabel;
-    Edit2: TEdit;
-    BitBtn2: TBitBtn;
+    lbl_ServerCommandline: TLabel;
+    ed_ServerCommandline: TEdit;
+    btn_BrowseServer: TBitBtn;
     Label3: TLabel;
-    ComboBox1: TComboBox;
+    cb_ServerPriority: TComboBox;
     btn_CompilerPlaceholders: TBitBtn;
     pm_CompilerPlaceholders: TPopupMenu;
-    Classname1: TMenuItem;
-    Classfilename1: TMenuItem;
+    mi_Classname: TMenuItem;
+    mi_Classfilename: TMenuItem;
     N1: TMenuItem;
-    Packagename1: TMenuItem;
-    Packagepath1: TMenuItem;
-    Fullclasspath1: TMenuItem;
+    mi_Packagename: TMenuItem;
+    mi_Packagepath: TMenuItem;
+    mi_Fullclasspath: TMenuItem;
+    od_BrowseExe: TOpenDialog;
+    lbl_ClientCommandline: TLabel;
+    ed_ClientCommandline: TEdit;
+    btn_ClientCommandline: TBitBtn;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -81,6 +85,14 @@ type
     procedure FormCreate(Sender: TObject);
     procedure lb_SettingsClick(Sender: TObject);
     procedure btn_CompilerPlaceholdersClick(Sender: TObject);
+    procedure btn_BrowseCompilerClick(Sender: TObject);
+    procedure mi_ClassnameClick(Sender: TObject);
+    procedure mi_ClassfilenameClick(Sender: TObject);
+    procedure mi_FullclasspathClick(Sender: TObject);
+    procedure mi_PackagenameClick(Sender: TObject);
+    procedure mi_PackagepathClick(Sender: TObject);
+    procedure btn_BrowseServerClick(Sender: TObject);
+    procedure btn_ClientCommandlineClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -210,6 +222,7 @@ begin
   for i := 0 to pc_Settings.PageCount-1 do begin
     lb_Settings.Items.Add(pc_Settings.Pages[i].Caption);
   end;
+  lb_Settings.ItemIndex := 0;
   pc_Settings.ActivePageIndex := 0;
 end;
 
@@ -225,6 +238,49 @@ var
 begin
   pt := btn_CompilerPlaceholders.ClientToScreen(Point(0, btn_CompilerPlaceholders.Height));
   pm_CompilerPlaceholders.Popup(pt.X, pt.Y);
+end;
+
+procedure Tfrm_Settings.btn_BrowseCompilerClick(Sender: TObject);
+begin
+  od_BrowseExe.FileName := ed_CompilerCommandline.Text;
+  if (od_BrowseExe.Execute) then ed_CompilerCommandline.Text := od_BrowseExe.FileName;
+end;
+
+procedure Tfrm_Settings.mi_ClassnameClick(Sender: TObject);
+begin
+  ed_CompilerCommandline.Text := ed_CompilerCommandline.Text+' %classname%';
+end;
+
+procedure Tfrm_Settings.mi_ClassfilenameClick(Sender: TObject);
+begin
+  ed_CompilerCommandline.Text := ed_CompilerCommandline.Text+' %classfile%';
+end;
+
+procedure Tfrm_Settings.mi_FullclasspathClick(Sender: TObject);
+begin
+  ed_CompilerCommandline.Text := ed_CompilerCommandline.Text+' %classpath%';
+end;
+
+procedure Tfrm_Settings.mi_PackagenameClick(Sender: TObject);
+begin
+  ed_CompilerCommandline.Text := ed_CompilerCommandline.Text+' %packagename%';
+end;
+
+procedure Tfrm_Settings.mi_PackagepathClick(Sender: TObject);
+begin
+  ed_CompilerCommandline.Text := ed_CompilerCommandline.Text+' %packagepath%';
+end;
+
+procedure Tfrm_Settings.btn_BrowseServerClick(Sender: TObject);
+begin
+  od_BrowseExe.FileName := ed_ServerCommandline.Text;
+  if (od_BrowseExe.Execute) then ed_ServerCommandline.Text := od_BrowseExe.FileName;
+end;
+
+procedure Tfrm_Settings.btn_ClientCommandlineClick(Sender: TObject);
+begin
+  od_BrowseExe.FileName := ed_ClientCommandline.Text;
+  if (od_BrowseExe.Execute) then ed_ClientCommandline.Text := od_BrowseExe.FileName;
 end;
 
 end.

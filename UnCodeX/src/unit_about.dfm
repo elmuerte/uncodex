@@ -14,7 +14,7 @@ object frm_About: Tfrm_About
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OldCreateOrder = False
-  Position = poMainFormCenter
+  Position = poScreenCenter
   OnCreate = FormCreate
   DesignSize = (
     298
