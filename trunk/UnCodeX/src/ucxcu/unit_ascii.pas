@@ -23,7 +23,7 @@ const
   PB_DONE = #219; // full bock
   PB_TODO = #176; // 25% block
   PB_NONE = ' ';
-  VERSION = '004 Alpha';
+  VERSION = '005 Alpha';
 
 var
   lastsp: integer;
@@ -64,11 +64,13 @@ begin
   writeln('Accepted commandline switches:');
   writeln(#9'-c <filename>'   +#9'Set configuration file (uncodex.ini used by default)');
   writeln(#9'-h'#9            +#9'This message');
+  writeln(#9'-m'#9			      +#9'Create MS HTML Help file');
   writeln(#9'-mc <path>'      +#9'Path to the MS HTML Help compiler');
   writeln(#9'-me'#9           +#9'Delete HTML output directory after the MS HTML Help');
   writeln(#9#9                +#9'has been created');
   writeln(#9'-mo <filename>'  +#9'MS HTML Help output filename. If this is not set');
   writeln(#9#9                +#9'no MS HTML HELP file will be generated');
+  writeln(#9'-nc'#9           +#9'Don''t read the configuration file');
   writeln(#9'-o <path>'       +#9'Output directory for the HTML files');
   writeln(#9'-p <...>'        +#9'Comma seperated list of package names (exclusive)');
   writeln(#9'-pa <...>'       +#9'Comma seperated list of package names (additional)');
