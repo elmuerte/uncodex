@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.106 2004-06-09 18:06:13 elmuerte Exp $
+ $Id: unit_main.pas,v 1.107 2004-06-15 07:34:57 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -399,7 +399,7 @@ type
     procedure SaveSettings;
     procedure SaveLayoutSettings;
     procedure LoadSettings;
-    procedure AddBrowserHistory(uclass: TUClass; line: integer);
+    procedure AddBrowserHistory(uclass: TUClass; line: integer; hint: string = '');
     procedure BrowseEntry(Sender: TObject);
   public
     statustext : string; // current status text
@@ -924,6 +924,7 @@ end;
 procedure Tfrm_UnCodeX.OpenSourceInline(uclass: TUClass; line, caret: integer);
 var
   oldsel: TUClass;
+  tmp2: array[0..255] of char;
 begin
 	oldsel := SelectedUClass;
 	SelectedUClass := uclass;
@@ -931,7 +932,9 @@ begin
   if (mi_SourceSnoop.Checked) then begin
     if (SelectedUClass <> oldsel) then ac_SourceSnoop.Execute;
     if (line < 0) then exit;
-    AddBrowserHistory(uclass, line+1);
+    tmp2[0] := #255;
+    re_SourceSnoop.Perform(EM_GETLINE, line, integer(@tmp2));
+    AddBrowserHistory(uclass, line+1, tmp2);
   	//re_SourceSnoop.Perform(EM_LINESCROLL, 0, -1*re_SourceSnoop.Lines.Count);
 		//re_SourceSnoop.Perform(EM_LINESCROLL, 0, line);
     line := re_SourceSnoop.Perform(EM_LINEINDEX, line, 0); // get line index
@@ -1835,7 +1838,7 @@ type
 var
    BrowseHistory: array[0..24] of TBrowseHistory;
 
-procedure Tfrm_UnCodeX.AddBrowserHistory(uclass: TUClass; line: integer);
+procedure Tfrm_UnCodeX.AddBrowserHistory(uclass: TUClass; line: integer; hint: string = '');
 var
 	i: integer;
   mi: TMenuItem;
@@ -1866,6 +1869,7 @@ begin
 	mi.Caption := uclass.FullName;
   if (line > 0) then mi.Caption := mi.Caption+' - line #'+IntToStr(line);
   mi.Tag := i;
+  mi.Hint := StringReplace(hint, #9, '  ', [rfReplaceAll]);
   mi.OnClick := BrowseEntry;
   mi_Browse.Insert(0, mi);
   BrowseHistory[i].uclass := uclass;
@@ -2927,7 +2931,8 @@ var
   curpos: integer;
   tr: TEXTRANGE;
   tmp: array[0..256] of char;
-  i: integer;
+  tmp2: array[0..255] of char;
+  i, realline: integer;
 begin
   if (Button = mbRight) then begin
     pt := re_SourceSnoop.ClientToScreen(Point(x,y));
@@ -2941,7 +2946,10 @@ begin
     tr.lpstrText := tmp;
     if (re_SourceSnoop.Perform(EM_GETTEXTRANGE, 0, integer(@tr)) > 0) then begin
       if (tmp <> '') then begin
-        AddBrowserHistory(SelectedUClass, re_SourceSnoop.Perform(EM_LINEFROMCHAR, curpos, 0)+1);
+      	realline := re_SourceSnoop.Perform(EM_LINEFROMCHAR, curpos, 0);
+        tmp2[0] := #255;
+        re_SourceSnoop.Perform(EM_GETLINE, realline, integer(@tmp2));
+        AddBrowserHistory(SelectedUClass, realline+1, tmp2);
         for i := 0 to tv_Classes.Items.Count-1 do begin
           if (AnsiCompareText(tv_Classes.items[i].Text, tmp) = 0) then begin
             tv_Classes.Tag := TV_ALWAYSEXPAND;

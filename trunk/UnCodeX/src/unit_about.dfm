@@ -222,9 +222,9 @@ object frm_About: Tfrm_About
     OnClick = btn_EmailGoClick
   end
   object btn_HPGo: TBitBtn
-    Left = 304
+    Left = 303
     Top = 121
-    Width = 16
+    Width = 17
     Height = 17
     Caption = '8'
     Font.Charset = DEFAULT_CHARSET

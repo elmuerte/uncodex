@@ -3,7 +3,7 @@
  Author:    elmuerte
  Purpose:   Tokeniser for Unreal Script
             Based on the TCopyParser class by Borland Software Corporation
- $Id: unit_sourceparser.pas,v 1.15 2004-05-08 12:06:28 elmuerte Exp $           
+ $Id: unit_sourceparser.pas,v 1.16 2004-06-15 07:34:57 elmuerte Exp $           
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -297,11 +297,7 @@ begin
           end
           else begin
             Result := P^;
-            if Result <> toEOF then begin
-            	Inc(P);
-              Inc(FLinePos);
-            end;
-          end;
+          end
         end;
       #10:
         begin
