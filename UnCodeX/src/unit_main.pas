@@ -140,7 +140,6 @@ type
     procedure ac_SaveStateExecute(Sender: TObject);
     procedure ac_LoadStateExecute(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
-    procedure FormActivate(Sender: TObject);
     procedure ac_AboutExecute(Sender: TObject);
     procedure ac_HTMLHelpExecute(Sender: TObject);
     procedure mi_ExpandallClick(Sender: TObject);
@@ -163,6 +162,7 @@ type
     procedure ac_FullTextSearchExecute(Sender: TObject);
     procedure lb_LogDblClick(Sender: TObject);
     procedure lb_LogClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -197,6 +197,14 @@ type
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
   end;
 
+  TCodeXStatusType = (cxstLog, cxstStatus);
+
+  TCodeXStatus = packed record
+    Msg: string[255];
+    mType: TCodeXStatusType;
+    Progress: byte;
+  end;
+
   procedure Log(msg: string);
   procedure LogClass(msg: string; uclass: TUClass = nil);
 
@@ -212,6 +220,7 @@ var
   CmdStack: TStringList;
   ConfigFile: string;
   InitialStartup: boolean;
+  StatusHandle: integer = -1;
 
 // config vars
 var
@@ -237,11 +246,27 @@ const
 
 {$R *.dfm}
 
+procedure SendStatusMsg(msg: string; mType: TCodeXStatusType; Progress: byte = 0);
+var
+  CopyData: TCopyDataStruct;
+  Data: TCodeXStatus;
+begin
+  if (StatusHandle = -1) then exit;
+  Data.Msg := msg;
+  Data.mType := mType;
+  Data.Progress := Progress;
+  CopyData.cbData := SizeOf(Data);
+  CopyData.dwData := StatusHandle;
+  CopyData.lpData := @Data;
+  SendMessage(StatusHandle, WM_COPYDATA, 3, Integer(@CopyData));
+end;
+
 procedure Log(msg: string);
 begin
   if (msg='') then exit;
   frm_UnCodeX.lb_Log.Items.Add(msg);
   frm_UnCodeX.lb_Log.ItemIndex := frm_UnCodeX.lb_Log.Items.Count-1;
+  if (StatusHandle <> -1) then SendStatusMsg(msg, cxstLog);
 end;
 
 procedure LogClass(msg: string; uclass: TUClass = nil);
@@ -249,6 +274,7 @@ begin
   if (msg='') then exit;
   frm_UnCodeX.lb_Log.Items.AddObject(msg, uclass);
   frm_UnCodeX.lb_Log.ItemIndex := frm_UnCodeX.lb_Log.Items.Count-1;
+   if (StatusHandle <> -1) then SendStatusMsg(msg, cxstLog);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -258,6 +284,7 @@ procedure Tfrm_UnCodeX.StatusReport(msg: string; progress: byte = 255);
 begin
   statustext := msg;
   if (progress <> 255) then pb_Scan.Position := progress;
+   if (StatusHandle <> -1) then SendStatusMsg(msg, cxstStatus, progress);
 end;
 
 function Tfrm_UnCodeX.ThreadCreate: boolean;
@@ -551,13 +578,18 @@ begin
       end;
     end
     else if (LowerCase(ParamStr(j)) = '-hide') then begin
-      Visible := false;
-      Application.ShowMainForm := false;
+      // FIXME:
+      //Visible := false;
+      //Application.ShowMainForm := false;
     end
     else if (LowerCase(ParamStr(j)) = '-config') then begin
       Inc(j);
       ConfigFile := ParamStr(j);
       if (ExtractFilePath(ConfigFile) = '') then ConfigFile := ExtractFilePath(ParamStr(0))+ConfigFile;
+    end
+    else if (LowerCase(ParamStr(j)) = '-handle') then begin
+      Inc(j);
+      StatusHandle := StrToIntDef(ParamStr(j), -1);
     end;
     Inc(j);
   end;
@@ -985,21 +1017,6 @@ begin
   end;
 end;
 
-procedure Tfrm_UnCodeX.FormActivate(Sender: TObject);
-begin
-  if (DoInit) then begin
-    DoInit := false;
-    LoadState;
-    if (IsBatching) then NextBatchCommand;
-  end;
-  if (InitialStartup) then begin
-    if MessageDlg('This is the first time you start UnCodeX (with this config file),'+#13+#10+
-      'it''s advised that you first configure the program.'+#13+#10+''+#13+#10+
-      'Do you want to edit the settings now ?', mtConfirmation, [mbYes,mbNo], 0) = mrYes
-      then ac_Settings.Execute; 
-  end;
-end;
-
 procedure Tfrm_UnCodeX.ac_AboutExecute(Sender: TObject);
 begin
   frm_About.ShowModal;
@@ -1306,6 +1323,21 @@ begin
       tv_Classes.Select(tv_Classes.Items[i]);
       exit;
     end;
+  end;
+end;
+
+procedure Tfrm_UnCodeX.FormShow(Sender: TObject);
+begin
+  if (DoInit) then begin
+    DoInit := false;
+    LoadState;
+    if (IsBatching) then NextBatchCommand;
+  end;
+  if (InitialStartup) then begin
+    if MessageDlg('This is the first time you start UnCodeX (with this config file),'+#13+#10+
+      'it''s advised that you first configure the program.'+#13+#10+''+#13+#10+
+      'Do you want to edit the settings now ?', mtConfirmation, [mbYes,mbNo], 0) = mrYes
+      then ac_Settings.Execute; 
   end;
 end;
 

@@ -14,12 +14,12 @@ object frm_UnCodeX: Tfrm_UnCodeX
   OldCreateOrder = False
   Position = poDefaultPosOnly
   Scaled = False
-  OnActivate = FormActivate
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnResize = FormResize
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object spl_Main1: TSplitter
