@@ -5,7 +5,10 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, unit_outputdefs, unit_uclasses, Buttons, unit_deplist,
-  ComCtrls, ExtCtrls;
+  ComCtrls, ExtCtrls, Hashes;
+
+const
+  DLLVERSION = '010 Beta';
 
 type
   Tfrm_GraphViz = class(TForm)
@@ -42,6 +45,8 @@ type
     plist: TGraphUPAckageList;
     olist: TOrphanList;
     deplist: TDepList;
+    TypeHash: TObjectHash;
+    ClassHash: TObjectHash;
     procedure CreateDeps(vars,funcs: boolean);
     procedure CreateDotFile(filename: string);
   public
@@ -61,19 +66,35 @@ begin
   {$IFDEF __USENAMES__}
   result := input;
   {$ELSE}
-  result := '#'+IntToHex(StrToIntDef(input, 0), 6);
+  result := IntToHex(ColorToRGB(StrToIntDef(input, 0)), 6);
+  result := '#'+Copy(result, 5, 2)+Copy(result, 3, 2)+Copy(result, 1, 2);
   {$ENDIF}
 end;
 
 procedure Tfrm_GraphViz.CreateDeps(vars,funcs: boolean);
 var
-  i,j,k,m: integer;
+  i,j,k: integer;
   dep: TDependency;
   orphan: TOrphan;
   tmp, tmp2: string;
 begin
   deplist.Clear;
   olist.Clear;
+  GInfo.AStatusReport('Creating type hash ...', 0);
+  for i := 0 to GInfo.AClassList.Count-1 do begin
+    ClassHash[LowerCase(GInfo.AClassList[i].name)] := GInfo.AClassList[i];
+  end;
+  if (vars or funcs) then begin
+    {if (TypeHash.ItemCount = 0) then begin
+        for j := 0 to GInfo.AClassList[i].enums.Count-1 do begin
+          TypeHash.Items[GInfo.AClassList[i].enums[j].name] := GInfo.AClassList[i];
+        end;
+        for j := 0 to GInfo.AClassList[i].structs.Count-1 do begin
+          TypeHash.Items[GInfo.AClassList[i].structs[j].name] := GInfo.AClassList[i];
+        end;
+      end;
+    end;}
+  end;
   for i := 0 to plist.Count-1 do begin
     GInfo.AStatusReport('Calculating dependencies for: '+plist[i].name, round((i+1)/plist.Count*100));
     for j := 0 to plist[i].classes.Count-1 do begin
@@ -92,17 +113,27 @@ begin
         k := Pos(')', tmp);
         tmp2 := Trim(Copy(tmp, 1, k-1));
         Delete(tmp, 1, k);
-        for m := 0 to GInfo.AClassList.Count-1 do begin
-          if (CompareText(tmp2, GInfo.AClassList[m].name) = 0) then begin
-            dep := TDependency.Create(plist[i].classes[j], GInfo.AClassList[m], false);
+        if (ClassHash.Exists(LowerCase(tmp2))) then begin
+            dep := TDependency.Create(plist[i].classes[j], TUClass(ClassHash[LowerCase(tmp2)]), false);
             deplist.Add(dep);
+            orphan := TOrphan.Create(dep.depends);
+            olist.Add(orphan);
             break;
-          end;
         end;
         k := Pos('dependson', tmp);
       end;
       if (vars) then begin
-        // TODO:
+        for k := 0 to plist[i].classes[j].properties.Count-1 do begin
+          if (ClassHash.Exists(LowerCase(plist[i].classes[j].properties[k].ptype))) then begin
+            dep := TDependency.Create(plist[i].classes[j],
+              TUClass(ClassHash[LowerCase(plist[i].classes[j].properties[k].ptype)]), false);
+            if (dep.source <> dep.depends) then begin
+              deplist.Add(dep);
+              orphan := TOrphan.Create(dep.depends);
+              olist.Add(orphan);
+            end;
+          end;
+        end;
       end;
       if (funcs) then begin
         // TODO:
@@ -112,6 +143,8 @@ begin
   GInfo.AStatusReport('Sorting dependencies');
   deplist.SortOnPackage;
   olist.SortOnPackage;
+  GInfo.AStatusReport('Filtering dependencies');
+  deplist.FilterDuplicates;
   olist.FilterPackages(plist);
 end;
 
@@ -159,6 +192,9 @@ begin
       if (not deplist[i].isChild) then tmp := tmp+' [arrowtail=odot]';
       sl.Add('  '+tmp+';');
     end;
+    sl.Add('  fontsize=9;');
+    sl.Add('  labelloc=b;');
+    sl.Add('  label="Created with UnCodeX\nout_graphviz.dll ('+DLLVERSION+')";');
     sl.Add('}');
     sl.SaveToFile(filename);
   finally
@@ -178,7 +214,7 @@ begin
     {$IFDEF __USENAMES__}
     li.SubItems.Add('black');
     {$ELSE}
-    li.SubItems.Add(IntToStr(clBlack));
+    li.SubItems.Add(IntToStr(clSilver));
     {$ENDIF}
     li.Data := GInfo.APackageList[i];
   end;
@@ -188,10 +224,12 @@ end;
 
 procedure Tfrm_GraphViz.FormCreate(Sender: TObject);
 begin
-  Caption := Caption+' '+VERSION;
+  Caption := Caption+' '+DLLVERSION;
   plist := TGraphUPAckageList.Create(false);
   olist := TOrphanList.Create(true);
   deplist := TDepList.Create(true);
+  TypeHash := TObjectHash.Create;
+  ClassHash := TObjectHash.Create(false);
 end;
 
 procedure Tfrm_GraphViz.btn_CreateClick(Sender: TObject);
@@ -219,6 +257,8 @@ begin
   plist.Free;
   olist.Free;
   deplist.Free;
+  TypeHash.Free;
+  ClassHash.Free;
 end;
 
 procedure Tfrm_GraphViz.lv_PackagesAdvancedCustomDrawSubItem(
@@ -231,7 +271,7 @@ var
 {$ENDIF}
 begin
   {$IFNDEF __USENAMES__}
-  Sender.Canvas.Brush.Color := StrToIntDef(Item.SubItems[0], clBlack);
+  Sender.Canvas.Brush.Color := StrToIntDef(Item.SubItems[0], clSilver);
   R := Item.DisplayRect(drBounds);
   R.Left := Sender.Column[0].Width;
   Sender.Canvas.FillRect(R);
@@ -257,7 +297,7 @@ begin
   cl_Color.Width := lv_Packages.Columns[1].Width+2;
   cl_Color.Top := lv_Packages.Top+R.Top;
   cl_Color.Height := R.Bottom-R.Top;
-  cl_Color.Selected := StrToIntDef(lv_Packages.Selected.SubItems[0], clBlack);
+  cl_Color.Selected := StrToIntDef(lv_Packages.Selected.SubItems[0], clSilver);
   cl_Color.Visible := true;
   ActiveControl := cl_Color;
   {$ENDIF}
@@ -294,7 +334,7 @@ begin
     {$IFDEF __USENAMES__}
     if (lv_Packages.Items[i].Checked) then Inc(cnt);
     {$ELSE}
-    lv_Packages.Items[i].SubItems[0] := '0';
+    lv_Packages.Items[i].SubItems[0] := IntToStr(clSilver);
     {$ENDIF}
   end;
   {$IFDEF __USENAMES__}

@@ -319,6 +319,9 @@ interface
     {** Hash of objects. }
     TObjectHash = class(THash)
       protected
+        // elmuerte: object owns this data
+        FOwnsData: boolean;
+
         {** The index items. }
         f_Items: array of TObject;
 
@@ -344,6 +347,8 @@ interface
         function FIndexMax: integer; override;
 
       public
+        constructor Create(Ownsdata: boolean = false); reintroduce;
+
         {** Items property. }
         property Items[const Key: string]: TObject read FGetItem
           write FSetItem; default;
@@ -774,9 +779,15 @@ end;
 
 { TObjectHash }
 
+constructor TObjectHash.Create(Ownsdata: boolean = false); 
+begin
+  FOwnsData := Ownsdata;
+  inherited Create;
+end;
+
 procedure TObjectHash.FDeleteIndex(i: integer);
 begin
-  self.f_Items[i].Free;
+  if (FOwnsData) then self.f_Items[i].Free;
   self.f_Items[i] := nil;
 end;
 
@@ -800,7 +811,7 @@ var
   k, x, i: integer;
 begin
   if (self.FFindKey(Key, k, x)) then begin
-    self.f_Items[self.f_Keys[k][x].ItemIndex].Free;
+    if (FOwnsData) then self.f_Items[self.f_Keys[k][x].ItemIndex].Free;
     self.f_Items[self.f_Keys[k][x].ItemIndex] := Value;
   end else begin
     { New index entry, or recycle an old one. }
@@ -832,9 +843,11 @@ procedure TObjectHash.FClearItems;
 var
   i: integer;
 begin
-  for i := 0 to High(self.f_Items) do
-    if (Assigned(self.f_Items[i])) then
-      self.f_Items[i].Free;
+  if (FOwnsData) then begin
+    for i := 0 to High(self.f_Items) do
+      if (Assigned(self.f_Items[i])) then
+        self.f_Items[i].Free;
+  end;
   SetLength(self.f_Items, 0);
 end;
 
@@ -842,9 +855,11 @@ destructor TObjectHash.Destroy;
 var
   i: integer;
 begin
-  for i := 0 to High(self.f_Items) do
-    if (Assigned(self.f_Items[i])) then
-      self.f_Items[i].Free;
+  if (FOwnsData) then begin
+    for i := 0 to High(self.f_Items) do
+      if (Assigned(self.f_Items[i])) then
+        self.f_Items[i].Free;
+  end;
   inherited;
 end;
 
