@@ -51,7 +51,7 @@ Conditionals=
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
-RunParams=-config tribesv.ini
+RunParams=
 HostApplication=
 Launcher=
 UseLauncher=0

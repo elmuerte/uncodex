@@ -15,6 +15,7 @@ object frm_Run: Tfrm_Run
   Font.Style = []
   OldCreateOrder = False
   Position = poMainFormCenter
+  ShowHint = True
   OnCreate = FormCreate
   DesignSize = (
     575
@@ -66,7 +67,7 @@ object frm_Run: Tfrm_Run
     Top = 93
     Width = 575
     Height = 356
-    ActivePage = ts_URL
+    ActivePage = ts_Help
     Anchors = [akLeft, akTop, akRight, akBottom]
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clMenuText
@@ -75,10 +76,10 @@ object frm_Run: Tfrm_Run
     Font.Style = [fsBold]
     ParentFont = False
     Style = tsFlatButtons
-    TabIndex = 2
+    TabIndex = 3
     TabOrder = 0
     object ts_Commandline: TTabSheet
-      Caption = 'Commandline'
+      Caption = '&Commandline'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
@@ -210,7 +211,7 @@ object frm_Run: Tfrm_Run
       end
     end
     object ts_Switches: TTabSheet
-      Caption = 'Switches'
+      Caption = '&Switches'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
@@ -523,7 +524,7 @@ object frm_Run: Tfrm_Run
       end
     end
     object ts_URL: TTabSheet
-      Caption = 'URL'
+      Caption = '&URL'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
@@ -747,8 +748,8 @@ object frm_Run: Tfrm_Run
         OnChange = ed_MapChange
       end
     end
-    object TabSheet1: TTabSheet
-      Caption = 'Replacements'
+    object ts_Help: TTabSheet
+      Caption = '&Replacements'
       ImageIndex = 3
       object mm_Replacements: TMemo
         Left = 0
@@ -768,7 +769,7 @@ object frm_Run: Tfrm_Run
             'The following replacement variables are accepted in any of the a' +
             'rguments:'
           '%url%'#9#9'the information from the URL tab'
-          '%swith%'#9#9'the information from the Switched tab'
+          '%swith%'#9#9'the information from the Switches tab'
           '%rand%'#9#9'a random number'
           
             '%inc%'#9#9'this number is increased on every run, and reset when the' +

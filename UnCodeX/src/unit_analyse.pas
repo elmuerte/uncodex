@@ -6,7 +6,7 @@
     Purpose:
         UnrealScript class analyser
 
-    $Id: unit_analyse.pas,v 1.48 2004-11-06 15:07:44 elmuerte Exp $
+    $Id: unit_analyse.pas,v 1.49 2004-11-07 14:59:15 elmuerte Exp $
 *******************************************************************************}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -897,8 +897,11 @@ begin
             Dec(macroIfCnt);
         end;
     end
+    else if (macro = 'EXEC') then begin
+    	// ignore, exec macro calls certain commandlets for importing sounds/textures/etc.
+    end
     else begin
-        log('Unsupported macro: '+macro);
+        LogClass(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Unsupported macro '+macro, uclass);
     end;
 end;
 
@@ -1001,8 +1004,10 @@ begin
             continue;
         end;
         if (p.TokenSymbolIs(KEYWORD_cpptext)) then begin
+        		p.MacroCallBack := false;
             p.NextToken;
             pCurlyBrackets();
+            p.MacroCallBack := true;
             continue;
         end;
         if (p.TokenSymbolIs(KEYWORD_Import)) then begin // ignore imports
