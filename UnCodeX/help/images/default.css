@@ -96,6 +96,7 @@ PRE {
 	background-color: #9DEDFF;
 	margin: 0px;
 	padding-left: 10px;
+	padding-right: 5px;
 	border: 1px inset #00CCFF;
 }
 
@@ -109,4 +110,13 @@ TH {
 	border-bottom: 2px inset #AEF0FF;
 }
 
-A { color: #6F5722; }
+A { 
+	/* color: #D4F7FF; */	
+	text-decoration: none;
+	font-weight: bold;
+	color: #FFFFFF;
+}
+
+A:Hover { 
+	text-decoration: underline;
+}

@@ -1,0 +1,270 @@
+<html>
+<head>
+	<title>UnCodeX - Configuration file</title>
+	<link href="default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">config</div>
+</div>
+
+<div class="content">
+<h1>Configuration file</h1>
+You can use the -config commandline argument to load a diffirent configuration file. Below is the definition of the usefull config parameters.
+
+<h2>[Config]</h2>
+<table>
+<tr>
+	<th>name</th>
+	<th>type</th>
+	<th>description</th>
+</tr>
+<tr>
+	<td><pre>AnalyseModified</pre></td>
+	<td>0 or 1</td>
+	<td>If set to 1 UnCodeX is search for modified files and analyse them</td>
+</tr>
+<tr>
+	<td><pre>ClientCmd</pre></td>
+	<td>commandline</td>
+	<td>Commandline to execute to join the game server</td>
+</tr>
+<tr>
+	<td><pre>CompilerCmd</pre></td>
+	<td>commandline</td>
+	<td>Commandline to execute to compile the selected class/package</td>
+</tr>
+<tr>
+	<td><pre>FullTextSearchRegExp</pre></td>
+	<td>0 or 1</td>
+	<td>Full text search and class body searches default to regular expression when set to 1</td>
+</tr>
+<tr>
+	<td><pre>HHCPath</pre></td>
+	<td>path</td>
+	<td>Path to the HTML Help compiler (hhc.exe)</td>
+</tr>
+<tr>
+	<td><pre>HTMLHelpFile</pre></td>
+	<td>file path</td>
+	<td>Output filename for the HTML Help compiler</td>
+</tr>
+<tr>
+	<td><pre>HTMLOutputDir</pre></td>
+	<td>path</td>
+	<td>Path to store the output HTML files in</td>
+</tr>
+<tr>
+	<td><pre>OpenResultCmd</pre></td>
+	<td>commandline</td>
+	<td>commandline to use when opening search results, if you leave this blank the default application is used</td>
+</tr>
+<tr>
+	<td><pre>ServerCmd</pre></td>
+	<td>commandline</td>
+	<td>Commandline to execute when a server needs to be started</td>
+</tr>
+<tr>
+	<td><pre>ServerPrio</pre></td>
+	<td>0 to 3</td>
+	<td>Priority of the server process, 0 being the lowest and 3 being the highest</td>
+</tr>
+<tr>
+	<td><pre>StateFile</pre></td>
+	<td>filename</td>
+	<td>Filename of the state file, relative to the configuration file</td>
+</tr>
+<tr>
+	<td><pre>TemplateDir</pre></td>
+	<td>path</td>
+	<td>Directory which contains the templates to use for the HTML output</td>
+</tr>
+</table>
+
+<h2>[HotKeys]</h2>
+This is where the horkeys are set for each menu/toolbar item.
+
+<h2>[IgnorePackages]</h2>
+<table>
+<tr>
+	<td><pre>Package</pre></td>
+	<td>Directories matching these names will be ignores if they are identified as a package.</td>
+</tr>
+</table>
+
+<h2>[Layout]</h2>
+<table>
+<tr>
+	<th>name</th>
+	<th>type</th>
+	<th>description</th>
+</tr>
+<tr>
+	<td><pre>ABLeft</pre></td>
+	<td>0 or 1</td>
+	<td>Is registered as a tool application to the left side</td>
+</tr>
+<tr>
+	<td><pre>ABRight</pre></td>
+	<td>0 or 1</td>
+	<td>Is registered as a tool application to the right side</td>
+</tr>
+<tr>
+	<td><pre>AutoHide</pre></td>
+	<td>0 or 1</td>
+	<td>The tool application is set in autohide mode</td>
+</tr>
+<tr>
+	<td><pre>ABWidth</pre></td>
+	<td>integer</td>
+	<td>Width of the tool application window</td>
+</tr>
+<tr>
+	<td><pre>ExpandObject</pre></td>
+	<td>0 or 1</td>
+	<td>Expand the first item in the class tree on startup</td>
+</tr>
+<tr>
+	<td><pre>Height</pre></td>
+	<td>integer</td>
+	<td>The height of the normal UnCodeX window</td>
+</tr>
+<tr>
+	<td><pre>Left</pre></td>
+	<td>integer</td>
+	<td>Position to the left of the main window</td>
+</tr>
+<tr>
+	<td><pre>Log</pre></td>
+	<td>0 or 1</td>
+	<td>Show log window if set to 1</td>
+</tr>
+<tr>
+	<td><pre>Log.Color</pre></td>
+	<td>color</td>
+	<td>Background color of the log window</td>
+</tr>
+<tr>
+	<td><pre>Log.Font.Color</pre></td>
+	<td>color</td>
+	<td>Text color</td>
+</tr>
+<tr>
+	<td><pre>Log.Font.Name</pre></td>
+	<td>name</td>
+	<td>Font to use in the log window</td>
+</tr>
+<tr>
+	<td><pre>Log.Font.Size</pre></td>
+	<td>integer</td>
+	<td>Font size</td>
+</tr>
+<tr>
+	<td><pre>LogHeight</pre></td>
+	<td>integer</td>
+	<td>Height of the log window</td>
+</tr>
+<tr>
+	<td><pre>MenuBar</pre></td>
+	<td>0 or 1</td>
+	<td>Show the menu bar if set to 1</td>
+</tr>
+<tr>
+	<td><pre>MinimizeOnClose</pre></td>
+	<td>0 or 1</td>
+	<td>Minimize UnCodeX when the user closes the window, unless it's closed via "Tree -> Quit"</td>
+</tr>
+<tr>
+	<td><pre>PackageTree</pre></td>
+	<td>0 or 1</td>
+	<td>Show the package tree</td>
+</tr>
+<tr>
+	<td><pre>PackageTreeWidth</pre></td>
+	<td>integer</td>
+	<td>Width of the package tree</td>
+</tr>
+<tr>
+	<td><pre>SavePosition</pre></td>
+	<td>0 or 1</td>
+	<td>Save the position of UnCodeX</td>
+</tr>
+<tr>
+	<td><pre>SaveSize</pre></td>
+	<td>0 or 1</td>
+	<td>Save the size of UnCodeX</td>
+</tr>
+<tr>
+	<td><pre>StayOnTop</pre></td>
+	<td>0 or 1</td>
+	<td>If set to 1 the main window willstay on top of all other windows</td>
+</tr>
+<tr>
+	<td><pre>Toolbar</pre></td>
+	<td>0 or 1</td>
+	<td>Show the toolbar</td>
+</tr>
+<tr>
+	<td><pre>Top</pre></td>
+	<td>integer</td>
+	<td>Position to the top of the main window</td>
+</tr>
+<tr>
+	<td><pre>Top</pre></td>
+	<td>integer</td>
+	<td>Position to the top of the main window</td>
+</tr>
+<tr>
+	<td><pre>Tree.Color</pre></td>
+	<td>color</td>
+	<td>Background color of both trees</td>
+</tr>
+<tr>
+	<td><pre>Tree.Font.Color</pre></td>
+	<td>color</td>
+	<td>Text color</td>
+</tr>
+<tr>
+	<td><pre>Tree.Font.Name</pre></td>
+	<td>name</td>
+	<td>Font to use in both trees</td>
+</tr>
+<tr>
+	<td><pre>Tree.Font.Size</pre></td>
+	<td>integer</td>
+	<td>Font size</td>
+</tr>
+<tr>
+	<td><pre>Width</pre></td>
+	<td>integer</td>
+	<td>Width of the main window</td>
+</tr>
+</table>
+
+<h2>[PackagePriority]</h2>
+<table>
+<tr>
+	<td><pre>Package</pre></td>
+	<td>The priority of the package, the first item has the highest priority.</td>
+</tr>
+<tr>
+	<td><pre>Tag</pre></td>
+	<td>A tagged package, this package and containing classes will get a diffirent icon in the tree listing. The order doesn't matter</td>
+</tr>
+</table>
+
+<h2>[SourcePaths]</h2>
+<table>
+<tr>
+	<td><pre>Path</pre></td>
+	<td>Paths to scan for packages</td>
+</tr>
+</table>
+
+</div>
+</div>
+</body>
+</html>

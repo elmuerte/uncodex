@@ -1,0 +1,32 @@
+<html>
+<head>
+	<title>UnCodeX - Status messages</title>
+	<link href="default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">status</div>
+</div>
+
+<div class="content">
+<h1>Receiving status messages</h1>
+UnCodeX gives you the ability to receive it's status and log messages when you execute it in the background. In order to receive the status messages you have to report the window handle of the receiving application to UnCodeX. Only one window can receive the messages at the time. To report the window handle you have to start UnCodeX with the -handle commandline argument.
+<p>
+When you have reported the window handle to UnCodeX it will start sending messages to that handle. UnCodeX will use the Window Message: WM_COPYDATA to send the following structure to the receiving window:
+<pre>
+TCodeXStatus = packed record
+  Msg:      string[255];
+  mType:    TCodeXStatusType;
+  Progress: byte;
+end;
+
+TCodeXStatusType = (cxstLog, cxstStatus);
+</pre>
+When mType is cxstStatus the Progress may contain a progress percentage of the total operation.
+</div>
+</div>
+</body>
+</html>
