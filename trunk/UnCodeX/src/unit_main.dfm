@@ -624,6 +624,24 @@ object frm_UnCodeX: Tfrm_UnCodeX
     object mi_ShowProperties: TMenuItem
       Action = ac_Tags
     end
+    object mi_Properties: TMenuItem
+      Action = ac_PackageProps
+    end
+    object N1: TMenuItem
+      Caption = '-'
+    end
+    object mi_CreateSubClass: TMenuItem
+      Action = ac_CreateSubClass
+    end
+    object mi_DeleteClass: TMenuItem
+      Action = ac_DeleteClass
+    end
+    object mi_MoveClass: TMenuItem
+      Action = ac_MoveClass
+    end
+    object mi_RenameClass: TMenuItem
+      Action = ac_RenameClass
+    end
     object mi_N15: TMenuItem
       Caption = '-'
     end
@@ -983,12 +1001,36 @@ object frm_UnCodeX: Tfrm_UnCodeX
       ShortCut = 16393
       OnExecute = ac_SwitchTreeExecute
     end
+    object ac_CreateSubClass: TAction
+      Category = 'Class Tree'
+      Caption = 'Create subclass'
+      OnExecute = ac_CreateSubClassExecute
+    end
+    object ac_DeleteClass: TAction
+      Category = 'Class Tree'
+      Caption = 'Delete class'
+      OnExecute = ac_DeleteClassExecute
+    end
+    object ac_MoveClass: TAction
+      Category = 'Class Tree'
+      Caption = 'Move class'
+    end
+    object ac_RenameClass: TAction
+      Category = 'Class Tree'
+      Caption = 'Rename class'
+    end
+    object ac_PackageProps: TAction
+      Category = 'Class Tree'
+      Caption = 'Package Properties'
+      ImageIndex = 11
+      OnExecute = ac_PackagePropsExecute
+    end
   end
   object il_Small: TImageList
     Left = 40
     Top = 104
     Bitmap = {
-      494C01011B001D00040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C01011B001D00040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000008000000001002000000000000080
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -2048,7 +2090,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
       E003E00300010001800080000001000180008000000100018000800000010001
       8000800000010001800080000001000180008000000100018000800000010001
       800080000001000180008000000100018000800000010001E003E00300010001
-      F80FF80F00010001FE3FFE3FFFFFFFFF}
+      F80FF80F00010001FE3FFE3FFFFFFFFF00000000000000000000000000000000
+      000000000000}
   end
   object pm_SourceSnoop: TPopupMenu
     AutoPopup = False

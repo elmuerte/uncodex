@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Main program
- $Id: UnCodeX.dpr,v 1.32 2004-03-20 20:56:07 elmuerte Exp $
+ $Id: UnCodeX.dpr,v 1.33 2004-03-23 16:25:45 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 program UnCodeX;
@@ -46,7 +46,9 @@ uses
   unit_license in 'unit_license.pas' {frm_License},
   unit_splash in 'unit_splash.pas' {frm_Splash},
   unit_props in 'unit_props.pas' {fr_Properties: TFrame},
-  unit_ucxdocktree in 'unit_ucxdocktree.pas';
+  unit_ucxdocktree in 'unit_ucxdocktree.pas',
+  unit_ucops in 'unit_ucops.pas' {frm_CreateNewClass},
+  unit_pkgprops in 'unit_pkgprops.pas' {frm_PackageProps};
 
 {$R *.res}
 
@@ -168,9 +170,9 @@ begin
     Application.Initialize;
     Application.Title := 'UnCodeX';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-  	Application.CreateForm(Tfrm_About, frm_About);
-  	Application.CreateForm(Tfrm_License, frm_License);
-  	if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+  Application.CreateForm(Tfrm_About, frm_About);
+  Application.CreateForm(Tfrm_License, frm_License);
+  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end
   else if (frm_Splash <> nil) then frm_Splash.Close;

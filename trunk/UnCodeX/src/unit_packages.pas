@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Unreal Package scanner, searches for classes in directories
- $Id: unit_packages.pas,v 1.20 2004-03-16 08:47:00 elmuerte Exp $
+ $Id: unit_packages.pas,v 1.21 2004-03-23 16:25:45 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -187,9 +187,12 @@ begin
                 else begin
                   UPackage.tagged := PackagePriority.Objects[UPackage.priority] <> nil;
                 end;
-                if (FileExists(UPackage.path+PATHDELIM+UCXPACKAGEINFO)) then begin
+
+                // first location <package>.upkg
+                tmp := iFindFile(UPackage.path+PATHDELIM+UPackage.name+PKGCFG);
+                if (FileExists(tmp)) then begin
                   lst := TStringList.Create;
-                  ini := TMemIniFile.Create(UPackage.path+PATHDELIM+UCXPACKAGEINFO);
+                  ini := TMemIniFile.Create(tmp);
                   try
                     ini.ReadSectionValues('package_description', lst);
                     UPackage.comment := lst.Text;
@@ -197,17 +200,35 @@ begin
                     lst.Free;
                     ini.Free;
                   end;
-                end
-                else if (PDF <> nil) then begin
-                  // get from package description file
-                  lst := TStringList.Create;
-                  try
-                    PDF.ReadSectionValues(UPackage.name, lst);
-                    UPackage.comment := lst.Text;
-                  finally
-                    lst.Free;
-                  end;
                 end;
+                // second location: uncodex.ini
+                if (UPackage.comment = '') then begin
+	                tmp := iFindFile(paths[i]+PATHDELIM+sr.name+PATHDELIM+UCXPACKAGEINFO);
+  	              if ( FileExists(tmp)) then begin
+    	              lst := TStringList.Create;
+      	            ini := TMemIniFile.Create(tmp);
+        	          try
+          	          ini.ReadSectionValues('package_description', lst);
+            	        UPackage.comment := lst.Text;
+              	    finally
+                	    lst.Free;
+                  	  ini.Free;
+	                  end;
+  	              end
+                end;
+                // third location, general file
+                if (UPackage.comment = '') then begin
+	                if (PDF <> nil) then begin
+  	                // get from package description file
+    	              lst := TStringList.Create;
+      	            try
+        	            PDF.ReadSectionValues(UPackage.name, lst);
+          	          UPackage.comment := lst.Text;
+            	      finally
+              	      lst.Free;
+                	  end;
+	                end;
+                end;                
                 PackageList.Add(UPackage);
                 knownpackages.Add(LowerCase(sr.Name));
               end

@@ -64,7 +64,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 433
     Height = 378
-    ActivePage = ts_Keywords
+    ActivePage = ts_Command
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -710,10 +710,10 @@ object frm_Settings: Tfrm_Settings
         end
       end
     end
-    object ts_Compile: TTabSheet
+    object ts_Command: TTabSheet
       HelpType = htKeyword
       HelpKeyword = 'compile'
-      Caption = 'Compile'
+      Caption = 'Commands'
       ImageIndex = 4
       TabVisible = False
       object gb_Compile: TGroupBox
@@ -733,6 +733,28 @@ object frm_Settings: Tfrm_Settings
           Width = 105
           Height = 13
           Caption = 'Compiler commandline'
+        end
+        object lbl_OpenResult: TLabel
+          Left = 8
+          Top = 56
+          Width = 315
+          Height = 13
+          Caption = 'Open result command (leave blank for default MS Windows action)'
+        end
+        object bvl_Create: TBevel
+          Left = 8
+          Top = 104
+          Width = 409
+          Height = 9
+          Anchors = [akLeft, akTop, akRight]
+          Shape = bsTopLine
+        end
+        object lbl_Create: TLabel
+          Left = 8
+          Top = 112
+          Width = 124
+          Height = 13
+          Caption = 'Create new class template'
         end
         object btn_CompilerPlaceholders: TBitBtn
           Left = 376
@@ -769,6 +791,62 @@ object frm_Settings: Tfrm_Settings
           Caption = '...'
           TabOrder = 2
           OnClick = btn_BrowseCompilerClick
+        end
+        object ed_OpenResultCmd: TEdit
+          Left = 8
+          Top = 72
+          Width = 369
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          TabOrder = 3
+        end
+        object btn_OpenResultPlaceHolder: TBitBtn
+          Left = 376
+          Top = 72
+          Width = 17
+          Height = 21
+          Anchors = [akTop, akRight]
+          Caption = 'u'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Marlett'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 4
+          OnClick = btn_OpenResultPlaceHolderClick
+        end
+        object btn_OpenResultCmd: TBitBtn
+          Left = 392
+          Top = 72
+          Width = 25
+          Height = 21
+          Anchors = [akTop, akRight]
+          Caption = '...'
+          TabOrder = 5
+          OnClick = btn_OpenResultCmdClick
+        end
+        object ed_NewClassTemplate: TEdit
+          Left = 8
+          Top = 128
+          Width = 385
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          TabOrder = 6
+        end
+        object btn_BrowseTemplate: TBitBtn
+          Left = 392
+          Top = 128
+          Width = 25
+          Height = 21
+          Anchors = [akTop, akRight]
+          Caption = '...'
+          TabOrder = 7
+          OnClick = btn_BrowseTemplateClick
         end
       end
     end
@@ -866,77 +944,6 @@ object frm_Settings: Tfrm_Settings
           Caption = '...'
           TabOrder = 4
           OnClick = btn_ClientCommandlineClick
-        end
-      end
-    end
-    object ts_FullTextSearch: TTabSheet
-      HelpType = htKeyword
-      HelpKeyword = 'fulltextsearch'
-      Caption = 'Full Text Search'
-      ImageIndex = 7
-      TabVisible = False
-      object gb_FullTextSearch: TGroupBox
-        Left = 0
-        Top = 0
-        Width = 425
-        Height = 368
-        Align = alClient
-        Caption = 'Full Text Search'
-        TabOrder = 0
-        DesignSize = (
-          425
-          368)
-        object lbl_OpenResult: TLabel
-          Left = 8
-          Top = 16
-          Width = 249
-          Height = 13
-          Caption = 'Open result command (leave blank for default action)'
-        end
-        object btn_OpenResultPlaceHolder: TBitBtn
-          Left = 376
-          Top = 32
-          Width = 17
-          Height = 21
-          Anchors = [akTop, akRight]
-          Caption = 'u'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Marlett'
-          Font.Style = []
-          ParentFont = False
-          TabOrder = 1
-          OnClick = btn_OpenResultPlaceHolderClick
-        end
-        object ed_OpenResultCmd: TEdit
-          Left = 8
-          Top = 32
-          Width = 369
-          Height = 21
-          Anchors = [akLeft, akTop, akRight]
-          BevelKind = bkSoft
-          BorderStyle = bsNone
-          TabOrder = 0
-        end
-        object btn_OpenResultCmd: TBitBtn
-          Left = 392
-          Top = 32
-          Width = 25
-          Height = 21
-          Anchors = [akTop, akRight]
-          Caption = '...'
-          TabOrder = 2
-          OnClick = btn_OpenResultCmdClick
-        end
-        object cb_FTSRegExp: TCheckBox
-          Left = 8
-          Top = 56
-          Width = 409
-          Height = 17
-          Anchors = [akLeft, akTop, akRight]
-          Caption = 'Default to regular expression'
-          TabOrder = 3
         end
       end
     end
@@ -1725,6 +1732,14 @@ object frm_Settings: Tfrm_Settings
     MinFontSize = 0
     MaxFontSize = 0
     Options = [fdForceFontExist]
+    Left = 592
+    Top = 232
+  end
+  object od_BrowseUC: TOpenDialog
+    DefaultExt = '*.uc'
+    Filter = 'UnrealScript files|*.uc|All Files|*.*'
+    Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
+    Title = 'Select UnrealScript file'
     Left = 592
     Top = 200
   end
