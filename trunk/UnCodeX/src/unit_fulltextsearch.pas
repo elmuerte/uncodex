@@ -21,6 +21,7 @@ type
     IsRegex: boolean;
     Total: integer;
     Matches: integer;
+    RealExpr: string;
     function SearchFile(uclass: TUClass): boolean;
     procedure ExecuteFTS;
     procedure ExecuteBody;
@@ -60,6 +61,7 @@ begin
   Self.IsRegex := IsRegEx;
   re := TRegExpr.Create;
   re.Expression := expr;
+  RealExpr := expr;
   if (not IsRegEx) then re.Expression := UpperCase(re.Expression);
   re.ModifierI := true;
   Matches := 0;
@@ -93,7 +95,7 @@ begin
     end;
     if (Self.Terminated) then break;
   end;
-  Status(IntToStr(Matches)+' matches found for '''+re.Expression+'''. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds', 100);
+  Status(IntToStr(Matches)+' matches found for '''+RealExpr+'''. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds', 100);
 end;
 
 procedure TSearchThread.ExecuteBody;
@@ -118,8 +120,8 @@ begin
     end;
     if (Self.Terminated) then break;
   end;
-  if (Tree.Selected = nil) then  Status('Nothing found for '''+re.Expression+'''. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds', 100)
-    else Status(IntToStr(Matches)+' matches found for '''+re.Expression+''' in '+uclass.name+'. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds');
+  if ((Tree.Selected = nil) or (Matches = 0)) then  Status('Nothing found for '''+RealExpr+'''. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds', 100)
+    else Status(IntToStr(Matches)+' matches found for '''+RealExpr+''' in '+uclass.name+'. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds');
 end;
 
 function TSearchThread.SearchFile(uclass: TUClass): boolean;
