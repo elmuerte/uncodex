@@ -1,5 +1,5 @@
 BODY { 
-	background-color: #00CCFF;
+	background-color: #BDC6CE;
 }
 
 FONT, DIV, TD { 
@@ -17,8 +17,8 @@ DIV.main {
 }
 
 DIV.head {
-	background-color: #D4F7FF;
-	border-bottom: 2px groove #11D2FF;
+	background-color: #A6CADB;
+	border-bottom: 2px groove silver;
 	width: 100%;
 	padding: 10px;
 }
@@ -75,7 +75,7 @@ H2 {
 	font-size: 14pt;
 	margin: 0px;
 	margin-top: 14pt;
-	background-color: #00C1EE;
+	background-color: #A3BFDE;
 	font-style: italic;
 }
 
@@ -93,11 +93,11 @@ H4 {
 }
 
 PRE {
-	background-color: #9DEDFF;
+	background-color: #BCCFDA;
 	margin: 0px;
 	padding-left: 10px;
 	padding-right: 5px;
-	border: 1px inset #00CCFF;
+	border: 1px inset silver;
 }
 
 PRE.indent {
@@ -107,14 +107,14 @@ PRE.indent {
 TH {
 	font-weight: bold;
 	font-size: 10pt;
-	border-bottom: 2px inset #AEF0FF;
+	border-bottom: 2px inset silver;
 }
 
 A { 
 	/* color: #D4F7FF; */	
 	text-decoration: none;
 	font-weight: bold;
-	color: #FFFFFF;
+	color: #7882A7;
 }
 
 A:Hover { 

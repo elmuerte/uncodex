@@ -26,7 +26,7 @@ U=0
 V=1
 W=0
 X=1
-Y=2
+Y=1
 Z=1
 ShowHints=1
 ShowWarnings=1
@@ -44,12 +44,12 @@ ImageBase=4194304
 ExeDescription=
 
 [Directories]
-OutputDir=..\BIN
-UnitOutputDir=..\DCU
+OutputDir=..\..\bin
+UnitOutputDir=..\..\dcu\ucxcu
 PackageDLLOutputDir=
 PackageDCPOutputDir=
-SearchPath=VCL
-Packages=vcl;rtl;dbrtl;adortl;vcldb;vclx;bdertl;vcldbx;ibxpress;dsnap;cds;bdecds;qrpt;teeui;teedb;tee;dss;teeqr;visualclx;dsnapcrba;dsnapcon;VclSmp;vclshlctrls;vclie;xmlrtl;inet;inetdbbde;inetdbxpress;inetdb;nmfast;webdsnap;websnap;soaprtl;dbexpress;dbxcds;indy;dclOffice2k;visualdbclx;TAC2comps
+SearchPath=
+Packages=vcl;rtl;dbrtl;adortl;vcldb;vclx;bdertl;vcldbx;ibxpress;dsnap;cds;bdecds;qrpt;teeui;teedb;tee;dss;teeqr;visualclx;visualdbclx;dsnapcrba;dsnapcon;VclSmp;vclshlctrls;vclie;xmlrtl;inet;inetdbbde;inetdbxpress;inetdb;nmfast;webdsnap;websnap;soaprtl;dbexpress;dbxcds;indy;dclOffice2k
 Conditionals=
 DebugSourceDirs=
 UsePackages=0
@@ -64,15 +64,15 @@ DebugCWD=
 [Language]
 ActiveLang=
 ProjectLang=
-RootDir=
+RootDir=F:\PROGRAM FILES\BORLAND\DELPHI6\BIN\
 
 [Version Info]
-IncludeVerInfo=1
-AutoIncBuild=1
+IncludeVerInfo=0
+AutoIncBuild=0
 MajorVer=1
 MinorVer=0
-Release=1
-Build=154
+Release=0
+Build=0
 Debug=0
 PreRelease=0
 Special=0
@@ -82,16 +82,16 @@ Locale=1033
 CodePage=1252
 
 [Version Info Keys]
-CompanyName=Michiel 'El Muerte' Hendriks
+CompanyName=
 FileDescription=
-FileVersion=1.0.1.154
-InternalName=UnCodeX
-LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
+FileVersion=1.0.0.0
+InternalName=
+LegalCopyright=
 LegalTrademarks=
-OriginalFilename=UnCodeX.exe
-ProductName=UnCodeX
+OriginalFilename=
+ProductName=
 ProductVersion=1.0.0.0
-Comments=http://wiki.beyondunreal.com/wiki/UnCodeX
+Comments=
 
 [HistoryLists\hlConditionals]
 Count=2
@@ -109,11 +109,11 @@ Item1=..
 
 [HistoryLists\hlUnitOutputDirectory]
 Count=3
-Item0=..\DCU
-Item1=..\..\dcu\ucxcu
+Item0=..\..\dcu\ucxcu
+Item1=..\DCU
 Item2=..\dcu\ucxcu
 
 [HistoryLists\hlOutputDirectorry]
 Count=2
-Item0=..\BIN
-Item1=..\..\bin
+Item0=..\..\bin
+Item1=..\BIN

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Unreal Package scanner, searches for classes in directories
- $Id: unit_packages.pas,v 1.13 2003-11-09 11:01:27 elmuerte Exp $
+ $Id: unit_packages.pas,v 1.14 2003-11-24 11:25:52 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -26,17 +26,28 @@
 
 unit unit_packages;
 
+{$IFNDEF CONSOLE}
+  {$MESSAGE 'Compiling with __USE_TREEVIEW'}
+  {$DEFINE __USE_TREEVIEW}
+{$ENDIF}
+
 interface
 
 uses
-  Windows, SysUtils, Classes, ComCtrls, unit_uclasses, unit_outputdefs, Hashes;
+  Windows, SysUtils, Classes,
+  {$IFDEF __USE_TREEVIEW}
+  ComCtrls,
+  {$ENDIF}
+  unit_uclasses, unit_outputdefs, Hashes;
 
 type
   TPackageScanner = class(TThread)
   private
     paths: TStringList;
+    {$IFDEF __USE_TREEVIEW}
     packagetree: TTreeNodes;
     classtree: TTreeNodes;
+    {$ENDIF}
     status: TStatusReport;
     packagelist: TUPackageList;
     classlist: TUClassList;
@@ -44,12 +55,22 @@ type
     IgnorePackages: TStringList;
     ClassHash: TStringHash;
     procedure ScanPackages;
+    {$IFDEF __USE_TREEVIEW}
     procedure CreateClassTree(classlist: TUClassList; parent: TUClass = nil; pnode: TTreeNode = nil);
+    {$ELSE}
+    procedure CreateClassTree(classlist: TUClassList; parent: TUClass = nil);
+    {$ENDIF}
     function GetClassName(filename: string): TUClass;
   public
+    {$IFDEF __USE_TREEVIEW}
     constructor Create(paths: TStringList; packagetree, classtree: TTreeNodes;
       status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
       PackagePriority, IgnorePackages: TStringList; CHash: TStringHash = nil);
+    {$ELSE}
+    constructor Create(paths: TStringList;
+      status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
+      PackagePriority, IgnorePackages: TStringList; CHash: TStringHash = nil);
+    {$ENDIF}
     destructor Destroy; override;
     procedure Execute; override;
   end;
@@ -59,13 +80,21 @@ implementation
 uses
   unit_parser, unit_definitions;
 
+{$IFDEF __USE_TREEVIEW}
 constructor TPackageScanner.Create(paths: TStringList; packagetree, classtree: TTreeNodes;
   status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
   PackagePriority, IgnorePackages: TStringList; CHash: TStringHash = nil);
+{$ELSE}
+constructor TPackageScanner.Create(paths: TStringList;
+  status: TStatusReport; packagelist: TUPackageList; classlist: TUClassList;
+  PackagePriority, IgnorePackages: TStringList; CHash: TStringHash = nil);
+{$ENDIF}
 begin
   Self.paths := paths;
+  {$IFDEF __USE_TREEVIEW}
   Self.packagetree := packagetree;
   Self.classtree := classtree;
+  {$ENDIF}
   Self.status := status;
   Self.packagelist := packagelist;
   Self.classlist := ClassList;
@@ -87,20 +116,24 @@ var
 begin
   stime := GetTickCount();
   ScanPackages();
-  Status('Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds, '+IntToStr(classtree.Count)+' classes')
+  Status('Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds, '+IntToStr(classlist.Count)+' classes')
 end;
 
 procedure TPackageScanner.ScanPackages;
 var
   sr: TSearchRec;
   i: integer;
+  {$IFDEF __USE_TREEVIEW}
   ti: TTreeNode;
+  {$ENDIF}
   UClass: TUClass;
   UPackage: TUPackage;
   knownpackages: TStringList;
 begin
+  {$IFDEF __USE_TREEVIEW}
   packagetree.BeginUpdate;
   classtree.BeginUpdate;
+  {$ENDIF}
   knownpackages := TStringList.Create;
   uclass := nil;
   if (ClassHash <> nil) then ClassHash.Clear;
@@ -141,6 +174,7 @@ begin
     PackageList.Sort; // sort on priority
     // find all classes
     for i := 0 to packagelist.Count-1 do begin
+      {$IFDEF __USE_TREEVIEW}
       ti := packagetree.AddObject(nil, Packagelist[i].name, Packagelist[i]);
       if (packagelist[i].tagged) then begin
         ti.ImageIndex := ICON_PACKAGE_TAGGED;
@@ -152,6 +186,7 @@ begin
         ti.StateIndex := ICON_PACKAGE;
         ti.SelectedIndex := ICON_PACKAGE;
       end;
+      {$ENDIF}
       Status('Scanning package '+Packagelist[i].name, round((i+1) / Packagelist.Count * 100));
       if FindFirst(Packagelist[i].path+PATHDELIM+CLASSDIR+PATHDELIM+SOURCECARD, faAnyFile, sr) = 0 then begin
         repeat
@@ -168,6 +203,7 @@ begin
             uclass.tagged := UClass.package.tagged;
             uclass.filename := sr.Name;
             uclass.priority := PackageList[i].priority;
+            {$IFDEF __USE_TREEVIEW}
             with packagetree.AddChildObject(ti, uclass.name, uclass) do begin
               if (uclass.tagged) then begin
                 ImageIndex := ICON_CLASS_TAGGED;
@@ -180,6 +216,7 @@ begin
                 SelectedIndex := ICON_CLASS;
               end;
             end;
+            {$ENDIF}
             if (ClassHash <> nil) then ClassHash.Items[LowerCase(uclass.name)] := '-';
           end
           else log('Scanner: No class found in this file: '+sr.Name);
@@ -189,19 +226,29 @@ begin
       end;
     end;
     if (not Self.Terminated) then begin
+      {$IFDEF __USE_TREEVIEW}
       packagetree.AlphaSort(true); // sorting
+      {$ENDIF}
       CreateClassTree(classlist);
+      {$IFDEF __USE_TREEVIEW}
       classtree.AlphaSort(true); // sorting
+      {$ENDIF}
       classlist.Sort;
     end;
   finally
     knownpackages.Free;
+    {$IFDEF __USE_TREEVIEW}
     packagetree.EndUpdate;
     classtree.EndUpdate;
+    {$ENDIF}
   end;
 end;
 
+{$IFDEF __USE_TREEVIEW}
 procedure TPackageScanner.CreateClassTree(classlist: TUClassList; parent: TUClass = nil; pnode: TTreeNode = nil);
+{$ELSE}
+procedure TPackageScanner.CreateClassTree(classlist: TUClassList; parent: TUClass = nil);
+{$ENDIF}
 var
   pprio: integer;
   tmp: string;
@@ -221,6 +268,7 @@ begin
       if (CompareText(classlist[i].parentname, tmp) = 0) then begin
         classlist[i].parent := parent;
         if (parent <> nil) then parent.children.Add(classlist[i]);
+        {$IFDEF __USE_TREEVIEW}
         classlist[i].treenode := classtree.AddChildObject(pnode, classlist[i].name, classlist[i]);
         if (classlist[i].tagged) then begin
           TTreeNode(classlist[i].treenode).ImageIndex := ICON_CLASS_TAGGED;
@@ -233,6 +281,9 @@ begin
           TTreeNode(classlist[i].treenode).SelectedIndex := ICON_CLASS;
         end;
         CreateClassTree(classlist, classlist[i], TTreeNode(classlist[i].treenode));
+        {$ELSE}
+        CreateClassTree(classlist, classlist[i]);
+        {$ENDIF}
       end;
     end;
   end;
