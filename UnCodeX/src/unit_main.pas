@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Main windows
- $Id: unit_main.pas,v 1.110 2004-07-21 14:24:51 elmuerte Exp $
+ $Id: unit_main.pas,v 1.111 2004-07-24 14:35:13 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -2086,7 +2086,7 @@ begin
     cb_CPAsWindow.Checked := ClassPropertiesWindow;
     ud_InlineSearchTimeout.Position := tmr_InlineSearch.Interval div 1000;
     ed_gpdf.text := GPDF;
-    //TODO: ExtCommentFile
+    ed_ExtCmtFile.Text := ExtCommentFile;
     if (ShowModal = mrOk) then begin
       { HTML output }
       HTMLOutputDir := ed_HTMLOutputDir.Text;
@@ -2126,7 +2126,7 @@ begin
       ClassPropertiesWindow := cb_CPAsWindow.Checked;
       tmr_InlineSearch.Interval := ud_InlineSearchTimeout.Position * 1000;
       GPDF := ed_gpdf.Text;
-      //TODO: ExtCommentFile
+      ExtCommentFile := ed_ExtCmtFile.Text;
       SetExtCommentFile(ExtCommentFile);
       { Source paths }
       SourcePaths.Clear;

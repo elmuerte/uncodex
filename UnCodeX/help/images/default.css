@@ -1,11 +1,12 @@
 BODY { 
-	background-color: #BDC6CE;
+	background-color: #BDC6CE;	
 }
 
 FONT, DIV, TD { 
 	vertical-align: top;
 	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;  
 	font-size: 10pt;  
+	line-height: 16pt;	
 	color: #000000;   
 }
 
@@ -26,6 +27,7 @@ DIV.head {
 DIV.title {
 	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif; 
 	font-size: 22pt;  
+	line-height: normal;
 	color: #00FCFF;
 	font-weight: bold;
 	font-style: italic;
@@ -36,6 +38,7 @@ DIV.title {
 DIV.subject {
 	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif; 
 	font-size: 16pt;  
+	line-height: normal;
 	color: #000000;
 	font-weight: bold;
 	position: relative;
@@ -69,12 +72,14 @@ DIV.content {
 
 H1 {
 	font-size: 14pt;
+	line-height: normal;
 	border-bottom: 2px solid #396782;
 	background-color: #B4BEC6;
 }
 
 H2 {
 	font-size: 12pt;
+	line-height: normal;
 	margin: 2px;
 	margin-top: 10pt;
 	border-bottom: 2px solid #598DC3;
@@ -84,6 +89,7 @@ H2 {
 
 H3 {
 	font-size: 10pt;
+	line-height: normal;
 	margin: 2px;
 	margin-top: 5pt;
 	border-bottom: 1px solid #6E9BCB;
@@ -92,6 +98,7 @@ H3 {
 
 H4 {
 	font-size: 10pt;
+	line-height: normal;
 	margin: 2px;
 	margin-top: 5pt;
 	font-style: italic;
@@ -113,6 +120,7 @@ PRE.indent {
 TH {
 	font-weight: bold;
 	font-size: 10pt;
+	line-height: normal;
 	border-bottom: 2px inset silver;
 }
 

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   general console routines
- $Id: unit_ascii.pas,v 1.9 2004-03-14 23:20:48 elmuerte Exp $
+ $Id: unit_ascii.pas,v 1.10 2004-07-24 14:35:13 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -61,7 +61,7 @@ const
   PB_TODO = '.'; // 25% block
   {$ENDIF}
   PB_NONE = ' ';
-  VERSION = '010 Beta';
+  VERSION = '011 Beta';
 
 var
   lastsp: integer = -1;
@@ -110,6 +110,7 @@ begin
   writeln('Accepted commandline switches:');
   writeln(#9'-c <filename>'   +#9'Set configuration file (uncodex.ini used by default)');
   writeln(#9'-d <filename>'   +#9'Package description file');
+  writeln(#9'-e <filename>'   +#9'External comment file');
   writeln(#9'-h'#9            +#9'This message');
   writeln(#9'-l <filename>'   +#9'Log to file <filename>, logging disablled by default');
   writeln(#9'-m'#9			      +#9'Create MS HTML Help file');

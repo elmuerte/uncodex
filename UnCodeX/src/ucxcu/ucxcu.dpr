@@ -42,6 +42,7 @@ begin
     	TemplateDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+TEMPLATEPATH+PATHDELIM+DEFTEMPLATE;
     	HTMLHelpFile := ExtractFilePath(ExpandFileName(ParamStr(0)))+'UnCodeX.chm';
       PackageDescFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTPDF);
+      ExtCommentFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTECF);
 
       ConfigFile := ExtractFilePath(ParamStr(0)) + 'UnCodeX.ini';
       CmdOption('c', ConfigFile);

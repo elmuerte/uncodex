@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   main code for the commandline utility
- $Id: unit_ucxcumain.pas,v 1.9 2004-04-05 13:36:51 elmuerte Exp $
+ $Id: unit_ucxcumain.pas,v 1.10 2004-07-24 14:35:13 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -47,7 +47,7 @@ var
   Verbose: byte = 1;
   ConfigFile: string;
   sourcepaths, packagepriority, ignorepackages: TStringList;
-  PackageDescFile: string;
+  PackageDescFile, ExtCommentFile: string;
   // HTML output config:
   HTMLOutputDir, TemplateDir, HTMLTargetExt, CPPApp: string;
   TabsToSpaces: integer;
@@ -108,6 +108,9 @@ begin
     HTMLHelpFile := ini.ReadString('Config', 'HTMLHelpFile', HTMLHelpFile);
     HHTitle := ini.ReadString('Config', 'HHTitle', '');
 
+    PackageDescFile := ini.ReadString('Config', 'PackageDescriptionFile', PackageDescFile);
+    ExtCommentFile := ini.ReadString('Config', 'ExternalCommentFile', ExtCommentFile);
+
     { Unreal Packages }
     ini.ReadSectionValues('PackagePriority', sl);
     for i := 0 to sl.Count-1 do begin
@@ -158,6 +161,7 @@ var
   i: integer;
   ini: TMemIniFile;
 begin
+  SetExtCommentFile(ExtCommentFile);
   if (CmdOption('l', tmp)) then begin
     if (DirectoryExists(ExtractFilePath(tmp)) or (ExtractFilePath(tmp) = '')) then begin
       Assign(LogFile, tmp);
@@ -223,6 +227,7 @@ begin
   end;
   CmdOption('t', TemplateDir);
   CmdOption('d', PackageDescFile);
+  CmdOption('e', ExtCommentFile);
 
   // html help
   CmdOption('mc', HHCPath);
@@ -345,6 +350,7 @@ initialization
   ClassList := TUClassList.Create(true);
   unit_definitions.Log := Log;
   unit_definitions.LogClass := LogClass;
+  unit_analyse.GetExternalComment := unit_definitions.RetExternalComment;
 finalization
   sourcepaths.Free;
   packagepriority.Free;

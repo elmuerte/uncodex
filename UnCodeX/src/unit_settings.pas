@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   program settings window
- $Id: unit_settings.pas,v 1.36 2004-05-03 07:54:45 elmuerte Exp $
+ $Id: unit_settings.pas,v 1.37 2004-07-24 14:35:13 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -209,6 +209,9 @@ type
     ed_NewClassTemplate: TEdit;
     btn_BrowseTemplate: TBitBtn;
     od_BrowseUC: TOpenDialog;
+    lbl_ExtCmtFile: TLabel;
+    ed_ExtCmtFile: TEdit;
+    btn_ExtCmtFile: TBitBtn;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -283,6 +286,7 @@ type
     procedure btn_BrowseTemplateClick(Sender: TObject);
     procedure FormKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure btn_ExtCmtFileClick(Sender: TObject);
   private
   public
     TagChanged: boolean;
@@ -918,6 +922,12 @@ procedure Tfrm_Settings.FormKeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
 	if (Key = VK_F1) then btn_Help.Click;
+end;
+
+procedure Tfrm_Settings.btn_ExtCmtFileClick(Sender: TObject);
+begin
+	od_BrowseIni.FileName := ed_ExtCmtFile.Text;
+  if (od_BrowseIni.Execute) then ed_ExtCmtFile.Text := od_BrowseIni.FileName;
 end;
 
 end.

@@ -67,7 +67,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 433
     Height = 378
-    ActivePage = ts_HotKeys
+    ActivePage = ts_ProgramOptions
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -1123,14 +1123,14 @@ object frm_Settings: Tfrm_Settings
         end
         object Label1: TLabel
           Left = 8
-          Top = 224
+          Top = 264
           Width = 210
           Height = 13
           Caption = 'Default inheritance depth for class properties'
         end
         object bvl_Sep1: TBevel
           Left = 8
-          Top = 208
+          Top = 248
           Width = 409
           Height = 9
           Anchors = [akLeft, akTop, akRight]
@@ -1138,7 +1138,7 @@ object frm_Settings: Tfrm_Settings
         end
         object lbl_InlineSearchTimeout: TLabel
           Left = 8
-          Top = 168
+          Top = 208
           Width = 157
           Height = 13
           Caption = 'Inline search timeout (in seconds)'
@@ -1149,6 +1149,13 @@ object frm_Settings: Tfrm_Settings
           Width = 152
           Height = 13
           Caption = 'General package description file'
+        end
+        object lbl_ExtCmtFile: TLabel
+          Left = 8
+          Top = 120
+          Width = 100
+          Height = 13
+          Caption = 'External comment file'
         end
         object ed_StateFilename: TEdit
           Left = 8
@@ -1162,7 +1169,7 @@ object frm_Settings: Tfrm_Settings
         end
         object cb_MinimzeOnClose: TCheckBox
           Left = 8
-          Top = 128
+          Top = 168
           Width = 113
           Height = 17
           Caption = 'Minimize on close'
@@ -1178,7 +1185,7 @@ object frm_Settings: Tfrm_Settings
         end
         object ed_DefInheritanceDepth: TEdit
           Left = 8
-          Top = 240
+          Top = 280
           Width = 393
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -1189,7 +1196,7 @@ object frm_Settings: Tfrm_Settings
         end
         object ud_DefInheritDepth: TUpDown
           Left = 401
-          Top = 240
+          Top = 280
           Width = 16
           Height = 21
           Anchors = [akTop, akRight]
@@ -1203,7 +1210,7 @@ object frm_Settings: Tfrm_Settings
         end
         object cb_LoadCustomModules: TCheckBox
           Left = 8
-          Top = 144
+          Top = 184
           Width = 161
           Height = 17
           Caption = 'Load custom output modules'
@@ -1213,7 +1220,7 @@ object frm_Settings: Tfrm_Settings
         end
         object cb_CPAsWindow: TCheckBox
           Left = 8
-          Top = 264
+          Top = 304
           Width = 177
           Height = 17
           Caption = 'Open class properties as window'
@@ -1221,7 +1228,7 @@ object frm_Settings: Tfrm_Settings
         end
         object ed_InlineSearchTimeout: TEdit
           Left = 8
-          Top = 184
+          Top = 224
           Width = 393
           Height = 21
           Anchors = [akLeft, akTop, akRight]
@@ -1232,7 +1239,7 @@ object frm_Settings: Tfrm_Settings
         end
         object ud_InlineSearchTimeout: TUpDown
           Left = 401
-          Top = 184
+          Top = 224
           Width = 16
           Height = 21
           Anchors = [akTop, akRight]
@@ -1264,6 +1271,27 @@ object frm_Settings: Tfrm_Settings
           Caption = '...'
           TabOrder = 10
           OnClick = btn_BrowseGPDFClick
+        end
+        object ed_ExtCmtFile: TEdit
+          Left = 8
+          Top = 136
+          Width = 385
+          Height = 21
+          Anchors = [akLeft, akTop, akRight]
+          BevelKind = bkSoft
+          BorderStyle = bsNone
+          ReadOnly = True
+          TabOrder = 11
+        end
+        object btn_ExtCmtFile: TBitBtn
+          Left = 392
+          Top = 136
+          Width = 25
+          Height = 21
+          Anchors = [akTop, akRight]
+          Caption = '...'
+          TabOrder = 12
+          OnClick = btn_ExtCmtFileClick
         end
       end
     end
@@ -1340,7 +1368,6 @@ object frm_Settings: Tfrm_Settings
           ColumnClick = False
           ReadOnly = True
           RowSelect = True
-          SmallImages = frm_UnCodeX.il_Small
           SortType = stText
           TabOrder = 3
           ViewStyle = vsReport
