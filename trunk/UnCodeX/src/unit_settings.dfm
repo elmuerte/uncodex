@@ -41,7 +41,7 @@ object frm_Settings: Tfrm_Settings
     Top = 0
     Width = 441
     Height = 378
-    ActivePage = ts_ProgramOptions
+    ActivePage = ts_PackagePriority
     Align = alLeft
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -227,7 +227,7 @@ object frm_Settings: Tfrm_Settings
         end
         object btn_AddPackage: TBitBtn
           Left = 400
-          Top = 270
+          Top = 238
           Width = 27
           Height = 25
           Anchors = [akRight, akBottom]
@@ -251,9 +251,10 @@ object frm_Settings: Tfrm_Settings
         end
         object btn_DelPackage: TBitBtn
           Left = 400
-          Top = 302
+          Top = 270
           Width = 27
           Height = 25
+          Hint = 'Remoave package from the listing'
           Anchors = [akRight, akBottom]
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -264,14 +265,11 @@ object frm_Settings: Tfrm_Settings
           TabOrder = 3
           OnClick = btn_DelPackageClick
           Glyph.Data = {
-            F6000000424DF600000000000000760000002800000010000000100000000100
-            0400000000008000000000000000000000001000000000000000000000000000
-            8000C0C0C000FF00FF0080808000FFFFFF0000FFFF0000000000000000000000
-            0000000000000000000000000000000000000000000000000000333333333333
-            3333334444444444444430000000000000043056565656005604406565656502
-            0504105656565606200411656541650000044146541456565604311461156565
-            6504341111565656560434111565656565044111140000000003114311433333
-            3333333331143333333333333311433333333333333333333333}
+            7E000000424D7E000000000000003E0000002800000010000000100000000100
+            010000000000400000000000000000000000020000000000000000000000FF00
+            FF00FFFF0000FFFF0000EFFD0000C7FF0000C3FB0000E3F70000F1E70000F8CF
+            0000FC1F0000FE3F0000FC1F0000F8CF0000E1E70000C3F30000C7FD0000FFFF
+            0000}
         end
         object btn_Import: TBitBtn
           Left = 400
@@ -302,6 +300,27 @@ object frm_Settings: Tfrm_Settings
           BorderStyle = bsNone
           ItemHeight = 13
           TabOrder = 5
+        end
+        object btn_Ignore: TBitBtn
+          Left = 400
+          Top = 302
+          Width = 27
+          Height = 25
+          Hint = 'Ignore package'
+          Anchors = [akRight, akBottom]
+          ParentShowHint = False
+          ShowHint = False
+          TabOrder = 6
+          OnClick = btn_IgnoreClick
+          Glyph.Data = {
+            F6000000424DF600000000000000760000002800000010000000100000000100
+            0400000000008000000000000000000000001000000000000000000000000000
+            8000C0C0C000FF00FF0080808000FFFFFF0000FFFF0000000000000000000000
+            0000000000000000000000000000000000000000000000000000333333333333
+            3333334444444444444430000000000000043056565656005604406565656502
+            0504105656565606200411656541650000044146541456565604311461156565
+            6504341111565656560434111565656565044111140000000003114311433333
+            3333333331143333333333333311433333333333333333333333}
         end
       end
     end

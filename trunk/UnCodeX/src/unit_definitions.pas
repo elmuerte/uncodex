@@ -273,8 +273,8 @@ end;
 
 procedure TPropertyHintWindow.WMEraseBkgnd(var msg: TMessage);
 begin
-  if (prevCaption = Caption) then msg.Result := 1
-  else inherited;
+  {if (prevCaption = Caption) then msg.Result := 1
+  else} inherited;
 end;
 
 procedure TPropertyHintWindow.CMTextChanged(var Message: TMessage);
