@@ -24,11 +24,11 @@ These replacements can be used in any template.
 </tr>
 <tr>
 	<td><pre>%default_title%</pre></td>
-	<td>DefaultTitle as set in the template.ini, defaults to "UnCodeX". This can be overwritten from the system config file.</td>
+	<td>DefaultTitle as set in the <a href="templates_template.ini.html">template.ini</a>, defaults to "UnCodeX". This can be overwritten from the system config file.</td>
 </tr>
 <tr>
 	<td><pre>%create_time%</pre></td>
-	<td>Date\time of the document creation, the format can be set in the template.ini and defaults to the operating system's locate setting</td>
+	<td>Date\time of the document creation, the format can be set in the <a href="templates_template.ini.html">template.ini</a> and defaults to the operating system's locate setting</td>
 </tr>
 <tr>
 	<td><pre>%glossary_link%</pre></td>
@@ -36,7 +36,7 @@ These replacements can be used in any template.
 </tr>
 <tr>
 	<td><pre>%glossary_title%</pre></td>
-	<td>Glossary title as set in the template.ini</td>
+	<td>Glossary title as set in the <a href="templates_template.ini.html">template.ini</a></td>
 </tr>
 <tr>
 	<td><pre>%classtree_link%</pre></td>
@@ -44,7 +44,7 @@ These replacements can be used in any template.
 </tr>
 <tr>
 	<td><pre>%classtree_title%</pre></td>
-	<td>Class tree title as defined in the template.ini</td>
+	<td>Class tree title as defined in the <a href="templates_template.ini.html">template.ini</a></td>
 </tr>
 <tr>
 	<td><pre>%index_link%</pre></td>
@@ -52,7 +52,7 @@ These replacements can be used in any template.
 </tr>
 <tr>
 	<td><pre>%index_title%</pre></td>
-	<td>The title to be used as defined in the template.ini</td>
+	<td>The title to be used as defined in the <a href="templates_template.ini.html">template.ini</a></td>
 </tr>
 <tr>
 	<td><pre>%VERSION%</pre></td>
@@ -84,7 +84,7 @@ These replacements can be used in any template.
 </tr>
 <tr>
 	<td><pre>%targetext%</pre></td>
-	<td>The target extention, can be set in the template.ini file. It defaults to "html"</td>
+	<td>The target extention, can be set in the <a href="templates_template.ini.html">template.ini</a> file. It defaults to "html"</td>
 </tr>
 </table>
 
@@ -138,94 +138,34 @@ These replacements can be used in any template.
 	<td><a href="templates_class.html">class.html</a></td>
 	<td>Per class detail page, this will be used for every class to create the file {packagename}/{classname}.html</td>
 </tr>
-
-
-
-
-
-
-<tr><td colspan="2">-----------------------------------------------------------</td></tr>
 <tr>
-	<td><a href="templates_packages_list.html">packages_list.html</a></td>
-	<td>The list of all packages found, to be used as a frame on the index.html page</td>
+	<td><a href="template_class_entry_const.html">class_entry_const*.html</a></td>
+	<td>class constant details</td>
 </tr>
 <tr>
-	<td><a href="templates_packages_list_entry.html">packages_list_entry.html</a></td>
-	<td>A package entry on the packages list page</td>
+	<td><a href="template_class_entry_enum.html">class_entry_enum*.html</a></td>
+	<td>class enumeration details</td>
 </tr>
 <tr>
-	<td><a href="templates_classes_list.html">classes_list.html</a></td>
-	<td>The list of all classes, to be used on the index.html page</td>
+	<td><a href="template_class_entry_function.html">class_entry_function*.html</a></td>
+	<td>class function details</td>
 </tr>
 <tr>
-	<td><a href="templates_classes_list_entry.html">classes_list_entry.html</a></td>
-	<td>A class entry on the classes list</td>
+	<td><a href="template_class_entry_state.html">class_entry_state*.html</a></td>
+	<td>class state details</td>
 </tr>
 <tr>
-	<td><a href="templates_packageclasses_list.html">packageclasses_list.html</a></td>
-	<td>The list of all classes in this package</td>
+	<td><a href="template_class_entry_struct.html">class_entry_struct*.html</a></td>
+	<td>class struct details</td>
 </tr>
 <tr>
-	<td><a href="templates_packageclasses_list_entry.html">packageclasses_list_entry.html</a></td>
-	<td>A class entry on the package classes list</td>
+	<td><a href="template_class_entry_variable.html">class_entry_variable*.html</a></td>
+	<td>class variable details</td>
 </tr>
 <tr>
-	<td><a href="templates_overview.html">overview.html</a></td>
-	<td>The main overview page, to be used as a frame on the index.html page</td>
+	<td><a href="template_class_entry_inherited.html">class_entry_inherited.html</a></td>
+	<td>Details for various inherited properties</td>
 </tr>
-<tr>
-	<td><a href="templates_classtree.html">classtree.html</a></td>
-	<td>The template for the class tree</td>
-</tr>
-<tr>
-	<td><a href="templates_glossary.html">glossary.html</a></td>
-	<td>The template for the class tree</td>
-</tr>
-<tr>
-	<td><a href="templates_packages_table_entry.html">packages_table_entry.html</a></td>
-	<td>A entry of a package on the main overview page</td>
-</tr>
-<tr>
-	<td><a href="templates_package_overview.html">package_overview.html</a></td>
-	<td>Per package overview page, this will be used to create the package_{packagename}.html files</td>
-</tr>
-<tr>
-	<td><a href="templates_package_class_table_entry.html">package_class_table_entry.html</a></td>
-	<td>An entry of a class on the package over view</td>
-</tr>
-<tr>
-	<td><a href="templates_class.html">class.html</a></td>
-	<td>Per class detail page, this will be used for every class to create the file {packagename}_{classname}.html</td>
-</tr>
-<tr>
-	<td><a href="templates_class_const_entry.html">class_const_entry.html</a></td>
-	<td>An entry for a class constant</td>
-</tr>
-<tr>
-	<td><a href="templates_class_enum_entry.html">class_enum_entry.html</a></td>
-	<td>An entry for a class enumeration</td>
-</tr>
-<tr>
-	<td><a href="templates_class_function_entry.html">class_function_entry.html</a></td>
-	<td>An entry for a class function/event/operator</td>
-</tr>
-<tr>
-	<td><a href="templates_class_struct_entry.html">class_struct_entry.html</a></td>
-	<td>An entry for a class structure</td>
-</tr>
-<tr>
-	<td><a href="templates_class_var_entry.html">class_var_entry.html</a></td>
-	<td>An entry for a class variable</td>
-</tr>
-<tr>
-	<td><a href="templates_class_inherited.html">class_inherited.html</a></td>
-	<td>Used to display inherited variables/functions/etc.</td>
-</tr>
-<tr>
-	<td><a href="templates_sourcecode.html">sourcecode-#.html</a></td>
-	<td>The top and bottom of the syntax highlighted source code</td>
-</tr>
-
 </table>
 
 </div>

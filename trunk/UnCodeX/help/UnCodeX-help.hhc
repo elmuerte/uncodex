@@ -159,28 +159,32 @@
 			</OBJECT>
 		<UL>
 			<LI> <OBJECT type="text/sitemap">
-				<param name="Name" value="class_const_entry.html">
-				<param name="Local" value="templates_class_const_entry.html">
+				<param name="Name" value="class_entry_function*.html">
+				<param name="Local" value="template_class_entry_function.html">
 				</OBJECT>
 			<LI> <OBJECT type="text/sitemap">
-				<param name="Name" value="class_enum_entry.html">
-				<param name="Local" value="templates_class_enum_entry.html">
+				<param name="Name" value="class_entry_inherited.html">
+				<param name="Local" value="template_class_entry_inherited.html">
 				</OBJECT>
 			<LI> <OBJECT type="text/sitemap">
-				<param name="Name" value="class_function_entry.html">
-				<param name="Local" value="templates_class_function_entry.html">
+				<param name="Name" value="class_entry_struct*.html">
+				<param name="Local" value="template_class_entry_struct.html">
 				</OBJECT>
 			<LI> <OBJECT type="text/sitemap">
-				<param name="Name" value="class_struct_entry.html">
-				<param name="Local" value="templates_class_struct_entry.html">
+				<param name="Name" value="class_entry_variable*.html">
+				<param name="Local" value="template_class_entry_variable.html">
 				</OBJECT>
 			<LI> <OBJECT type="text/sitemap">
-				<param name="Name" value="class_var_entry.html">
-				<param name="Local" value="templates_class_var_entry.html">
+				<param name="Name" value="class_entry_const*.html">
+				<param name="Local" value="template_class_entry_const.html">
 				</OBJECT>
 			<LI> <OBJECT type="text/sitemap">
-				<param name="Name" value="class_inherited.html">
-				<param name="Local" value="templates_class_inherited.html">
+				<param name="Name" value="class_entry_enum*.html">
+				<param name="Local" value="template_class_entry_enum.html">
+				</OBJECT>
+			<LI> <OBJECT type="text/sitemap">
+				<param name="Name" value="class_entry_state*.html">
+				<param name="Local" value="template_class_entry_state.html">
 				</OBJECT>
 		</UL>
 		<LI> <OBJECT type="text/sitemap">
