@@ -96,6 +96,7 @@ begin
     Log('Cant''t open file: '+uclass.package.path+PATHDELIM+CLASSDIR+PATHDELIM+uclass.filename);
     exit;
   end;
+  uclass.filetime := FileAge(uclass.package.path+PATHDELIM+CLASSDIR+PATHDELIM+uclass.filename);
   fs := TFileStream.Create(uclass.package.path+PATHDELIM+CLASSDIR+PATHDELIM+uclass.filename, fmOpenRead or fmShareDenyWrite);
   p := TUCParser.Create(fs);
 
@@ -197,6 +198,7 @@ function TClassAnalyser.pConst: TUConst;
 begin
   result := TUConst.Create;
   result.name := p.TokenString;
+  result.srcline := p.SourceLine;
   p.NextToken; // =
   p.NextToken;
   result.value := p.TokenString;
@@ -214,6 +216,7 @@ var
 begin
   pBrackets;
   result := TUProperty.Create;
+  result.srcline := p.SourceLine;
   while (p.Token <> ';') do begin
     if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
     result.modifiers := result.modifiers+prev;
@@ -247,6 +250,7 @@ begin
   i := Pos(',', result.name);
   while (i > 0) do begin
     nprop := TUProperty.Create;
+    nprop.srcline := result.srcline;
     nprop.ptype := result.ptype;
     nprop.modifiers := result.modifiers;
     nprop.name := Copy(result.name, 1, i-1);
@@ -263,6 +267,7 @@ function TClassAnalyser.pEnum: TUEnum;
 begin
   result := TUEnum.Create;
   result.name := p.TokenString;
+  result.srcline := p.SourceLine;
   p.NextToken; // {
   p.NextToken; // first element
   while (p.Token <> '}') do begin
@@ -282,6 +287,7 @@ begin
   Result := TUStruct.Create;
   bcount := 0;
   result.name := p.TokenString;
+  result.srcline := p.SourceLine;
   while (p.Token <> '{') do begin
     if (result.modifiers <> '') then result.modifiers := result.modifiers+' ';
     result.modifiers := result.modifiers+prev;
@@ -320,6 +326,7 @@ const
 begin
   bcount := 0;
   result := TUFunction.Create;
+  result.srcline := p.SourceLine;
   while not (p.TokenSymbolIs('function') or p.TokenSymbolIs('event') or
     p.TokenSymbolIs('operator') or p.TokenSymbolIs('preoperator') or
     p.TokenSymbolIs('postoperator') or p.TokenSymbolIs('delegate') or
@@ -412,6 +419,7 @@ end;
 function TClassAnalyser.pState(modifiers: string): TUState;
 begin
   result := TUState.Create;
+  result.srcline := p.SourceLine;
   result.modifiers := modifiers;
   p.NextToken; // name
   pBrackets;

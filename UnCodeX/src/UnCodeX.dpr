@@ -120,13 +120,16 @@ begin
     else if (LowerCase(ParamStr(j)) = '-reuse') then begin
       reuse := true;
     end
-    else if (LowerCase(ParamStr(j)) = '-find') then begin
+    else if (LowerCase(ParamStr(j)) = '-find') or (LowerCase(ParamStr(j)) = '-open') then begin
+      OpenFind := LowerCase(ParamStr(j)) = '-open';
       Inc(j);
       tmp := ParamStr(j);
       i := Pos('.', tmp);
       if (i > 0) then Delete(tmp, i, MaxInt);
       searchclass := tmp;
       RedirectData.Find := tmp;
+      if (OpenFind) then CSprops[2] := true;
+      RedirectData.OpenFind := OpenFind;
     end;
     Inc(j);
   end;
