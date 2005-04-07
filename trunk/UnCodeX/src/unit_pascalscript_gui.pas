@@ -6,7 +6,7 @@
   Purpose:
     Additional GUI only PascalScript routines
 
-  $Id: unit_pascalscript_gui.pas,v 1.14 2005-04-04 21:31:56 elmuerte Exp $
+  $Id: unit_pascalscript_gui.pas,v 1.15 2005-04-07 08:29:11 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -251,14 +251,14 @@ end;
 function ExecuteCommandStack: boolean;
 begin
   result := false;
-  if (unit_main.IsBatching) then exit;
+  if (frm_UnCodeX.GUIVars.IsBatching) then exit;
   result := true;
   frm_UnCodeX.NextBatchCommand;
 end;
 
 function IsBatching: boolean;
 begin
-  result := unit_main.IsBatching;
+  result := frm_UnCodeX.GUIVars.IsBatching;
 end;
 
 procedure OpenSourceLine(uclass: TUClass; line, caret: integer);
@@ -352,11 +352,11 @@ end;
 
 procedure LinkPSGui(ps: TPSScript);
 begin
-  ps.SetPointerToData('SelectedUClass', @unit_main.SelectedUClass, ps.FindNamedType('TUClass'));
-  ps.SetPointerToData('SelectedUPackage', @unit_main.SelectedUPackage, ps.FindNamedType('TUPackage'));
+  ps.SetPointerToData('SelectedUClass', @frm_UnCodeX.GUIVars.SelectedUClass, ps.FindNamedType('TUClass'));
+  ps.SetPointerToData('SelectedUPackage', @frm_UnCodeX.GUIVars.SelectedUPackage, ps.FindNamedType('TUPackage'));
   ps.SetPointerToData('ClassList', @config.ClassList, ps.FindNamedType('TUClassList'));
   ps.SetPointerToData('PackageList', @config.PackageList, ps.FindNamedType('TUPackageList'));
-  ps.SetPointerToData('CommandStack', @unit_main.CmdStack, ps.FindNamedType('TStringList'));
+  ps.SetPointerToData('CommandStack', @frm_UnCodeX.GUIVars.CmdStack, ps.FindNamedType('TStringList'));
 end;
 
 end.

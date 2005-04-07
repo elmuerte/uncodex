@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.53 2005-04-04 21:31:58 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.54 2005-04-07 08:29:11 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -74,7 +74,8 @@ type
     name:         string;
     comment:      string;
     CommentType:  TUCommentType;
-    function declaration: string; virtual;
+    function declaration: string; virtual; abstract;
+    function HTMLdeclaration: string; virtual;
   end;
 
   // used for declarations in classes(e.g. functions, variables)
@@ -293,9 +294,9 @@ implementation
 
 { }
 
-function TUObject.declaration: string;
+function TUObject.HTMLdeclaration: string;
 begin
-  result := '';
+  result := StringReplace(StringReplace(declaration, '>', '&gt;', [rfReplaceAll]), '<', '&lt;', [rfReplaceAll]);
 end;
 
 function TUObjectList.Find(name: string): TUObject;
@@ -346,7 +347,7 @@ end;
 { TUEnum }
 function TUEnum.declaration: string;
 begin
-  result := 'enum '+name+' { '+options+' };';
+  result := 'enum '+name+' { '+StringReplace(options, ',', ', ', [rfReplaceAll])+' };';
 end;
 
 { TUEnumList }

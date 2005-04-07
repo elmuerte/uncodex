@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class operations (implements subclassing, moving, ...)
 
-  $Id: unit_ucops.pas,v 1.18 2005-04-05 07:58:08 elmuerte Exp $
+  $Id: unit_ucops.pas,v 1.19 2005-04-07 08:29:11 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -217,12 +217,12 @@ begin
       TTreeNode(upkg.treenode).AlphaSort();
       TreeUpdated := true;
       if MessageDlg('Do you want to search all classes for references to the old '+#13+#10+'location of this class?'+#13+#10+'e.g.: '+opkg.name+'.'+uclass.name, mtConfirmation, [mbYes,mbNo], 0) = mrYes then begin
-        frm_UnCodeX.SearchConfig.query := opkg.name+'.'+uclass.name;
-        frm_UnCodeX.SearchConfig.Wrapped := true;
-        frm_UnCodeX.SearchConfig.isFTS := true;
-        frm_UnCodeX.SearchConfig.isRegex := false;
-        frm_UnCodeX.SearchConfig.Scope := 0;
-        frm_UnCodeX.SearchConfig.searchtree := frm_UnCodeX.tv_Classes;
+        frm_UnCodeX.GUIVars.SearchConfig.query := opkg.name+'.'+uclass.name;
+        frm_UnCodeX.GUIVars.SearchConfig.Wrapped := true;
+        frm_UnCodeX.GUIVars.SearchConfig.isFTS := true;
+        frm_UnCodeX.GUIVars.SearchConfig.isRegex := false;
+        frm_UnCodeX.GUIVars.SearchConfig.Scope := 0;
+        frm_UnCodeX.GUIVars.SearchConfig.searchtree := frm_UnCodeX.tv_Classes;
         frm_UnCodeX.ac_FindNext.Execute;
       end;
     end;
@@ -272,12 +272,12 @@ begin
         end;
 
         if MessageDlg('Do you want to search all classes for references to the old name of this class?'+#13+#10+'e.g.: '+ed_Class.Text, mtConfirmation, [mbYes,mbNo], 0) = mrYes then begin
-          frm_UnCodeX.SearchConfig.query := ed_Class.Text;
-          frm_UnCodeX.SearchConfig.Wrapped := true;
-          frm_UnCodeX.SearchConfig.isFTS := true;
-          frm_UnCodeX.SearchConfig.isRegex := false;
-          frm_UnCodeX.SearchConfig.Scope := 0;
-          frm_UnCodeX.SearchConfig.searchtree := frm_UnCodeX.tv_Classes;
+          frm_UnCodeX.GUIVars.SearchConfig.query := ed_Class.Text;
+          frm_UnCodeX.GUIVars.SearchConfig.Wrapped := true;
+          frm_UnCodeX.GUIVars.SearchConfig.isFTS := true;
+          frm_UnCodeX.GUIVars.SearchConfig.isRegex := false;
+          frm_UnCodeX.GUIVars.SearchConfig.Scope := 0;
+          frm_UnCodeX.GUIVars.SearchConfig.searchtree := frm_UnCodeX.tv_Classes;
           frm_UnCodeX.ac_FindNext.Execute;
         end;
       finally

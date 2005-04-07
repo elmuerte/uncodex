@@ -6,7 +6,7 @@
   Purpose:
     Class properties window
 
-  $Id: unit_tags.pas,v 1.24 2005-04-04 21:31:58 elmuerte Exp $
+  $Id: unit_tags.pas,v 1.25 2005-04-07 08:29:11 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -134,7 +134,7 @@ begin
   if (Message.Active = WA_INACTIVE) then begin
     if (not isWindow) then begin
       if (Message.ActiveWindow = frm_UnCodeX.Handle) then begin
-        if (not InitActivateFix) then Close;
+        if (not frm_UnCodeX.GUIVars.InitActivateFix) then Close;
       end
       else close;
     end;

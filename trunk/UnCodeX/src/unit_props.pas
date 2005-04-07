@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Class property inpector frame
 
-  $Id: unit_props.pas,v 1.32 2005-04-06 10:10:53 elmuerte Exp $
+  $Id: unit_props.pas,v 1.33 2005-04-07 08:29:11 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -88,6 +88,7 @@ type
     liDelegate: TListItem;
     liFunction: TListItem;
     liState: TListItem;
+    halfColor: string;
   public
     uclass: TUClass;
     function LoadClass: boolean;
@@ -118,12 +119,6 @@ begin
   end;
 end;
 
-function MakeHint(hnt: string): string;
-begin
-  result := StringReplace(hnt, '<', '&lt;', [rfReplaceAll]);
-  result := StringReplace(result, '>', '&gt;', [rfReplaceAll]);
-end;
-
 constructor TTagEntry.Create(uc: TUClass; up: TUDeclaration);
 begin
   uclass := uc;
@@ -131,13 +126,23 @@ begin
 end;
 
 function Tfr_Properties.LoadClass: boolean;
+
+  procedure CreateHalfColor();
+  var
+    r,g,b: cardinal;
+  begin
+    r := ((GetSysColor(COLOR_WINDOW) and $ff0000) + (GetSysColor(COLOR_BTNFACE) and $ff0000)) div 2 div $ffff;
+    g := ((GetSysColor(COLOR_WINDOW) and $ff00) +   (GetSysColor(COLOR_BTNFACE) and $ff00)) div 2 div $ff;
+    b := ((GetSysColor(COLOR_WINDOW) and $ff) +     (GetSysColor(COLOR_BTNFACE) and $ff)) div 2;
+    halfColor := '#'+IntToHex(r, 2)+IntToHex(g, 2)+IntToHex(b, 2);
+  end;
+
 var
   i, j: integer;
   pclass: TUClass;
   li, lib, lic: TListItem;
   cnt: integer;
-  return: string;
-  lasttag: string;
+  lasttag, tmp: string;
 begin
   result := false;
   lv_Properties.Items.BeginUpdate;
@@ -177,14 +182,12 @@ begin
     for i := 0 to pclass.consts.Count-1 do begin
       Inc(cnt);
       li := lv_Properties.Items.Add;
-      {li.Caption := 'const';
-      li.SubItems.AddObject(pclass.consts[i].name, pclass.consts[i]);}
       li.Caption := pclass.consts[i].name;
       li.SubItems.AddObject('const', pclass.consts[i]);
 
       li.SubItems.Add(IntToStr(pclass.consts[i].srcline));
       li.SubItems.Add(IntToStr(j));
-      li.SubItems.Add(MakeHint(pclass.consts[i].name+' = '+pclass.consts[i].value));
+      li.SubItems.Add(''); // copy to clipboard
       li.SubItems.Add(pclass.consts[i].comment);
       li.SubItems.Add('');
       li.Data := pclass;
@@ -225,17 +228,15 @@ begin
       end;
       Inc(cnt);
       li := lv_Properties.Items.Add;
-      {li.Caption := 'var';
-      li.SubItems.AddObject(pclass.properties[i].name, pclass.properties[i]);}
       li.Caption := pclass.properties[i].name;
       li.SubItems.AddObject('var', pclass.properties[i]);
 
       li.SubItems.Add(IntToStr(pclass.properties[i].srcline));
       li.SubItems.Add(IntToStr(j));
-      li.SubItems.Add(MakeHint(pclass.properties[i].ptype+' '+pclass.properties[i].name));
+      li.SubItems.Add(''); // copy to clipboard
       li.SubItems.Add(pclass.properties[i].comment);
-      //TODO: use name without braces
-      li.SubItems.Add(pclass.GetReplication(pclass.properties[i].name));
+      tmp := pclass.properties[i].name;
+      li.SubItems.Add(pclass.GetReplication(GetToken(tmp, '[', true)));
       li.Data := pclass;
       li.ImageIndex := 1;
     end;
@@ -263,14 +264,12 @@ begin
     for i := 0 to pclass.enums.Count-1 do begin
       Inc(cnt);
       li := lv_Properties.Items.Add;
-      {li.Caption := 'enum';
-      li.SubItems.AddObject(pclass.enums[i].name, pclass.enums[i]);}
       li.Caption := pclass.enums[i].name;
       li.SubItems.AddObject('enum', pclass.enums[i]);
 
       li.SubItems.Add(IntToStr(pclass.enums[i].srcline));
       li.SubItems.Add(IntToStr(j));
-      li.SubItems.Add(MakeHint(pclass.enums[i].name+' = '+StringReplace(pclass.enums[i].options, ',', ', ', [rfReplaceAll])));
+      li.SubItems.Add('');  // copy to clipboard
       li.SubItems.Add(pclass.enums[i].comment);
       li.SubItems.Add('');
       li.Data := pclass;
@@ -300,14 +299,12 @@ begin
     for i := 0 to pclass.structs.Count-1 do begin
       Inc(cnt);
       li := lv_Properties.Items.Add;
-      {li.Caption := 'struct';
-      li.SubItems.AddObject(pclass.structs[i].name, pclass.structs[i]);}
       li.Caption := pclass.structs[i].name;
       li.SubItems.AddObject('struct', pclass.structs[i]);
 
       li.SubItems.Add(IntToStr(pclass.structs[i].srcline));
       li.SubItems.Add(IntToStr(j));
-      li.SubItems.Add(MakeHint(pclass.structs[i].name));
+      li.SubItems.Add('');  // copy to clipboard
       li.SubItems.Add(pclass.structs[i].comment);
       li.SubItems.Add('');
       li.Data := pclass;
@@ -337,16 +334,12 @@ begin
     for i := 0 to pclass.delegates.Count-1 do begin
       Inc(cnt);
       li := lv_Properties.Items.Add;
-      {li.Caption := 'delegate';
-      li.SubItems.AddObject(pclass.delegates[i].name, pclass.delegates[i]);}
       li.Caption := pclass.delegates[i].name;
       li.SubItems.AddObject('delegate', pclass.delegates[i]);
 
       li.SubItems.Add(IntToStr(pclass.delegates[i].srcline));
       li.SubItems.Add(IntToStr(j));
-      if (pclass.delegates[i].return = '') then return := ''
-        else return := pclass.delegates[i].return+' = ';
-      li.SubItems.Add(MakeHint(return+pclass.delegates[i].name+'( '+pclass.delegates[i].params+' )'));
+      li.SubItems.Add(pclass.delegates[i].name+'()');  // copy to clipboard
       li.SubItems.Add(pclass.delegates[i].comment);
       li.SubItems.Add('');
       li.Data := pclass;
@@ -380,27 +373,13 @@ begin
       if (pclass.functions[i].state <> nil) then begin
         lasttag := lasttag+' (state:'+pclass.functions[i].state.name+')';
       end;
-      {li.Caption := 'function';
-      li.SubItems.AddObject(lasttag, pclass.functions[i]);}
       li.Caption := lasttag;
       li.SubItems.AddObject('function', pclass.functions[i]);
       li.SubItems.Add(IntToStr(pclass.functions[i].srcline));
       li.SubItems.Add(IntToStr(j));
-      if ((pclass.functions[i].ftype = uftFunction) or (pclass.functions[i].ftype = uftEvent) or (pclass.functions[i].ftype = uftDelegate)) then begin
-        if (pclass.functions[i].return = '') then return := ''
-          else return := pclass.functions[i].return+' = ';
-        li.SubItems.Add(MakeHint(return+pclass.functions[i].name+'( '+pclass.functions[i].params+' )'));
-        //li.SubItems.Add(pclass.functions[i].name+'('+pclass.functions[i].params+')');
-      end
-      else if (pclass.functions[i].ftype = uftPreOperator) then begin
-        li.SubItems.Add(MakeHint(pclass.functions[i].return+' = '+pclass.functions[i].name+' '+ShiftString(pclass.functions[i].params, 2)));
-      end
-      else if (pclass.functions[i].ftype = uftPostOperator) then begin
-        li.SubItems.Add(MakeHint(pclass.functions[i].return+' = '+ShiftString(pclass.functions[i].params, 2)+' '+pclass.functions[i].name));
-      end
-      else if (pclass.functions[i].ftype = uftOperator) then begin
-        li.SubItems.Add(MakeHint(pclass.functions[i].return+' = '+ShiftString(ShiftString(pclass.functions[i].params, 2, ','), 3)+' '+pclass.functions[i].name+' '+ShiftString(pclass.functions[i].params, 2)));
-      end;
+      if ((pclass.functions[i].ftype = uftFunction) or (pclass.functions[i].ftype = uftEvent))
+        then li.SubItems.Add(pclass.functions[i].name+'()')  // copy to clipboard
+      else li.SubItems.Add('');
       li.SubItems.Add(pclass.functions[i].comment);
       li.SubItems.Add(pclass.GetReplication(pclass.functions[i].name));
       li.Data := pclass;
@@ -433,14 +412,11 @@ begin
     for i := 0 to pclass.states.Count-1 do begin
       Inc(cnt);
       li := lv_Properties.Items.Add;
-      {li.Caption := 'state';
-      lasttag := pclass.states[i].name;
-      li.SubItems.AddObject(lasttag, pclass.states[i]);}
       li.Caption := pclass.states[i].name;
       li.SubItems.AddObject('state', pclass.states[i]);
       li.SubItems.Add(IntToStr(pclass.states[i].srcline));
       li.SubItems.Add(IntToStr(j));
-      li.SubItems.Add(MakeHint(pclass.states[i].declaration));
+      li.SubItems.Add(''); // copy to clipboard
       li.SubItems.Add(pclass.states[i].comment);
       li.SubItems.Add('');
       li.Data := pclass;
@@ -465,6 +441,8 @@ begin
   //if (visible) then lv_Properties.Columns[0].Width := abs(lv_Properties.ClientWidth);
   if (Visible) then lv_Properties.Refresh;
 
+  CreateHalfColor();
+
   result := true;
 end;
 
@@ -476,12 +454,12 @@ begin
     if (Item.Caption = '=') then InfoTip := Item.SubItems[1];
   end;
   if (Item.SubItems.Count < 6) then exit;
-  InfoTip := '<div style="padding-left: 20px; text-indent: -18px; margin-left: -2px"><code>'+Item.SubItems[3]+'</code></div>';
+  InfoTip := '<div style="padding-left: 20px; text-indent: -18px; margin-left: -2px"><code>'+TUDeclaration(Item.SubItems.Objects[0]).HTMLdeclaration+'</code></div>';
   if (Item.SubItems[4] <> '') then InfoTip :=
     InfoTip+'<div style="background-color: ButtonFace; padding: 2px; margin-top: 5px; margin-left: -2px">'+
-    StringReplace(Item.SubItems[4], #9, '', [rfReplaceAll])+'</div>';
+    StringReplace(Item.SubItems[4], #9, ' ', [rfReplaceAll])+'</div>';
   if (Item.SubItems[5] <> '') then InfoTip :=
-    InfoTip + '<div style="padding-left: 20px; text-indent: -18px; margin-left: -2px"><em>Replication:</em><br /><code>'+Item.SubItems[5]+'</code></div>';
+    InfoTip + '<div style="padding-left: 20px; text-indent: -18px; margin-left: -2px; background-color: '+halfColor+';"><em>Replication:</em><br /><code>'+Item.SubItems[5]+'</code></div>';
 end;
 
 procedure Tfr_Properties.lv_PropertiesClick(Sender: TObject);
@@ -554,7 +532,8 @@ begin
     end;
     comment := uobj.comment;
     if (MInputQuery('Comment for '+ref, 'Please enter a comment (HTML can be used)', comment)) then begin
-      //ini.WriteSectionRaw(ref, comment); //TODO: fix this
+      lst.Text := comment;
+      ini.WriteSectionRaw(ref, lst);
       ini.UpdateFile;
       if ((uobj.comment = '') or (uobj.CommentType = ctExtern)) then begin
         uobj.comment := comment;
@@ -573,8 +552,8 @@ procedure Tfr_Properties.mi_CopyToClipboardClick(Sender: TObject);
 begin
   if (lv_Properties.Selected = nil) then exit;
   if ((lv_Properties.Selected.Caption <> '-') and (lv_Properties.Selected.Caption <> '=')) then begin
-    if (lv_Properties.Selected.SubItems.Count > 4) then Clipboard.SetTextBuf(PChar(lv_Properties.Selected.SubItems[4]))
-    else Clipboard.SetTextBuf(PChar(lv_Properties.Selected.SubItems[0]));
+    if (lv_Properties.Selected.SubItems[3] <> '') then Clipboard.SetTextBuf(PChar(lv_Properties.Selected.SubItems[3]))
+    else Clipboard.SetTextBuf(PChar(lv_Properties.Selected.Caption));
   end;
 end;
 
