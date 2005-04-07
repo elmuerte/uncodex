@@ -6,7 +6,7 @@
   Purpose:
     FreePascalCompile compatibility unit
 
-  $Id: unit_fpc_compat.pas,v 1.8 2005-03-18 14:42:42 elmuerte Exp $
+  $Id: unit_fpc_compat.pas,v 1.9 2005-04-07 06:29:00 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -39,6 +39,11 @@ type
   TFilenameCaseMatch = (mkNone, mkExactMatch, mkSingleMatch, mkAmbiguous);
 
   function ExpandFileNameCase(const FileName: string; out MatchFound: TFilenameCaseMatch): string;
+
+  {$IFDEF FPC_NO_BINHEXCONV}
+  procedure BinToHex(BinValue, HexValue: PChar; BinBufSize: Integer);
+  function HexToBin(HexValue, BinValue: PChar; BinBufSize: Integer): Integer;
+  {$ENDIF}
 
   
 implementation
@@ -124,5 +129,60 @@ begin
     else MatchFound := mkNone;
   end;
 end;
+
+{$IFDEF FPC_NO_BINHEXCONV}
+// from FPC 1.9.8
+
+// def from delphi.about.com:
+procedure BinToHex(BinValue, HexValue: PChar; BinBufSize: Integer);
+
+Const HexDigits='0123456789ABCDEF';
+var i :integer;
+begin
+  for i:=0 to binbufsize-1 do
+    begin
+      HexValue[0]:=hexdigits[(ord(binvalue^) and 15)];
+      HexValue[1]:=hexdigits[(ord(binvalue^) shr 4)];
+      inc(hexvalue,2);
+      inc(binvalue);
+    end;
+end;
+
+
+function HexToBin(HexValue, BinValue: PChar; BinBufSize: Integer): Integer;
+// more complex, have to accept more than bintohex
+// A..F    1000001
+// a..f    1100001
+// 0..9     110000
+
+var i,j : integer;
+
+begin
+ i:=binbufsize;
+ while (i>0) do
+   begin
+     if hexvalue^ IN ['A'..'F','a'..'f'] then
+       j:=(ord(hexvalue^)+9) and 15
+     else
+       if hexvalue^ IN ['0'..'9'] then
+         j:=(ord(hexvalue^)) and 15
+     else
+       break;
+     inc(hexvalue);
+     if hexvalue^ IN ['A'..'F','a'..'f'] then
+       j:=((ord(hexvalue^)+9) and 15)+ (j shl 4)
+     else
+       if hexvalue^ IN ['0'..'9'] then
+         j:=((ord(hexvalue^)) and 15) + (j shl 4)
+     else
+        break;
+     inc(hexvalue);
+     binvalue^:=chr(j);
+     inc(binvalue);
+     dec(i);
+   end;
+  result:=binbufsize-i;
+end;
+{$ENDIF}
 
 end.

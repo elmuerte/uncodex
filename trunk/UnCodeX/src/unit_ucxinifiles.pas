@@ -11,7 +11,7 @@
     Changes to the original code include:
     - configurable delayed file update
 
-  $Id: unit_ucxinifiles.pas,v 1.4 2005-04-06 10:10:54 elmuerte Exp $
+  $Id: unit_ucxinifiles.pas,v 1.5 2005-04-07 06:29:00 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -156,6 +156,11 @@ type
   end;
 
 implementation
+
+{$IFDEF FPC_NO_BINHEXCONV}
+uses
+  unit_fpc_compat;
+{$ENDIF}
 
 const
    Brackets  : array[0..1] of Char = ('[', ']');

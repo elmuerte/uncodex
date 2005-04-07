@@ -6,7 +6,7 @@
     Purpose:
         Global macro file, to be included by means of ($I defines.inc)
 
-    $Id: defines.inc,v 1.9 2005-03-31 11:01:11 elmuerte Exp $
+    $Id: defines.inc,v 1.10 2005-04-07 06:29:00 elmuerte Exp $
 *******************************************************************************}
 
 {$IFDEF VER140} // delphi 6
@@ -66,3 +66,12 @@
 
 // enables compression for HTML output
 {$DEFINE WITH_ZLIB}
+
+
+{$IFDEF FPC}
+  // Defined(FPC) is required because Delphi 6 still tries to evaluate the if statement. 
+  {$IF Defined(FPC) and (FPC_VERSION <= 1.0) and (FPC_RELEASE <= 9.0) and (FPC_PATCH < 8.0) }
+    // BinToHex() functions have been added in 1.9.8
+    {$DEFINE FPC_NO_BINHEXCONV}
+  {$IFEND}
+{$ENDIF}
