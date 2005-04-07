@@ -2,7 +2,7 @@
   Name:
     unit_ucxinifiles
   Author(s):
-    Erik Wachtmeester (erikw@hotelconcepts.com)
+    Erik Wachtmeester (erikw@hotelconcepts.com) - FreePascal
     Michiel 'El Muerte' Hendriks
   Purpose:
     Modified IniFile classes which are better than the standard Delphi
@@ -10,8 +10,9 @@
     Most of changes for UCX have been put in the subclass TUCXIniFile.
     Changes to the original code include:
     - configurable delayed file update
+	- a few bug fixes that have been contributed back to the FPC community
 
-  $Id: unit_ucxinifiles.pas,v 1.5 2005-04-07 06:29:00 elmuerte Exp $
+  $Id: unit_ucxinifiles.pas,v 1.6 2005-04-07 08:29:11 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -29,6 +30,7 @@
   License along with this library; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
+
 unit unit_ucxinifiles;
 {$I defines.inc}
 

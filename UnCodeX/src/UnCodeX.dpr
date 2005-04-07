@@ -6,7 +6,7 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.64 2005-04-06 10:10:48 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.65 2005-04-07 08:29:10 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -133,7 +133,7 @@ var
 begin
   GetClassName(Handle, ClassName, 30);
   iAppID := SendMessage(Handle, UM_APP_ID_CHECK, 0, 0); // get app id
-  if (CompareText(ClassName, Tfrm_UnCodeX.ClassName) = 0) and (iAppID = AppInstanceId) then begin
+  if (CompareText(ClassName, Tfrm_UnCodeX.ClassName) = 0) and (iAppID = GlobalGUIVars.AppInstanceId) then begin
     PrevInst:= handle; // previous instance
   end;
 end;
@@ -170,11 +170,11 @@ begin
       MessageDlg(CMD_HELP, mtInformation, [mbOK], 0);
     end
     else if (LowerCase(ParamStr(j)) = '-batch') then begin
-      IsBatching := true;
+      GlobalGUIVars.IsBatching := true;
       for i := j+1 to ParamCount do begin
         Inc(j);
         if (ParamStr(i) = '--') then break;
-        CmdStack.Add(LowerCase(ParamStr(i)));
+        GlobalGUIVars.CmdStack.Add(LowerCase(ParamStr(i)));
         RedirectData.Batch := RedirectData.Batch+LowerCase(ParamStr(i))+' ';
       end;
     end
@@ -185,44 +185,39 @@ begin
       Inc(j);
       ConfigFile := ParamStr(j);
       if (ExtractFilePath(ConfigFile) = '') then ConfigFile := ExtractFilePath(ParamStr(0))+ConfigFile;
-      //TODO: fix this
-      //config.StateFile := ExtractFilePath(ConfigFile)+ChangeFileExt(ExtractFilename(ConfigFile), '.ucx');
     end
     else if (LowerCase(ParamStr(j)) = '-handle') then begin
       Inc(j);
-      StatusHandle := StrToIntDef(ParamStr(j), -1);
-      RedirectData.NewHandle := StatusHandle;
+      GlobalGUIVars.StatusHandle := StrToIntDef(ParamStr(j), -1);
+      RedirectData.NewHandle := GlobalGUIVars.StatusHandle;
     end
     else if (LowerCase(ParamStr(j)) = '-reuse') then begin
       reuse := true;
     end
     else if (LowerCase(ParamStr(j)) = '-fts') then begin
-      OpenFTS := true;
+      GlobalGUIVars.OpenFTS := true;
       RedirectData.OpenFTS := true;
     end
     else if (LowerCase(ParamStr(j)) = '-find') or (LowerCase(ParamStr(j)) = '-open')
       or (LowerCase(ParamStr(j)) = '-tags') then begin
-      OpenFind := LowerCase(ParamStr(j)) = '-open';
-      OpenTags := LowerCase(ParamStr(j)) = '-tags';
+      GlobalGUIVars.OpenFind := LowerCase(ParamStr(j)) = '-open';
+      GlobalGUIVars.OpenTags := LowerCase(ParamStr(j)) = '-tags';
       Inc(j);
       tmp := ParamStr(j);
       i := Pos('.', tmp);
       if (i > 0) then Delete(tmp, i, MaxInt);
-      //TODO: fix this
-      {
-      SearchConfig.query := tmp;
-      SearchConfig.isFTS := false;
-      SearchConfig.Wrapped := true;
-      if (OpenFind or OpenTags) then SearchConfig.isStrict := true;
-      }
+      GlobalGUIVars.SearchConfig.query := tmp;
+      GlobalGUIVars.SearchConfig.isFTS := false;
+      GlobalGUIVars.SearchConfig.Wrapped := true;
+      if (GlobalGUIVars.OpenFind or GlobalGUIVars.OpenTags) then GlobalGUIVars.SearchConfig.isStrict := true;
       RedirectData.Find := tmp;
-      RedirectData.OpenFind := OpenFind;
-      RedirectData.OpenTags := OpenTags;
+      RedirectData.OpenFind := GlobalGUIVars.OpenFind;
+      RedirectData.OpenTags := GlobalGUIVars.OpenTags;
     end;
     Inc(j);
   end;
   if (reuse) then begin
-    AppInstanceId := StringHash(ConfigFile);
+    GlobalGUIVars.AppInstanceId := StringHash(ConfigFile);
     FindOtherWindow;
   end;
 end;
@@ -237,12 +232,11 @@ begin
   end;
 
   if (not (FindCmdLineSwitch('nosplash') or FindCmdLineSwitch('hide'))) then frm_Splash := Tfrm_Splash.Create(nil);
-  CmdStack := TStringList.Create;
-  //config.StateFile := 'UnCodeX.ucx'; //TODO: fix this
+  if (GlobalGUIVars = nil) then GlobalGUIVars := TUCXGUIVars.Create;   
   if (ParamCount() > 0) then ProcessCommandline;
   if (not HasPrevInst) then begin
     Application.Initialize;
-    Application.Title := 'UnCodeX';
+    Application.Title := 'Loading UnCodeX ...';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
     Application.CreateForm(Tfrm_About, frm_About);
     Application.CreateForm(Tfrm_License, frm_License);
@@ -250,5 +244,5 @@ begin
     Application.Run;
   end
   else if (frm_Splash <> nil) then frm_Splash.Close;
-  CmdStack.Free;
+  if (GlobalGUIVars <> nil) then FreeAndNil(GlobalGUIVars);
 end.

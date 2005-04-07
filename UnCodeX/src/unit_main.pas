@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.160 2005-04-06 10:10:50 elmuerte Exp $
+  $Id: unit_main.pas,v 1.161 2005-04-07 08:29:10 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -52,6 +52,28 @@ const
   TV_NOEXPAND             = 1;
 
 type
+  // contains various things used by the main gui, to get rid of unit vars 
+  TUCXGUIVars = class(TObject)
+    InitActivateFix:  Boolean; // fix initial form activation
+    RestoreHandle:    HWND;
+    AppInstanceId:    integer;
+    SearchConfig:     TSearchConfig;
+    // UScript data
+    SelectedUClass:   TUClass;
+    SelectedUPackage: TUPackage;
+    OpenFind:         boolean; // only on startup
+    OpenTags:         boolean; // only on startup
+    OpenFTS:          boolean; // only on startup
+    // batch vars
+    IsBatching:        boolean; // is batch executing
+    CmdStack:          TStringList; // command stack
+    // -handle argument
+    StatusHandle:     integer;
+  public
+    constructor Create;
+    destructor Destroy; override;
+  end;
+
   Tfrm_UnCodeX = class(TForm)
     tv_Classes: TTreeView;
     tv_Packages: TTreeView;
@@ -452,10 +474,15 @@ type
     procedure LoadSettings;
     procedure AddBrowserHistory(uclass: TUClass; filename: string; line: integer; hint: string = '');
     procedure BrowseEntry(Sender: TObject);
+  protected
+    OutputModules: TStringList; // custom output modules
+    DoInit: boolean; // perform initialization on startup
+    InitialStartup: boolean; // is first run
+    runningthread: TThread;
   public
     statustext: string; // current status text
-    SearchConfig: TSearchConfig; //TODO: make interface to this
     BaseCaption: string;
+    GUIVars: TUCXGUIVars;
     procedure NextBatchCommand;
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
     procedure OpenSourceLine(filename: string; line, caret: integer; uclass: TUClass);
@@ -479,31 +506,12 @@ type
 
 var
   frm_UnCodeX:      Tfrm_UnCodeX;
-  InitActivateFix:  Boolean = true; // fix initial form activation
-  DoInit:           boolean = true; // perform initialization on startup
-  runningthread:    TThread = nil;
   ConfigFile:       string; // current config file
-  InitialStartup:   boolean; // is first run
-  hh_Help:          THookHelpSystem; // help system
-  OutputModules:    TStringList; // custom output modules
   config:           TUCXGUIConfig; // system configuration
-  // UScript data
-  SelectedUClass:   TUClass = nil;
-  SelectedUPackage: TUPackage = nil;
-  OpenFind:         boolean = false; // only on startup
-  OpenTags:         boolean = false; // only on startup
-  OpenFTS:          boolean = false; // only on startup
-  // batch vars
-  IsBatching:       boolean = false; // is batch executing
-  CmdStack:         TStringList; // command stack
-  // -handle argument
-  StatusHandle:     integer = -1;
-  // used for -reuse
-  PrevInst,
-  RestoreHandle:    HWND;
-  AppInstanceId:    integer = 0;
   LastBuildTime,
-  LastAnalyseTime:  TDateTime;
+  LastAnalyseTime:  TDateTime; // needs to be global because "config" is
+  GlobalGUIVars:    TUCXGUIVars;
+  hh_Help:          THookHelpSystem; // help system  
 
 implementation
 
@@ -531,14 +539,14 @@ var
   CopyData: TCopyDataStruct;
   Data: TCodeXStatus;
 begin
-  if (StatusHandle = -1) then exit;
+  if (frm_UnCodeX.GUIVars.StatusHandle = -1) then exit;
   Data.Msg := msg;
   Data.mType := mType;
   Data.Progress := Progress;
   CopyData.cbData := SizeOf(Data);
-  CopyData.dwData := StatusHandle;
+  CopyData.dwData := frm_UnCodeX.GUIVars.StatusHandle;
   CopyData.lpData := @Data;
-  SendMessage(StatusHandle, WM_COPYDATA, frm_UnCodeX.Handle, Integer(@CopyData));
+  SendMessage(frm_UnCodeX.GUIVars.StatusHandle, WM_COPYDATA, frm_UnCodeX.Handle, Integer(@CopyData));
 end;
 
 { Status redirecting -- END }
@@ -569,7 +577,7 @@ begin
     entry.mt := mt;
     Items.AddObject(msg, entry);
     frm_UnCodeX.lb_Log.ItemIndex := frm_UnCodeX.lb_Log.Items.Count-1;
-    if (StatusHandle <> -1) then SendStatusMsg(msg, cxstLog);
+    if (frm_UnCodeX.GUIVars.StatusHandle <> -1) then SendStatusMsg(msg, cxstLog);
   end;
 end;
 
@@ -594,27 +602,7 @@ begin
   frm_UnCodeX.statustext := msg;
   if (progress <> 255) then frm_UnCodeX.pb_Scan.Position := progress;
   // redirect status if set
-  if (StatusHandle <> -1) then SendStatusMsg(msg, cxstStatus, progress);
-end;
-
-//TODO: useless
-function FontStylesToInt(style: TFontStyles): cardinal;
-begin
-  result := 0;
-  if (fsBold in style) then result := result or 1;
-  if (fsItalic in style) then result := result or 2;
-  if (fsUnderline in style) then result := result or 4;
-  if (fsStrikeout in style) then result := result or 8;
-end;
-
-//TODO: useless
-function IntToFontStyles(style: cardinal): TFontStyles;
-begin
-  result := [];
-  if (1 and style <> 0) then result := result + [fsBold];
-  if (2 and style <> 0) then result := result + [fsItalic];
-  if (4 and style <> 0) then result := result + [fsUnderline];
-  if (8 and style <> 0) then result := result + [fsStrikeout];
+  if (frm_UnCodeX.GUIVars.StatusHandle <> -1) then SendStatusMsg(msg, cxstStatus, progress);
 end;
 
 
@@ -641,10 +629,10 @@ begin
     OutputModule := 0;
   end;}
   ac_Abort.Enabled := false;
-  if (IsBatching) then NextBatchCommand
+  if (GUIVars.IsBatching) then NextBatchCommand
   else begin
     if (TreeUpdated and fr_Props.Visible) then begin
-      fr_Props.uclass := SelectedUClass;
+      fr_Props.uclass := GUIVars.SelectedUClass;
       fr_Props.LoadClass;
     end;
   end;
@@ -654,12 +642,12 @@ procedure Tfrm_UnCodeX.SearchThreadTerminate(Sender: TObject);
 var
   i: integer;
 begin
-  if (SearchConfig.isFindFirst and (lb_Log.Items.Count > 0)) then begin
+  if (GUIVars.SearchConfig.isFindFirst and (lb_Log.Items.Count > 0)) then begin
     lb_Log.ItemIndex := 0;
-    SelectedUClass := TUClass(lb_Log.Items.Objects[0]);
-    for i := 0 to SearchConfig.searchtree.Items.Count do begin
-      if (SearchConfig.searchtree.Items[i].Data = SelectedUClass) then begin
-        SearchConfig.searchtree.Select(SearchConfig.searchtree.Items[i]);
+    GUIVars.SelectedUClass := TUClass(lb_Log.Items.Objects[0]);
+    for i := 0 to GUIVars.SearchConfig.searchtree.Items.Count do begin
+      if (GUIVars.SearchConfig.searchtree.Items[i].Data = GUIVars.SelectedUClass) then begin
+        GUIVars.SearchConfig.searchtree.Select(GUIVars.SearchConfig.searchtree.Items[i]);
         break;
       end;
     end;
@@ -992,7 +980,7 @@ begin
     for i := 0 to lst.Count-1 do begin
       if (AnsiContainsText(lst[i], '%searchquery%')) then begin
         if (InlineSearch <> '') then lst[i] := AnsiReplaceStr(lst[i], '%searchquery%', InlineSearch)
-          else lst[i] := AnsiReplaceStr(lst[i], '%searchquery%', SearchConfig.query);
+          else lst[i] := AnsiReplaceStr(lst[i], '%searchquery%', GUIVars.SearchConfig.query);
       end;
       if (uclass <> nil) then begin
         lst[i] := AnsiReplaceStr(lst[i], '%classname%', uclass.name);
@@ -1009,7 +997,7 @@ begin
         lst[i] := AnsiReplaceStr(lst[i], '%packagepath%', '');
       end;
       lst[i] := AnsiReplaceStr(lst[i], '%filename%', filename);
-      lst[i] := AnsiReplaceStr(lst[i], '%classsearch%', SearchConfig.query);
+      lst[i] := AnsiReplaceStr(lst[i], '%classsearch%', GUIVars.SearchConfig.query);
       lst[i] := AnsiReplaceStr(lst[i], '%inlinesearch%', InlineSearch);
       lst[i] := AnsiReplaceStr(lst[i], '%resultline%', IntToStr(line));
       lst[i] := AnsiReplaceStr(lst[i], '%resultpos%', IntToStr(caret));
@@ -1026,13 +1014,13 @@ var
   tmp2: array[0..255] of char;
   n: integer;
 begin
-  SelectedUClass := uclass;
+  GUIVars.SelectedUClass := uclass;
   if (fr_Props.Visible) then begin
     //TODO: make a sticky button?
     //fr_Props.uclass := SelectedUClass;
     //fr_Props.LoadClass;
   end;
-  SelectedUPackage := nil;
+  GUIVars.SelectedUPackage := nil;
   if (mi_SourceSnoop.Checked) then begin
     //SourceSnoopOpen(uclass, udecl, nil);
     if (not SourceSnoopOpenClass(filename, uclass)) then exit;
@@ -1065,20 +1053,20 @@ procedure Tfrm_UnCodeX.NextBatchCommand;
 var
   cmd: string;
 begin
-  if (not IsBatching) then begin
+  if (not GUIVars.IsBatching) then begin
     Screen.Cursor := crDefault;
     exit;
   end;
-  if (CmdStack.Count = 0) then begin
+  if (GUIVars.CmdStack.Count = 0) then begin
     Screen.Cursor := crDefault;
-    IsBatching := false;
+    GUIVars.IsBatching := false;
     Caption := BaseCaption;
     exit;
   end;
   Screen.Cursor := crAppStart;
-  cmd := CmdStack[0];
+  cmd := GUIVars.CmdStack[0];
   Caption := BaseCaption+' - Batch process: '+cmd;
-  CmdStack.Delete(0);
+  GUIVars.CmdStack.Delete(0);
   if (cmd = 'rebuild') then ac_RecreateTree.Execute
   else if (cmd = 'analyse') then ac_AnalyseAll.Execute
   else if (cmd = 'analysemodified') then ac_AnalyseModified.Execute
@@ -1088,11 +1076,11 @@ begin
   else if (cmd = 'close') then Close
   else if (cmd = 'orphanstop') then begin
     if ClassOrphanCount > 0 then begin
-      CmdStack.Clear;
+      GUIVars.CmdStack.Clear;
       Log('Stopped batching because of orhpan classes', ltWarn);
       Log(IntToStr(ClassOrphanCount)+' orphans found', ltWarn);
       MessageDlg(IntToStr(ClassOrphanCount)+' orphan classes found.'+#13+#10+'Check the log for more information.', mtWarning, [mbOK], 0);
-      IsBatching := false;
+      GUIVars.IsBatching := false;
       Caption := BaseCaption;
       exit;
     end
@@ -1116,7 +1104,7 @@ end;
 // Check application for the same ID (config hash)
 procedure Tfrm_UnCodeX.UMAppIDCheck(var Message: TMessage);
 begin
-  Message.Result := AppInstanceId;
+  Message.Result := GUIVars.AppInstanceId;
 end;
 
 // WM_COPYDATA
@@ -1128,15 +1116,15 @@ var
   i: integer;
 begin
   if (msg.CopyDataStruct.cbData = SizeOf(data)) then begin
-    RestoreHandle := Handle;
+    GUIVars.RestoreHandle := Handle;
     CopyMemory(@data, msg.CopyDataStruct.lpData, msg.CopyDataStruct.cbData);
-    if (data.NewHandle <> 0) then StatusHandle := data.NewHandle;
+    if (data.NewHandle <> 0) then GUIVars.StatusHandle := data.NewHandle;
     if (data.Find <> '') then begin
-      SearchConfig.query := data.Find;
-      SearchConfig.isFTS := false;
-      SearchConfig.Wrapped := true;
-      OpenFind := data.OpenFind;
-      OpenTags := data.OpenTags;
+      GUIVars.SearchConfig.query := data.Find;
+      GUIVars.SearchConfig.isFTS := false;
+      GUIVars.SearchConfig.Wrapped := true;
+      GUIVars.OpenFind := data.OpenFind;
+      GUIVars.OpenTags := data.OpenTags;
       ActiveControl := tv_Classes;
       tv_Classes.Selected := nil;
       ac_FindNext.Execute;
@@ -1145,9 +1133,9 @@ begin
       lst := TStringList.Create;
       try
         lst.DelimitedText := data.Batch;
-        CmdStack.Clear;
-        for i := 0 to lst.Count-1 do CmdStack.Add(lst[i]);
-        IsBatching := true;
+        GUIVars.CmdStack.Clear;
+        for i := 0 to lst.Count-1 do GUIVars.CmdStack.Add(lst[i]);
+        GUIVars.IsBatching := true;
         NextBatchCommand;
       finally
         lst.Free;
@@ -1161,7 +1149,7 @@ end;
 // Bring to front this window, used for -reuse
 procedure Tfrm_UnCodeX.UMRestoreApplication(var msg: TMessage);
 begin
-  msg.Result := RestoreHandle;
+  msg.Result := GUIVars.RestoreHandle;
 end;
 
 { Custom output modules }
@@ -1238,7 +1226,7 @@ end;
 
 procedure Tfrm_UnCodeX.miCustomOutputClick(sender: TObject);
 begin
-  CallCustomOutputModule(OutputModules.Names[(Sender as TMenuItem).Tag], SelectedUClass, (sender as TMenuItem).Parent = mi_SingleOutput);
+  CallCustomOutputModule(OutputModules.Names[(Sender as TMenuItem).Tag], GUIVars.SelectedUClass, (sender as TMenuItem).Parent = mi_SingleOutput);
 end;
 
 procedure Tfrm_UnCodeX.CallCustomOutputModule(module: string; selectedclass: TUClass = nil; issingle: boolean = false);
@@ -1263,7 +1251,7 @@ var
       info.WaitForTerminate := false;
       info.ASelectedClass := selectedclass;
       info.AThread := nil;
-      info.ABatching := IsBatching;
+      info.ABatching := GUIVars.IsBatching;
       info.ASingleClass := issingle;
       result := dfunc(info);
       twait := info.WaitForTerminate;
@@ -1289,9 +1277,9 @@ begin
           //runningthread.OnTerminate := ThreadTerminate;
           runningthread.Resume;
         end
-        else if (IsBatching) then NextBatchCommand;
+        else if (GUIVars.IsBatching) then NextBatchCommand;
       end
-      else if (IsBatching) then NextBatchCommand;
+      else if (GUIVars.IsBatching) then NextBatchCommand;
     finally
       if (not twait) then begin
         FreeLibrary(OutputModule);
@@ -1301,7 +1289,7 @@ begin
   end
   else begin
     Log('Failed loading custom output module: '+module, ltError);
-    if (IsBatching) then NextBatchCommand;
+    if (GUIVars.IsBatching) then NextBatchCommand;
   end;
 end;
 
@@ -1800,12 +1788,12 @@ begin
   ac_VSavesize.Checked := config.Layout.SaveSize;
   if (ac_VSaveposition.Checked) then begin
     Position := poDesigned;
-    Top := config.Layout.Top;
-    Left := config.Layout.Left;
+    if (config.Layout.Top > -1) then Top := config.Layout.Top;
+    if (config.Layout.Top > -1) then Left := config.Layout.Left;
   end;
   if (ac_VSavesize.Checked) then begin
-    Width := config.Layout.Width;
-    Height := config.Layout.Height;
+    if (config.Layout.Width > 0) then Width := config.Layout.Width;
+    if (config.Layout.Height > 0) then Height := config.Layout.Height;
   end;
   if (config.Layout.IsMaximized) then WindowState := wsMaximized;
   ac_VMenuBar.Checked := config.Layout.MenuBar;
@@ -1986,6 +1974,13 @@ end;
 // Create form and init
 procedure Tfrm_UnCodeX.FormCreate(Sender: TObject);
 begin
+  if (GlobalGUIVars = nil) then GUIVars := TUCXGUIVars.Create
+  else begin
+    GUIVars := GlobalGUIVars;
+    GlobalGUIVars := nil;
+  end;
+  DoInit := true;
+  runningthread := nil;
   OnChangeVisibility := OnDockVisChange;
   OnStartDockDrag := OnDockDragStart;
 
@@ -1993,10 +1988,13 @@ begin
   Mouse.DragThreshold := 5;
   hh_Help := THookHelpSystem.Create(ExtractFilePath(ParamStr(0))+'UnCodeX-help.chm', '', htHHAPI);
   BaseCaption := APPTITLE;
-  Config := TUCXGUIConfig.Create(ConfigFile);
-  if (ConfigFile = '') then ConfigFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ini'
+  if (ConfigFile = '') then begin
+    ConfigFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ini';
+    Config := TUCXGUIConfig.Create(ConfigFile);
+  end
   else begin
     BaseCaption := BaseCaption+' ['+ExtractFileName(ConfigFile)+']';
+    Config := TUCXGUIConfig.Create(ConfigFile);
     config.StateFile := ExtractFilePath(ConfigFile)+ChangeFileExt(ExtractFilename(ConfigFile), '.ucx');
   end;
   Caption := BaseCaption;
@@ -2049,8 +2047,8 @@ begin
     ClearLog;
     TreeUpdated := true;
 
-    SelectedUClass := nil;
-    SelectedUPackage := nil;
+    GUIVars.SelectedUClass := nil;
+    GUIVars.SelectedUPackage := nil;
     LastBuildTime := now;
     fr_Props.uclass := nil;
     if (fr_Props.Visible) then fr_Props.LoadClass;
@@ -2336,30 +2334,31 @@ begin
   end;
   InlineSearch := '';
   IsInlineSearch := false;
-  SearchConfig.isFTS := false;
-  SearchConfig.history := config.SearchConfig.history;
-  SearchConfig.ftshistory := config.SearchConfig.ftshistory;
+  GUIVars.SearchConfig.isFTS := false;
+  GUIVars.SearchConfig.history := config.SearchConfig.history;
+  GUIVars.SearchConfig.ftshistory := config.SearchConfig.ftshistory;
   // defaults
-  SearchConfig.isFromTop := config.SearchConfig.isFromTop;
-  SearchConfig.isStrict := config.SearchConfig.isStrict;
-  SearchConfig.isRegex := config.SearchConfig.isRegex;
-  SearchConfig.isFindFirst := config.SearchConfig.isFindFirst;
-  SearchConfig.Scope := config.SearchConfig.Scope; 
-  if (SearchForm(SearchConfig)) then begin
-    if (SearchConfig.isFromTop and not SearchConfig.isFTS) then (ActiveControl as TTreeView).Selected := nil;
+  GUIVars.SearchConfig.isFromTop := config.SearchConfig.isFromTop;
+  GUIVars.SearchConfig.isStrict := config.SearchConfig.isStrict;
+  GUIVars.SearchConfig.isRegex := config.SearchConfig.isRegex;
+  GUIVars.SearchConfig.isFindFirst := config.SearchConfig.isFindFirst;
+  GUIVars.SearchConfig.Scope := config.SearchConfig.Scope; 
+  if (SearchForm(GUIVars.SearchConfig)) then begin
+    if (GUIVars.SearchConfig.isFromTop and not GUIVars.SearchConfig.isFTS) then (ActiveControl as TTreeView).Selected := nil;
     ac_FindNext.Execute;
   end
-  else SearchConfig.Wrapped := false;
+  else GUIVars.SearchConfig.Wrapped := false;
 end;
 
 procedure Tfrm_UnCodeX.FormDestroy(Sender: TObject);
 begin
   ClearLog;
-  hh_Help.Free;
+  FreeAndnil(hh_Help);
   HHCloseAll;
   UnregisterAppBar;
-  OutputModules.Free;
-  config.Free;
+  FreeAndnil(OutputModules);
+  FreeAndnil(config);
+  if (GUIVars <> nil) then FreeAndnil(GUIVars);
 end;
 
 procedure Tfrm_UnCodeX.ac_OpenClassExecute(Sender: TObject);
@@ -2367,21 +2366,21 @@ var
   filename: string;
   i: integer;
 begin
-  if (SelectedUPackage <> nil) then begin
-    ExecuteProgram(SelectedUPackage.path);
+  if (GUIVars.SelectedUPackage <> nil) then begin
+    ExecuteProgram(GUIVars.SelectedUPackage.path);
     exit;
   end;
-  if (SelectedUClass <> nil) then begin
+  if (GUIVars.SelectedUClass <> nil) then begin
     for i := 0 to lb_Log.Items.Count-1 do begin
       if (lb_Log.Items.Objects[i] <> nil) then begin
-        if (TObject(lb_Log.Items.Objects[i]) = SelectedUClass) then begin
+        if (TObject(lb_Log.Items.Objects[i]) = GUIVars.SelectedUClass) then begin
           lb_Log.ItemIndex := i;
           lb_Log.OnDblClick(Sender);
           exit;
         end;
       end;
     end;
-    filename := SelectedUClass.package.path+PATHDELIM+SelectedUClass.filename;
+    filename := GUIVars.SelectedUClass.FullFileName;
     ExecuteProgram(filename);
   end;
 end;
@@ -2558,7 +2557,7 @@ begin
     InlineSearchNext(true);
     exit;
   end;
-  if (not SearchConfig.Wrapped) then begin
+  if (not GUIVars.SearchConfig.Wrapped) then begin
     ac_FindClass.Execute;
     exit;
   end;
@@ -2566,15 +2565,15 @@ begin
     ActiveControl := tv_Classes;
   end;
   with (ActiveControl as TTreeView) do begin
-    if (SearchConfig.isFTS) then begin
+    if (GUIVars.SearchConfig.isFTS) then begin
       if (ThreadCreate) then begin
         ClearLog;
         if (not lb_Log.Visible) then ac_VLog.Execute;
-        SearchConfig.searchtree := (ActiveControl as TTreeView);
-        runningthread := TSearchThread.Create(SearchConfig, StatusReport);
+        GUIVars.SearchConfig.searchtree := (ActiveControl as TTreeView);
+        runningthread := TSearchThread.Create(GUIVars.SearchConfig, StatusReport);
         runningthread.OnTerminate := SearchThreadTerminate;
         runningthread.Resume;
-        if (SearchConfig.isFindFirst and (SearchConfig.Scope = 0)) then SearchConfig.Scope := 1;
+        if (GUIVars.SearchConfig.isFindFirst and (GUIVars.SearchConfig.Scope = 0)) then GUIVars.SearchConfig.Scope := 1;
         exit;
       end;
     end
@@ -2582,24 +2581,24 @@ begin
       if (Selected <> nil) then j := Selected.AbsoluteIndex+1
         else j := 0;
       for i := j to Items.Count-1 do begin
-        if (SearchConfig.isStrict) then res := AnsiCompareText(items[i].Text, SearchConfig.query) = 0
-          else res := AnsiContainsText(items[i].Text, SearchConfig.query);
+        if (GUIVars.SearchConfig.isStrict) then res := AnsiCompareText(items[i].Text, GUIVars.SearchConfig.query) = 0
+          else res := AnsiContainsText(items[i].Text, GUIVars.SearchConfig.query);
         if (res) then begin
           Tag := TV_ALWAYSEXPAND;
           Select(items[i]);
-          if (OpenFind) then ac_OpenClass.Execute;
-          if (OpenTags) then ac_Tags.Execute;
-          OpenFind := false;
-          OpenTags := false;
+          if (GUIVars.OpenFind) then ac_OpenClass.Execute;
+          if (GUIVars.OpenTags) then ac_Tags.Execute;
+          GUIVars.OpenFind := false;
+          GUIVars.OpenTags := false;
           statustext := '';
           exit;
         end;
       end;
     end;
   end;
-  OpenFind := false;
-  statustext := 'No more classes matching '''+SearchConfig.query+''' found';
-  SearchConfig.Wrapped := false;
+  GUIVars.OpenFind := false;
+  statustext := 'No more classes matching '''+GUIVars.SearchConfig.query+''' found';
+  GUIVars.SearchConfig.Wrapped := false;
   Beep;
 end;
 
@@ -2610,20 +2609,20 @@ begin
   end;
   InlineSearch := '';
   IsInlineSearch := false;
-  SearchConfig.isFTS := true;
-  SearchConfig.history := config.SearchConfig.history;
-  SearchConfig.ftshistory := config.SearchConfig.ftshistory;
+  GUIVars.SearchConfig.isFTS := true;
+  GUIVars.SearchConfig.history := config.SearchConfig.history;
+  GUIVars.SearchConfig.ftshistory := config.SearchConfig.ftshistory;
   // defaults
-  SearchConfig.isFromTop := config.SearchConfig.isFromTop;
-  SearchConfig.isStrict := config.SearchConfig.isStrict;
-  SearchConfig.isRegex := config.SearchConfig.isRegex;
-  SearchConfig.isFindFirst := config.SearchConfig.isFindFirst;
-  SearchConfig.Scope := config.SearchConfig.Scope;
-  if (SearchForm(SearchConfig)) then begin
-    if (SearchConfig.isFromTop and not SearchConfig.isFTS) then (ActiveControl as TTreeView).Selected := nil;
+  GUIVars.SearchConfig.isFromTop := config.SearchConfig.isFromTop;
+  GUIVars.SearchConfig.isStrict := config.SearchConfig.isStrict;
+  GUIVars.SearchConfig.isRegex := config.SearchConfig.isRegex;
+  GUIVars.SearchConfig.isFindFirst := config.SearchConfig.isFindFirst;
+  GUIVars.SearchConfig.Scope := config.SearchConfig.Scope;
+  if (SearchForm(GUIVars.SearchConfig)) then begin
+    if (GUIVars.SearchConfig.isFromTop and not GUIVars.SearchConfig.isFTS) then (ActiveControl as TTreeView).Selected := nil;
     ac_FindNext.Execute;
   end
-  else SearchConfig.Wrapped := false;
+  else GUIVars.SearchConfig.Wrapped := false;
 end;
 
 procedure Tfrm_UnCodeX.lb_LogDblClick(Sender: TObject);
@@ -2662,19 +2661,19 @@ begin
         ActiveControl := tv_Classes;
       end;
       //if (tv_Classes.Items.Count > 0) then tv_Classes.Select(tv_Classes.Items[0]);
-      if (SearchConfig.query <> '') then begin
-        SearchConfig.isFTS := false;
+      if (GUIVars.SearchConfig.query <> '') then begin
+        GUIVars.SearchConfig.isFTS := false;
         ActiveControl := tv_Classes;
         ac_FindNext.Execute;
       end
-      else if (OpenFTS) then ac_FullTextSearch.Execute // TODO: fixed 'enter' bug
-      else if (IsBatching) then NextBatchCommand
+      else if (GUIVars.OpenFTS) then ac_FullTextSearch.Execute // TODO: fixed 'enter' bug
+      else if (GUIVars.IsBatching) then NextBatchCommand
       else if (config.Startup.AnalyseModified) then begin
         if (runningthread = nil) then begin
-          IsBatching := true;
-          CmdStack.Clear;
-          CmdStack.Add('findnew');
-          CmdStack.Add('analysemodified');
+          GUIVars.IsBatching := true;
+          GUIVars.CmdStack.Clear;
+          GUIVars.CmdStack.Add('findnew');
+          GUIVars.CmdStack.Add('analysemodified');
           NextBatchCommand;
         end;
       end;
@@ -2717,8 +2716,8 @@ begin
       if (Selected <> nil) then begin
         if (TObject(Selected.Data).ClassType <> TUClass) then exit;
         selclass := TUclass(Selected.Data);
-        with Tfrm_Tags.CreateWindow(nil, config.PropertyInspector.AlwaysWindow) do begin
-          RestoreHandle := Handle;
+        with Tfrm_Tags.CreateWindow(Application, config.PropertyInspector.AlwaysWindow) do begin
+          GUIVars.RestoreHandle := Handle;
           fr_Main.uclass := selclass;
           fr_Main.ud_InheritanceLevel.Position := config.PropertyInspector.InheritenceDepth;
           if LoadClass then begin
@@ -2742,10 +2741,10 @@ end;
 
 procedure Tfrm_UnCodeX.FormActivate(Sender: TObject);
 begin
-  if ((RestoreHandle <> Handle) and InitActivateFix) then begin
-    if (RestoreHandle <> 0) then SetActiveWindow(RestoreHandle);
+  if ((GUIVars.RestoreHandle <> Handle) and GUIVars.InitActivateFix) then begin
+    if (GUIVars.RestoreHandle <> 0) then SetActiveWindow(GUIVars.RestoreHandle);
   end;
-  InitActivateFix := false;
+  GUIVars.InitActivateFix := false;
 end;
 
 procedure Tfrm_UnCodeX.ac_CloseExecute(Sender: TObject);
@@ -2898,32 +2897,32 @@ end;
 
 procedure Tfrm_UnCodeX.ac_SourceSnoopExecute(Sender: TObject);
 begin
-  if (SelectedUClass <> nil) then
-    SourceSnoopOpenClass(ResolveFilename(SelectedUClass, nil), SelectedUClass)
-  else if (SelectedUPackage <> nil) then
-    SourceSnoopOpenPackage(SelectedUPackage);
+  if (GUIVars.SelectedUClass <> nil) then
+    SourceSnoopOpenClass(ResolveFilename(GUIVars.SelectedUClass, nil), GUIVars.SelectedUClass)
+  else if (GUIVars.SelectedUPackage <> nil) then
+    SourceSnoopOpenPackage(GUIVars.SelectedUPackage);
 end;
 
 procedure Tfrm_UnCodeX.tv_ClassesChange(Sender: TObject; Node: TTreeNode);
 begin
   if (Sender = nil) then exit;
   if (not (Sender as TWinControl).Visible) then exit;
-  SelectedUClass := nil;
-  SelectedUPackage := nil;
+  GUIVars.SelectedUClass := nil;
+  GUIVars.SelectedUPackage := nil;
   if (Sender.ClassType = TTreeView) then begin
     with (Sender as TTreeView) do begin
       if (Selected <> nil) then begin
         if (Selected.Data = nil) then exit;
-        if (TObject(Selected.Data).ClassType = TUClass) then SelectedUClass := TUClass(Selected.Data)
-        else if (TObject(Selected.Data).ClassType = TUPackage) then SelectedUPackage := TUPackage(Selected.Data);
+        if (TObject(Selected.Data).ClassType = TUClass) then GUIVars.SelectedUClass := TUClass(Selected.Data)
+        else if (TObject(Selected.Data).ClassType = TUPackage) then GUIVars.SelectedUPackage := TUPackage(Selected.Data);
       end;
     end;
   end;
   if (re_SourceSnoop.Visible) then begin
     ac_SourceSnoop.Execute;
   end;
-  if (fr_Props.Visible and (SelectedUClass <> nil)) then begin
-    fr_Props.uclass := SelectedUClass;
+  if (fr_Props.Visible and (GUIVars.SelectedUClass <> nil)) then begin
+    fr_Props.uclass := GUIVars.SelectedUClass;
     fr_Props.LoadClass;
   end;
 end;
@@ -2963,7 +2962,7 @@ begin
   pt := Point(X, Y);
   curpos := re_SourceSnoop.Perform(EM_CHARFROMPOS, 0, Integer(@pt));
 
-  tr.chrg.cpMin := re_SourceSnoop.Perform(EM_FINDWORDBREAK, WB_LEFT, curpos);
+  tr.chrg.cpMin := re_SourceSnoop.Perform(EM_FINDWORDBREAK, WB_LEFT, curpos+1);
   tr.chrg.cpMax := re_SourceSnoop.Perform(EM_FINDWORDBREAK, WB_RIGHT, curpos);
   tr.lpstrText := tmp;
 
@@ -2991,7 +2990,7 @@ begin
       exit;
     end
     else begin
-      if (SelectedUClass <> nil) then re_SourceSnoop.Hint := re_SourceSnoop.filename
+      if (GUIVars.SelectedUClass <> nil) then re_SourceSnoop.Hint := re_SourceSnoop.filename
       else re_SourceSnoop.Hint := '';
     end;
   end;
@@ -3161,13 +3160,13 @@ begin
       if ((CompareText(lst[i], '-find') = 0) or (CompareText(lst[i], '-open') = 0) or
         (CompareText(lst[i], '-tags') = 0)) then begin
         if (i < lst.Count-1) then begin
-          OpenFind := (CompareText(lst[i], '-open') = 0);
-          OpenTags := (CompareText(lst[i], '-tags') = 0);
-          SearchConfig.query := trim(lst[i+1]);
-          SearchConfig.isFTS := false;
-          SearchConfig.Wrapped := true;
-          if (not (OpenTags or OpenFind)) then BringToFront;
-          if (SearchConfig.query <> '') then begin
+          GUIVars.OpenFind := (CompareText(lst[i], '-open') = 0);
+          GUIVars.OpenTags := (CompareText(lst[i], '-tags') = 0);
+          GUIVars.SearchConfig.query := trim(lst[i+1]);
+          GUIVars.SearchConfig.isFTS := false;
+          GUIVars.SearchConfig.Wrapped := true;
+          if (not (GUIVars.OpenTags or GUIVars.OpenFind)) then BringToFront;
+          if (GUIVars.SearchConfig.query <> '') then begin
             ac_FindNext.Execute;
             break;
           end;
@@ -3175,15 +3174,15 @@ begin
       end
       else if (CompareText(lst[i], '-batch') = 0) then begin
         Inc(i);
-        CmdStack.Clear;
+        GUIVars.CmdStack.Clear;
         while i < lst.Count do begin
           if (lst[i] = '--') then break;
-          CmdStack.Add(LowerCase(lst[i]));
+          GUIVars.CmdStack.Add(LowerCase(lst[i]));
           Inc(i);
         end;
-        if (CmdStack.Count > 0) then begin
+        if (GUIVars.CmdStack.Count > 0) then begin
           BringToFront;
-          IsBatching := true;
+          GUIVars.IsBatching := true;
           NextBatchCommand;
           break;
         end;
@@ -3194,7 +3193,7 @@ begin
         break;
       end
       else if (CompareText(lst[i], '-handle') = 0) then begin
-        StatusHandle := StrToIntDef(lst[i], -1);
+        GUIVars.StatusHandle := StrToIntDef(lst[i], -1);
       end;
       Inc(i);
     end
@@ -3284,11 +3283,11 @@ end;
 procedure Tfrm_UnCodeX.ac_RebuildAnalyseExecute(Sender: TObject);
 begin
   if (runningthread <> nil) then exit;
-  IsBatching := true;
-  CmdStack.Clear;
-  CmdStack.Add('rebuild');
-  CmdStack.Add('orphanstop');
-  CmdStack.Add('analyse');
+  GUIVars.IsBatching := true;
+  GUIVars.CmdStack.Clear;
+  GUIVars.CmdStack.Add('rebuild');
+  GUIVars.CmdStack.Add('orphanstop');
+  GUIVars.CmdStack.Add('analyse');
   NextBatchCommand;
 end;
 
@@ -3325,8 +3324,8 @@ procedure Tfrm_UnCodeX.tv_ClassesEnter(Sender: TObject);
 begin
   if (TTreeView(Sender) = nil) then exit;
   if (TTreeView(Sender).Selected = nil) then exit;
-  if ((SelectedUClass <> TTreeView(Sender).Selected.Data)
-    and (SelectedUPackage <> TTreeView(Sender).Selected.Data)) then
+  if ((GUIVars.SelectedUClass <> TTreeView(Sender).Selected.Data)
+    and (GUIVars.SelectedUPackage <> TTreeView(Sender).Selected.Data)) then
     tv_ClassesChange(Sender, TTreeView(Sender).Selected);
 end;
 
@@ -3390,29 +3389,29 @@ end;
 
 procedure Tfrm_UnCodeX.ac_CreateSubClassExecute(Sender: TObject);
 begin
-  if (SelectedUClass <> nil) then CreateSubUClass(SelectedUClass)
-  else CreateSubUClass(SelectedUPackage);
+  if (GUIVars.SelectedUClass <> nil) then CreateSubUClass(GUIVars.SelectedUClass)
+  else CreateSubUClass(GUIVars.SelectedUPackage);
 end;
 
 procedure Tfrm_UnCodeX.ac_DeleteClassExecute(Sender: TObject);
 var
   i: integer;
 begin
-  if (SelectedUClass = nil) then exit;
-  if (MessageDlg('Are you sure you want to delete the class '''+SelectedUClass.name+''' ?', mtConfirmation, [mbYes,mbNo], 0) = mrYes) then begin
+  if (GUIVars.SelectedUClass = nil) then exit;
+  if (MessageDlg('Are you sure you want to delete the class '''+GUIVars.SelectedUClass.name+''' ?', mtConfirmation, [mbYes,mbNo], 0) = mrYes) then begin
     i := 0;
-    if (SelectedUClass.children.Count > 0) then begin
+    if (GUIVars.SelectedUClass.children.Count > 0) then begin
       i := MessageDlg('Do you also want to delete all subclasses ?', mtConfirmation, [mbYes,mbNo,mbCancel], 0);
       if (i = mrCancel) then exit;
     end;
-    DeleteClass(SelectedUClass, i = mrYes);
+    DeleteClass(GUIVars.SelectedUClass, i = mrYes);
   end;
 end;
 
 procedure Tfrm_UnCodeX.ac_PackagePropsExecute(Sender: TObject);
 begin
-  if (SelectedUPackage <> nil) then ShowPackageProps(SelectedUPackage)
-  else if (SelectedUClass <> nil) then ShowPackageProps(SelectedUClass.package)
+  if (GUIVars.SelectedUPackage <> nil) then ShowPackageProps(GUIVars.SelectedUPackage)
+  else if (GUIVars.SelectedUClass <> nil) then ShowPackageProps(GUIVars.SelectedUClass.package)
 end;
 
 procedure Tfrm_UnCodeX.mi_SaveToFile1Click(Sender: TObject);
@@ -3430,17 +3429,17 @@ end;
 
 procedure Tfrm_UnCodeX.ac_MoveClassExecute(Sender: TObject);
 begin
-  if (SelectedUClass <> nil) then MoveUClass(SelectedUClass);
+  if (GUIVars.SelectedUClass <> nil) then MoveUClass(GUIVars.SelectedUClass);
 end;
 
 procedure Tfrm_UnCodeX.ac_DefPropsExecute(Sender: TObject);
 begin
-  if (SelectedUClass <> nil) then ShowDefaultProperties(SelectedUClass);
+  if (GUIVars.SelectedUClass <> nil) then ShowDefaultProperties(GUIVars.SelectedUClass);
 end;
 
 procedure Tfrm_UnCodeX.ac_RenameClassExecute(Sender: TObject);
 begin
-  if (SelectedUClass <> nil) then RenameUClass(SelectedUClass);
+  if (GUIVars.SelectedUClass <> nil) then RenameUClass(GUIVars.SelectedUClass);
 end;
 
 procedure Tfrm_UnCodeX.mi_SortListClick(Sender: TObject);
@@ -3557,7 +3556,30 @@ begin
   OpenSourceInLine(tmp, re_SourceSnoop.uclass.defaultproperties.srcline-1, 0, re_SourceSnoop.uclass, true);
 end;
 
+{ TUCXGUIVars }
+
+constructor TUCXGUIVars.Create;
+begin
+  InitActivateFix := true;
+  RestoreHandle := 0;
+  AppInstanceId := 0;
+  SelectedUClass := nil;
+  SelectedUPackage := nil;
+  OpenFind := false;
+  OpenTags := false;
+  OpenFTS := false;
+  IsBatching := false;
+  CmdStack := TStringList.Create;
+  StatusHandle := -1;
+end;
+
+destructor TUCXGUIVars.Destroy;
+begin
+  FreeAndNil(CmdStack);
+end;
+
 initialization
+  GlobalGUIVars := TUCXGUIVars.Create;
   DefaultDockTreeClass := TUCXDockTree;
   unit_definitions.Log := Log;
   unit_analyse.GetExternalComment := unit_definitions.RetExternalComment;

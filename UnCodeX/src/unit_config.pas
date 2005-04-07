@@ -6,7 +6,7 @@
   Purpose:
     Contains the configuration of UnCodeX
 
-  $Id: unit_config.pas,v 1.7 2005-04-06 10:10:48 elmuerte Exp $
+  $Id: unit_config.pas,v 1.8 2005-04-07 08:29:10 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -567,10 +567,10 @@ begin
   Layout.LogWindow.Font.Size := 8;
   Layout.LogWindow.Color := clWindow;
   Layout.InlineSearchTimeout := 5; // in seconds
-  DockState.size.Top := 0;
-  DockState.size.Bottom := 0;
-  DockState.size.Left := 0;
-  DockState.size.Right := 0;
+  DockState.size.Top := -1;
+  DockState.size.Bottom := -1;
+  DockState.size.Left := -1;
+  DockState.size.Right := -1;
   DockState.host.Classes := 'pnlCenter';
   DockState.host.Packages := 'dckLeft';
   DockState.host.Log := 'dckBottom';
