@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.161 2005-04-07 08:29:10 elmuerte Exp $
+  $Id: unit_main.pas,v 1.162 2005-04-08 07:18:51 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -1033,15 +1033,13 @@ begin
     AddBrowserHistory(uclass, filename, line+1, tmp);
     //re_SourceSnoop.Perform(EM_LINESCROLL, 0, -1*re_SourceSnoop.Lines.Count);
     //re_SourceSnoop.Perform(EM_LINESCROLL, 0, line);
-    line := re_SourceSnoop.Perform(EM_LINEINDEX, line, 0); // get line index
-    re_SourceSnoop.Perform(EM_SETSEL, line, line);
+    n := re_SourceSnoop.Perform(EM_LINEINDEX, n, 0); // get line index
+    re_SourceSnoop.Perform(EM_SETSEL, n, n);
     re_SourceSnoop.Perform(EM_SCROLLCARET, 0, 0);
     if (not nohighlight) then begin
-      re_SourceSnoop.ClearBgColor();
-      //re_SourceSnoop.SelStart := line;
-      re_SourceSnoop.SelLength := re_SourceSnoop.Perform(EM_LINELENGTH, line, 0);
-      re_SourceSnoop.SetSelBgColor(clBtnFace);
-      re_SourceSnoop.SelLength := 0;
+      re_SourceSnoop.ClearHighlights;
+      re_SourceSnoop.HighlightLine(line, false);
+      re_SourceSnoop.Invalidate;
     end;
   end;
 end;
@@ -1670,6 +1668,7 @@ begin
   config.Layout.TreeView.Import(tv_Classes);
 
   config.SourcePreview.Color := re_SourceSnoop.Color;
+  config.SourcePreview.HighLightColor := re_SourceSnoop.HighlightColor;
   config.SourcePreview.FontColor := unit_rtfhilight.textfont.Color;
   config.SourcePreview.FontName := unit_rtfhilight.textfont.Name;
   config.SourcePreview.FontSize := unit_rtfhilight.textfont.Size;
@@ -1859,6 +1858,7 @@ begin
   config.Layout.TreeView.Assign(tv_Packages);
 
   re_SourceSnoop.Color := config.SourcePreview.Color;
+  re_SourceSnoop.HighlightColor := config.SourcePreview.HighLightColor;
   unit_rtfhilight.textfont.Color := config.SourcePreview.FontColor;
   unit_rtfhilight.textfont.Name := config.SourcePreview.FontName;
   unit_rtfhilight.textfont.Size := config.SourcePreview.FontSize;
@@ -2164,6 +2164,8 @@ begin
     cb_ExpandObject.Checked := config.Layout.ExpandObject;
     re_Preview.Color := re_SourceSnoop.Color;
     cb_Background.Selected := re_Preview.Color;
+    re_Preview.HighlightColor := re_SourceSnoop.HighlightColor;
+    cb_HighlightColor.Selected := re_SourceSnoop.HighlightColor;
     { Program options }
     ed_StateFilename.Text := ExtractFilename(config.StateFile);
     cb_MinimzeOnClose.Checked := config.Layout.MinimizeOnClose;
@@ -2240,6 +2242,7 @@ begin
       tv_Packages.Color := tv_TreeLayout.Color;
       tv_Packages.Font := tv_TreeLayout.Font;
       re_SourceSnoop.Color := re_Preview.Color;
+      re_SourceSnoop.HighlightColor := re_Preview.HighlightColor;
 
       lb_PrimKey.Items.SaveToFile(ExtractFilePath(ParamStr(0))+'keywords1.list');
       lb_SecKey.Items.SaveToFile(ExtractFilePath(ParamStr(0))+'keywords2.list');
@@ -2639,7 +2642,8 @@ end;
 
 procedure Tfrm_UnCodeX.lb_LogClick(Sender: TObject);
 var
-  entry: TLogEntry;
+  entry, e2: TLogEntry;
+  i: integer;
 begin
   if (lb_Log.ItemIndex = -1) then exit;
   if (lb_Log.Items.Objects[lb_Log.ItemIndex] = nil) then exit;
@@ -2648,6 +2652,11 @@ begin
   entry := TLogEntry(lb_Log.Items.Objects[lb_Log.ItemIndex]);
   if (entry.filename = '') then exit; // no file; don't bother
   OpenSourceInline(entry.filename, entry.line-1, entry.pos, TUClass(entry.obj));
+  for i := 0 to lb_Log.Items.Count-1 do begin
+    e2 := TLogEntry(lb_Log.Items.Objects[i]);
+    if ((e2.filename = entry.filename) and (e2.line > 0)) then re_SourceSnoop.HighlightLine(e2.line-1, false);
+  end;
+  re_SourceSnoop.Invalidate;
 end;
 
 procedure Tfrm_UnCodeX.FormShow(Sender: TObject);
@@ -3000,7 +3009,9 @@ end;
 
 procedure Tfrm_UnCodeX.mi_ClearHilightClick(Sender: TObject);
 begin
-  re_SourceSnoop.ClearBgColor;
+  //re_SourceSnoop.ClearBgColor;
+  re_SourceSnoop.ClearHighlights;
+  re_SourceSnoop.Invalidate;
 end;
 
 procedure Tfrm_UnCodeX.mi_FindSelectionClick(Sender: TObject);
