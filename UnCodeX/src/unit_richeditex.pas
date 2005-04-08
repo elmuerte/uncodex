@@ -6,7 +6,7 @@
   Purpose:
     TRichEdit control that uses version 2
 
-  $Id: unit_richeditex.pas,v 1.25 2005-04-07 08:29:11 elmuerte Exp $
+  $Id: unit_richeditex.pas,v 1.26 2005-04-08 07:18:53 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -43,11 +43,14 @@ type
     xCanvas: TCanvas;
     FGutterWidth: integer;
     ffilename: TFilename;
+    fhighlightcolor: TColor;
+    HighlightLines: array of integer;
   protected
     procedure CreateParams(var Params: TCreateParams); override;
     procedure WMPaint( var Msg : TWMPaint ); message WM_PAINT;
     procedure WMSetFocus(var Msg: TMessage); message WM_SetFocus;
     procedure WMNCHitTest(var Msg: TMessage); message WM_NCHitTest;
+    function IsHighlighted(i: integer): boolean;
   public
     uclass: TUClass;
     constructor Create(AOwner: TComponent); override;
@@ -57,9 +60,12 @@ type
     procedure ClearBgColor();
     procedure makeurl();
     procedure UpdateWindowRect;
+    procedure ClearHighlights;
+    procedure HighlightLine(i: integer; updateView: boolean = true);
   published
     property GutterWidth: integer read FGutterWidth write FGutterWidth;
     property filename: Tfilename read ffilename write ffilename;
+    property HighlightColor: TColor read fhighlightcolor write fhighlightcolor;
   end;
 
   procedure Register;
@@ -117,6 +123,7 @@ begin
   xCanvas := TControlCanvas.Create;
   TControlCanvas(xCanvas).Control := Self;
   FGutterWidth := 50;
+  fhighlightcolor := clYellow;
 end;
 
 destructor TRichEditEx.Destroy;
@@ -213,49 +220,51 @@ begin
   end;
 end;
 
+function TRichEditEx.IsHighlighted(i: integer): boolean;
+var
+  n: integer;
+begin
+  result := false;
+  for n := 0 to Length(HighlightLines)-1 do begin
+    if (HighlightLines[n] = i) then begin
+      result := true;
+      exit;
+    end;
+  end;
+end;
+
+procedure TRichEditEx.ClearHighlights;
+begin
+  SetLength(HighlightLines, 0);
+end;
+
+procedure TRichEditEx.HighlightLine(i: integer; updateView: boolean = true);
+begin
+  SetLength(HighlightLines, Length(HighlightLines)+1);
+  HighlightLines[Length(HighlightLines)-1] := i;
+  if (not updateView) then exit;
+  if ((i > Perform(EM_GETFIRSTVISIBLELINE, 0, 0))
+    {TODO: last visible line})
+  then Invalidate;
+end;
+
 procedure TRichEditEx.WMPaint( var Msg : TWMPaint );
 var
   offset, lh: integer;
   r: TRect;
   pt, pt2: TPoint;
   l: string;
-  //rng:    TFORMATRANGE;
+
+  tmpDC: HDC;
+  hbmp, sbmp: HBITMAP;
+  hbr: HBRUSH;
 begin
   HideCaret(Handle);
-
   inherited;
 
-  // draw highlighted lines
-	(*with xCanvas do begin
-    Brush.Color := Color;
-    Pen.Color := Color;
-    Rectangle(FGutterWidth, 0, FGutterWidth+4, Height);
-
-    Perform(EM_POSFROMCHAR, Integer(@pt), Perform(EM_LINEINDEX, 4, 0));
-    Perform(EM_POSFROMCHAR, Integer(@pt2), Perform(EM_LINEINDEX, 5, 0));
-    if ((pt2.y > 0) and (pt.y < width)) then begin
-      Brush.Color := clYellow;
-      r := Rect(GutterWidth, pt.y, Width, pt2.y);
-      FillRect(r);
-
-      {rng.hdc := Handle;
-      rng.hdcTarget := Handle;
-
-      r := Rect(FGutterWidth + FGutterWidth,
-          r.Top*1440 div 25,
-          r.Right*1440 div 25,
-          r.Bottom*1440 div 25);
-
-      rng.rcPage := r;
-      rng.rc := r;
-      rng.chrg.cpMin := 0;
-      rng.chrg.cpMax := -1;
-      Perform(EM_FORMATRANGE, 1, integer(@rng));
-      Perform(EM_FORMATRANGE, 0, 0);}
-    end;
-  end; *)
-
   with xCanvas do begin
+    Brush.Color := Color;
+    FillRect(Rect(FGutterWidth, 0, FGutterWidth+4, height));
     Brush.Color := clBtnFace;
     Pen.Color := clBtnFace;
     Rectangle(FGutterWidth-10, 0, FGutterWidth, Height);
@@ -267,7 +276,7 @@ begin
     MoveTo(FGutterWidth-1, 0);
     LineTo(FGutterWidth-1, Height);
     Font.Name := 'Courier New';
-    font.Size := 8;
+    Font.Size := 8;
     offset := Perform(EM_GETFIRSTVISIBLELINE, 0, 0);
     l := '1234567890';
     DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_SINGLELINE or DT_CALCRECT );
@@ -278,11 +287,26 @@ begin
     FillRect(Rect(0, 0, FGutterWidth-10, lh));
     while (offset < lines.Count-1) and (r.Top < Height) do begin
       Perform(EM_POSFROMCHAR, Integer(@pt2), Perform(EM_LINEINDEX, offset+1, 0));
+      if (IsHighlighted(offset)) then begin
+        hbr := CreateSolidBrush(ColorToRGB(fhighlightcolor));
+        tmpDC := CreateCompatibleDC(Handle);
+        hbmp := CreateCompatibleBitmap(Handle, ClientWidth, pt2.Y-pt.Y);
+        sbmp := SelectObject(tmpDC, hbmp);
+        windows.FillRect(tmpDC, Rect(0, 0, ClientWidth, pt2.Y-pt.Y), hbr);
+        BitBlt(tmpDC, 0, 0, ClientWidth, pt2.Y-pt.Y, Handle, FGutterWidth, pt.Y, SRCAND);
+        BitBlt(Handle, FGutterWidth, pt.Y, ClientWidth, pt2.Y-pt.Y, tmpDC, 0, 0, SRCCOPY);
+        SelectObject(tmpDC, sbmp);
+        DeleteObject(hbmp);
+        DeleteObject(sbmp);
+        DeleteObject(hbr);
+        DeleteDC(tmpDC);
+      end;
       r := Rect(0, pt.y, FGutterWidth-10, pt2.y);
       l := format('%10d', [offset+1]);
       DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_RIGHT or DT_SINGLELINE);
       DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_RIGHT or DT_SINGLELINE or DT_CALCRECT);
       FillRect(Rect(0, r.Bottom, FGutterWidth-10, pt2.Y+1));
+
       Inc(offset);
       pt := pt2;
     end;

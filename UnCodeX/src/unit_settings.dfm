@@ -1,6 +1,6 @@
 object frm_Settings: Tfrm_Settings
-  Left = 392
-  Top = 185
+  Left = 335
+  Top = 186
   Width = 670
   Height = 400
   AlphaBlendValue = 128
@@ -71,7 +71,7 @@ object frm_Settings: Tfrm_Settings
     Top = 24
     Width = 432
     Height = 348
-    ActivePage = ts_HTMLOutput
+    ActivePage = ts_SourceSnoop
     Align = alCustom
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -1394,11 +1394,18 @@ object frm_Settings: Tfrm_Settings
       end
       object bvl_Font: TBevel
         Left = 104
-        Top = 56
+        Top = 72
         Width = 320
         Height = 73
         Anchors = [akLeft, akTop, akRight]
         Shape = bsFrame
+      end
+      object lbl_HighlightColor: TLabel
+        Left = 232
+        Top = 53
+        Width = 67
+        Height = 13
+        Caption = 'Highlight color'
       end
       object btn_SourceFont: TBitBtn
         Left = 0
@@ -1424,9 +1431,9 @@ object frm_Settings: Tfrm_Settings
       end
       object re_Preview: TRichEditEx
         Left = 0
-        Top = 136
+        Top = 152
         Width = 424
-        Height = 202
+        Height = 186
         Align = alBottom
         Anchors = [akLeft, akTop, akRight, akBottom]
         ReadOnly = True
@@ -1439,7 +1446,7 @@ object frm_Settings: Tfrm_Settings
         Left = 0
         Top = 24
         Width = 113
-        Height = 105
+        Height = 121
         ItemHeight = 13
         Items.Strings = (
           'Default'
@@ -1469,7 +1476,7 @@ object frm_Settings: Tfrm_Settings
       end
       object cb_SelColor: TColorBox
         Left = 120
-        Top = 100
+        Top = 116
         Width = 137
         Height = 22
         DefaultColorColor = clWindowText
@@ -1481,7 +1488,7 @@ object frm_Settings: Tfrm_Settings
       end
       object cb_funderline: TCheckBox
         Left = 280
-        Top = 64
+        Top = 80
         Width = 128
         Height = 17
         Anchors = [akLeft, akTop, akRight]
@@ -1491,7 +1498,7 @@ object frm_Settings: Tfrm_Settings
       end
       object cb_fstrikeout: TCheckBox
         Left = 280
-        Top = 80
+        Top = 96
         Width = 128
         Height = 17
         Anchors = [akLeft, akTop, akRight]
@@ -1501,7 +1508,7 @@ object frm_Settings: Tfrm_Settings
       end
       object cb_fitalic: TCheckBox
         Left = 120
-        Top = 80
+        Top = 96
         Width = 97
         Height = 17
         Caption = 'Italic'
@@ -1510,7 +1517,7 @@ object frm_Settings: Tfrm_Settings
       end
       object cb_fbold: TCheckBox
         Left = 120
-        Top = 64
+        Top = 80
         Width = 97
         Height = 17
         Caption = 'Bold'
@@ -1526,6 +1533,16 @@ object frm_Settings: Tfrm_Settings
         ItemHeight = 16
         TabOrder = 10
         OnChange = cb_BackgroundChange
+      end
+      object cb_HighlightColor: TColorBox
+        Left = 327
+        Top = 48
+        Width = 97
+        Height = 22
+        Style = [cbStandardColors, cbExtendedColors, cbSystemColors, cbCustomColor, cbPrettyNames]
+        ItemHeight = 16
+        TabOrder = 11
+        OnChange = cb_HighlightColorChange
       end
     end
     object ts_PlugIns: TTabSheet

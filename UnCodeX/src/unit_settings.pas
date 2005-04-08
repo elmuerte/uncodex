@@ -6,7 +6,7 @@
   Purpose:
     Program settings dialog
 
-  $Id: unit_settings.pas,v 1.49 2005-04-06 10:10:53 elmuerte Exp $
+  $Id: unit_settings.pas,v 1.50 2005-04-08 07:18:53 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -213,6 +213,8 @@ type
     cb_GZCompress: TComboBox;
     lbl_CreateSource: TLabel;
     cb_CreateSource: TComboBox;
+    lbl_HighlightColor: TLabel;
+    cb_HighlightColor: TColorBox;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -295,6 +297,7 @@ type
     procedure tv_SettingSelectChange(Sender: TObject; Node: TTreeNode);
     procedure mi_Resultfilename1Click(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure cb_HighlightColorChange(Sender: TObject);
   private
   public
     TagChanged: boolean;
@@ -332,9 +335,11 @@ begin
   ms := TMemoryStream.Create;
   try
     RTFHilightUScript(rs, ms, nil);
+    re_Preview.ClearHighlights;
     re_Preview.Lines.Clear;
     ms.Position := 0;
     re_Preview.Lines.LoadFromStream(ms);
+    re_Preview.HighlightLine(18);
   finally
     ms.Free;
     rs.Free;
@@ -975,6 +980,12 @@ begin
   if (PixelsPerInch <> Screen.PixelsPerInch) then begin
     ScaleBy(Screen.PixelsPerInch, PixelsPerInch);
   end;
+end;
+
+procedure Tfrm_Settings.cb_HighlightColorChange(Sender: TObject);
+begin
+  re_Preview.HighlightColor := cb_HighlightColor.Selected;
+  re_Preview.Invalidate;
 end;
 
 end.

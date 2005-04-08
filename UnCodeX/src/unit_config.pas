@@ -6,7 +6,7 @@
   Purpose:
     Contains the configuration of UnCodeX
 
-  $Id: unit_config.pas,v 1.8 2005-04-07 08:29:10 elmuerte Exp $
+  $Id: unit_config.pas,v 1.9 2005-04-08 07:18:47 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -179,6 +179,7 @@ type
       FontSize:           integer;
       FontColor:          TColor;
       TabSize:            integer;
+      HighLightColor:     TColor;
       Keyword1:           TSourcePreviewFont;
       Keyword2:           TSourcePreviewFont;
       StringType:         TSourcePreviewFont;
@@ -584,6 +585,7 @@ begin
   SourcePreview.FontSize := 9;
   SourcePreview.FontColor := clBlack;
   SourcePreview.TabSize := 4;
+  SourcePreview.HighLightColor := clYellow;
   SourcePreview.Keyword1.Color := $00000000;
   SourcePreview.Keyword1.Style := [fsBold];
   SourcePreview.Keyword2.Color := $00555555;
@@ -696,6 +698,7 @@ begin
     FontSize := ini.ReadInteger('GUI.SourcePreview', 'FontSize', FontSize);
     FontColor := ini.ReadInteger('GUI.SourcePreview', 'FontColor', FontColor);
     TabSize := ini.ReadInteger('GUI.SourcePreview', 'TabSize', TabSize);
+    HighLightColor := ini.ReadInteger('GUI.SourcePreview', 'HighLightColor', HighLightColor);
     LoadSourcePreviewFont('Keyword1', Keyword1);
     LoadSourcePreviewFont('Keyword2', Keyword2);
     LoadSourcePreviewFont('StringType', StringType);
@@ -807,6 +810,7 @@ begin
     ini.WriteInteger('GUI.SourcePreview', 'FontSize', FontSize);
     ini.WriteInteger('GUI.SourcePreview', 'FontColor', FontColor);
     ini.WriteInteger('GUI.SourcePreview', 'TabSize', TabSize);
+    ini.WriteInteger('GUI.SourcePreview', 'HighLightColor', HighLightColor);
     SaveSourcePreviewFont('Keyword1', Keyword1);
     SaveSourcePreviewFont('Keyword2', Keyword2);
     SaveSourcePreviewFont('StringType', StringType);

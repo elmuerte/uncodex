@@ -2380,7 +2380,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
     object mi_ClearHilight: TMenuItem
       Caption = 'Clear highlight'
-      Hint = 'Clear hilight|Remove the background hilight'
+      Hint = 'Clear hilight|Remove the background highlight'
       OnClick = mi_ClearHilightClick
     end
     object mi_N16: TMenuItem
