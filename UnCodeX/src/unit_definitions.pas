@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.144 2005-04-06 10:10:48 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.145 2005-04-10 08:36:27 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -103,6 +103,8 @@ type
   function GetFiles(path: string; Attr: Integer; var files: TStringList): boolean;
   function FindFiles(base, path, mask: string; Attr: Integer; var files: TStringList; append: boolean = false): boolean;
   function ExtractBaseName(filename: string): string;
+
+  function StringHash(input: string): integer;
 
   procedure ReloadKeywords;
 
@@ -381,6 +383,33 @@ begin
   for j := 0 to GuardStack.Count-1 do begin
     if (uclass = nil) then
       else Log('  '+GuardStack[j], ltError, CreateLogEntry(uclass));
+  end;
+end;
+
+function StringHash(input: string): integer;
+var
+  Off, Len, Skip, I: Integer;
+begin
+  Result := 0;
+  Off := 1;
+  Len := Length(input);
+  if Len < 16 then
+    for I := (Len - 1) downto 0 do
+    begin
+      Result := (Result * 37) + Ord(input[Off]);
+      Inc(Off);
+    end
+  else
+  begin
+    { Only sample some characters }
+    Skip := Len div 8;
+    I := Len - 1;
+    while I >= 0 do
+    begin
+      Result := (Result * 39) + Ord(input[Off]);
+      Dec(I, Skip);
+      Inc(Off, Skip);
+    end;
   end;
 end;
 

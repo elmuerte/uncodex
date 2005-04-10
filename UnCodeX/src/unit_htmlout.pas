@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.78 2005-04-06 10:10:48 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.79 2005-04-10 08:36:28 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -126,6 +126,7 @@ type
     function replacePackageOverview(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
     procedure htmlClassOverview; // creates <packagename>_<classname>.html
     function replaceClass(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
+    function replaceUDeclaration(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
     function replaceClassConst(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
     function replaceClassVar(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
     function replaceVarTag(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
@@ -225,6 +226,17 @@ begin
   result := LowerCase(upackage.name+path+upackage.name+'-list.'+TargetExtention);
 end;
 
+// link for #include'd files
+function IncludeFileLink(fl: string; upackage: TUPackage; DOSPath: boolean = false): string;
+var
+  i: integer;
+  path: string;
+begin
+  i := LastDelimiter('\/', fl)+1;
+  if (DOSPath) then path := PathDelim else path := '/';
+  result := SOURCEPRE+LowerCase(upackage.name+path)+'inc'+IntToHex(StringHash(LowerCase(fl)), 8)+'.'+LowerCase(Copy(fl, i, maxint))+'.'+TargetExtention;
+end;
+
 function IsReplacement(replacement, check: string): boolean;
 begin
   result := CompareText(Copy(replacement, 1, Length(check)), check) = 0;
@@ -260,6 +272,7 @@ begin
   Self.ConfDefaultTitle := config.DefaultTitle;
   TargetExtention := config.TargetExtention;
   GZCompress := config.GZCompress;
+  CreateSource := config.CreateSource;
   TypeCache := Hashes.TStringHash.Create;
   ConstCache := Hashes.TStringHash.Create;
   VarCache := Hashes.TStringHash.Create;
@@ -366,7 +379,11 @@ begin
     maxPos := (PackageList.Count*2)+ClassList.Count;
     if (ini.ReadBool('Settings', 'CreateClassTree', true)) then maxPos := maxPos+1;
     if (ini.ReadBool('Settings', 'CreateGlossary', true)) then maxPos := maxPos+26;
-    if (ini.ReadBool('Settings', 'SourceCode', true)) then maxPos := maxPos+ClassList.Count;
+    if (CreateSource = tbMaybe) then begin
+      CreateSource := TTriBool(ini.ReadInteger('Settings', 'SourceCode', 1));
+      if (CreateSource = tbMaybe) then CreateSource := tbTrue;
+    end;
+    if (CreateSource = tbTrue) then maxPos := maxPos+ClassList.Count;
 	
     stime := Now();
     forcedirectories(htmloutputdir);
@@ -399,16 +416,13 @@ begin
     if (ini.ReadBool('Settings', 'CreateClassTree', true) and (not Self.Terminated)) then htmlTree; // create class tree
     if (ini.ReadBool('Settings', 'CreateGlossary', true) and (not Self.Terminated)) then htmlGlossary; // iglossery
     subDirDepth := 1;
-    if (ini.ReadBool('Settings', 'SourceCode', true) and (not Self.Terminated) and (CreateSource = tbTrue)) then SourceCode; //
+    if ((not Self.Terminated) and (CreateSource = tbTrue)) then SourceCode; //
     if (IsCPP and (CPPPipe <> nil)) then CPPPipe.Close;
     Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds');
   except
     on E: Exception do begin
       Log('Unhandled exception: '+E.Message, ltError);
-      Log('History:',ltError);
-      for i := 0 to GuardStack.Count-1 do begin
-        log('     '+GuardStack[i], ltError);
-      end;
+      printguard(currentClass);
     end;
   end;
   resetguard;
@@ -1848,12 +1862,51 @@ begin
   unguard;
 end;
 
+function THTMLOutput.replaceUDeclaration(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
+var
+  source, target: TStringStream;
+begin
+  guard('replaceDeclaration '+replacement+' '+TUDeclaration(data).name);
+  result := replaceDefault(replacement, p);
+  if (result) then else
+  if (CompareText(replacement, 'decl_name') = 0) then begin
+    replacement := TUDeclaration(data).name;
+    result := true;
+  end
+  else if (CompareText(replacement, 'decl_srcline') = 0) then begin
+    replacement := IntToStr(TUDeclaration(data).srcline);
+    result := true;
+  end
+  else if (CompareText(replacement, 'decl_source') = 0) then begin
+    if (TUDeclaration(data).definedIn <> '') then replacement := StrRepeat('../', subDirDepth)+IncludeFileLink(TUDeclaration(data).definedIn, currentClass.package)
+    else replacement := StrRepeat('../', subDirDepth)+SOURCEPRE+ClassLink(currentClass);
+    result := true;
+  end
+  else if (CompareText(replacement, 'decl_comment') = 0) then begin
+    replacement := CommentPreprocessor(TUDeclaration(data).comment);
+    result := true;
+  end
+  else if (CompareText(replacement, 'decl_declaration') = 0) then begin
+    source := TStringStream.Create(TUDeclaration(data).declaration);
+    target := TStringStream.Create('');
+    try
+      parseCode(source, target, true, true, true);
+      replacement := target.DataString;
+      result := true;
+    finally
+      target.Free;
+      source.Free;
+    end;
+  end;
+  unguard;
+end;
+
 function THTMLOutput.replaceClassConst(var replacement: string; p: TCopyParser; data: TObject = nil): boolean;
 var
   source, target: TStringStream;
 begin
   guard('replaceClassConst '+replacement+' '+TUConst(data).name);
-  result := replaceDefault(replacement, p);
+  result := replaceUDeclaration(replacement, p, data);
   if (result) then else
   if (CompareText(replacement, 'const_name') = 0) then begin
     replacement := TUConst(data).name;
@@ -1901,7 +1954,7 @@ var
   tmp: string;
 begin
   guard('replaceClassVar '+replacement+' '+TUProperty(data).name);
-  result := replaceDefault(replacement, p);
+  result := replaceUDeclaration(replacement, p, data);
   if (result) then else
   if (CompareText(replacement, 'var_name') = 0) then begin
     replacement := TUProperty(data).name;
@@ -1973,7 +2026,7 @@ var
   source, target: TStringStream;
 begin
   guard('replaceClassEnum '+replacement+' '+TUEnum(data).name);
-  result := replaceDefault(replacement, p);
+  result := replaceUDeclaration(replacement, p, data);
   if (result) then else
   if (CompareText(replacement, 'enum_name') = 0) then begin
     replacement := TUEnum(data).name;
@@ -2031,7 +2084,7 @@ var
   tmp: string;
 begin
   guard('replaceClassStruct '+replacement+' '+TUStruct(data).name);
-  result := replaceDefault(replacement, p);
+  result := replaceUDeclaration(replacement, p, data);
   if (result) then else
   if (CompareText(replacement, 'struct_name') = 0) then begin
     replacement := TUStruct(data).name;
@@ -2156,7 +2209,7 @@ var
   pclass: TUClass;
 begin
   guard('replaceClassFunction '+replacement+' '+TUFunction(data).name);
-  result := replaceDefault(replacement, p);
+  result := replaceUDeclaration(replacement, p, data);
   if (result) then else
   if (CompareText(replacement, 'function_name') = 0) then begin
     replacement := HTMLChars(TUFunction(data).name);
@@ -2275,7 +2328,7 @@ var
   i: integer;
 begin
   guard('replaceClassState '+replacement+' '+TUState(data).name);
-  result := replaceDefault(replacement, p);
+  result := replaceUDeclaration(replacement, p, data);
   if (result) then else
   if (CompareText(replacement, 'state_name') = 0) then begin
     replacement := TUState(data).name;
@@ -2754,6 +2807,17 @@ begin
 end;
 
 procedure THTMLOutput.parseCode(input, output: TStream; nolineno: boolean = false; notable: boolean = false; nopre: boolean = false);
+
+  function ResolveIncludeMacro(res: string): string;
+  var
+    fl: string;
+  begin
+    result := res;
+    GetToken(res, ' '); // strip #include
+    fl := Trim(GetToken(res, ' '));
+    result := StringReplace(result, fl, '<a href="'+StrRepeat('../', subDirDepth)+IncludeFileLink(fl, currentClass.package)+'">'+fl+'</a>', []);
+  end;
+
 var
   p: TSourceParser;
   replacement, tmp: string;
@@ -2845,6 +2909,7 @@ begin
         replacement := p.TokenString;
         replacement := StringReplace(replacement, '<', '&lt;', [rfReplaceAll]);
         replacement := StringReplace(replacement, '>', '&gt;', [rfReplaceAll]);
+        if (SameText(GetToken(replacement, ' ', true), '#include')) then replacement := ResolveIncludeMacro(replacement);
         replacement := '<span class="source_macro">'+replacement+'</span>';
         replacement := replacement+'<a name="'+IntToStr(p.SourceLine)+'"></a>';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));

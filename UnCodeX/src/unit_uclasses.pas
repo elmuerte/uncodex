@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.54 2005-04-07 08:29:11 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.55 2005-04-10 08:36:28 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -38,7 +38,7 @@ uses
 
 const
   // used for output module compatibility testing
-  UCLASSES_REV: LongInt = 5;
+  UCLASSES_REV: LongInt = 6;
 
 type
   TUCommentType = (ctSource, ctExtern, ctInherited);
@@ -84,6 +84,7 @@ type
     definedIn:    string; // set to the filename this variable was
                 // declared in if not in the class source file
                 // itself (e.g. via the #include macro).
+    owner:        TUObject; // points to uclass or ustruct                
   end;
 
   // general Unreal Object List
@@ -92,13 +93,20 @@ type
     function Find(name: string): TUObject;
   end;
 
+  TUDeclarationList = class(TUObjectList)
+  protected
+    procedure SetItem(Index: Integer; AObject: TUDeclaration);
+  public
+    owner: TUObject; // points to uclass or ustruct
+  end;
+
   TUConst = class(TUDeclaration)
     value:  string;
     function declaration: string; override;
   end;
 
-  TUConstList = class(TUObjectList)
-  private
+  TUConstList = class(TUDeclarationList)
+  protected
     function GetItem(Index: Integer): TUConst;
     procedure SetItem(Index: Integer; AObject: TUConst);
   public
@@ -114,8 +122,8 @@ type
     function declaration: string; override;
   end;
 
-  TUPropertyList = class(TUObjectList)
-  private
+  TUPropertyList = class(TUDeclarationList)
+  protected
     function GetItem(Index: Integer): TUProperty;
     procedure SetItem(Index: Integer; AObject: TUProperty);
   public
@@ -131,8 +139,8 @@ type
     function declaration: string; override;
   end;
 
-  TUEnumList = class(TUObjectList)
-  private
+  TUEnumList = class(TUDeclarationList)
+  protected
     function GetItem(Index: Integer): TUEnum;
     procedure SetItem(Index: Integer; AObject: TUEnum);
   public
@@ -150,8 +158,8 @@ type
     function declaration: string; override;
   end;
 
-  TUStructList = class(TUObjectList)
-  private
+  TUStructList = class(TUDeclarationList)
+  protected
     function GetItem(Index: Integer): TUStruct;
     procedure SetItem(Index: Integer; AObject: TUStruct);
   public
@@ -169,8 +177,8 @@ type
     function declaration: string; override;
   end;
 
-  TUStateList = class(TUObjectList)
-  private
+  TUStateList = class(TUDeclarationList)
+  protected
     function GetItem(Index: Integer): TUState;
     procedure SetItem(Index: Integer; AObject: TUState);
   public
@@ -194,8 +202,8 @@ type
     function declaration: string; override;
   end;
 
-  TUFunctionList = class(TUObjectList)
-  private
+  TUFunctionList = class(TUDeclarationList)
+  protected
     function GetItem(Index: Integer): TUFunction;
     procedure SetItem(Index: Integer; AObject: TUFunction);
   public
@@ -256,7 +264,7 @@ type
   end;
 
   TUClassList = class(TUObjectList)
-  private
+  protected
     function GetItem(Index: Integer): TUClass;
     procedure SetItem(Index: Integer; AObject: TUClass);
   public
@@ -278,7 +286,7 @@ type
   end;
 
   TUPackageList = class(TUObjectList)
-  private
+  protected
     function GetItem(Index: Integer): TUPackage;
     procedure SetItem(Index: Integer; AObject: TUPackage);
   public
@@ -292,12 +300,12 @@ type
 
 implementation
 
-{ }
-
 function TUObject.HTMLdeclaration: string;
 begin
   result := StringReplace(StringReplace(declaration, '>', '&gt;', [rfReplaceAll]), '<', '&lt;', [rfReplaceAll]);
 end;
+
+{ TUObjectList }
 
 function TUObjectList.Find(name: string): TUObject;
 var
@@ -310,6 +318,14 @@ begin
       exit;
     end;
   end;
+end;
+
+{ TUDeclarationList }
+
+procedure TUDeclarationList.SetItem(Index: Integer; AObject: TUDeclaration);
+begin
+  inherited SetItem(Index, AObject);
+  if (AObject <> nil) then AObject.Owner := Owner;
 end;
 
 { TUConst }
@@ -446,6 +462,7 @@ end;
 constructor TUStruct.Create;
 begin
   properties := TUPropertyList.Create(true);
+  properties.owner := self;
 end;
 
 destructor TUStruct.Destroy;
@@ -549,6 +566,7 @@ end;
 constructor TUFunction.Create;
 begin
   locals := TUPropertyList.Create(true);
+  locals.owner := self;
 end;
 
 destructor TUFunction.Destroy;
@@ -617,12 +635,19 @@ end;
 constructor TUClass.Create;
 begin
   consts := TUConstList.Create(true);
+  consts.owner := self;
   properties := TUPropertyList.Create(true);
+  properties.owner := self;
   enums := TUEnumList.Create(true);
+  enums.owner := self;
   structs := TUStructList.Create(true);
+  structs.owner := self;
   states := TUStateList.Create(true);
+  states.owner := self;
   functions := TUFunctionList.Create(true);
+  functions.owner := self;
   delegates := TUFunctionList.Create(true);
+  delegates.owner := self;
   children := TUClassList.Create(false);
   deps := TUClassList.Create(false);
   defs := TDefinitionList.Create(self);
