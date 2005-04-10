@@ -6,7 +6,7 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.65 2005-04-07 08:29:10 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.66 2005-04-10 08:36:27 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -116,15 +116,7 @@ const
               '-nosplash'#9#9'Do not display splash screen'+#13+#10+
               '-open'#9#9#9'find and open a class'+#13+#10+
               '-reuse'#9#9#9'reuse a previous window'+#13+#10+
-              '-tags'#9#9#9'display class properties';  
-
-function StringHash(input: string): integer;
-var
-  i: integer;
-begin
-  result := 297;
-  for i := 1 to Length(input) do result := result+Ord(input[i]);
-end;
+              '-tags'#9#9#9'display class properties';
 
 procedure EnumWindowCallBack(Handle: HWND; Param: LParam); stdcall;
 var
