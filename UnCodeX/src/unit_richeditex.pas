@@ -6,7 +6,7 @@
   Purpose:
     TRichEdit control that uses version 2
 
-  $Id: unit_richeditex.pas,v 1.26 2005-04-08 07:18:53 elmuerte Exp $
+  $Id: unit_richeditex.pas,v 1.27 2005-04-11 22:20:03 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -263,6 +263,9 @@ begin
   inherited;
 
   with xCanvas do begin
+    hbr := CreateSolidBrush(ColorToRGB(fhighlightcolor));
+    tmpDC := CreateCompatibleDC(Handle);
+
     Brush.Color := Color;
     FillRect(Rect(FGutterWidth, 0, FGutterWidth+4, height));
     Brush.Color := clBtnFace;
@@ -288,8 +291,6 @@ begin
     while (offset < lines.Count-1) and (r.Top < Height) do begin
       Perform(EM_POSFROMCHAR, Integer(@pt2), Perform(EM_LINEINDEX, offset+1, 0));
       if (IsHighlighted(offset)) then begin
-        hbr := CreateSolidBrush(ColorToRGB(fhighlightcolor));
-        tmpDC := CreateCompatibleDC(Handle);
         hbmp := CreateCompatibleBitmap(Handle, ClientWidth, pt2.Y-pt.Y);
         sbmp := SelectObject(tmpDC, hbmp);
         windows.FillRect(tmpDC, Rect(0, 0, ClientWidth, pt2.Y-pt.Y), hbr);
@@ -298,8 +299,6 @@ begin
         SelectObject(tmpDC, sbmp);
         DeleteObject(hbmp);
         DeleteObject(sbmp);
-        DeleteObject(hbr);
-        DeleteDC(tmpDC);
       end;
       r := Rect(0, pt.y, FGutterWidth-10, pt2.y);
       l := format('%10d', [offset+1]);
@@ -311,6 +310,17 @@ begin
       pt := pt2;
     end;
     if (offset = lines.Count-1) then begin   // bottom part
+      Perform(EM_POSFROMCHAR, Integer(@pt2), Perform(EM_LINEINDEX, offset+1, 0));
+      if (IsHighlighted(offset)) then begin
+        hbmp := CreateCompatibleBitmap(Handle, ClientWidth, pt2.Y-pt.Y);
+        sbmp := SelectObject(tmpDC, hbmp);
+        windows.FillRect(tmpDC, Rect(0, 0, ClientWidth, pt2.Y-pt.Y), hbr);
+        BitBlt(tmpDC, 0, 0, ClientWidth, pt2.Y-pt.Y, Handle, FGutterWidth, pt.Y, SRCAND);
+        BitBlt(Handle, FGutterWidth, pt.Y, ClientWidth, pt2.Y-pt.Y, tmpDC, 0, 0, SRCCOPY);
+        SelectObject(tmpDC, sbmp);
+        DeleteObject(hbmp);
+        DeleteObject(sbmp);
+      end;
       r := Rect(0, pt.y, FGutterWidth-10, pt.y+lh);
       l := format('%10d', [offset+1]);
       DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_RIGHT or DT_SINGLELINE);
@@ -320,6 +330,8 @@ begin
     else if (lines.Count = 0) then begin
       FillRect(Rect(0, 0, FGutterWidth-10, height));
     end;
+    DeleteObject(hbr);
+    DeleteDC(tmpDC);
   end;
 end;
 
