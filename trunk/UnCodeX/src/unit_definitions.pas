@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.145 2005-04-10 08:36:27 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.146 2005-04-11 22:20:03 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -98,7 +98,8 @@ type
   function GetToken(var input: string; delim: char; nocut: boolean = false): string;
   function iFindFile(filename: string): string;
   function iFindDir(dirname: string; var output: string): boolean;
-  function ResolveFilename(uclass: TUClass; udecl: TUDeclaration): string;
+  function ResolveFilename(uclass: TUClass; udecl: TUDeclaration): string; overload;
+  function ResolveFilename(uclass: TUClass; relname: string): string; overload;
   function CopyFile(filename, target: string): boolean;
   function GetFiles(path: string; Attr: Integer; var files: TStringList): boolean;
   function FindFiles(base, path, mask: string; Attr: Integer; var files: TStringList; append: boolean = false): boolean;
@@ -121,7 +122,7 @@ type
 
 const
   APPTITLE        = 'UnCodeX';
-  APPVERSION      = '223';
+  APPVERSION      = '224';
   {$IFDEF DEBUG_BUILD}
   DEBUGBUILD      = true;
   {$ELSE}
@@ -218,7 +219,7 @@ Const OpenStrings : array[TGZOpenMode] of pchar = ('rb','wb');
 
 begin
    FOpenMode:=FileMode;
-   FFile:=gzopen (PChar(FileName),Openstrings[FileMode]);
+   FFile:=gzopen (FileName, Openstrings[FileMode]);
    If FFile=Nil then
      Raise ezlibError.CreateFmt (SCouldntOpenFIle,[FileName]);
 end;
@@ -329,6 +330,14 @@ begin
   result := uclass.FullFileName;
   if (udecl <> nil) then begin
 			if (udecl.definedIn <> '') then result := iFindFile(ExpandFileName(uclass.package.PackageDir+udecl.definedIn));
+  end;
+end;
+
+function ResolveFilename(uclass: TUClass; relname: string): string;
+begin
+  result := uclass.FullFileName;
+  if (relname <> '') then begin
+    result := iFindFile(ExpandFileName(uclass.package.PackageDir+relname));
   end;
 end;
 

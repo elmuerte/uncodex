@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.79 2005-04-10 08:36:28 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.80 2005-04-11 22:20:03 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -98,6 +98,8 @@ type
     ClassList: TUClassList;
     status: TStatusReport;
     ini: TUCXIniFile;
+
+    ProcIncludeFiles: TStringList;
 
     {$IFDEF HTMLOUT_PASCALSCRIPT}
     psComp: TPSScript;
@@ -232,6 +234,7 @@ var
   i: integer;
   path: string;
 begin
+  fl := trim(fl);
   i := LastDelimiter('\/', fl)+1;
   if (DOSPath) then path := PathDelim else path := '/';
   result := SOURCEPRE+LowerCase(upackage.name+path)+'inc'+IntToHex(StringHash(LowerCase(fl)), 8)+'.'+LowerCase(Copy(fl, i, maxint))+'.'+TargetExtention;
@@ -280,6 +283,7 @@ begin
   StructCache := Hashes.TStringHash.Create;
   FunctionCache := Hashes.TStringHash.Create;
   DelegateCache := Hashes.TStringHash.Create;
+  ProcIncludeFiles := TStringList.Create;
   {$IFDEF HTMLOUT_PASCALSCRIPT}
   psComp := TPSScript.Create(nil);
   SetupPascalScript();
@@ -299,6 +303,7 @@ begin
   FreeAndNil(StructCache);
   FreeAndNil(FunctionCache);
   FreeAndNil(DelegateCache);
+  FreeAndNil(ProcIncludeFiles);
   FreeAndNil(ini);
   {$IFDEF HTMLOUT_PASCALSCRIPT}
   CleanupPascalScript();
@@ -465,6 +470,7 @@ begin
           p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
         end
         else begin // put back old
+          Log('Unknown replacement tag used: '+replacement, ltWarn);
           replacement := '%'+replacement+'%';
           p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
         end;
@@ -1897,6 +1903,16 @@ begin
       target.Free;
       source.Free;
     end;
+  end
+  else if (CompareText(replacement, 'has_comment_?') = 0) then begin
+    if (TUConst(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '')
+    else replacement := '';
+    result := true;
+  end
+  else if (CompareText(replacement, 'if:has_comment') = 0) then begin
+    if (TUConst(data).comment <> '') then SkipIf(p);
+    replacement := '';
+    result := true;
   end;
   unguard;
 end;
@@ -1935,15 +1951,6 @@ begin
       target.Free;
       source.Free;
     end;
-  end
-  else if (CompareText(replacement, 'has_comment_?') = 0) then begin
-    if (TUConst(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '')
-    else replacement := '';
-    result := true;
-  end
-  else if (CompareText(replacement, 'class_source') = 0) then begin
-    replacement := StrRepeat('../', subDirDepth)+SOURCEPRE+ClassLink(currentClass);
-    result := true;
   end;
   unguard;
 end;
@@ -1999,15 +2006,6 @@ begin
       target.Free;
       source.Free;
     end;
-  end
-  else if (CompareText(replacement, 'has_comment_?') = 0) then begin
-    if (TUProperty(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '')
-    else replacement := '';
-    result := true;
-  end
-  else if (CompareText(replacement, 'class_source') = 0) then begin
-    replacement := StrRepeat('../', subDirDepth)+SOURCEPRE+ClassLink(currentClass);
-    result := true;
   end;
   unguard;
 end;
@@ -2063,15 +2061,6 @@ begin
       target.Free;
       source.Free;
     end;
-  end
-  else if (CompareText(replacement, 'has_comment_?') = 0) then begin
-    if (TUEnum(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '')
-    else replacement := '';
-    result := true;
-  end
-  else if (CompareText(replacement, 'class_source') = 0) then begin
-    replacement := StrRepeat('../', subDirDepth)+SOURCEPRE+ClassLink(currentClass);
-    result := true;
   end;
   unguard;
 end;
@@ -2188,15 +2177,6 @@ begin
       template.Free;
       target.Free;
     end;
-  end
-  else if (CompareText(replacement, 'has_comment_?') = 0) then begin
-    if (TUStruct(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '')
-    else replacement := '';
-    result := true;
-  end
-  else if (CompareText(replacement, 'class_source') = 0) then begin
-    replacement := StrRepeat('../', subDirDepth)+SOURCEPRE+ClassLink(currentClass);
-    result := true;
   end;
   unguard;
 end;
@@ -2310,15 +2290,6 @@ begin
       pclass := pclass.parent;
     end;
     result := true;
-  end
-  else if (CompareText(replacement, 'has_comment_?') = 0) then begin
-    if (TUFunction(data).comment <> '') then replacement := ini.ReadString('titles', 'HasCommentValue', '?')
-    else replacement := '';
-    result := true;
-  end
-  else if (CompareText(replacement, 'class_source') = 0) then begin
-    replacement := StrRepeat('../', subDirDepth)+SOURCEPRE+ClassLink(currentClass);
-    result := true;
   end;
   unguard;
 end;
@@ -2353,10 +2324,6 @@ begin
   end
   else if (CompareText(replacement, 'state_srcline') = 0) then begin
     replacement := IntToStr(TUState(data).srcline);
-    result := true;
-  end
-  else if (CompareText(replacement, 'class_source') = 0) then begin
-    replacement := StrRepeat('../', subDirDepth)+SOURCEPRE+ClassLink(currentClass);
     result := true;
   end
   else if (CompareText(replacement, 'state_functions') = 0) then begin
@@ -2762,10 +2729,10 @@ end;
 
 procedure THTMLOutput.SourceCode;
 var
-  fname: string;
+  fname, tmp: string;
   template1, template2, source: TFileStream;
   target: TStream;
-  i: integer;
+  i, j: integer;
 begin
   guard('SourceCode');
   template1 := TFileStream.Create(templatedir+'sourcecode-1.html', fmOpenRead or fmShareDenyWrite);
@@ -2781,6 +2748,11 @@ begin
       currentClass := ClassList[i];
       target := CreateOutputStream(htmloutputdir+PATHDELIM+fname);
       currentFile := fname;
+      for j := 0 to ClassList[i].includes.Count-1 do begin
+        tmp := IncludeFileLink(ClassList[i].includes.Values[ClassList[i].includes.Names[j]], ClassList[i].package);
+        if (ProcIncludeFiles.IndexOfName(tmp) > -1) then continue;
+        ProcIncludeFiles.AddObject(tmp+'='+ClassList[i].includes.Values[ClassList[i].includes.Names[j]], ClassList[i]);
+      end;
       try
         template1.Position := 0;
         parseTemplate(template1, target, replaceClass, ClassList[i]);
@@ -2795,6 +2767,32 @@ begin
         if (Self.Terminated) then break;
         template2.Position := 0;
         parseTemplate(template2, target, replaceClass, ClassList[i]);
+      finally
+        CloseOutputStream(target);
+      end;
+    end;
+    // include files; not very safe
+    for i := 0 to ProcIncludeFiles.Count-1 do begin
+      fname := ProcIncludeFiles.Names[i];
+      ForceDirectories(ExtractFilePath(htmloutputdir+PATHDELIM+fname));
+      Status('Creating source '+fname, round(curPos/maxPos*100));
+      currentClass := TUClass(ProcIncludeFiles.Objects[i]);
+      target := CreateOutputStream(htmloutputdir+PATHDELIM+fname);
+      currentFile := fname;
+      try
+        template1.Position := 0;
+        parseTemplate(template1, target, replaceClass, TUClass(ProcIncludeFiles.Objects[i]));
+        if (Self.Terminated) then break;
+        if (not fileexists(ClassList[i].package.path+PATHDELIM+ClassList[i].filename)) then continue;
+        source := TFileStream.Create(ResolveFilename(currentClass, ProcIncludeFiles.Values[fname]), fmOpenRead or fmShareDenyWrite);
+        try
+          parseCode(source, target);
+        finally
+          source.Free;
+        end;
+        if (Self.Terminated) then break;
+        template2.Position := 0;
+        parseTemplate(template2, target, replaceClass, TUClass(ProcIncludeFiles.Objects[i]));
       finally
         CloseOutputStream(target);
       end;
