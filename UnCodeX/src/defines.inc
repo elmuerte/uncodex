@@ -6,7 +6,7 @@
     Purpose:
         Global macro file, to be included by means of ($I defines.inc)
 
-    $Id: defines.inc,v 1.10 2005-04-07 06:29:00 elmuerte Exp $
+    $Id: defines.inc,v 1.11 2005-04-12 08:31:48 elmuerte Exp $
 *******************************************************************************}
 
 {$IFDEF VER140} // delphi 6
@@ -20,7 +20,7 @@
 {$IFDEF FPC}
     {$DEFINE CONSOLE}
 	{$IFDEF LINUX}
-	    {$THREADING ON}
+    {$THREADING ON}
 	{$ENDIF}
 {$ENDIF}
 
@@ -62,13 +62,16 @@
 {$ENDIF}
 
 // add pascalscript support for HTML Output
-{$DEFINE HTMLOUT_PASCALSCRIPT}
+//{ $DEFINE HTMLOUT_PASCALSCRIPT} //not yet
 
 // enables compression for HTML output
 {$DEFINE WITH_ZLIB}
 
 
 {$IFDEF FPC}
+  {$IFDEF DEBUG_BUILD}
+    {$DEFINE FPC_HEAPTRC}
+  {$ENDIF}
   // Defined(FPC) is required because Delphi 6 still tries to evaluate the if statement. 
   {$IF Defined(FPC) and (FPC_VERSION <= 1.0) and (FPC_RELEASE <= 9.0) and (FPC_PATCH < 8.0) }
     // BinToHex() functions have been added in 1.9.8

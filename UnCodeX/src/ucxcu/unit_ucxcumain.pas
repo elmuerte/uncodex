@@ -6,7 +6,7 @@
   Purpose:
     Main code for the commandline utility
 
-  $Id: unit_ucxcumain.pas,v 1.22 2005-04-06 10:11:03 elmuerte Exp $
+  $Id: unit_ucxcumain.pas,v 1.23 2005-04-12 08:31:49 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -39,7 +39,6 @@ uses
   {$IFDEF LINUX}
   procedure SigProc(signum: integer); cdecl;
   {$ENDIF}
-  procedure LoadConfig;
   procedure ProcessCommandline;
   procedure Main;
   procedure FatalError(msg: string; errorcode: integer = -1);
@@ -50,13 +49,7 @@ var
   Verbose: byte = 1;
   ConfigFile: string;
   Config: TUCXConfig;
-  //sourcepaths, packagepriority, ignorepackages: TStringList;
-  {PackageDescFile, ExtCommentFile,} UEini: string;
-  // HTML output config:
-  //HTMLOutputDir, TemplateDir, HTMLTargetExt, CPPApp: string;
-  //TabsToSpaces: integer;
-  // HTML Help config:
-  //HHCPath, HTMLHelpFile, HHTitle: string;
+  UEini: string;
 
 implementation
 
@@ -95,62 +88,6 @@ begin
   end;
 end;
 {$ENDIF}
-
-procedure LoadConfig;
-{var
-  ini: TMemIniFile;
-  tmp, tmp2: string;
-  i: integer;
-  sl: TStringList;}
-begin
-  (*
-  ini := TMemIniFile.Create(ConfigFile);
-  sl := TStringList.Create;
-  try
-    HTMLOutputDir := ini.ReadString('Config', 'HTMLOutputDir', HTMLOutputDir);
-    TemplateDir := ini.ReadString('Config', 'TemplateDir', TemplateDir);
-    HTMLTargetExt := ini.ReadString('Config', 'HTMLTargetExt', '');
-    TabsToSpaces := ini.ReadInteger('Config', 'TabsToSpaces', 0);
-    CPPApp := ini.ReadString('Config', 'CPP', '');
-    HHCPath := ini.ReadString('Config', 'HHCPath', '');
-    HTMLHelpFile := ini.ReadString('Config', 'HTMLHelpFile', HTMLHelpFile);
-    HHTitle := ini.ReadString('Config', 'HHTitle', '');
-
-    PackageDescFile := ini.ReadString('Config', 'PackageDescriptionFile', PackageDescFile);
-    ExtCommentFile := ini.ReadString('Config', 'ExternalCommentFile', ExtCommentFile);
-
-    { Unreal Packages }
-    ini.ReadSectionValues('PackagePriority', sl);
-    for i := 0 to sl.Count-1 do begin
-      tmp := sl[i];
-      tmp2 := Copy(tmp, 1, Pos('=', tmp));
-      Delete(tmp, 1, Pos('=', tmp));
-      if (LowerCase(tmp2) = 'packages=') then begin
-        Log('Config: Package = '+tmp);
-        PackagePriority.Add(LowerCase(tmp));
-      end;
-    end;
-    ini.ReadSectionValues('IgnorePackages', sl);
-    for i := 0 to sl.Count-1 do begin
-      tmp := sl[i];
-      Delete(tmp, 1, Pos('=', tmp));
-      Log('Config: Ignore = '+tmp);
-      IgnorePackages.Add(LowerCase(tmp));
-    end;
-    { Unreal Packages -- END }
-    { Source paths }
-    ini.ReadSectionValues('SourcePaths', sl);
-    for i := 0 to sl.Count-1 do begin
-      tmp := sl[i];
-      Delete(tmp, 1, Pos('=', tmp));
-      Log('Config: Path = '+tmp);
-      if (iFindDir(tmp, tmp)) then SourcePaths.Add(tmp);
-    end;
-  finally
-    sl.free;
-    ini.Free;
-  end;*)
-end;
 
 procedure ProcessCommandline;
 var
@@ -277,9 +214,6 @@ end;
 procedure Main;
 var
   prec: TPackageScannerConfig;
-  ps: TPackageScanner;
-  ca: TClassAnalyser;
-  ho: THTMLOutput;
 begin
   if (config.sourcepaths.Count <= 0) then begin
     FatalError('No source paths defined');
@@ -299,14 +233,13 @@ begin
   prec.PDFile := config.Comments.Packages;
   prec.CHash := nil;
 
-  ps := TPackageScanner.Create(prec);
-  ActiveThread := ps;
+  ActiveThread := TPackageScanner.Create(prec);
   try
-    ps.FreeOnTerminate := false;
-    ps.Resume;
-    ps.WaitFor;
+    ActiveThread.FreeOnTerminate := false;
+    ActiveThread.Resume;
+    ActiveThread.WaitFor;
   finally
-    ps.Free;
+    ActiveThread.Free;
   end;
   if (Verbose > 0) then writeln('');
 
@@ -315,32 +248,30 @@ begin
   end;
 
   PhaseLabel := format(StatusFormat, [2, 'Analyzing classes']);
-  ca := TClassAnalyser.Create(config.ClassList, statusreport);
-  ActiveThread := ca;
+  ActiveThread := TClassAnalyser.Create(config.ClassList, statusreport);
   try
-    ca.FreeOnTerminate := false;
-    ca.Resume;
-    ca.WaitFor;
+    ActiveThread.FreeOnTerminate := false;
+    ActiveThread.Resume;
+    ActiveThread.WaitFor;
   finally
-    ca.Free;
+    ActiveThread.Free;
   end;
   if (Verbose > 0) then writeln('');
 
   PhaseLabel := format(StatusFormat, [3, 'Creating HTML files']);
-  ho := THTMLOutput.Create(config.HTMLOutput, statusreport);
-  ActiveThread := ho;
+  ActiveThread := THTMLOutput.Create(config.HTMLOutput, statusreport);
   try
-    ho.FreeOnTerminate := false;
-    ho.Resume;
-    ho.WaitFor;
+    ActiveThread.FreeOnTerminate := false;
+    ActiveThread.Resume;
+    ActiveThread.WaitFor;
   finally
-    ho.Free;
+    ActiveThread.Free;
   end;
   if (Verbose > 0) then writeln('');
 
   if (config.HTMLHelp.OutputFile <> '') then begin
     PhaseLabel := format(StatusFormat, [4, 'Compiling MS HTML Help']);
-    Warning('Not implemented'); //TODO: implement
+    Warning('Compiling MS HTML Help not implemented'); //TODO: implement
   end;
 
   if (HasCmdOption('me')) then begin
@@ -403,6 +334,7 @@ initialization
   ErrOutput := stderr;
   {$ENDIF}
 finalization
+  if (config <> nil) then FreeAndNil(config);
   if (Logging) then begin
     Flush(LogFile);
     WriteLn(LogFile, '--- Log closed on: '+DateTimeToStr(Now()));

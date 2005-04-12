@@ -6,7 +6,7 @@
   Purpose:
     General commandline routines
 
-  $Id: unit_ascii.pas,v 1.20 2005-03-20 12:43:39 elmuerte Exp $
+  $Id: unit_ascii.pas,v 1.21 2005-04-12 08:31:49 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -108,7 +108,7 @@ procedure PrintBanner;
 begin
   writeln('------------------------------------------------------------');
   writeln(' UnCodeX Commandline Utility (ucxcu) version '+VERSION);
-  writeln(' Engine version: '+APPTITLE+' '+APPVERSION+' '+APPPLATFORM+' '+COMPILER);
+  writeln(' Engine version: '+APPTITLE+' '+APPVERSION+' '+APPPLATFORM+' '+COMPILER+' '+DEBUGBUILD_STR);
   writeln(' (c) 2003-2005 Michiel ''El Muerte'' Hendriks');
   writeln(' http://wiki.beyondunreal.com/wiki/UnCodeX');
   writeln('------------------------------------------------------------');
@@ -118,7 +118,7 @@ end;
 procedure PrintVersion;
 begin
   writeln('ucxcu version:  '+VERSION);
-  writeln('engine version: '+APPTITLE+' '+APPVERSION+' '+APPPLATFORM+' '+COMPILER);
+  writeln('engine version: '+APPTITLE+' '+APPVERSION+'; '+APPPLATFORM+'; '+COMPILER+'; '+DEBUGBUILD_STR);
   writeln('uclasses rev:   '+IntToStr(UCLASSES_REV));
 end;
 
