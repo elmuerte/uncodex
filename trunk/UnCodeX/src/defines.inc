@@ -6,7 +6,7 @@
     Purpose:
         Global macro file, to be included by means of ($I defines.inc)
 
-    $Id: defines.inc,v 1.11 2005-04-12 08:31:48 elmuerte Exp $
+    $Id: defines.inc,v 1.12 2005-04-12 10:01:25 elmuerte Exp $
 *******************************************************************************}
 
 {$IFDEF VER140} // delphi 6
@@ -66,6 +66,17 @@
 
 // enables compression for HTML output
 {$DEFINE WITH_ZLIB}
+
+{$IFDEF WITH_ZLIB}
+  {$IFDEF IS_DELPHI}
+    {$DEFINE WITH_OWN_ZLIB} // no zlib for delphi
+  {$ENDIF}
+  {$IFDEF FPC}
+    {$IF Defined(FPC) and (FPC_VERSION <= 1.0) and (FPC_RELEASE <= 9.0) and (FPC_PATCH < 9.0) }
+      {$DEFINE WITH_OWN_ZLIB} // paszlib partialy broken in <1.9.9
+    {$IFEND}
+  {$ENDIF}
+{$ENDIF}
 
 
 {$IFDEF FPC}
