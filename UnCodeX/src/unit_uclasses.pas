@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.55 2005-04-10 08:36:28 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.56 2005-04-12 09:14:08 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -30,6 +30,7 @@
 unit unit_uclasses;
 
 {$I defines.inc}
+{$M+}
 
 interface
 
@@ -48,6 +49,8 @@ type
   TUFunctionList = class;
 
   TDefinitionList = class(TObject)
+  //TODO: not public
+  public
     fowner:   TUClass;
     defines:  TStringList;
     curToken: string;
@@ -71,37 +74,54 @@ type
 
   // general Unreal Object
   TUObject = class(TObject)
-    name:         string;
-    comment:      string;
-    CommentType:  TUCommentType;
-    function declaration: string; virtual; abstract;
+  protected
+    Fname:         string;
+    Fcomment:      string;
+    FCommentType:  TUCommentType;
+  published
+    property Name: string read Fname write FName;
+    property Comment: string read Fcomment write Fcomment;
+    property CommentType: TUCommentType read FCommentType write FCommentType;
     function HTMLdeclaration: string; virtual;
+  public
+    function declaration: string; virtual; abstract;
   end;
 
   // used for declarations in classes(e.g. functions, variables)
   TUDeclaration = class(TUObject)
-    srcline:      integer;
-    definedIn:    string; // set to the filename this variable was
+  protected
+    Fsrcline:      integer;
+    FdefinedIn:    string; // set to the filename this variable was
                 // declared in if not in the class source file
                 // itself (e.g. via the #include macro).
-    owner:        TUObject; // points to uclass or ustruct                
+    Fowner:        TUObject; // points to uclass or ustruct
+  published
+    property srcline: integer read Fsrcline write Fsrcline;
+    property definedIn: string read FdefinedIn write FdefinedIn;
+    property owner: TUObject read Fowner write Fowner;
   end;
 
   // general Unreal Object List
   TUObjectList = class(TObjectList)
-  public
+  published
     function Find(name: string): TUObject;
+    property Count;
   end;
 
   TUDeclarationList = class(TUObjectList)
   protected
+    Fowner: TUObject; // points to uclass or ustruct
+  protected
     procedure SetItem(Index: Integer; AObject: TUDeclaration);
-  public
-    owner: TUObject; // points to uclass or ustruct
+  published
+    property owner: TUObject read Fowner write Fowner;
   end;
 
   TUConst = class(TUDeclaration)
-    value:  string;
+  protected
+    Fvalue:  string;
+  published
+    property value: string read Fvalue write Fvalue;
     function declaration: string; override;
   end;
 
@@ -110,15 +130,21 @@ type
     function GetItem(Index: Integer): TUConst;
     procedure SetItem(Index: Integer; AObject: TUConst);
   public
+    property Items[Index: Integer]: TUConst read GetItem write SetItem; default;
+  published
     procedure Sort;
     function Find(name: string): TUConst;
-    property Items[Index: Integer]: TUConst read GetItem write SetItem; default;
   end;
 
   TUProperty = class(TUDeclaration)
-    ptype:      string;
-    modifiers:  string;
-    tag:        string;
+  protected
+    Fptype:      string;
+    Fmodifiers:  string;
+    Ftag:        string;
+  published
+    property ptype: string read Fptype write Fptype;
+    property modifiers: string read Fmodifiers write Fmodifiers;
+    property tag: string read Ftag write Ftag;
     function declaration: string; override;
   end;
 
@@ -127,15 +153,19 @@ type
     function GetItem(Index: Integer): TUProperty;
     procedure SetItem(Index: Integer; AObject: TUProperty);
   public
+    property Items[Index: Integer]: TUProperty read GetItem write SetItem; default;
+  published
     procedure Sort;
     function Find(name: string): TUProperty;
     function FindEx(name: string): TUProperty;
     procedure SortOnTag;
-    property Items[Index: Integer]: TUProperty read GetItem write SetItem; default;
   end;
 
   TUEnum = class(TUDeclaration)
-    options:  string;
+  protected
+    Foptions:  string;
+  published
+    property options: string read Foptions write Foptions;
     function declaration: string; override;
   end;
 
@@ -144,17 +174,24 @@ type
     function GetItem(Index: Integer): TUEnum;
     procedure SetItem(Index: Integer; AObject: TUEnum);
   public
+    property Items[Index: Integer]: TUEnum read GetItem write SetItem; default;
+  published
     procedure Sort;
     function Find(name: string): TUEnum;
-    property Items[Index: Integer]: TUEnum read GetItem write SetItem; default;
   end;
 
   TUStruct = class(TUDeclaration)
-    parent:     string;
-    modifiers:  string;
-    properties: TUPropertyList;
+  protected
+    Fparent:     string;
+    Fmodifiers:  string;
+    Fproperties: TUPropertyList;
+  public
     constructor Create;
     destructor Destroy; override;
+  published
+    property parent: string read Fparent write Fparent;
+    property modifiers: string read Fmodifiers write Fmodifiers;
+    property properties: TUPropertyList read Fproperties write Fproperties;
     function declaration: string; override;
   end;
 
@@ -163,17 +200,24 @@ type
     function GetItem(Index: Integer): TUStruct;
     procedure SetItem(Index: Integer; AObject: TUStruct);
   public
+    property Items[Index: Integer]: TUStruct read GetItem write SetItem; default;
+  published
     procedure Sort;
     function Find(name: string): TUStruct;
-    property Items[Index: Integer]: TUStruct read GetItem write SetItem; default;
   end;
 
   TUState = class(TUDeclaration)
-    extends:    string;
-    modifiers:  string;
-    functions:  TUFunctionList;
+  protected
+    Fextends:    string;
+    Fmodifiers:  string;
+    Ffunctions:  TUFunctionList;
+  public
     constructor Create;
     destructor Destroy; override;
+  published
+    property extends: string read Fextends write Fextends;
+    property modifiers: string read Fmodifiers write Fmodifiers;
+    property functions: TUFunctionList read Ffunctions write Ffunctions;
     function declaration: string; override;
   end;
 
@@ -182,23 +226,34 @@ type
     function GetItem(Index: Integer): TUState;
     procedure SetItem(Index: Integer; AObject: TUState);
   public
+    property Items[Index: Integer]: TUState read GetItem write SetItem; default;
+  published
     procedure Sort;
     function Find(name: string): TUState;
-    property Items[Index: Integer]: TUState read GetItem write SetItem; default;
   end;
 
   TUFunctionType = (uftFunction, uftEvent, uftOperator, uftPreOperator, uftPostOperator, uftDelegate);
 
   TUFunction = class(TUDeclaration)
-    ftype:      TUFunctionType;
-    return:     string;
-    modifiers:  string;
-    params:     string;
-    state:      TUState;
-    args:       TUPropertyList; // parsed argument list (CURRENTLY NOT USED)
-    locals:     TUPropertyList; // local variable delcrations (CURRENTLY NOT USED)
+  protected
+    Fftype:      TUFunctionType;
+    Freturn:     string;
+    Fmodifiers:  string;
+    Fparams:     string;
+    Fstate:      TUState;
+    Fargs:       TUPropertyList; // parsed argument list (CURRENTLY NOT USED)
+    Flocals:     TUPropertyList; // local variable delcrations (CURRENTLY NOT USED)
+  public
     constructor Create;
     destructor Destroy; override;
+  published
+    property ftype: TUFunctionType read Fftype write Fftype;
+    property return: string read Freturn write Freturn;
+    property modifiers: string read Fmodifiers write Fmodifiers;
+    property params: string read Fparams write Fparams;
+    property state: TUState read Fstate write Fstate;
+    property args: TUPropertyList read Fargs write Fargs;
+    property locals: TUPropertyList read Flocals write Flocals;
     function declaration: string; override;
   end;
 
@@ -207,9 +262,10 @@ type
     function GetItem(Index: Integer): TUFunction;
     procedure SetItem(Index: Integer; AObject: TUFunction);
   public
+    property Items[Index: Integer]: TUFunction read GetItem write SetItem; default;
+  published
     procedure Sort;
     function Find(name: string; state: string = ''): TUFunction;
-    property Items[Index: Integer]: TUFunction read GetItem write SetItem; default;
   end;
 
   TUClassList = class;
@@ -217,6 +273,7 @@ type
   TUCInterfaceType = (itNone, itTribesV);
 
   TUClass = class(TUObject)
+  //TODO
   public
     parent:             TUClass;
     filename:           string;
@@ -268,19 +325,28 @@ type
     function GetItem(Index: Integer): TUClass;
     procedure SetItem(Index: Integer; AObject: TUClass);
   public
+    property Items[Index: Integer]: TUClass read GetItem write SetItem; default;
+  published
     procedure Sort;
     function Find(name: string): TUClass;
-    property Items[Index: Integer]: TUClass read GetItem write SetItem; default;
   end;
 
   TUPackage = class(TUObject)
-    classes:    TUClassList;
-    priority:   integer;
-    path:       string; // class path
-    treenode:   TObject;
-    tagged:     boolean;
+  protected
+    Fclasses:    TUClassList;
+    Fpriority:   integer;
+    Fpath:       string; // class path
+    Ftreenode:   TObject;
+    Ftagged:     boolean;
+  public
     constructor Create;
-    destructor Destroy; override;
+    destructor Destroy; override;  
+  published
+    property classes: TUClassList read Fclasses write Fclasses;
+    property priority: integer read Fpriority write Fpriority;
+    property path: string read Fpath write Fpath;
+    property treenode: TObject read Ftreenode write Ftreenode;
+    property tagged: boolean read Ftagged write Ftagged;
     function PackageDir: string; // returns the actual package dir
     function declaration: string; override;
   end;
@@ -290,10 +356,11 @@ type
     function GetItem(Index: Integer): TUPackage;
     procedure SetItem(Index: Integer; AObject: TUPackage);
   public
+    property Items[Index: Integer]: TUPackage read GetItem write SetItem; default;
+  published
     procedure Sort;
     procedure AlphaSort;
     function Find(name: string): TUPackage;
-    property Items[Index: Integer]: TUPackage read GetItem write SetItem; default;
   end;
 
   function UFunctionTypeToString(utype: TUFunctionType): string;
@@ -461,13 +528,13 @@ end;
 
 constructor TUStruct.Create;
 begin
-  properties := TUPropertyList.Create(true);
-  properties.owner := self;
+  fproperties := TUPropertyList.Create(true);
+  fproperties.owner := self;
 end;
 
 destructor TUStruct.Destroy;
 begin
-  FreeAndNil(properties);
+  FreeAndNil(fproperties);
 end;
 
 function TUStruct.declaration: string;
@@ -510,12 +577,12 @@ end;
 { TUState }
 constructor TUState.Create;
 begin
-  functions := TUFunctionList.Create(false);
+  ffunctions := TUFunctionList.Create(false);
 end;
 
 destructor TUState.Destroy;
 begin
-  FreeAndNil(functions);
+  FreeAndNil(ffunctions);
 end;
 
 function TUState.declaration: string;
@@ -565,13 +632,13 @@ end;
 
 constructor TUFunction.Create;
 begin
-  locals := TUPropertyList.Create(true);
-  locals.owner := self;
+  flocals := TUPropertyList.Create(true);
+  flocals.owner := self;
 end;
 
 destructor TUFunction.Destroy;
 begin
-  FreeAndNil(locals);
+  FreeAndNil(flocals);
 end;
 
 function TUFunction.declaration: string;
@@ -750,12 +817,12 @@ end;
 
 constructor TUPackage.Create;
 begin
-  classes := TUClassList.Create(false); // or else we can't move them around
+  fclasses := TUClassList.Create(false); // or else we can't move them around
 end;
 
 destructor TUPackage.Destroy;
 begin
-  FreeAndNil(classes);
+  FreeAndNil(fclasses);
 end;
 
 function TUPackage.PackageDir: string;
