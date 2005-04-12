@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<title>UnCodeX - Template class.html</title>
+	<link href="../images/default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="../images/UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">class.html</div>
+</div>
+
+<div class="content">
+<h1>HTML Template class.html</h1>
+You can use the same replacements as in <a href="templates_packages_list_entry.html">packages_list_entry.html</a>.
+These replacements can only be used in class.html, classes_list_entry.html and package_class_table_entry.html.<br />
+<table>
+<tr>
+	<th>replacement</th>
+	<th>replaced with</th>
+</tr>
+<tr>
+	<td><pre>%class_link%</pre></td>
+	<td>Relative location the class detail page</td>
+</tr>
+<tr>
+	<td><pre>%class_name%</pre></td>
+	<td>the name of the class</td>
+</tr>
+<tr>
+	<td><pre>%class_modifiers%</pre></td>
+	<td>the class modifiers</td>
+</tr>
+<tr>
+	<td><pre>%class_parent%</pre></td>
+	<td>the parent class, including link to the parent class page</td>
+</tr>
+<tr>
+	<td><pre>%class_parent_plain%</pre></td>
+	<td>just the parent class name</td>
+</tr>
+<tr>
+	<td><pre>%class_parent_tree%</pre></td>
+	<td>a ASCII tree displaying the inheritence tree up to the root</td>
+</tr>
+<tr>
+	<td><pre>%class_filename%</pre></td>
+	<td>the filename of the class's source</td>
+</tr>
+<tr>
+	<td><pre>%class_fileage%</pre></td>
+	<td>the last file change of the class's source, format is defined in the <a href="templates_template.ini.html">template.ini</a></td>
+</tr>
+<tr>
+	<td><pre>%class_defaultproperties%</pre></td>
+	<td>the default properties defined in the class source</td>
+</tr>
+<tr>
+	<td><pre>%class_comment%</pre></td>
+	<td>the description of the class, if present</td>
+</tr>
+<tr>
+	<td><pre>%class_children%</pre></td>
+	<td>direct sub classes of this class, including links to their pages. The title from the <a href="templates_template.ini.html">template.ini</a> is added to this</td>
+</tr>
+<tr>
+	<td><pre>%class_previous%</pre></td>
+	<td>location to the previous class in this package</td>
+</tr>
+<tr>
+	<td><pre>%class_source_previous%</pre></td>
+	<td>location to the source code HTML file of the next class in this package</td>
+</tr>
+<tr>
+	<td><pre>%class_source_next%</pre></td>
+	<td>location to the source code HTML file of the previous class in this package</td>
+</tr>
+</table>
+
+<h2>Block templates</h2>
+Block templates are wild card replacements, the template file used is the the complete replacement string. <br />
+Example:<br />
+Replacement: %class_block_const_summary%<br />
+Template used: class_block_const_summary.html <br />
+<br />
+Block replacements are replaced with an empty string when the current class does not contain any of the elements those block covers (e.g. for %class_block_const*% it checks the class's constants) <br />
+Parent classes will also be checked if they contain elements. The number of parent classes checked is controlled in the <a href="templates_template.ini.html">template.ini</a> file by the "MaxInherit" value. This can be overwritten per template setting a value for this template in the [InheritCheck] block of the <a href="templates_template.ini.html">template.ini</a>
+<table>
+<tr>
+	<th>replacement</th>
+	<th>replaced with</th>
+</tr>
+<tr>
+	<td><pre>%class_block_children*%</pre></td>
+	<td>Direct subclasses of this class</td>
+</tr>
+<tr>
+	<td><pre>%class_block_const*%</pre></td>
+	<td>Constants</td>
+</tr>
+<tr>
+	<td><pre>%class_block_variable*%</pre></td>
+	<td>Variables</td>
+</tr>
+<tr>
+	<td><pre>%class_block_enum*%</pre></td>
+	<td>Enumerations</td>
+</tr>
+<tr>
+	<td><pre>%class_block_struct*%</pre></td>
+	<td>Structures</td>
+</tr>
+<tr>
+	<td><pre>%class_block_function*%</pre></td>
+	<td>Functions, including: events, operators, delegates</td>
+</tr>
+<tr>
+	<td><pre>%class_block_state*%</pre></td>
+	<td>States</td>
+</tr>
+<tr>
+	<td><pre>%class_block_defaultproperties*%</pre></td>
+	<td>Defaultproperties, only for this class, parent classes are not checked</td>
+</tr>
+</table>
+
+<h2>Block entry templates</h2>
+These replacements behave just like the block templates except for the inheritence check, this isn't used. <br />
+The entry templates are used to fill in the actual data,
+<table>
+<tr>
+	<th>replacement</th>
+	<th>replaced with</th>
+</tr>
+<tr>
+	<td><pre>%class_entry_const*%</pre></td>
+	<td>Class constants, entries constructed from <a href="template_class_entry_const.html">class_entry_const*.html</a></td>
+</tr>
+<tr>
+	<td><pre>%class_entry_variable*%</pre></td>
+	<td>Class variable, entries constructed from <a href="template_class_entry_variable.html">class_entry_variable*.html</a></td>
+</tr>
+<tr>
+	<td><pre>%class_entry_enum*%</pre></td>
+	<td>Class enumerations, entries constructed from <a href="template_class_entry_enum.html">class_entry_enum*.html</a></td>
+</tr>
+<tr>
+	<td><pre>%class_entry_struct*%</pre></td>
+	<td>Class structs, entries constructed from <a href="template_class_entry_struct.html">class_entry_struct*.html</a></td>
+</tr>
+<tr>
+	<td><pre>%class_entry_function*%</pre></td>
+	<td>Class functions, entries constructed from <a href="template_class_entry_function.html">class_entry_function*.html</a></td>
+</tr>
+<tr>
+	<td><pre>%class_entry_state*%</pre></td>
+	<td>Class states, entries constructed from <a href="template_class_entry_state.html">class_entry_state*.html</a></td>
+</tr>
+</table>
+
+<h2>Inherited elements templates</h2>
+All inherited elements templates are cunstructed from the same template file: <a href="template_class_entry_inherited.html">class_entry_inherited.html</a><br />
+The depth is constrolled from the <a href="templates_template.ini.html">template.ini</a> file with the "MaxInherit" value.
+<table>
+<tr>
+	<th>replacement</th>
+	<th>replaced with</th>
+</tr>
+<tr>
+	<td><pre>%inherited_entries_const%</pre></td>
+	<td>constants</td>
+</tr>
+<tr>
+	<td><pre>%inherited_entries_variable%</pre></td>
+	<td>variables</td>
+</tr>
+<tr>
+	<td><pre>%inherited_entries_enum%</pre></td>
+	<td>enumerations</td>
+</tr>
+<tr>
+	<td><pre>%inherited_entries_struct%</pre></td>
+	<td>structs</td>
+</tr>
+<tr>
+	<td><pre>%inherited_entries_function%</pre></td>
+	<td>functions</td>
+</tr>
+</table>
+
+</div>
+</div>
+</body>
+</html>
