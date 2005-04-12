@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.66 2005-03-28 09:56:19 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.67 2005-04-12 09:14:08 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -842,7 +842,8 @@ begin
     p.NextToken; // (
     while (p.Token <> ')') do p.NextToken;
     result.params := p.GetCopyData;
-    Delete(result.params, Length(result.params), 1);
+    result.params := Copy(result.params, 1, Length(result.params)-1);
+    //Delete(result.params, Length(result.params), 1);
     result.params := trim(result.params);
     p.FullCopy := false;
     p.FCIgnoreComments := false;
