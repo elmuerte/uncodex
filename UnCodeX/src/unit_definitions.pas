@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.147 2005-04-12 08:31:48 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.148 2005-04-12 10:01:25 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -36,7 +36,7 @@ interface
 
 uses
   Hashes, unit_uclasses, Classes
-  {$IFDEF WITH_ZLIB}
+  {$IFDEF WITH_OWN_ZLIB}
   , gzio
   {$ENDIF};
 
@@ -67,7 +67,7 @@ type
     OpenFTS: boolean;
   end;
 
-  {$IFDEF WITH_ZLIB}
+  {$IFDEF WITH_OWN_ZLIB}
   EZlibError = class(EStreamError);
 
   TGZOpenMode = (gzOpenRead,gzOpenWrite);
@@ -200,7 +200,7 @@ var
   sl, TmpExtCmt: TStringList;
   ExtCommentIni: TUCXIniFile;
 
-{$IFDEF WITH_ZLIB}
+{$IFDEF WITH_OWN_ZLIB}
 const
   SCouldntOpenFile = 'Couldn''t open file : %s';
   SReadOnlyStream = 'Decompression streams are read-only';
@@ -214,7 +214,7 @@ Const
   OpenStrings : array[TGZOpenMode] of pchar = ('rb','wb');
 begin
    FOpenMode:=FileMode;
-   FFile:=gzopen (PChar(FileName), Openstrings[FileMode]);
+   FFile:=gzopen (FileName, Openstrings[FileMode]);
    If FFile=Nil then
      Raise ezlibError.CreateFmt (SCouldntOpenFIle,[FileName]);
 end;

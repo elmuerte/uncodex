@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.81 2005-04-12 08:31:48 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.82 2005-04-12 10:01:25 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -186,7 +186,9 @@ uses
   unit_sourceparser, Contnrs
 {$IFDEF FPC}
   , unit_fpc_compat
-//  , zstream // for the TGZStream
+  {$IFNDEF WITH_OWN_ZLIB}
+  , zstream // for the TGZStream
+  {$ENDIF}
 {$ENDIF}
 {$IFDEF HTMLOUT_PASCALSCRIPT}
   , uPSComponent_Default, IFSI_unit_uclasses, unit_pascalscript_ex, unit_pascalscript
