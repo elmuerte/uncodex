@@ -6,7 +6,7 @@
   Purpose:
     UnCodeX Commandline Utility Client
 
-  $Id: ucxcu.dpr,v 1.20 2005-04-06 10:11:03 elmuerte Exp $
+  $Id: ucxcu.dpr,v 1.21 2005-04-12 08:31:49 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -35,11 +35,11 @@ program ucxcu;
 {$I ..\defines.inc}
 
 uses
-  {$IF Defined(FPC) and Defined(DEBUG_BUILD)}
-  heaptrc, // memory leak detection
-  {$IFEND}
   {$IFDEF FPC_THREADING}
   cthreads, 
+  {$ENDIF}
+  {$IFDEF DETECT_MEM_LEAK}
+  MemCheck in '..\MemCheck.pas',
   {$ENDIF}
   SysUtils,
   {$IFDEF FPC}
@@ -68,6 +68,12 @@ uses
   unit_ucxinifiles in '..\unit_ucxinifiles.pas';
 
 begin
+  {$IFDEF DETECT_MEM_LEAK}
+  MemChk;
+  {$ENDIF}
+  {$IFDEF FPC_HEAPTRC}
+  SetHeapTraceOutput(GetCurrentDir()+PATHDELIM+'ucxcu_MemCheck.log');
+  {$ENDIF}
   if (HasCmdOption('V')) then PrintVersion
   else begin
     if (HasCmdOption('q')) then Verbose := 0
@@ -81,12 +87,6 @@ begin
       signal(SIGINT, SigProc);
       signal(SIGABRT, SigProc);
       {$ENDIF}
-      //HTMLOutputDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+'ucxcu-output';
-      //TemplateDir := ExtractFilePath(ExpandFileName(ParamStr(0)))+TEMPLATEPATH+PATHDELIM+DEFTEMPLATE;
-  	  //HTMLHelpFile := ExtractFilePath(ExpandFileName(ParamStr(0)))+'UnCodeX.chm';
-      //PackageDescFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTPDF);
-      //ExtCommentFile := iFindFile(ExtractFilePath(ExpandFileName(ParamStr(0)))+DEFAULTECF);
-
       ConfigFile := ExtractFilePath(ParamStr(0)) + 'UnCodeX.ini';
       if (CmdOption('c', ConfigFile)) then begin
         ConfigFile := iFindFile(ConfigFile);

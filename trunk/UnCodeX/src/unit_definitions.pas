@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.146 2005-04-11 22:20:03 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.147 2005-04-12 08:31:48 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -37,9 +37,7 @@ interface
 uses
   Hashes, unit_uclasses, Classes
   {$IFDEF WITH_ZLIB}
-  {$IFNDEF FPC}
   , gzio
-  {$ENDIF}
   {$ENDIF};
 
 type
@@ -70,7 +68,6 @@ type
   end;
 
   {$IFDEF WITH_ZLIB}
-  {$IFNDEF FPC}
   EZlibError = class(EStreamError);
 
   TGZOpenMode = (gzOpenRead,gzOpenWrite);
@@ -86,7 +83,6 @@ type
     function Write(const Buffer; Count: Longint): Longint; override;
     function Seek(Offset: Longint; Origin: Word): Longint; override;
   end;
-  {$ENDIF}
   {$ENDIF}
 
   function CreateLogEntry(filename: string; line: integer = 0; pos: integer = 0;
@@ -125,8 +121,10 @@ const
   APPVERSION      = '224';
   {$IFDEF DEBUG_BUILD}
   DEBUGBUILD      = true;
+  DEBUGBUILD_STR  = 'Debug Build';
   {$ELSE}
   DEBUGBUILD      = false;
+  DEBUGBUILD_STR  = '';
   {$ENDIF}
   {$IFDEF MSWINDOWS}
   APPPLATFORM     = 'MS Windows';
@@ -203,8 +201,6 @@ var
   ExtCommentIni: TUCXIniFile;
 
 {$IFDEF WITH_ZLIB}
-{$IFNDEF FPC}
-
 const
   SCouldntOpenFile = 'Couldn''t open file : %s';
   SReadOnlyStream = 'Decompression streams are read-only';
@@ -214,12 +210,11 @@ const
 // TGZFileStream
 
 Constructor TGZFileStream.Create(FileName: String;FileMode: TGZOpenMode);
-
-Const OpenStrings : array[TGZOpenMode] of pchar = ('rb','wb');
-
+Const
+  OpenStrings : array[TGZOpenMode] of pchar = ('rb','wb');
 begin
    FOpenMode:=FileMode;
-   FFile:=gzopen (FileName, Openstrings[FileMode]);
+   FFile:=gzopen (PChar(FileName), Openstrings[FileMode]);
    If FFile=Nil then
      Raise ezlibError.CreateFmt (SCouldntOpenFIle,[FileName]);
 end;
@@ -250,8 +245,7 @@ begin
   If Result=-1 then
     Raise eZlibError.Create(SSeekError);
 end;
-{$ENDIF} // FPC
-{$ENDIF} // WITH_ZLIB        
+{$ENDIF} // WITH_ZLIB
 
 function CreateLogEntry(filename: string; line: integer = 0; pos: integer = 0; obj: TObject = nil): TLogEntry;
 begin

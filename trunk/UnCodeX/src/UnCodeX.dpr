@@ -6,7 +6,7 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.66 2005-04-10 08:36:27 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.67 2005-04-12 08:31:48 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -34,7 +34,9 @@ program UnCodeX;
 
 uses
   FastShareMem in 'FastShareMem.pas',
+  {$IFDEF DETECT_MEM_LEAK}
   MemCheck in 'MemCheck.pas',
+  {$ENDIF}
   Windows,
   Messages,
   SysUtils,
@@ -216,11 +218,11 @@ end;
 
 begin
   if (FindCmdLineSwitch('findmemleak')) then begin
-    {$IF Declared(MemChk)}
+    {$IFDEF DETECT_MEM_LEAK}
     MemChk;
     {$ELSE}
     ShowMessage('Not compiled with DETECT_MEM_LEAK');
-    {$IFEND}
+    {$ENDIF}
   end;
 
   if (not (FindCmdLineSwitch('nosplash') or FindCmdLineSwitch('hide'))) then frm_Splash := Tfrm_Splash.Create(nil);

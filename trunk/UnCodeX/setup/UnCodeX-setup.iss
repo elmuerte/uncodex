@@ -1,7 +1,7 @@
 [Setup]
 AppName=UnCodeX
-AppVerName=UnCodeX version 219
-AppVersion=219
+AppVerName=UnCodeX version 224
+AppVersion=224
 AppPublisher=Michiel 'El Muerte' Hendriks
 AppPublisherURL=http://sourceforge.net/projects/uncodex/
 AppSupportURL=http://sourceforge.net/tracker/?group_id=120421
@@ -20,7 +20,7 @@ ShowLanguageDialog=no
 UninstallDisplayIcon={app}\UnCodeX.exe
 UninstallDisplayName=UnCodeX
 AppID={{FDD6ED8B-DB77-43BC-B0B2-608A1F27AABC}}
-VersionInfoVersion=2.1.3.219
+VersionInfoVersion=2.1.3.224
 InternalCompressLevel=ultra
 MinVersion=4.0.950,4.0.1381
 ShowTasksTreeLines=true
@@ -37,7 +37,7 @@ Name: gui; Description: Graphical User Interface; Types: full compact custom
 Name: gui\customoutput; Description: Additional output modules; Types: full custom
 Name: commandline; Description: Commandline Utility; Types: full commandline custom
 Name: templates; Description: HTML Templates; Types: full commandline custom
-Name: pascalscript; Description: PascalScript Examples; Types: full commandline custom
+Name: pascalscript; Description: PascalScript Examples; Types: full custom
 Name: help; Description: Help Files; Types: full custom
 
 [Tasks]
