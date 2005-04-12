@@ -6,7 +6,7 @@
   Purpose:
     Global PascalScript routines and functionality
 
-  $Id: unit_pascalscript.pas,v 1.18 2005-03-23 11:40:52 elmuerte Exp $
+  $Id: unit_pascalscript.pas,v 1.19 2005-04-12 20:34:25 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -68,14 +68,10 @@ begin
   ps.AddFunction(@TrimLeft, 'function TrimLeft(const S: string): string;');
   ps.AddFunction(@TrimRight, 'function TrimRight(const S: string): string;');
   ps.AddFunction(@QuotedStr, 'function QuotedStr(const S: string): string;');
-  {$IFDEF FPC}
-  //TODO: fix
-  {$ELSE}
   ps.AddFunction(@IntToHex, 'function IntToHex(Value: Integer; Digits: Integer): string;');
-  {$ENDIF}
   ps.AddFunction(@StrToBool, 'function StrToBool(const S: string): Boolean;');
   {$IFDEF FPC}
-  //TODO: fix
+  //TODO: fix StrToBoolDef
   {$ELSE}
   ps.AddFunction(@StrToBoolDef, 'function StrToBoolDef(const S: string; const Default: Boolean): Boolean;');
   {$ENDIF}
@@ -124,7 +120,6 @@ begin
   ps.AddFunction(@ParamStr, 'function ParamStr(Index: Integer): string;');
 
   { Misc }
-  ps.Comp.AddTypeS('TLogType', '(ltInfo, ltWarn, ltError, ltSearch);');
   ps.AddFunction(@Log, 'procedure Log(msg: string);');
   ps.AddFunction(@Log, 'procedure LogType(msg: string; mt: TLogType);');
   ps.AddFunction(@Log, 'procedure LogTypeObject(msg: string; mt: TLogType; obj: TObject);');
