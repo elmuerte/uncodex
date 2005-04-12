@@ -305,6 +305,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     OnMouseMove = re_SourceSnoopMouseMove
     OnMouseUp = re_SourceSnoopMouseUp
     GutterWidth = 50
+    HighlightColor = clYellow
   end
   object tv_Classes: TTreeView
     Left = 108

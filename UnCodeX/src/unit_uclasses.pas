@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.56 2005-04-12 09:14:08 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.57 2005-04-12 20:34:25 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -272,6 +272,19 @@ type
 
   TUCInterfaceType = (itNone, itTribesV);
 
+  TDefaultPropertiesRecord = record
+    srcline:            integer; // start of the default properties block in the source
+    definedIn:          string;
+    data:               string; // AS IS
+  end;
+
+  TReplicationRecord = record
+    srcline:            integer; // start of the replication block in the source
+    definedIn:          string;
+    symbols:            TStringList; // symbol=index
+    expressions:        TStringList; // expression (DO NOT SORT)
+  end;
+
   TUClass = class(TUObject)
   //TODO
   public
@@ -293,17 +306,8 @@ type
     treenode:           TObject; // class tree node
     treenode2:          TObject; // the second tree node (PackageTree)
     filetime:           integer; // used for checking for changed files
-    defaultproperties:  record
-      srcline:          integer; // start of the default properties block in the source
-      definedIn:        string;
-      data:             string; // AS IS
-    end;
-    replication:        record
-      srcline:          integer; // start of the replication block in the source
-      definedIn:        string;
-      symbols:          TStringList; // symbol=index
-      expressions:      TStringList; // expression (DO NOT SORT)
-    end;
+    defaultproperties:  TDefaultPropertiesRecord;
+    replication:        TReplicationRecord;
     tagged:             boolean;
     children:           TUClassList; // not owned, don't free, don't save
     deps:               TUClassList; // dependency list, not owned, don't free (CURRENTLY NOT USED)

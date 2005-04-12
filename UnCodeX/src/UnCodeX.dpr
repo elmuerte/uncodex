@@ -6,7 +6,7 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.67 2005-04-12 08:31:48 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.68 2005-04-12 20:34:06 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -83,7 +83,7 @@ uses
   unit_pascalscript_gui in 'unit_pascalscript_gui.pas',
   unit_pseditor in 'unit_pseditor.pas' {frm_PSEditor},
   unit_pascalscript_ex in 'unit_pascalscript_ex.pas',
-  IFSI_unit_uclasses in 'IFSI_unit_uclasses.pas',
+  uPSI_unit_uclasses in 'uPSI_unit_uclasses.pas',
   unit_config in 'unit_config.pas',
   unit_ucxinifiles in 'unit_ucxinifiles.pas';
 
