@@ -7,7 +7,7 @@
     Defines additional PascalScript objects and functions. (Generation is
     automated)
 
-  $Id: unit_pascalscript_ex.pas,v 1.14 2005-04-12 20:34:25 elmuerte Exp $
+  $Id: unit_pascalscript_ex.pas,v 1.15 2005-04-13 06:36:07 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -162,26 +162,16 @@ begin
   //with RegClassS(CL,'TObject', 'TList') do
   with CL.AddClassN(CL.FindClass('TObject'),'TList') do
   begin
-    //RegisterMethod('Function Add( Item : Pointer) : Integer');
     RegisterMethod('Procedure Clear');
     RegisterMethod('Procedure Delete( Index : Integer)');
     RegisterMethod('Procedure Exchange( Index1, Index2 : Integer)');
-    //RegisterMethod('Function Expand : TList');
-    //RegisterMethod('Function Extract( Item : Pointer) : Pointer');
-    //RegisterMethod('Function First : Pointer');
-    //RegisterMethod('Function IndexOf( Item : Pointer) : Integer');
-    //RegisterMethod('Procedure Insert( Index : Integer; Item : Pointer)');
-    //RegisterMethod('Function Last : Pointer');
+    RegisterMethod('Function Expand : TList');
     RegisterMethod('Procedure Move( CurIndex, NewIndex : Integer)');
-    //RegisterMethod('Function Remove( Item : Pointer) : Integer');
-    //RegisterMethod('Procedure Pack');
-    //RegisterMethod('Procedure Sort( Compare : TListSortCompare)');
-    //RegisterMethod('Procedure Assign( ListA : TList; AOperator : TListAssignOp; ListB : TList)');
+    RegisterMethod('Procedure Pack');
+    RegisterMethod('Procedure Sort( Compare : TListSortCompare)');
+    RegisterMethod('Procedure Assign( ListA : TList; AOperator : TListAssignOp; ListB : TList)');
     RegisterProperty('Capacity', 'Integer', iptrw);
     RegisterProperty('Count', 'Integer', iptrw);
-    //RegisterProperty('Items', 'Pointer Integer', iptrw);
-    //SetDefaultPropery('Items');
-    //RegisterProperty('List', 'PPointerList', iptr);
   end;
 end;
 
@@ -204,6 +194,8 @@ procedure SIRegister_miscclasses(CL: TPSPascalCompiler);
 begin
   CL.AddTypeS('TLogType', '( ltInfo, ltWarn, ltError, ltSearch )');
   SIRegister_TLogEntry(CL);
+  CL.AddTypeS('TListAssignOp', '( laCopy, laAnd, laOr, laXor, laSrcUnique, laDe'
+   +'stUnique )');
   SIRegister_TList(CL);
   SIRegister_TObjectList(CL);
   SIRegister_TUCXIniFile(CL);
@@ -245,18 +237,6 @@ begin Self.OwnsObjects := T; end;
 (*----------------------------------------------------------------------------*)
 procedure TObjectListOwnsObjects_R(Self: TObjectList; var T: Boolean);
 begin T := Self.OwnsObjects; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TListList_R(Self: TList; var T: PPointerList);
-begin T := Self.List; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TListItems_W(Self: TList; const T: Pointer; const t1: Integer);
-begin Self.Items[t1] := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TListItems_R(Self: TList; var T: Pointer; const t1: Integer);
-begin T := Self.Items[t1]; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TListCount_W(Self: TList; const T: Integer);
@@ -384,25 +364,16 @@ procedure RIRegister_TList(CL: TPSRuntimeClassImporter);
 begin
   with CL.Add(TList) do
   begin
-    //RegisterMethod(@TList.Add, 'Add');
     RegisterVirtualMethod(@TList.Clear, 'Clear');
     RegisterMethod(@TList.Delete, 'Delete');
     RegisterMethod(@TList.Exchange, 'Exchange');
-    //RegisterMethod(@TList.Expand, 'Expand');
-    //RegisterMethod(@TList.Extract, 'Extract');
-    //RegisterMethod(@TList.First, 'First');
-    //RegisterMethod(@TList.IndexOf, 'IndexOf');
-    //RegisterMethod(@TList.Insert, 'Insert');
-    //RegisterMethod(@TList.Last, 'Last');
+    RegisterMethod(@TList.Expand, 'Expand');
     RegisterMethod(@TList.Move, 'Move');
-    //RegisterMethod(@TList.Remove, 'Remove');
-    //RegisterMethod(@TList.Pack, 'Pack');
-    //RegisterMethod(@TList.Sort, 'Sort');
-    //RegisterMethod(@TList.Assign, 'Assign');
+    RegisterMethod(@TList.Pack, 'Pack');
+    RegisterMethod(@TList.Sort, 'Sort');
+    RegisterMethod(@TList.Assign, 'Assign');
     RegisterPropertyHelper(@TListCapacity_R,@TListCapacity_W,'Capacity');
     RegisterPropertyHelper(@TListCount_R,@TListCount_W,'Count');
-    //RegisterPropertyHelper(@TListItems_R,@TListItems_W,'Items');
-    //RegisterPropertyHelper(@TListList_R,nil,'List');
   end;
 end;
 

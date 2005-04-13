@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.57 2005-04-12 20:34:25 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.58 2005-04-13 06:36:07 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -49,8 +49,7 @@ type
   TUFunctionList = class;
 
   TDefinitionList = class(TObject)
-  //TODO: not public
-  public
+  protected
     fowner:   TUClass;
     defines:  TStringList;
     curToken: string;

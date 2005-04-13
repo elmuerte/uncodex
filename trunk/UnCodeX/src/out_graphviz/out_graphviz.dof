@@ -71,7 +71,7 @@ Debug=0
 PreRelease=0
 Special=0
 Private=0
-DLL=0
+DLL=1
 Locale=1033
 CodePage=1252
 [Version Info Keys]
@@ -85,3 +85,25 @@ OriginalFilename=out_graphviz.dll
 ProductName=UnCodeX
 ProductVersion=1.0.0.0
 Comments=http://wiki.beyondunreal.com/wiki/UnCodeX
+[HistoryLists\hlUnitAliases]
+Count=1
+Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
+[HistoryLists\hlSearchPath]
+Count=4
+Item0=$(DELPHI)\Lib\Debug
+Item1=paszlib
+Item2=..\;..\paszlib
+Item3=VCL
+[HistoryLists\hlUnitOutputDirectory]
+Count=6
+Item0=..\..\Dcu\out_sample
+Item1=..\..\dcu\out_unrealwiki
+Item2=..\..\Dcu\out_graphviz
+Item3=..\..\dcu\out_ctags
+Item4=..\DCU
+Item5=..\..\dcu\ucxcu
+[HistoryLists\hlOutputDirectorry]
+Count=3
+Item0=..\..\Bin\out_sample
+Item1=..\..\Bin
+Item2=..\BIN

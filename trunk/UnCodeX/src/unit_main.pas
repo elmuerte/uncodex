@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.163 2005-04-12 20:34:08 elmuerte Exp $
+  $Id: unit_main.pas,v 1.164 2005-04-13 06:36:07 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -1036,8 +1036,8 @@ begin
     n := re_SourceSnoop.Perform(EM_LINEINDEX, n, 0); // get line index
     re_SourceSnoop.Perform(EM_SETSEL, n, n);
     re_SourceSnoop.Perform(EM_SCROLLCARET, 0, 0);
+    re_SourceSnoop.ClearHighlights;
     if (not nohighlight) then begin
-      re_SourceSnoop.ClearHighlights;
       re_SourceSnoop.HighlightLine(line, false);
       re_SourceSnoop.Invalidate;
     end;
