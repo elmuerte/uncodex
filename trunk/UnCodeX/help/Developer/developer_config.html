@@ -14,352 +14,185 @@
 
 <div class="content">
 
-<b><i>Note: this information is no longer relevant for the new configuration file format. It will be updated over time.</i></b>
-
 <h1>Configuration file</h1>
-You can use the -config commandline argument to load a diffirent configuration file. Below is the definition of the usefull config parameters.
+You can use the <code>-config</code> commandline argument to load a diffirent configuration file. Below is the definition of the usefull config parameters.
 
-<h2>[Config]</h2>
+<h2>Main configuration</h2>
+The main configuration section, this is the most usefull part of the configuration. It's used by both GUI and commandline version of UnCodeX.
+
+<h3>[Include]</h3>
+Files to be included while loading the configuration. Note: the settings introduced by the include files will be saved to the actual config file the next time it's saved.
+
 <table>
 <tr>
-	<th>name</th>
-	<th>type</th>
-	<th>description</th>
+	<th>Name</th>
+	<th>Type</th>
+	<th>Description</th>
 </tr>
 <tr>
-	<td><pre>AnalyseModified</pre></td>
-	<td>0 or 1</td>
-	<td>If set to 1 UnCodeX is search for modified files and analyse them</td>
+	<td><code>Pre</code></td>
+	<td nowrap="nowrap"><a href="#stringarray">string array</a></td>
+	<td>These files will be included before the rest of the configuration is loaded. Use this to set global defaults.
+	<br /><em>Default:</em> UNIX Commandline Only:<pre>Pre=/etc/uncodexrc
+Pre=~.uncodexrc</pre></td>
 </tr>
 <tr>
-	<td><pre>ClassPropertiesWindow</pre></td>
-	<td>0 or 1</td>
-	<td>Open the class properties as a window</td>
-</tr>
-<tr>
-	<td><pre>ClientCmd</pre></td>
-	<td>commandline</td>
-	<td>Commandline to execute to join the game server</td>
-</tr>
-<tr>
-	<td><pre>CompilerCmd</pre></td>
-	<td>commandline</td>
-	<td>Commandline to execute to compile the selected class/package</td>
-</tr>
-<tr>
-	<td><pre>CPP</pre></td>
-	<td>commandline</td>
-	<td>Path to the Comment PreProcessor to use, leave empty to use the Template default or 'none' to use none at all</td>
-</tr>
-<tr>
-	<td><pre>DefaultInheritanceDepth</pre></td>
-	<td>integer</td>
-	<td>Default inheritance depth of the class properties</td>
-</tr>
-<tr>
-	<td><pre>FullTextSearchRegExp</pre></td>
-	<td>0 or 1</td>
-	<td>Full text search and class body searches default to regular expression when set to 1</td>
-</tr>
-<tr>
-	<td><pre>HHCPath</pre></td>
-	<td>path</td>
-	<td>Path to the HTML Help compiler (hhc.exe)</td>
-</tr>
-<tr>
-	<td><pre>HTMLHelpFile</pre></td>
-	<td>file path</td>
-	<td>Output filename for the HTML Help compiler</td>
-</tr>
-<tr>
-	<td><pre>HTMLOutputDir</pre></td>
-	<td>path</td>
-	<td>Path to store the output HTML files in</td>
-</tr>
-<tr>
-	<td><pre>TargetExt=</pre></td>
-	<td>The target extention of the output files. This overrides the template's default setting.</td>
-</tr>
-<tr>
-	<td><pre>GZCompress</pre></td>
-	<td>-1/0/1</td>
-	<td>Either 0 (disabled), 1 (enabled) or -1 (use the template's setting). When enabled all HTML files will be compressed with gzip (all except index.html). If the target extion doesn't end on .gz it will be appended. This option is usefull when there's not a lot of diskspace available. Most browsers support gzip compressed files when they are opened online, however it doesn't always work when opened from disk in MS Windows. Default: -1</td>
-</tr>
-<tr>
-	<td><pre>InlineSearchTimeout</pre></td>
-	<td>integer</td>
-	<td>Number of seconds before the inline search times out</td>
-</tr>
-<tr>
-	<td><pre>LoadOutputModules</pre></td>
-	<td>0 or 1</td>
-	<td>Search and load custom output modules when set to 1</td>
-</tr>
-<tr>
-	<td><pre>OpenResultCmd</pre></td>
-	<td>commandline</td>
-	<td>commandline to use when opening search results, if you leave this blank the default application is used</td>
-</tr>
-<tr>
-	<td><pre>ServerCmd</pre></td>
-	<td>commandline</td>
-	<td>Commandline to execute when a server needs to be started</td>
-</tr>
-<tr>
-	<td><pre>ServerPrio</pre></td>
-	<td>0 to 3</td>
-	<td>Priority of the server process, 0 being the lowest and 3 being the highest</td>
-</tr>
-<tr>
-	<td><pre>StateFile</pre></td>
-	<td>filename</td>
-	<td>Filename of the state file, relative to the configuration file</td>
-</tr>
-<tr>
-	<td><pre>TabsToSpaces</pre></td>
-	<td>integer</td>
-	<td>Number to spaces to convert tabs with in the HTML output, if 0 use the template's default setting and if -1 don't convert at all.</td>
-</tr>
-<tr>
-	<td><pre>TemplateDir</pre></td>
-	<td>path</td>
-	<td>Directory which contains the templates to use for the HTML output</td>
+	<td><code>Post</code></td>
+	<td nowrap="nowrap"><a href="#stringarray">string array</a></td>
+	<td>These files will be included after the rest of the configuration is loaded. Use this to force certain settngs.</td>
 </tr>
 </table>
 
-<h2>[HotKeys]</h2>
-This is where the horkeys are set for each menu/toolbar item.
+<h3>[Packages]</h3>
+Package configuration settings.
 
-<h2>[IgnorePackages]</h2>
 <table>
 <tr>
-	<td><pre>Package</pre></td>
-	<td>Directories matching these names will be ignores if they are identified as a package.</td>
+	<th>Name</th>
+	<th>Type</th>
+	<th>Description</th>
+</tr>
+<tr>
+	<td><code>EditPackages</code></td>
+	<td nowrap="nowrap"><a href="#stringarray">string array</a></td>
+	<td>Known UnrealScript packages. The order is important and can be used to resolve class mismatch errors. The higher the package in the list the more important the package will be. This is only relevant in case of class name collisions. The class in the package with the highest priority will be used as parent. Note: you should try to avoid creating duplicate class names.</td>
+</tr>
+<tr>
+	<td><code>Tag</code></td>
+	<td nowrap="nowrap"><a href="#stringarray">string array</a></td>
+	<td>These packages (and classes contained within it) will be tagged. This is only used in the GUI to give the tagged packages and classes a different icon.</td>
+</tr>
+<tr>
+	<td><code>IgnorePackage</code></td>
+	<td nowrap="nowrap"><a href="#stringarray">string array</a></td>
+	<td>These packages will completely be ignored by the rest of the system.</td>
 </tr>
 </table>
 
-<h2>[Layout]</h2>
+<h3>[Sources]</h3>
+Configuration for the UnrealScript source code.
+
 <table>
 <tr>
-	<th>name</th>
-	<th>type</th>
-	<th>description</th>
+	<th>Name</th>
+	<th>Type</th>
+	<th>Description</th>
 </tr>
 <tr>
-	<td><pre>ABLeft</pre></td>
-	<td>0 or 1</td>
-	<td>Is registered as a tool application to the left side</td>
-</tr>
-<tr>
-	<td><pre>ABRight</pre></td>
-	<td>0 or 1</td>
-	<td>Is registered as a tool application to the right side</td>
-</tr>
-<tr>
-	<td><pre>AutoHide</pre></td>
-	<td>0 or 1</td>
-	<td>The tool application is set in autohide mode</td>
-</tr>
-<tr>
-	<td><pre>ABWidth</pre></td>
-	<td>integer</td>
-	<td>Width of the tool application window</td>
-</tr>
-<tr>
-	<td><pre>ExpandObject</pre></td>
-	<td>0 or 1</td>
-	<td>Expand the first item in the class tree on startup</td>
-</tr>
-<tr>
-	<td><pre>Height</pre></td>
-	<td>integer</td>
-	<td>The height of the normal UnCodeX window</td>
-</tr>
-<tr>
-	<td><pre>Left</pre></td>
-	<td>integer</td>
-	<td>Position to the left of the main window</td>
-</tr>
-<tr>
-	<td><pre>Log</pre></td>
-	<td>0 or 1</td>
-	<td>Show log window if set to 1</td>
-</tr>
-<tr>
-	<td><pre>Log.Color</pre></td>
-	<td>color</td>
-	<td>Background color of the log window</td>
-</tr>
-<tr>
-	<td><pre>Log.Font.Color</pre></td>
-	<td>color</td>
-	<td>Text color</td>
-</tr>
-<tr>
-	<td><pre>Log.Font.Name</pre></td>
-	<td>name</td>
-	<td>Font to use in the log window</td>
-</tr>
-<tr>
-	<td><pre>Log.Font.Size</pre></td>
-	<td>integer</td>
-	<td>Font size</td>
-</tr>
-<tr>
-	<td><pre>LogHeight</pre></td>
-	<td>integer</td>
-	<td>Height of the log window</td>
-</tr>
-<tr>
-	<td><pre>MenuBar</pre></td>
-	<td>0 or 1</td>
-	<td>Show the menu bar if set to 1</td>
-</tr>
-<tr>
-	<td><pre>MinimizeOnClose</pre></td>
-	<td>0 or 1</td>
-	<td>Minimize UnCodeX when the user closes the window, unless it's closed via "Tree -> Quit"</td>
-</tr>
-<tr>
-	<td><pre>PackageTree</pre></td>
-	<td>0 or 1</td>
-	<td>Show the package tree</td>
-</tr>
-<tr>
-	<td><pre>PackageTreeWidth</pre></td>
-	<td>integer</td>
-	<td>Width of the package tree</td>
-</tr>
-<tr>
-	<td><pre>SavePosition</pre></td>
-	<td>0 or 1</td>
-	<td>Save the position of UnCodeX</td>
-</tr>
-<tr>
-	<td><pre>SaveSize</pre></td>
-	<td>0 or 1</td>
-	<td>Save the size of UnCodeX</td>
-</tr>
-<tr>
-	<td><pre>StayOnTop</pre></td>
-	<td>0 or 1</td>
-	<td>If set to 1 the main window willstay on top of all other windows</td>
-</tr>
-<tr>
-	<td><pre>Toolbar</pre></td>
-	<td>0 or 1</td>
-	<td>Show the toolbar</td>
-</tr>
-<tr>
-	<td><pre>Top</pre></td>
-	<td>integer</td>
-	<td>Position to the top of the main window</td>
-</tr>
-<tr>
-	<td><pre>Top</pre></td>
-	<td>integer</td>
-	<td>Position to the top of the main window</td>
-</tr>
-<tr>
-	<td><pre>Tree.Color</pre></td>
-	<td>color</td>
-	<td>Background color of both trees</td>
-</tr>
-<tr>
-	<td><pre>Tree.Font.Color</pre></td>
-	<td>color</td>
-	<td>Text color</td>
-</tr>
-<tr>
-	<td><pre>Tree.Font.Name</pre></td>
-	<td>name</td>
-	<td>Font to use in both trees</td>
-</tr>
-<tr>
-	<td><pre>Tree.Font.Size</pre></td>
-	<td>integer</td>
-	<td>Font size</td>
-</tr>
-<tr>
-	<td><pre>Width</pre></td>
-	<td>integer</td>
-	<td>Width of the main window</td>
-</tr>
-
-<tr>
-	<td><pre>Source.Color</pre></td>
-	<td>color</td>
-	<td>background color of the source snoop window</td>
-</tr>
-<tr>
-	<td><pre>Source.CF1</pre></td>
-	<td>color</td>
-	<td>source snoop syntax highlight: strings/ints/floats</td>
-</tr>
-<tr>
-	<td><pre>Source.CF2</pre></td>
-	<td>color</td>
-	<td>source snoop syntax highlight: comments</td>
-</tr>
-<tr>
-	<td><pre>Source.CF3</pre></td>
-	<td>color</td>
-	<td>source snoop syntax highlight: macros</td>
-</tr>
-<tr>
-	<td><pre>Source.CF4</pre></td>
-	<td>color</td>
-	<td>source snoop syntax highlight: names</td>
-</tr>
-<tr>
-	<td><pre>Source.CF5</pre></td>
-	<td>color</td>
-	<td>source snoop syntax highlight: types</td>
-</tr>
-<tr>
-	<td><pre>Source.Font.Name</pre></td>
-	<td>name</td>
-	<td>font to use</td>
-</tr>
-<tr>
-	<td><pre>Source.Font.Size</pre></td>
-	<td>integer</td>
-	<td>font size</td>
-</tr>
-<tr>
-	<td><pre>Source.Tabs</pre></td>
-	<td>integer</td>
-	<td>Tab size</td>
-</tr>
-<tr>
-	<td><pre>SourceSnoop</pre></td>
-	<td>1 or 0</td>
-	<td>SourceSnoop is visible when set to 1</td>
-</tr>
-<tr>
-	<td><pre>SourceSnoopWidth</pre></td>
-	<td>integer</td>
-	<td>Size of the source snoop window</td>
+	<td><code>Path</code></td>
+	<td nowrap="nowrap"><a href="#stringarray">string array</a></td>
+	<td>Locations to directories containing UnrealScript packages.</td>
 </tr>
 </table>
 
-<h2>[PackagePriority]</h2>
+<h3>[HTMLOutput]</h3>
+Configuration for the HTML Documentation generations.
+
 <table>
 <tr>
-	<td><pre>Package</pre></td>
-	<td>The priority of the package, the first item has the highest priority.</td>
+	<th>Name</th>
+	<th>Type</th>
+	<th>Description</th>
 </tr>
 <tr>
-	<td><pre>Tag</pre></td>
-	<td>A tagged package, this package and containing classes will get a diffirent icon in the tree listing. The order doesn't matter</td>
+	<td><code>OutputDir</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>Target directory for the generated documents.
+	<br /><em>Default:</em> <pre>OutputDir={appdir}\UnCodeX-Output</pre></td>
+</tr>
+<tr>
+	<td><code>TemplateDir</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>Directory to the template to use for creating the documentation
+	<br /><em>Default:</em> <pre>OutputDir={appdir}\Templates\DocStyle2\</pre></td>
+</tr>
+<tr>
+	<td><code>CreateSource</code></td>
+	<td nowrap="nowrap"><a href="#tribool">tribool</a></td>
+	<td>Forces of syntax highlighted source code output in the generated documentation. You shouldn't change this, it's better to create a modified template because the source code might or might not be linked.
+	<br /><em>Default:</em> <pre>CreateSource=Maybe</pre></td>
+</tr>
+<tr>
+	<td><code>TabsToSpaces</code></td>
+	<td nowrap="nowrap"><a href="#int">integer</a></td>
+	<td>Defines the number of spaces to use for tabs. Set to <code>-1</code> to omit conversion of tabs to spaces. <code>0</code> will use the template's setting.
+	<br /><em>Default:</em> <pre>TabsToSpaces=0</pre></td>
+</tr>
+<tr>
+	<td><code>TargetExtention</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>Sets the target extention of the created files. When empty it uses the template's settings.
+	<br /><em>Default:</em> <pre>TargetExtention=</pre></td>
+</tr>
+<tr>
+	<td><code>CommentPreProcessor</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>Path to a comment preprocessor. When set this program will be called to processes the comments for packages, classes, functions, etc. Otherwise the builtin comment processor is used.
+	<br /><em>Default:</em> <pre>CommentPreProcessor=</pre></td>
+</tr>
+<tr>
+	<td><code>DefaultTitle</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>Set's the default title. When empty it will use the template's setting for <code>DefaultTitle</code>, if that is empty to it will use 'UnCodeX'. The value of this setting can be used by templates. It's usefull to change this to a descriptive title like: <code>DefaultTitle=UT2004 UnrealScript</code>
+	<br /><em>Default:</em> <pre>DefaultTitle=</pre></td>
+</tr>
+<tr>
+	<td><code>GZCompress</code></td>
+	<td nowrap="nowrap"><a href="#tribool">tribool</a></td>
+	<td>Forces GZCompression of the output. When set to <code>Maybe</code> it will use the template's setting. It's not recommended to set it to <code>False</code>. When set to <code>True</code> all generates files (with the exception of the index file) will be compressed with the gzip algorithm. This will reduce the size of the output to 33% (on an average basis). The suffic <code>.gz</code> will automatically be added to the <code>TargetExtention</code>, unless it's already present.</code>
+	<br /><em>Default:</em> <pre>GZCompress=Maybe</pre></td>
 </tr>
 </table>
 
-<h2>[SourcePaths]</h2>
+<h3>[HTMLHelp]</h3>
+Settings to create a MS HTML Help document from the HTML output.
+
 <table>
 <tr>
-	<td><pre>Path</pre></td>
-	<td>Paths to scan for packages</td>
+	<th>Name</th>
+	<th>Type</th>
+	<th>Description</th>
+</tr>
+<tr>
+	<td><code>Compiler</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>Path to the HTML Help compiler.
+	<br /><em>Default:</em> <pre>OutputDir=</pre></td>
+</tr>
+<tr>
+	<td><code>OutputFile</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>Destination file
+	<br /><em>Default:</em> <pre>OutputDir={appdir}\UnCodeX-UnrealScript.chm</pre></td>
+</tr>
+<tr>
+	<td><code>Title</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>Title to use for the HTML Help file, this will be displayed as caption for the help window. When empty it will default to <code>UnCodeX</code>/
+	<br /><em>Default:</em> <pre>Title=</pre></td>
+</tr>
+</table>
+
+<h3>[ExternalComments]</h3>
+//TODO: ...
+
+<table>
+<tr>
+	<th>Name</th>
+	<th>Type</th>
+	<th>Description</th>
+</tr>
+<tr>
+	<td><code>Packages</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>File containg package descriptions.
+	<br /><em>Default:</em> <pre>Packages={appdir}\PackageDescriptions.ini</pre></td>
+</tr>
+<tr>
+	<td><code>Declarations</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>File containing comments for classes, functions, etc.
+	<br /><em>Default:</em> <pre>Declarations={appdir}\ExternalComments.ini</pre></td>
 </tr>
 </table>
 
