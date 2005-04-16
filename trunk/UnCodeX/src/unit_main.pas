@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.164 2005-04-13 06:36:07 elmuerte Exp $
+  $Id: unit_main.pas,v 1.165 2005-04-16 16:00:21 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -586,11 +586,16 @@ var
   i: integer;
 begin
   if (frm_UnCodeX = nil) then exit;
-  with frm_UnCodeX.lb_Log do begin
-    for i := 0 to Items.count-1 do begin
-      if (IsA(Items.Objects[i], TLogEntry)) then Items.Objects[i].Free;
+  try
+    with frm_UnCodeX.lb_Log do begin
+      for i := 0 to Items.count-1 do begin
+        if (IsA(Items.Objects[i], TLogEntry)) then Items.Objects[i].Free;
+      end;
+      Items.Clear;
     end;
-    Items.Clear;
+  except
+    on E:Exception do
+      log('Exception while cleaning the log window: '+e.Message, ltError);
   end;
 end;
 
@@ -1036,7 +1041,6 @@ begin
     n := re_SourceSnoop.Perform(EM_LINEINDEX, n, 0); // get line index
     re_SourceSnoop.Perform(EM_SETSEL, n, n);
     re_SourceSnoop.Perform(EM_SCROLLCARET, 0, 0);
-    re_SourceSnoop.ClearHighlights;
     if (not nohighlight) then begin
       re_SourceSnoop.HighlightLine(line, false);
       re_SourceSnoop.Invalidate;
@@ -1600,6 +1604,7 @@ var
   fs: TFileStream;
 begin
   result := true;
+  re_SourceSnoop.ClearHighlights;
   if (not fileExists(filename)) then begin
     Log('Could not open file '+filename, ltError);
     exit;
@@ -2045,7 +2050,6 @@ var
 begin
   if (ThreadCreate) then begin
     ClearLog;
-    TreeUpdated := true;
 
     GUIVars.SelectedUClass := nil;
     GUIVars.SelectedUPackage := nil;
@@ -2053,15 +2057,26 @@ begin
     fr_Props.uclass := nil;
     if (fr_Props.Visible) then fr_Props.LoadClass;
 
-    for i := 0 to High(BrowseHistory) do begin
-      BrowseHistory[i].uclass := nil;
+    try
+      for i := 0 to High(BrowseHistory) do begin
+        BrowseHistory[i].uclass := nil;
+      end;
+    except
+      on E:Exception do
+        Log('Exception while cleaning up BrowseHistory: '+E.Message, ltError);
     end;
     re_SourceSnoop.uclass := nil;
 
-    tv_Packages.Items.Clear;
-    tv_Classes.Items.Clear;
-    config.PackageList.Clear;
-    config.ClassList.Clear;
+    try
+      tv_Packages.Items.Clear;
+      tv_Classes.Items.Clear;
+      config.PackageList.Clear;
+      config.ClassList.Clear;
+    except
+      on E:Exception do
+        Log('Exception while cleaning up classes and packages: '+E.Message, ltError);
+    end;
+    TreeUpdated := true;
 
     rec.paths := config.SourcePaths;
     rec.packagetree := tv_Packages.Items;
