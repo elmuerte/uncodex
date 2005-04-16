@@ -1,6 +1,6 @@
 object frm_Settings: Tfrm_Settings
-  Left = 335
-  Top = 186
+  Left = 287
+  Top = 185
   Width = 670
   Height = 400
   AlphaBlendValue = 128
@@ -71,7 +71,7 @@ object frm_Settings: Tfrm_Settings
     Top = 24
     Width = 432
     Height = 348
-    ActivePage = ts_SourceSnoop
+    ActivePage = ts_PackagePriority
     Align = alCustom
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -1441,6 +1441,7 @@ object frm_Settings: Tfrm_Settings
         TabOrder = 2
         WordWrap = False
         GutterWidth = 50
+        HighlightColor = clYellow
       end
       object lb_Fonts: TListBox
         Left = 0
