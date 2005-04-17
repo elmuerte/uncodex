@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript package scanner, search for UnrealScript classes
 
-  $Id: unit_packages.pas,v 1.44 2005-04-06 10:10:52 elmuerte Exp $
+  $Id: unit_packages.pas,v 1.45 2005-04-17 14:20:09 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -35,7 +35,7 @@ unit unit_packages;
 interface
 
 uses
-  SysUtils, Classes, DateUtils,
+  SysUtils, Classes, DateUtils, unit_ucxthread, 
   {$IFDEF USE_TREEVIEW}
   ComCtrls,
   {$ENDIF}
@@ -55,7 +55,7 @@ type
     PDFile: string
   end;
 
-  TPackageScanner = class(TThread)
+  TPackageScanner = class(TUCXThread)
   private
     paths: TStringList;
     {$IFDEF USE_TREEVIEW}
@@ -131,7 +131,7 @@ var
   p: TUCParser;
   token: char;
 begin
-  guard('GetUClassName: '+filename);
+  xguard('GetUClassName: '+filename);
   result := nil;
   fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
   p := TUCParser.Create(fs);
@@ -178,7 +178,7 @@ begin
     p.free;
     fs.free;
   end;
-  unguard;
+  xunguard;
 end;
 
 constructor TPackageScanner.Create(rec: TPackageScannerConfig);

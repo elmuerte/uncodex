@@ -6,7 +6,7 @@
   Purpose:
     Full text search thread. Includes support for regular expressions.
 
-  $Id: unit_fulltextsearch.pas,v 1.22 2005-04-05 07:58:07 elmuerte Exp $
+  $Id: unit_fulltextsearch.pas,v 1.23 2005-04-17 14:20:08 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -36,10 +36,10 @@ interface
 
 uses
   Windows, SysUtils, Classes, RegExpr, ComCtrls, unit_uclasses,
-  unit_outputdefs, unit_searchform;
+  unit_outputdefs, unit_searchform, unit_ucxthread;
 
 type
-  TSearchThread = class(TThread)
+  TSearchThread = class(TUCXThread)
     PackageList: TUPackageList;
     Tree: TTreeView;
     Status: TStatusReport;

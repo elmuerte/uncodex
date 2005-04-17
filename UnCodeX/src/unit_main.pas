@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.165 2005-04-16 16:00:21 elmuerte Exp $
+  $Id: unit_main.pas,v 1.166 2005-04-17 14:20:08 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -586,17 +586,14 @@ var
   i: integer;
 begin
   if (frm_UnCodeX = nil) then exit;
-  try
-    with frm_UnCodeX.lb_Log do begin
-      for i := 0 to Items.count-1 do begin
-        if (IsA(Items.Objects[i], TLogEntry)) then Items.Objects[i].Free;
-      end;
-      Items.Clear;
+  xguard('ClearLog');
+  with frm_UnCodeX.lb_Log do begin
+    for i := 0 to Items.count-1 do begin
+      if (IsA(Items.Objects[i], TLogEntry)) then Items.Objects[i].Free;
     end;
-  except
-    on E:Exception do
-      log('Exception while cleaning the log window: '+e.Message, ltError);
+    Items.Clear;
   end;
+  xunguard;
 end;
 
 { Logging -- END }
@@ -667,6 +664,7 @@ procedure Tfrm_UnCodeX.SaveState;
 var
   fs: TFileStream;
 begin
+  xguard('Tfrm_UnCodeX.SaveState');
   StatusReport('Saving state to '+config.StateFile);
   tmr_StatusText.OnTimer(nil);
   Application.ProcessMessages;
@@ -680,6 +678,7 @@ begin
     fs.Free;
   end;
   StatusReport('State saved');
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.LoadState;
@@ -697,6 +696,7 @@ begin
     end;
     exit;
   end;
+  xguard('Tfrm_UnCodeX.LoadState');
   StatusReport('Loading state from '+config.StateFile);
   tmr_StatusText.OnTimer(nil);
   Application.ProcessMessages;
@@ -732,6 +732,7 @@ begin
   finally
     fs.Free;
   end;
+  xunguard;
 end;
 
 { Package\Class Tree state -- END }
@@ -821,6 +822,7 @@ end;
 procedure Tfrm_UnCodeX.RegisterAppBar;
 begin
   if (IsAppBar) then exit;
+  xguard('Tfrm_UnCodeX.RegisterAppBar');
   // Change window look
   OldStyleEx := GetWindowLong(Handle, GWL_EXSTYLE);
   OldStyle := GetWindowLong(Handle, GWL_STYLE);
@@ -859,11 +861,13 @@ begin
   abd.lParam := 1;
   shAppBarMessage(ABM_ACTIVATE, abd);
   IsAppBar := true;
+  xunguard;
 end;
 
 // Remove the tool window
 procedure Tfrm_UnCodeX.UnregisterAppBar;
 begin
+  xguard('Tfrm_UnCodeX.UnregisterAppBar');
   if (IsAppBar) then begin
     Hide;
     SetWindowLong(Handle, GWL_STYLE, OldStyle);
@@ -877,10 +881,12 @@ begin
     Show;
     WindowState := OldWindowState;
   end;
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.RegisterABAutoHide;
 begin
+  xguard('Tfrm_UnCodeX.RegisterABAutoHide');
   abd.lParam := 1;
   if (shAppBarMessage(ABM_SETAUTOHIDEBAR, abd) <> 0) then begin
     if (abd.uEdge = ABE_RIGHT) then begin
@@ -892,10 +898,12 @@ begin
     shAppBarMessage(ABM_setPos, abd);
     Left := abd.rc.Left;
   end;
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.UnregisterABAutoHide;
 begin
+  xguard('Tfrm_UnCodeX.UnregisterABAutoHide');
   abd.lParam := 0;
   if (shAppBarMessage(ABM_SETAUTOHIDEBAR, abd) <> 0) then begin
     if (abd.uEdge = ABE_RIGHT) then begin
@@ -907,6 +915,7 @@ begin
     shAppBarMessage(ABM_setPos, abd);
     Left := abd.rc.Left;
   end;
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.ABResize;
@@ -931,6 +940,7 @@ procedure Tfrm_UnCodeX.ExecuteProgram(exe: string; params: TStringList = nil; pr
 var
   se: TShellExecuteInfo;
 begin
+  xguard('Tfrm_UnCodeX.ExecuteProgram '+exe);
   se.cbSize := SizeOf(TShellExecuteInfo);
   se.Wnd := 0;
   se.lpVerb := nil;
@@ -955,6 +965,7 @@ begin
   if (prio > -1) then begin
     SetPriorityClass(se.hProcess, PROCPRIO[prio]);
   end;
+  xunguard;
 end;
 
 // Open a source file at a specific line
@@ -974,6 +985,7 @@ begin
     ExecuteProgram(filename);
     exit;
   end;
+  xguard('Tfrm_UnCodeX.OpenSourceLine '+filename);
 
   lst := TStringList.Create;
   try
@@ -1011,6 +1023,7 @@ begin
   finally
     lst.Free;
   end;
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.OpenSourceInline(filename: string; line, caret: integer; uclass: TUClass = nil; nohighlight: boolean = false);
@@ -1019,6 +1032,7 @@ var
   tmp2: array[0..255] of char;
   n: integer;
 begin
+  xguard('Tfrm_UnCodeX.OpenSourceInline');
   GUIVars.SelectedUClass := uclass;
   if (fr_Props.Visible) then begin
     //TODO: make a sticky button?
@@ -1029,7 +1043,7 @@ begin
   if (mi_SourceSnoop.Checked) then begin
     //SourceSnoopOpen(uclass, udecl, nil);
     if (not SourceSnoopOpenClass(filename, uclass)) then exit;
-    
+
     if (line < 0) then exit;
     tmp2[0] := #255;
     n := line;
@@ -1046,6 +1060,7 @@ begin
       re_SourceSnoop.Invalidate;
     end;
   end;
+  xunguard;
 end;
 
 { Program execution -- END }
@@ -1059,10 +1074,12 @@ begin
     Screen.Cursor := crDefault;
     exit;
   end;
+  xguard('Tfrm_UnCodeX.NextBatchCommand');
   if (GUIVars.CmdStack.Count = 0) then begin
     Screen.Cursor := crDefault;
     GUIVars.IsBatching := false;
     Caption := BaseCaption;
+    xunguard;
     exit;
   end;
   Screen.Cursor := crAppStart;
@@ -1084,6 +1101,7 @@ begin
       MessageDlg(IntToStr(ClassOrphanCount)+' orphan classes found.'+#13+#10+'Check the log for more information.', mtWarning, [mbOK], 0);
       GUIVars.IsBatching := false;
       Caption := BaseCaption;
+      xunguard;
       exit;
     end
     else NextBatchCommand;
@@ -1099,8 +1117,10 @@ begin
     NextBatchCommand;
   end
   else begin
+    //TODO: log unknown command
     NextBatchCommand;
   end;
+  xunguard;
 end;
 
 // Check application for the same ID (config hash)
@@ -1196,6 +1216,7 @@ var
   end;
 
 begin
+  xguard('Tfrm_UnCodeX.LoadOutputModules');
   for i := mi_Output.Count-1 downto mi_PluginDiv2.MenuIndex+1 do begin
     mi_Output.Delete(i);
   end;
@@ -1203,6 +1224,7 @@ begin
 
   if FindFirst(ExtractFilePath(ParamStr(0))+'out_*.dll', 0, rec) = 0 then begin
     repeat
+      xguard(rec.Name);
       omod := LoadLibrary(PChar(rec.Name));
       if (omod <> 0) then begin
         try
@@ -1221,9 +1243,11 @@ begin
           FreeLibrary(omod);
         end;
       end;
+      xunguard;
     until (FindNext(rec) <> 0);
     FindClose(rec);
   end;
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.miCustomOutputClick(sender: TObject);
@@ -1263,7 +1287,7 @@ var
 
 begin
   if (runningthread <> nil) then exit;
-  
+  xguard('Tfrm_UnCodeX.CallCustomOutputModule '+module);
   if (OutputModule <> 0) then begin
     FreeLibrary(OutputModule);
     OutputModule := 0;
@@ -1293,6 +1317,7 @@ begin
     Log('Failed loading custom output module: '+module, ltError);
     if (GUIVars.IsBatching) then NextBatchCommand;
   end;
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.LoadPascalScripts;
@@ -1452,6 +1477,7 @@ var
   makeHeight, makeWidth: integer;
   APanel: TPanel;
 begin
+  xguard('Tfrm_UnCodeX.ShowDockPanel');
   if (client <> nil) then Client.Visible := MakeVisible; // update client
 
   APanel := nil;
@@ -1486,6 +1512,7 @@ begin
   if (MakeVisible) then begin
     if (APanel.VisibleDockClientCount > 1) then begin
       APanel.DockManager.ResetBounds(false);
+      xunguard;
       exit;
     end;
     // find desired height\weight
@@ -1534,29 +1561,12 @@ begin
     else if (APanel.Align = alTop) or (APanel.Align = alBottom) then
       APanel.Height := 0;
   end;
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.OnDockVisChange(client: TControl; visible: boolean; var CanChange: boolean);
 begin
   if (client = tv_Classes) then CanChange := visible = true
-  {else if (client = tv_Packages) then begin
-    //ac_VPackageTree.Checked := visible
-    tv_Packages.Visible := false;
-    ac_VPackageTree.Execute
-  end;
-  else if (client = lb_Log) then //ac_VLog.Checked := visible
-    ac_VLog.Execute
-  else if (client = re_SourceSnoop) then begin
-    //ac_VSourceSnoop.Checked := visible;
-    //mi_Browse.Visible := visible;
-    ac_VSourceSnoop.Execute;
-  end
-  else if (client = fr_Props) then //ac_PropInspector.Checked := visible;
-    ac_PropInspector.Execute;}
-  
-  {if (client.HostDockSite <> nil) then begin
-    ShowDockPanel(client.HostDockSite, visible, client);
-  end;}
 end;
 
 procedure Tfrm_UnCodeX.OnDockDragStart(client: TControl; var CanDrag: boolean);
@@ -1571,6 +1581,7 @@ var
   fos: TSHFileOpStruct;
   s: string;
 begin
+  xguard('Tfrm_UnCodeX.DeleteClass '+uclass.FullName);
   if (recurse) then begin
     for i := 0 to uclass.children.Count-1 do begin
       DeleteClass(uclass.children[i], recurse);
@@ -1587,6 +1598,7 @@ begin
   fos.fFlags := FOF_ALLOWUNDO or FOF_NOCONFIRMATION or FOF_NOERRORUI;
   if (ShFileOperation(fos) <> 0) then begin
     Log('Error deleting file: '+s, ltError);
+    xunguard;
     exit;
   end;
   uclass.package.classes.Remove(uclass);
@@ -1594,6 +1606,7 @@ begin
   if (uclass.treenode2 <> nil) then TTreeNode(uclass.treenode2).Delete;
   config.ClassList.Remove(uclass);
   TreeUpdated := true;
+  xunguard;
 end;
 
 { SourceSnoopOpen }
@@ -1610,6 +1623,7 @@ begin
     exit;
   end;
   if (re_SourceSnoop.filename = filename) then exit;
+  xguard('Tfrm_UnCodeX.SourceSnoopOpenClass '+filename);
   if (uclass <> nil) then begin
     re_SourceSnoop.uclass := uclass;
     SetDockCaption(re_SourceSnoop, 'Class: '+uclass.FullName+' - '+filename);
@@ -1635,6 +1649,7 @@ begin
     fs.Free;
   end;
   result := true;
+  xunguard;
 end;
 
 function Tfrm_UnCodeX.SourceSnoopOpenPackage(upackage: TUPackage): boolean;
@@ -1643,6 +1658,7 @@ var
 begin
   result := false;
   if (upackage = nil) then exit;
+  xguard('Tfrm_UnCodeX.SourceSnoopOpenPackage '+upackage.Name);
   ms := TMemoryStream.Create;
   SetDockCaption(re_SourceSnoop, 'Package: '+upackage.name);
   re_SourceSnoop.filename := upackage.path;
@@ -1661,6 +1677,7 @@ begin
     ms.Free;
   end;
   result := true;
+  xunguard;
 end;
 
 { Settings -- begin}
@@ -1669,6 +1686,7 @@ procedure Tfrm_UnCodeX.SaveSettings;
 var
   i: integer;
 begin
+  xguard('Tfrm_UnCodeX.SaveSettings');
   config.Layout.LogWindow.Import(lb_Log);
   config.Layout.TreeView.Import(tv_Classes);
 
@@ -1701,10 +1719,12 @@ begin
   end;
 
   config.SaveToIni();
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.SaveLayoutSettings;
 begin
+  xguard('Tfrm_UnCodeX.SaveLayoutSettings');
   { save dock hosts }
 
   config.DockState.host.Classes := tv_Classes.Parent.Name;
@@ -1779,6 +1799,7 @@ begin
   else if (mi_Left.Checked) then config.ApplicationBar.Location := abLeft;
 
   config.SaveToIni();
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.LoadSettings;
@@ -1786,6 +1807,7 @@ var
   i: integer;
   dckHost: TPanel;
 begin
+  xguard('Tfrm_UnCodeX.LoadSettings');
   ac_VStayOnTop.Checked := config.Layout.StayOnTop;
   if (ac_VStayOnTop.Checked) then FormStyle := fsStayOnTop;
   ac_VSaveposition.Checked := config.Layout.SavePosition;
@@ -1901,6 +1923,7 @@ begin
     if (config.HotKeys.IndexOfName(TAction(al_Main.Actions[i]).Caption) > -1) then
       TAction(al_Main.Actions[i]).ShortCut := TextToShortCut(config.HotKeys.Values[TAction(al_Main.Actions[i]).Caption]);
   end;
+  xunguard;
 end;
 
 { Settings -- END}
@@ -1921,12 +1944,14 @@ var
   found: boolean;
 begin
   if (uclass = nil) then exit;
+  xguard('Tfrm_UnCodeX.AddBrowserHistory '+uclass.FullName);
   for i := 0 to mi_Browse.Count-1 do begin
     if (mi_Browse.Items[i].Tag < 25) then begin
       if ((BrowseHistory[mi_Browse.Items[i].Tag].uclass = uclass) and
       		(BrowseHistory[mi_Browse.Items[i].Tag].filename = filename) and
         (BrowseHistory[mi_Browse.Items[i].Tag].line = line)) then begin
         mi_Browse.Items[i].MenuIndex := 0;
+        xunguard;
         exit;
       end;
     end;
@@ -1953,6 +1978,7 @@ begin
   BrowseHistory[i].uclass := uclass;
   BrowseHistory[i].filename := filename;
   BrowseHistory[i].line := line;
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.BrowseEntry(Sender: TObject);
@@ -1979,6 +2005,7 @@ end;
 // Create form and init
 procedure Tfrm_UnCodeX.FormCreate(Sender: TObject);
 begin
+  xguard('Tfrm_UnCodeX.FormCreate');
   if (GlobalGUIVars = nil) then GUIVars := TUCXGUIVars.Create
   else begin
     GUIVars := GlobalGUIVars;
@@ -2017,11 +2044,13 @@ begin
   end;
   UpdateSystemMenu;
   mi_MenuBar.OnClick(Sender); // has to be here or else it won't work
+  xunguard;
 end;
 
 // Analyse a signgle class, why is this not an action ?
 procedure Tfrm_UnCodeX.mi_AnalyseclassClick(Sender: TObject);
 begin
+  xguard('Tfrm_UnCodeX.mi_AnalyseclassClick');
   if (ActiveControl.ClassType = TTreeView) then begin
     with (ActiveControl as TTreeView) do begin
       if (TObject(Selected.Data).ClassType <> TUClass) then exit;
@@ -2034,6 +2063,7 @@ begin
       end;
     end;
   end;
+  xunguard;
 end;
 
 // Show hint message when there is one
@@ -2049,6 +2079,8 @@ var
   i: integer;
 begin
   if (ThreadCreate) then begin
+    xguard('ac_RecreateTreeExecute');
+
     ClearLog;
 
     GUIVars.SelectedUClass := nil;
@@ -2057,25 +2089,19 @@ begin
     fr_Props.uclass := nil;
     if (fr_Props.Visible) then fr_Props.LoadClass;
 
-    try
-      for i := 0 to High(BrowseHistory) do begin
-        BrowseHistory[i].uclass := nil;
-      end;
-    except
-      on E:Exception do
-        Log('Exception while cleaning up BrowseHistory: '+E.Message, ltError);
+    xguard('Clean BrowseHistory');
+    for i := 0 to High(BrowseHistory) do begin
+      BrowseHistory[i].uclass := nil;
     end;
     re_SourceSnoop.uclass := nil;
+    xunguard;
 
-    try
-      tv_Packages.Items.Clear;
-      tv_Classes.Items.Clear;
-      config.PackageList.Clear;
-      config.ClassList.Clear;
-    except
-      on E:Exception do
-        Log('Exception while cleaning up classes and packages: '+E.Message, ltError);
-    end;
+    xguard('Clean uclass lists');
+    tv_Packages.Items.Clear;
+    tv_Classes.Items.Clear;
+    config.PackageList.Clear;
+    config.ClassList.Clear;
+    xunguard;
     TreeUpdated := true;
 
     rec.paths := config.SourcePaths;
@@ -2092,6 +2118,7 @@ begin
     runningthread := TPackageScanner.Create(rec);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
+    xunguard;
   end;
 end;
 
@@ -2110,6 +2137,7 @@ end;
 procedure Tfrm_UnCodeX.ac_AnalyseAllExecute(Sender: TObject);
 begin
   if (ThreadCreate) then begin
+    xguard('Tfrm_UnCodeX.ac_AnalyseAllExecute');
     ClearLog;
     LastAnalyseTime := Now;
 
@@ -2120,6 +2148,7 @@ begin
                       unit_rtfhilight.ClassesHash);
     runningthread.OnTerminate := ThreadTerminate;
     runningthread.Resume;
+    xunguard;
   end;
 end;
 
@@ -2138,6 +2167,7 @@ var
   i, j: integer;
   newtag: boolean;
 begin
+  xguard('Tfrm_UnCodeX.ac_SettingsExecute');
   with Tfrm_Settings.Create(nil) do begin
     lb_Paths.Items := config.SourcePaths;
     { Packages }
@@ -2193,6 +2223,7 @@ begin
     ed_gpdf.text := config.Comments.Packages;
     ed_ExtCmtFile.Text := config.Comments.Declarations;
     if (ShowModal = mrOk) then begin
+      xguard('ShowModal = mrOk');
       { HTML output }
       config.HTMLOutput.OutputDir := ed_HTMLOutputDir.Text;
       ac_OpenOutput.Enabled := DirectoryExists(config.HTMLOutput.OutputDir);
@@ -2270,6 +2301,7 @@ begin
       SaveSettings;
 
       if (TagChanged) then begin
+        xguard('Retagging');
         StatusReport('Retagging packages/classes ...');
         tv_Packages.Items.BeginUpdate;
         tv_Classes.Items.BeginUpdate;
@@ -2324,10 +2356,13 @@ begin
         StatusReport('Done retagging');
         tv_Packages.Items.EndUpdate;
         tv_Classes.Items.EndUpdate;
+        xunguard;
       end;
+      xunguard;
     end;
     Free;
   end;
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.FormCloseQuery(Sender: TObject;
@@ -2347,6 +2382,7 @@ end;
 
 procedure Tfrm_UnCodeX.ac_FindClassExecute(Sender: TObject);
 begin
+  xguard('Tfrm_UnCodeX.ac_FindClassExecute');
   if (ActiveControl.ClassType <> TTreeView) then begin
     ActiveControl := tv_Classes;
   end;
@@ -2366,10 +2402,12 @@ begin
     ac_FindNext.Execute;
   end
   else GUIVars.SearchConfig.Wrapped := false;
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.FormDestroy(Sender: TObject);
 begin
+  xguard('Tfrm_UnCodeX.FormDestroy');
   ClearLog;
   FreeAndnil(hh_Help);
   HHCloseAll;
@@ -2377,6 +2415,7 @@ begin
   FreeAndnil(OutputModules);
   FreeAndnil(config);
   if (GUIVars <> nil) then FreeAndnil(GUIVars);
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.ac_OpenClassExecute(Sender: TObject);
@@ -2422,6 +2461,7 @@ end;
 procedure Tfrm_UnCodeX.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
+  xguard('Tfrm_UnCodeX.FormClose');
   if (config.Layout.MinimizeOnClose) then begin
     Action := caNone;
     Application.Minimize;
@@ -2433,6 +2473,7 @@ begin
     if (TreeUpdated) then SaveState;
     SaveLayoutSettings;
   end;
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.ac_AboutExecute(Sender: TObject);
@@ -2579,6 +2620,7 @@ begin
     ac_FindClass.Execute;
     exit;
   end;
+  xguard('Tfrm_UnCodeX.ac_FindNextExecute');
   if (ActiveControl.ClassType <> TTreeView) then begin
     ActiveControl := tv_Classes;
   end;
@@ -2592,6 +2634,7 @@ begin
         runningthread.OnTerminate := SearchThreadTerminate;
         runningthread.Resume;
         if (GUIVars.SearchConfig.isFindFirst and (GUIVars.SearchConfig.Scope = 0)) then GUIVars.SearchConfig.Scope := 1;
+        xunguard;
         exit;
       end;
     end
@@ -2609,6 +2652,7 @@ begin
           GUIVars.OpenFind := false;
           GUIVars.OpenTags := false;
           statustext := '';
+          xunguard;
           exit;
         end;
       end;
@@ -2618,10 +2662,12 @@ begin
   statustext := 'No more classes matching '''+GUIVars.SearchConfig.query+''' found';
   GUIVars.SearchConfig.Wrapped := false;
   Beep;
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.ac_FullTextSearchExecute(Sender: TObject);
 begin
+  xguard('Tfrm_UnCodeX.ac_FullTextSearchExecute');
   if (ActiveControl.ClassType <> TTreeView) then begin
     ActiveControl := tv_Classes;
   end;
@@ -2641,6 +2687,7 @@ begin
     ac_FindNext.Execute;
   end
   else GUIVars.SearchConfig.Wrapped := false;
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.lb_LogDblClick(Sender: TObject);
@@ -2664,6 +2711,7 @@ begin
   if (lb_Log.Items.Objects[lb_Log.ItemIndex] = nil) then exit;
   if (not IsA(lb_Log.Items.Objects[lb_Log.ItemIndex], TLogEntry)) then exit;
 
+  xguard('Tfrm_UnCodeX.lb_LogClick');
   entry := TLogEntry(lb_Log.Items.Objects[lb_Log.ItemIndex]);
   if (entry.filename = '') then exit; // no file; don't bother
   OpenSourceInline(entry.filename, entry.line-1, entry.pos, TUClass(entry.obj));
@@ -2672,10 +2720,12 @@ begin
     if ((e2.filename = entry.filename) and (e2.line > 0)) then re_SourceSnoop.HighlightLine(e2.line-1, false);
   end;
   re_SourceSnoop.Invalidate;
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.FormShow(Sender: TObject);
 begin
+  xguard('Tfrm_UnCodeX.FormShow');
   try
     if (DoInit) then begin
       DoInit := false;
@@ -2714,6 +2764,7 @@ begin
       'Do you want to edit the settings now ?', mtConfirmation, [mbYes,mbNo], 0) = mrYes
       then ac_Settings.Execute; 
   end;
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.tv_ClassesDblClick(Sender: TObject);
@@ -3102,6 +3153,8 @@ begin
   if (Assigned(Sender)) then name := Sender.ClassName
   else name := 'unknown';
   Log('['+name+'] Unhandled exception: ('+e.ClassName+') '+e.Message, ltError);
+  xprintguard;
+  xresetguard;
 end;
 
 procedure Tfrm_UnCodeX.tv_ClassesKeyPress(Sender: TObject; var Key: Char);
@@ -3174,6 +3227,7 @@ var
   lst: TStringList;
   i: integer;
 begin
+  xguard('Tfrm_UnCodeX.cmdPokeData');
   Log('DDE Command: '+cmd.Text);
   lst := TStringList.Create;
   try
@@ -3227,6 +3281,7 @@ begin
     lst.Free;
   end;
   cmd.Text := '';
+  xunguard;
 end;
 
 procedure Tfrm_UnCodeX.mi_ClassNameDrawItem(Sender: TObject;

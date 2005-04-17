@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.82 2005-04-12 10:01:25 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.83 2005-04-17 14:20:08 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -36,7 +36,7 @@ interface
 
 uses
   Classes, SysUtils, unit_uclasses, StrUtils, Hashes, DateUtils, unit_ucxinifiles,
-  unit_outputdefs, unit_clpipe, unit_copyparser, unit_definitions
+  unit_outputdefs, unit_clpipe, unit_copyparser, unit_definitions, unit_ucxthread
   {$IFDEF HTMLOUT_PASCALSCRIPT}
   , uPSComponent
   {$ENDIF};
@@ -74,7 +74,7 @@ type
   // General replace function
   TReplacement = function(var replacement: string; p: TCopyParser; data: TObject = nil): boolean of Object;
 
-  THTMLOutput = class(TThread)
+  THTMLOutput = class(TUCXThread)
   protected
     MaxInherit: integer;
     HTMLOutputDir: string;
@@ -374,7 +374,7 @@ begin
         CPPPipe := TCLPipe.Create(Self.CPP);
         IsCPP := CPPPipe.Open;
       end
-      else Log('Comment Preprocessor "'+CPP+'" not found', ltWarn);
+      else InternalLog('Comment Preprocessor "'+CPP+'" not found', ltWarn);
     end;
     GlossaryElipse := ini.ReadString('Settings', 'GlossaryElipse', ASCII_GLOSSARY_ELIPSE);
     TreeNone := ini.ReadString('Settings', 'TreeNone', ASCII_TREE_NONE);
@@ -406,7 +406,7 @@ begin
     for i := 0 to ClassList.Count-1 do begin
       if (not TypeCache.Exists(LowerCase(ClassList[i].Name))) then
         TypeCache.Items[LowerCase(ClassList[i].Name)] := ClassLink(ClassList[i])
-        else Log('Type already cached '+ClassList[i].Name, ltWarn);
+        else InternalLog('Type already cached '+ClassList[i].Name, ltWarn);
     end;
 
     if (not Self.Terminated) then CopyFiles;
@@ -428,7 +428,7 @@ begin
     Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds');
   except
     on E: Exception do begin
-      Log('Unhandled exception: '+E.Message, ltError);
+      InternalLog('Unhandled exception: '+E.Message, ltError);
       printguard(currentClass);
     end;
   end;
@@ -472,7 +472,7 @@ begin
           p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
         end
         else begin // put back old
-          Log('Unknown replacement tag used: '+replacement, ltWarn);
+          InternalLog('Unknown replacement tag used: '+replacement, ltWarn);
           replacement := '%'+replacement+'%';
           p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
         end;
@@ -594,10 +594,10 @@ begin
   else if (IsReplacement(replacement, 'include:')) then begin
     tmp := Copy(replacement, Length('include:')+1, MaxInt);
     if (not FileExists(TemplateDir+tmp)) then begin
-      Log('Can''t include file: '+tmp, ltError);
+      InternalLog('Can''t include file: '+tmp, ltError);
     end
     else begin
-      //Log('Including '+replacement+' AS IS');
+      //InternalLog('Including '+replacement+' AS IS');
       fs := TFileStream.Create(TemplateDir+tmp, fmOpenRead or fmShareDenyWrite);
       ss := TStringStream.Create('');
       try
@@ -3003,9 +3003,9 @@ var
 begin
   if (input = '') then exit;
   if (IsCPP) then begin
-    //Log('input: '+input);
+    //InternalLog('input: '+input);
     result := CPPPipe.Pipe(input);
-    //Log('result: '+result);
+    //InternalLog('result: '+result);
     exit;
   end;
   guard('CommentPreprocessor');

@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.148 2005-04-12 10:01:25 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.149 2005-04-17 14:20:08 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -55,7 +55,7 @@ type
   //  you might want to use CreateLogEntry() function;
   TLogProcEX = procedure (msg: string; mt: TLogType = ltInfo; obj: TObject = nil);
 
-  TExternaComment = function(ref: string): string;
+  TExternalComment = function(ref: string): string;
 
   // Used for -reuse
   TRedirectStruct = record
@@ -105,10 +105,10 @@ type
 
   procedure ReloadKeywords;
 
-  procedure guard(s: string);
-  procedure unguard;
-  procedure resetguard();
-  procedure printguard(uclass: TUClass = nil);
+  procedure xguard(s: string);
+  procedure xunguard;
+  procedure xresetguard();
+  procedure xprintguard(uclass: TUClass = nil);
 
   function RetExternalComment(ref: string): string;
   procedure SetExtCommentFile(ini: string);
@@ -183,7 +183,6 @@ var
   Keywords1: Hashes.TStringHash;
   Keywords2: Hashes.TStringHash;
   Log: TLogProcEx;
-  GuardStack: TStringList;
 
 implementation
 
@@ -199,6 +198,7 @@ uses
 var
   sl, TmpExtCmt: TStringList;
   ExtCommentIni: TUCXIniFile;
+  xGuardStack: TStringList;
 
 {$IFDEF WITH_OWN_ZLIB}
 const
@@ -361,31 +361,31 @@ begin
 end;
 {$ENDIF}
 
-procedure guard(s: string);
+procedure xguard(s: string);
 begin
-  GuardStack.Append(s);
+  xGuardStack.Append(s);
 end;
 
-procedure unguard;
+procedure xunguard;
 begin
-  GuardStack.Delete(GuardStack.Count-1);
+  xGuardStack.Delete(xGuardStack.Count-1);
 end;
 
-procedure resetguard();
+procedure xresetguard();
 begin
-  GuardStack.Clear;
-  GuardStack.Sorted := false;
-  GuardStack.Duplicates := dupIgnore;
+  xGuardStack.Clear;
+  xGuardStack.Sorted := false;
+  xGuardStack.Duplicates := dupIgnore;
 end;
 
-procedure printguard(uclass: TUClass = nil);
+procedure xprintguard(uclass: TUClass = nil);
 var
   j: integer;
 begin
   Log('History:', ltError);
-  for j := 0 to GuardStack.Count-1 do begin
-    if (uclass = nil) then
-      else Log('  '+GuardStack[j], ltError, CreateLogEntry(uclass));
+  for j := 0 to xGuardStack.Count-1 do begin
+    if (uclass = nil) then Log('  '+xGuardStack[j], ltError)
+    else Log('  '+xGuardStack[j], ltError, CreateLogEntry(uclass));
   end;
 end;
 
@@ -537,7 +537,7 @@ begin
 end;
 
 initialization
-  GuardStack := TStringList.Create;
+  xGuardStack := TStringList.Create;
   kwl1 := false;
   kwl2 := false;
   Keywords1 := Hashes.TStringHash.Create;
@@ -658,7 +658,8 @@ initialization
 finalization
   FreeAndNil(Keywords1);
   FreeAndNil(Keywords2);
-  FreeAndNil(GuardStack);
+  assert(xGuardStack.Count = 0, 'GuardStack is not empty');
+  FreeAndNil(xGuardStack);
   FreeAndNil(TmpExtCmt);
   if (Assigned(ExtCommentIni)) then FreeAndNil(ExtCommentIni);
 end.
