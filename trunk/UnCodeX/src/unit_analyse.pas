@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.67 2005-04-12 09:14:08 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.68 2005-04-17 14:20:07 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -35,10 +35,10 @@ interface
 
 uses
   SysUtils, Classes, DateUtils, unit_uclasses, unit_parser, unit_outputdefs,
-  unit_definitions, Hashes, Contnrs;
+  unit_definitions, Hashes, Contnrs, unit_ucxthread;
 
 type
-  TClassAnalyser = class(TThread)
+  TClassAnalyser = class(TUCXThread)
   private
     onlynew: boolean;
     instate: boolean;
@@ -85,7 +85,7 @@ type
 
 var
   TreeUpdated: boolean = false;
-  GetExternalComment: TExternaComment;
+  GetExternalComment: TExternalComment;
 
 implementation
 

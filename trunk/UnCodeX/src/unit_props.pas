@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Class property inpector frame
 
-  $Id: unit_props.pas,v 1.33 2005-04-07 08:29:11 elmuerte Exp $
+  $Id: unit_props.pas,v 1.34 2005-04-17 14:20:09 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -162,6 +162,7 @@ begin
     SetDockCaption(self, '');
     exit;
   end;
+  xguard('Tfr_Properties.LoadClass');
   SetDockCaption(self, uclass.FullName);
 
   lib := lv_Properties.Items.Add;
@@ -444,6 +445,7 @@ begin
   CreateHalfColor();
 
   result := true;
+  xunguard;
 end;
 
 procedure Tfr_Properties.lv_PropertiesInfoTip(Sender: TObject;
