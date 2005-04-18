@@ -6,7 +6,7 @@
   Purpose:
     Program settings dialog
 
-  $Id: unit_settings.pas,v 1.50 2005-04-08 07:18:53 elmuerte Exp $
+  $Id: unit_settings.pas,v 1.51 2005-04-18 15:48:56 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -310,7 +310,8 @@ var
 
 implementation
 
-uses unit_main, unit_rtfhilight, unit_definitions, unit_ucxinifiles;
+uses unit_main, unit_rtfhilight, unit_definitions, unit_ucxinifiles,
+  unit_utils;
 
 {$R *.dfm}
 

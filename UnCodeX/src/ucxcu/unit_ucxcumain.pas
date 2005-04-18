@@ -6,7 +6,7 @@
   Purpose:
     Main code for the commandline utility
 
-  $Id: unit_ucxcumain.pas,v 1.23 2005-04-12 08:31:49 elmuerte Exp $
+  $Id: unit_ucxcumain.pas,v 1.24 2005-04-18 15:48:56 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -58,7 +58,7 @@ uses
   Libc,
   {$ENDIF}
   unit_packages, unit_ascii, unit_definitions, unit_analyse, unit_htmlout,
-  unit_ucxinifiles;
+  unit_ucxinifiles, unit_ucxthread;
 
 var
   {PackageList: TUPackageList;
@@ -66,7 +66,7 @@ var
   PhaseLabel, StatusFormat: string;
   LogFile: TextFile;
   Logging: boolean = false;
-  ActiveThread: TThread;
+  ActiveThread: TUCXThread;
   {$IFDEF FPC}
   ErrOutput : TextFile;
   {$ENDIF}
@@ -79,7 +79,9 @@ begin
       begin
         if (ActiveThread <> nil) then begin
           ActiveThread.Terminate;
+          {$IFNDEF NO_THREADS}
           ActiveThread.WaitFor;
+          {$ENDIF}
         end;
         writeln('');
         writeln(#9'process aborted (signal: '+IntToStr(signum)+')');
@@ -237,7 +239,9 @@ begin
   try
     ActiveThread.FreeOnTerminate := false;
     ActiveThread.Resume;
+    {$IFNDEF NO_THREADS}
     ActiveThread.WaitFor;
+    {$ENDIF}
   finally
     ActiveThread.Free;
   end;
@@ -252,7 +256,9 @@ begin
   try
     ActiveThread.FreeOnTerminate := false;
     ActiveThread.Resume;
+    {$IFNDEF NO_THREADS}
     ActiveThread.WaitFor;
+    {$ENDIF}
   finally
     ActiveThread.Free;
   end;
@@ -263,7 +269,9 @@ begin
   try
     ActiveThread.FreeOnTerminate := false;
     ActiveThread.Resume;
+    {$IFNDEF NO_THREADS}
     ActiveThread.WaitFor;
+    {$ENDIF}
   finally
     ActiveThread.Free;
   end;
@@ -280,10 +288,16 @@ begin
   end;
 end;
 
+var
+  PendingNL: boolean;
+
 procedure FatalError(msg: string; errorcode: integer = -1);
 begin
-  Flush(Output);
-  writeln(ErrOutput, '');
+  if (PendingNL) then begin
+    writeln('');
+    PendingNL := false;
+    Flush(Output);
+  end;
   writeln(ErrOutput, 'Fatal error:');
   writeln(ErrOutput, #9+msg);
   Flush(ErrOutput);
@@ -292,8 +306,11 @@ end;
 
 procedure Warning(msg: string);
 begin
-  Flush(Output);
-  writeln(ErrOutput, '');
+  if (PendingNL) then begin
+    writeln('');
+    PendingNL := false;
+    Flush(Output);
+  end;
   writeln(ErrOutput, 'Warning:');
   writeln(ErrOutput, #9+msg);
   Flush(ErrOutput);
@@ -301,13 +318,15 @@ end;
 
 procedure StatusReport(msg: string; progress: byte = 255);
 begin
-  if (Verbose = 1) then DrawProgressBar(progress, 30, true, PhaseLabel)
+  if (Verbose = 1) then begin
+    DrawProgressBar(progress, 30, true, PhaseLabel);
+    PendingNL := true;
+  end
   else if (Verbose = 2) then begin
     if (progress = 255) then Writeln(PhaseLabel+format(' ....', [progress])+' | '+msg)
     else Writeln(PhaseLabel+format(' %3d%%', [progress])+' | '+msg);
   end;
 end;
-
 
 procedure Log(msg : string; mt: TLogType = ltInfo; obj: TObject = nil);
 const
@@ -321,7 +340,11 @@ begin
     end;
   end;
   if (mt = ltError) then begin
-    writeln(ErrOutput, '');
+    if (PendingNL) then begin
+      writeln('');
+      PendingNL := false;
+      Flush(Output);
+    end;
     writeln(ErrOutput, '[ERROR] '+msg);
     flush(ErrOutput);
   end;

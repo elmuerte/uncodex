@@ -7,6 +7,9 @@ Unit Adler;
   Pascal tranlastion
   Copyright (C) 1998 by Jacques Nomssi Nzali
   For conditions of distribution and use, see copyright notice in readme.txt
+  
+  Modifiied 02/2003 by Sergey A. Galin for Delphi 6+ and Kylix compatibility.
+  See README in directory above for more information.  
 }
 
 interface
@@ -14,7 +17,7 @@ interface
 {$I zconf.inc}
 
 uses
-  zutil;
+  ZUtil;
 
 function adler32(adler : uLong; buf : pBytef; len : uInt) : uLong;
 
@@ -41,9 +44,9 @@ implementation
 
 const
   BASE = uLong(65521); { largest prime smaller than 65536 }
-  NMAX = 5552;  { original code with unsigned 32 bit integer }
+  {NMAX = 5552; original code with unsigned 32 bit integer }
   { NMAX is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1 }
-//  NMAX = 3854;        { code with signed 32 bit integer }
+  NMAX = 3854;        { code with signed 32 bit integer }
   { NMAX is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^31-1 }
   { The penalty is the time loss in the extra MOD-calls. }
 

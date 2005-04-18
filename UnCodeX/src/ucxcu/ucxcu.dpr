@@ -6,7 +6,7 @@
   Purpose:
     UnCodeX Commandline Utility Client
 
-  $Id: ucxcu.dpr,v 1.21 2005-04-12 08:31:49 elmuerte Exp $
+  $Id: ucxcu.dpr,v 1.22 2005-04-18 15:48:56 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -35,9 +35,6 @@ program ucxcu;
 {$I ..\defines.inc}
 
 uses
-  {$IFDEF FPC_THREADING}
-  cthreads, 
-  {$ENDIF}
   {$IFDEF DETECT_MEM_LEAK}
   MemCheck in '..\MemCheck.pas',
   {$ENDIF}
@@ -65,7 +62,8 @@ uses
   unit_ascii in 'unit_ascii.pas',
   unit_ucxcumain in 'unit_ucxcumain.pas',
   unit_config in '..\unit_config.pas',
-  unit_ucxinifiles in '..\unit_ucxinifiles.pas';
+  unit_ucxinifiles in '..\unit_ucxinifiles.pas',
+  unit_ucxthread in '..\unit_ucxthread.pas';
 
 begin
   {$IFDEF DETECT_MEM_LEAK}

@@ -6,7 +6,7 @@
   Purpose:
     Utility functions that have a GUI dependency
 
-  $Id: unit_utils.pas,v 1.19 2005-04-02 11:42:11 elmuerte Exp $
+  $Id: unit_utils.pas,v 1.20 2005-04-18 15:48:56 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -60,7 +60,7 @@ type
 implementation
 
 uses
-  unit_multilinequery, Variants, ActiveX, SysUtils;
+  unit_multilinequery, Variants, ActiveX, SysUtils, ShlObj;
 
 { SearchQuery -- END }
 

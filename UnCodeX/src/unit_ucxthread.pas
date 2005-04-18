@@ -6,7 +6,7 @@
   Purpose:
     Base class for all threads used in uncodex, used for more thread safety
 
-  $Id: unit_ucxthread.pas,v 1.1 2005-04-17 14:20:09 elmuerte Exp $
+  $Id: unit_ucxthread.pas,v 1.2 2005-04-18 15:48:56 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -37,7 +37,32 @@ uses
   Classes, unit_uclasses, unit_definitions;
 
 type
-  TUCXThread = class(TThread)
+  {$IFDEF NO_THREADS}
+  TBaseUCXThread = class
+  protected
+    FCreateSuspended: Boolean;
+    FTerminated: Boolean;
+    FReturnValue: Integer;
+    FOnTerminate: TNotifyEvent;
+    FFreeOnTerminate: Boolean;
+    procedure Execute; virtual; abstract;
+    property ReturnValue: Integer read FReturnValue write FReturnValue;
+    property Terminated: Boolean read FTerminated;
+  public
+    constructor Create(CreateSuspended: Boolean);
+    procedure AfterConstruction; override;
+    procedure Resume;
+    procedure Terminate;
+    property OnTerminate: TNotifyEvent read FOnTerminate write FOnTerminate;
+    // has no effect
+    property FreeOnTerminate: boolean read FFreeOnTerminate write FFreeOnTerminate;
+  end;
+  {$ELSE}
+  TBaseUCXThread = class(TThread)
+  end;
+  {$ENDIF}
+
+  TUCXThread = class(TBaseUCXThread)
   protected
     GuardStack: TStringList;
     FLog: TLogProcEX;
@@ -57,6 +82,33 @@ implementation
 uses
   SysUtils;
 
+{ TBaseUCXThread }
+{$IFDEF NO_THREADS}
+constructor TBaseUCXThread.Create(CreateSuspended: Boolean);
+begin
+  inherited Create;
+  FCreateSuspended := CreateSuspended;
+end;
+
+procedure TBaseUCXThread.AfterConstruction;
+begin
+  if not FCreateSuspended then Resume;
+end;
+
+procedure TBaseUCXThread.Resume;
+begin
+  Execute;
+  if Assigned(FOnTerminate) then FOnTerminate(Self);
+end;
+
+procedure TBaseUCXThread.Terminate;
+begin
+  FTerminated := True;
+end;
+{$ENDIF}
+
+{ TUCXThread }
+
 constructor TUCXThread.Create(CreateSuspended: Boolean);
 begin
   GuardStack := TStringList.Create;
@@ -69,6 +121,7 @@ end;
 destructor TUCXThread.Destroy;
 begin
   FreeAndNil(GuardStack);
+  inherited Destroy;
 end;
 
 procedure TUCXThread.InternalLog(msg: string; mt: TLogType = ltInfo; obj: TObject = nil);
