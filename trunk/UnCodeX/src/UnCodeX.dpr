@@ -6,7 +6,7 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.69 2005-04-17 14:20:07 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.70 2005-04-18 15:48:55 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -34,7 +34,9 @@ program UnCodeX;
 
 uses
   FastShareMem in 'FastShareMem.pas',
+  {$IFDEF DETECT_MEM_LEAK}
   MemCheck in 'MemCheck.pas',
+  {$ENDIF}
   Windows,
   Messages,
   SysUtils,
@@ -231,9 +233,9 @@ begin
     Application.Initialize;
     Application.Title := 'Loading UnCodeX ...';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-  Application.CreateForm(Tfrm_About, frm_About);
-  Application.CreateForm(Tfrm_License, frm_License);
-  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+    Application.CreateForm(Tfrm_About, frm_About);
+    Application.CreateForm(Tfrm_License, frm_License);
+    if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end
   else if (frm_Splash <> nil) then frm_Splash.Close;

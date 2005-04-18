@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.83 2005-04-17 14:20:08 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.84 2005-04-18 15:48:55 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -264,7 +264,6 @@ end;
 
 constructor THTMLOutput.Create(config: THTMLoutConfig; status: TStatusReport);
 begin
-  resetguard;  
   Self.PackageList := Config.PackageList;
   Self.ClassList := Config.ClassList;
   Self.status := status;
@@ -290,9 +289,9 @@ begin
   psComp := TPSScript.Create(nil);
   SetupPascalScript();
   {$ENDIF}
-
   inherited Create(true);
   FreeOnTerminate := true;
+  resetguard;
 end;
 
 destructor THTMLOutput.Destroy;
@@ -311,6 +310,7 @@ begin
   CleanupPascalScript();
   FreeAndNil(psComp);
   {$ENDIF}
+  inherited Destroy;
 end;
 
 {$IFDEF HTMLOUT_PASCALSCRIPT}
@@ -432,11 +432,11 @@ begin
       printguard(currentClass);
     end;
   end;
-  resetguard;
 end;
 
 function THTMLOutput.CreateOutputStream(filename: string; forceNoCompress: boolean = false): TStream;
 begin
+  guard('CreateOutputStream '+filename);
   if ((GZCompress = tbTrue) and not forceNoCompress) then begin
     {$IFDEF WITH_ZLIB}
     result := TGZFileStream.Create(filename, gzOpenWrite);
@@ -445,6 +445,7 @@ begin
     {$ENDIF}
   end
   else result := TFileStream.Create(filename, fmCreate);
+  unguard;
 end;
 
 function THTMLOutput.CloseOutputStream(var stream: TStream): boolean;

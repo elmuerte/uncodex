@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.149 2005-04-17 14:20:08 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.150 2005-04-18 15:48:55 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -75,7 +75,7 @@ type
   TGZFileStream = Class(TStream)
   Private
     FOpenMode : TGZOpenmode;
-    FFIle : gzfile;
+    FFile : gzfile;
   Public
     Constructor Create(FileName: String;FileMode: TGZOpenMode);
     Destructor Destroy;override;
@@ -658,7 +658,7 @@ initialization
 finalization
   FreeAndNil(Keywords1);
   FreeAndNil(Keywords2);
-  assert(xGuardStack.Count = 0, 'GuardStack is not empty');
+  assert((xGuardStack.Count = 0), 'GuardStack is not empty');
   FreeAndNil(xGuardStack);
   FreeAndNil(TmpExtCmt);
   if (Assigned(ExtCommentIni)) then FreeAndNil(ExtCommentIni);

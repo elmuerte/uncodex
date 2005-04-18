@@ -2,18 +2,19 @@ unit FastShareMem;
 
 (*
  * Shared Memory Allocator for Delphi DLL's
- * Version: 1.22
+ * Version: 2.10
  *
  * Features:
- *   no runtime dll required.
- *   no performance degradation.
+ *   No runtime dll required.
+ *   No performance degradation.
+ *   Faster than ShareMem/Borlndmm.dll.
  *
  * Usage:
- *   Windows:
- *   Must be the first unit listed in the project file's USES section
+ * Windows:
+ *   Must be the FIRST unit listed in the project file's USES section
  *   for both dll and exe projects. If you install a memory manager for
- *   leak detection, it should be listed immediately after this unit.
- *   Linux:
+ *   leak detection, it should be listed immediately AFTER this unit.
+ * Linux:
  *   Not needed. May be commented out using conditional directives:
  *       uses {$IFDEF WIN32} FastShareMem, {$ENDIF}
  *
@@ -26,6 +27,13 @@ unit FastShareMem;
  * To be notified of new versions by email, subscribe to the site alerter facility.
 
    Revision History:
+   2003 Dec 03: Version 2.10. Added GetAllocMemCount and GetAllocMemSize functions.
+                From a contribution by Andrey Nikolayevich Aban'shin (andrey@ecobank.san.ru).
+   2003 Dec 03: Version 2.00 released. Complete rewrite; now uses a window class
+                to exchange data between modules. Safer, and *much* simpler.
+                The code is also much shorter.
+   2003 Aug 27: Removed reference to SysUtils. This was causing subtle bugs.
+                Update by Alex Blach (entwicklung@zmi.de)
    2003 May  7: Fixed "Combining signed and unsigned types" warning. Replaced
 				integers with longword where appropriate.
                 Thanks to Nagy Krisztián (chris@manage.co.hu)
@@ -39,121 +47,94 @@ unit FastShareMem;
                 (Thanks to Darryl Strickland (DStrickland@carolina.rr.com))
  *)
 
+(*
+	Note to contributors:
+	If you're going to edit this code, keep in mind the following things:
+
+	* We shouldn't dynamically allocate Delphi 'objects' here, like strings,
+      obejcts etc. All memory should come from the Windows API, or be statically
+      allocated.
+
+	* We shouln't raise exceptions here, since an exception is a Delphi object,
+	  and thus consumes heap memory.
+
+    * For the above reasons, we cannot use most VCL facilities here.
+
+ *)
+
 interface
 
-implementation
-uses Windows, SysUtils;
+var
+  GetAllocMemCount: function: integer;
+  GetAllocMemSize : function: integer;
 
-const SignatureBytes1 = $BABE01234567FEED;
-      SignatureBytes2 = $F00D76543210B00B;
-const iPagesBound     = 15;
+
+implementation
+uses Windows;
+
+const ClassName  = '_com.codexterity.fastsharemem.dataclass';
 
 type
-    TMemMgrPack = record
-         RefCount: Integer;  //Reference Count of the MemMgr
-         Signature1: int64;
-         MemMgr: TMemoryManager;
-         Signature2: int64;
-    end;
-    PMemMgrPack = ^TMemMgrPack;
+  TFastSharememPack = record
+	MemMgr: TMemoryManager;
+    _GetAllocMemSize  :function :integer;
+    _GetAllocMemCount :function :integer;
+  end;
+
+  function _GetAllocMemCount: Integer;
+  begin
+    Result := System.AllocMemCount;
+  end;
+
+  function _GetAllocMemSize: Integer;
+  begin
+    Result := System.AllocMemSize;
+  end;
 
 
-    procedure ValidatePack( p: PMemMgrPack );
-    var pid: DWORD;
-    begin
-         // use pid for additional safety;
-         p^.RefCount := 1;
-         pid := GetCurrentProcessId;
-         p^.Signature1 := SignatureBytes1 xor pid;
-         p^.Signature2 := SignatureBytes2 xor pid;
-    end;
-
-    function IsPackValid( p: PMemMgrPack ): boolean;
-    var pid: DWORD;
-    begin
-         pid := GetCurrentProcessId;
-         Result := (p^.Signature1 = SignatureBytes1 xor pid) and
-                   (p^.Signature2 = SignatureBytes2 xor pid);
-    end;
 
 var
-  si: TSYSTEMINFO;
+  MemPack: TFastSharememPack;
   OldMemMgr: TMemoryManager;
-  requested, allocated: PMemMgrPack;
-
-  iPages: integer;
+  wc: TWndClass;
+  isHost: boolean;
 
 initialization
-  GetSystemInfo( si );
-  iPages := 0;
 
-  //next, fixed by Aimingoo
-  repeat
-    requested := si.lpMaximumApplicationAddress ;
-    requested := pointer( (longword(requested) div $10000) * $10000 ); // align on start of last full 64k page
-    dec(longword(requested), iPages * $10000);
-    requested := pointer( (longword(requested) div si.dwPageSize) * si.dwPageSize ); // align on start of last full 64k page
-    allocated := VirtualAlloc( requested, si.dwPageSize, MEM_RESERVE or MEM_COMMIT, PAGE_READWRITE );
-
-    //find a free memory block or a valid MemMgr
-    if (allocated <> nil) then
-      if (requested = allocated) then
-        Break
-      else
-    else
-      if IsPackValid(requested) then
-        Break;
-
-    inc(iPages);
-  until iPages > iPagesBound;
-
-  if allocated <> nil then
+  if (not GetClassInfo(HInstance, ClassName, wc)) then
   begin
-    if requested <> allocated then
+  	GetMemoryManager(MemPack.MemMgr);
+    MemPack._GetAllocMemCount := @_GetAllocMemCount;
+    MemPack._GetAllocMemSize  := @_GetAllocMemSize;
+    GetAllocMemCount := @_GetAllocMemCount;
+    GetAllocMemSize  := @_GetAllocMemSize;
+
+  	FillChar(wc, sizeof(wc), 0);
+    wc.lpszClassName := ClassName;
+    wc.style := CS_GLOBALCLASS;
+    wc.hInstance := hInstance;
+  	wc.lpfnWndProc := @MemPack;
+
+  	if RegisterClass(wc)=0 then
     begin
-      MessageBox( 0, 'Shared Memory Allocator setup failed: Address was relocated.', 'FastShareMem', 0 );
+      MessageBox( 0, 'Shared Memory Allocator setup failed: Cannot register class.', 'FastShareMem', 0 );
       Halt;
     end;
 
-    GetMemoryManager( allocated^.MemMgr );
-    ValidatePack( allocated );
-  end
-  else
+    isHost := true;
+  end else
   begin
-    if not IsPackValid( requested ) then
-    begin
-      MessageBox( 0, 'Shared Memory Allocator setup failed: Address already reserved.', 'FastShareMem', 0 );
-      Halt;
-    end;
-
-    GetMemoryManager( OldMemMgr );
-    SetMemoryManager( requested^.MemMgr );
-    inc(requested^.RefCount);
+    GetMemoryManager(OldMemMgr); // optional
+	SetMemoryManager(TFastSharememPack(wc.lpfnWndProc^).MemMgr);
+    GetAllocMemCount := TFastSharememPack(wc.lpfnWndProc^)._GetAllocMemCount;
+    GetAllocMemSize  := TFastSharememPack(wc.lpfnWndProc^)._GetAllocMemSize;
+    isHost := false;
   end;
+
 
 finalization
-  //next, fixed by Aimingoo
-  
-  (* fix Reference Count *)
-  dec(requested^.RefCount);
 
-  (* restore MemMgr to Old, only for DLL or other model *)
-  if allocated = nil then
-    SetMemoryManager( OldMemMgr )
-  else
-    if requested^.RefCount > 0 then
-    begin
-      TerminateProcess(GetCurrentProcess, 0);
-    end;
+  if isHost then UnregisterClass(ClassName, HInstance)
+  else SetMemoryManager(OldMemMgr); // optional
 
-
-  (* cleanup *)
-  if requested^.RefCount = 0 then
-  begin
-    VirtualFree( allocated, si.dwPageSize, MEM_DECOMMIT );
-    VirtualFree( allocated, 0, MEM_RELEASE );
-  end;
 end.
-
-
-

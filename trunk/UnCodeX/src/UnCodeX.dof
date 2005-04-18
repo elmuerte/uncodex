@@ -3,7 +3,7 @@ Version=6.0
 [Compiler]
 A=8
 B=0
-C=1
+C=0
 D=0
 E=0
 F=0
@@ -86,19 +86,20 @@ ProductName=UnCodeX
 ProductVersion=2.1
 Comments=http://wiki.beyondunreal.com/wiki/UnCodeX
 Homepage=http://sourceforge.net/projects/uncodex
-[Excluded Packages]
-c:\program files\borland\delphi6\Bin\dclnet60.bpl=Borland Internet Components
-c:\program files\borland\delphi6\Bin\dclwbm60.bpl=Borland InternetExpress Components
-c:\program files\borland\delphi6\Bin\dclwebsnap60.bpl=Borland WebSnap Components
-c:\program files\borland\delphi6\Bin\dclsoap60.bpl=Borland SOAP Components
+[HistoryLists\hlConditionals]
+Count=1
+Item0=DEBUG_BUILD
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=3
+Count=6
 Item0=paszlib
-Item1=..\;..\paszlib
-Item2=VCL
+Item1=$(DELPHI)\Lib\Debug;..\;paszlib
+Item2=$(DELPHI)\Lib\Debug;..\;D:\dev\UnCodeX\src\paszlib
+Item3=$(DELPHI)\Lib\Debug;..\;..\paszlib
+Item4=..\;..\paszlib
+Item5=VCL
 [HistoryLists\hlUnitOutputDirectory]
 Count=2
 Item0=..\DCU

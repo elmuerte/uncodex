@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.68 2005-04-17 14:20:07 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.69 2005-04-18 15:48:55 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -186,6 +186,7 @@ procedure TClassAnalyser.Execute;
 var
   stime: TDateTime;
 begin
+  guard('Execute');
   DEBUG_MACRO_EVAL := FindCmdLineSwitch('debug', ['-'], true);
   stime := Now();
   if (classes = nil) then begin
@@ -205,43 +206,8 @@ begin
   end
   else ExecuteList;
   Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds');
+  unguard;
 end;
-
-{
- Old ordned anaylsing
-procedure TClassAnalyser.ExecuteList;
-var
-  i, j: integer;
-begin
-  i := 0;
-  while (i < classes.Count) do begin
-    uclass := classes[i];
-    Status('Analysing class '+uclass.name+' ...', round(i/(classes.count-1)*100));
-    try
-      case ExecuteSingle of
-        RES_SUCCESS, RES_ERROR: Inc(i);
-      end;
-    except
-      on E: EOFException do begin
-        Inc(i);
-        LogClass('End of file reached while parsing '+uclass.filename+': '+E.Message, uclass);
-        LogClass('History:', uclass);
-        for j := 0 to GuardStack.Count-1 do begin
-          LogClass('  '+GuardStack[j], uclass);
-        end;
-      end;
-      on E: Exception do begin
-        Inc(i);
-        LogClass('Unhandled exception in class '+uclass.name+': '+E.Message, uclass);
-        LogClass('History:', uclass);
-        for j := 0 to GuardStack.Count-1 do begin
-          LogClass('  '+GuardStack[j], uclass);
-        end;
-      end;
-    end;
-    if (Self.Terminated) then break;
-  end;
-end;}
 
 procedure TClassAnalyser.ExecuteList;
 var
@@ -255,7 +221,16 @@ var
     try
       uclass := myclass;
       case ExecuteSingle of
-        RES_SUCCESS, RES_ERROR: Inc(i);
+        RES_SUCCESS:
+          begin
+            Inc(i);
+            for j := myclass.children.Count-1 downto 0 do begin
+              ExecClass(myclass.children[j]);
+              if (Self.Terminated) then exit;
+            end;
+          end;
+        RES_REMOVED, RES_ERROR:
+          Inc(i);
       end;
     except
       on E: EOFException do begin
@@ -269,15 +244,12 @@ var
         printguard(myclass);
       end;
     end;
-    for j := 0 to myclass.children.Count-1 do begin
-      ExecClass(myclass.children[j]);
-      if (Self.Terminated) then exit;
-    end;
+
   end;
 
 begin
   i := 0;
-  for n := 0 to classes.Count-1 do begin
+  for n := classes.Count-1 downto 0 do begin
     if (classes[n].parent = nil) then begin
       ExecClass(classes[n]);
     end;
@@ -289,7 +261,7 @@ var
   filename: string;
   currenttime: Integer;
 begin
-  resetguard;
+  guard('ExecuteSingle '+uclass.name);
   Result := RES_SUCCESS;
   filename := uclass.package.path+PATHDELIM+uclass.filename;
   if (not FileExists(filename)) then begin
@@ -302,6 +274,7 @@ begin
       if (uclass.parent <> nil) then uclass.parent.children.Remove(uclass);
       uclass.package.classes.Remove(uclass);
       classes.Remove(uclass);
+      uclass := nil;
       result := RES_REMOVED;
     end;
     {$ENDIF}
@@ -347,6 +320,7 @@ begin
     includeParsers.Free;
     includeFiles.Free;
   end;
+  unguard;
 end;
 
 // second secondary comment

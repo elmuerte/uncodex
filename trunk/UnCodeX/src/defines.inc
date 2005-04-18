@@ -6,31 +6,29 @@
     Purpose:
         Global macro file, to be included by means of ($I defines.inc)
 
-    $Id: defines.inc,v 1.12 2005-04-12 10:01:25 elmuerte Exp $
+    $Id: defines.inc,v 1.13 2005-04-18 15:48:55 elmuerte Exp $
 *******************************************************************************}
 
 {$IFDEF VER140} // delphi 6
-    {$DEFINE IS_DELPHI}
+  {$DEFINE IS_DELPHI}
 {$ENDIF}
 
 {$IFDEF LINUX}
-    {$DEFINE UNIX}
+  {$DEFINE UNIX}
 {$ENDIF}
 
 {$IFDEF FPC}
-    {$DEFINE CONSOLE}
-	{$IFDEF LINUX}
-    {$THREADING ON}
-	{$ENDIF}
+  {$DEFINE CONSOLE}
 {$ENDIF}
 
 {$IFDEF CONSOLE}
-    // Console Application
-    {$DEFINE NO_EXPORT}
-    {$DEFINE DONT_SAVE_KEYWORDS}
+  // Console Application
+  {$DEFINE NO_EXPORT}
+  {$DEFINE DONT_SAVE_KEYWORDS}
+  {$DEFINE NO_THREADS} // disable threading
 {$ELSE}
-    // GUI application
-    {$DEFINE USE_TREEVIEW}
+  // GUI application
+  {$DEFINE USE_TREEVIEW}
 {$ENDIF}
 
 {$IFDEF IS_DELPHI}
