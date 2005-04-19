@@ -6,7 +6,7 @@
   Purpose:
     Global PascalScript routines and functionality
 
-  $Id: unit_pascalscript.pas,v 1.19 2005-04-12 20:34:25 elmuerte Exp $
+  $Id: unit_pascalscript.pas,v 1.20 2005-04-19 07:49:05 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -36,18 +36,6 @@ interface
 uses
   SysUtils, uPSComponent, uPSUtils;
 
-  {TPSImport_miscclasses = class(TPSPlugin)
-  protected
-    procedure CompOnUses(CompExec: TPSScript); override;
-    procedure ExecOnUses(CompExec: TPSScript); override;
-    procedure CompileImport1(CompExec: TPSScript); override;
-    procedure CompileImport2(CompExec: TPSScript); override;
-    procedure ExecImport1(CompExec: TPSScript; const ri: TPSRuntimeClassImporter); override;
-    procedure ExecImport2(CompExec: TPSScript; const ri: TPSRuntimeClassImporter); override;
-  end;
-
-  procedure Register; }
-
   // pre-compile routines
   procedure RegisterPS(ps: TPSScript);
 
@@ -57,6 +45,21 @@ uses unit_definitions
   {$IFDEF FPC}
   , unit_fpc_compat
   {$ENDIF};
+
+procedure _Log(msg: string);
+begin
+  Log(msg);
+end;
+
+procedure _LogType(msg: string; mt: TLogType);
+begin
+  Log(msg, mt);
+end;
+
+procedure _LogTypeObject(msg: string; mt: TLogType; obj: TObject);
+begin
+  Log(msg, mt, obj);
+end;
 
 procedure RegisterPS(ps: TPSScript);
 begin
@@ -70,17 +73,14 @@ begin
   ps.AddFunction(@QuotedStr, 'function QuotedStr(const S: string): string;');
   ps.AddFunction(@IntToHex, 'function IntToHex(Value: Integer; Digits: Integer): string;');
   ps.AddFunction(@StrToBool, 'function StrToBool(const S: string): Boolean;');
-  {$IFDEF FPC}
-  //TODO: fix StrToBoolDef
-  {$ELSE}
   ps.AddFunction(@StrToBoolDef, 'function StrToBoolDef(const S: string; const Default: Boolean): Boolean;');
-  {$ENDIF}
   ps.AddFunction(@BoolToStr, 'function BoolToStr(B: Boolean; UseBoolStrs: Boolean): string;');
   ps.Comp.AddTypeS('TReplaceFlags_', '(rfReplaceAll, rfIgnoreCase);');
   ps.Comp.AddTypeS('TReplaceFlags', 'set of TReplaceFlags_;');
   ps.AddFunction(@StringReplace, 'function StringReplace(const S, OldPattern, NewPattern: string; Flags: TReplaceFlags): string;');
   ps.AddFunction(@GetToken, 'function GetToken(var input: string; delim: char; nocut: boolean): string;');
   ps.AddFunction(@StrRepeat, 'function StrRepeat(line: string; count: integer): string;');
+  ps.AddFunction(@StringHash, 'function StringHash(input: string): integer;');
 
   { file access }
   ps.Comp.AddTypeS('TCharSet', 'set of Char');
@@ -110,24 +110,19 @@ begin
   ps.AddFunction(@GetFiles, 'function GetFiles(path: string; Attr: Integer; var files: TStringList): boolean;');
   ps.AddFunction(@ExtractBaseName, 'function ExtractBaseName(filename: string): string;');
 
+  ps.AddFunction(@iFindFile, 'function iFindFile(filename: string): string;');
+  ps.AddFunction(@iFindDir, 'function iFindDir(dirname: string; var output: string): boolean;');
+
   { Commandline support }
-  {$IFDEF FPC}
-  //TODO: fix
-  {$ELSE}
   ps.AddFunction(@FindCmdLineSwitch, 'function FindCmdLineSwitch(const Switch: string; const Chars: TCharSet; IgnoreCase: Boolean): Boolean;');
-  {$ENDIF}
   ps.AddFunction(@ParamCount, 'function ParamCount: Integer;');
   ps.AddFunction(@ParamStr, 'function ParamStr(Index: Integer): string;');
 
   { Misc }
-  ps.AddFunction(@Log, 'procedure Log(msg: string);');
-  ps.AddFunction(@Log, 'procedure LogType(msg: string; mt: TLogType);');
-  ps.AddFunction(@Log, 'procedure LogTypeObject(msg: string; mt: TLogType; obj: TObject);');
-  {$IFDEF FPC}
-  //TODO:
-  {$ELSE}
+  ps.AddFunction(@_Log, 'procedure Log(msg: string);');
+  ps.AddFunction(@_LogType, 'procedure LogType(msg: string; mt: TLogType);');
+  ps.AddFunction(@_LogTypeObject, 'procedure LogTypeObject(msg: string; mt: TLogType; obj: TObject);');
   ps.AddFunction(@CreateLogEntry, 'function CreateLogEntry(filename: string; line: integer; pos: integer; obj: TObject): TLogEntry;');
-  {$ENDIF}
   ps.AddFunction(@ResolveFilename, 'function ResolveFilename(uclass: TUClass; udecl: TUDeclaration): string;');
 end;
 

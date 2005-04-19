@@ -6,7 +6,7 @@
   Purpose:
     Contains the configuration of UnCodeX
 
-  $Id: unit_config.pas,v 1.9 2005-04-08 07:18:47 elmuerte Exp $
+  $Id: unit_config.pas,v 1.10 2005-04-19 07:49:05 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -358,7 +358,7 @@ begin
     ini.ReadStringArray('Packages', 'Tag', sl);
     for i := 0 to sl.Count-1 do begin
       n := PackagesPriority.IndexOf(sl[i]);
-      if (n > 0) then PackagesPriority.Objects[n] := PackagesPriority;
+      if (n > -1) then PackagesPriority.Objects[n] := PackagesPriority;
     end;
   finally
     sl.Free;

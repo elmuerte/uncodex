@@ -141,6 +141,8 @@ begin
   //with RegClassS(CL,'TUObject', 'TUClass') do
   with CL.AddClassN(CL.FindClass('TUObject'),'TUClass') do
   begin
+    RegisterProperty('defaultproperties', 'TDefaultPropertiesRecord', iptrw);
+    RegisterProperty('replication', 'TReplicationRecord', iptrw);
     RegisterProperty('parent', 'TUClass', iptrw);
     RegisterProperty('filename', 'string', iptrw);
     RegisterProperty('package', 'TUPackage', iptrw);
@@ -158,8 +160,6 @@ begin
     RegisterProperty('treenode', 'TObject', iptrw);
     RegisterProperty('treenode2', 'TObject', iptrw);
     RegisterProperty('filetime', 'integer', iptrw);
-    RegisterProperty('defaultproperties', 'TDefaultPropertiesRecord', iptrw);
-    RegisterProperty('replication', 'TReplicationRecord', iptrw);
     RegisterProperty('tagged', 'boolean', iptrw);
     RegisterProperty('children', 'TUClassList', iptrw);
     RegisterProperty('deps', 'TUClassList', iptrw);
@@ -490,43 +490,179 @@ begin T := Self.Items[t1]; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TUClassincludes_W(Self: TUClass; const T: TStringList);
-Begin Self.includes := T; end;
+begin Self.includes := T; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TUClassincludes_R(Self: TUClass; var T: TStringList);
-Begin T := Self.includes; end;
+begin T := Self.includes; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TUClassdefs_W(Self: TUClass; const T: TDefinitionList);
-Begin Self.defs := T; end;
+begin Self.defs := T; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TUClassdefs_R(Self: TUClass; var T: TDefinitionList);
-Begin T := Self.defs; end;
+begin T := Self.defs; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TUClassdeps_W(Self: TUClass; const T: TUClassList);
-Begin Self.deps := T; end;
+begin Self.deps := T; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TUClassdeps_R(Self: TUClass; var T: TUClassList);
-Begin T := Self.deps; end;
+begin T := Self.deps; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TUClasschildren_W(Self: TUClass; const T: TUClassList);
-Begin Self.children := T; end;
+begin Self.children := T; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TUClasschildren_R(Self: TUClass; var T: TUClassList);
-Begin T := Self.children; end;
+begin T := Self.children; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TUClasstagged_W(Self: TUClass; const T: boolean);
-Begin Self.tagged := T; end;
+begin Self.tagged := T; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TUClasstagged_R(Self: TUClass; var T: boolean);
-Begin T := Self.tagged; end;
+begin T := Self.tagged; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassfiletime_W(Self: TUClass; const T: integer);
+begin Self.filetime := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassfiletime_R(Self: TUClass; var T: integer);
+begin T := Self.filetime; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClasstreenode2_W(Self: TUClass; const T: TObject);
+begin Self.treenode2 := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClasstreenode2_R(Self: TUClass; var T: TObject);
+begin T := Self.treenode2; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClasstreenode_W(Self: TUClass; const T: TObject);
+begin Self.treenode := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClasstreenode_R(Self: TUClass; var T: TObject);
+begin T := Self.treenode; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassdelegates_W(Self: TUClass; const T: TUFunctionList);
+begin Self.delegates := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassdelegates_R(Self: TUClass; var T: TUFunctionList);
+begin T := Self.delegates; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassfunctions_W(Self: TUClass; const T: TUFunctionList);
+begin Self.functions := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassfunctions_R(Self: TUClass; var T: TUFunctionList);
+begin T := Self.functions; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassstates_W(Self: TUClass; const T: TUstateList);
+begin Self.states := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassstates_R(Self: TUClass; var T: TUstateList);
+begin T := Self.states; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassstructs_W(Self: TUClass; const T: TUStructList);
+begin Self.structs := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassstructs_R(Self: TUClass; var T: TUStructList);
+begin T := Self.structs; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassenums_W(Self: TUClass; const T: TUEnumList);
+begin Self.enums := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassenums_R(Self: TUClass; var T: TUEnumList);
+begin T := Self.enums; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassproperties_W(Self: TUClass; const T: TUPropertyList);
+begin Self.properties := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassproperties_R(Self: TUClass; var T: TUPropertyList);
+begin T := Self.properties; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassconsts_W(Self: TUClass; const T: TUConstList);
+begin Self.consts := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassconsts_R(Self: TUClass; var T: TUConstList);
+begin T := Self.consts; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClasspriority_W(Self: TUClass; const T: integer);
+begin Self.priority := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClasspriority_R(Self: TUClass; var T: integer);
+begin T := Self.priority; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassInterfaceType_W(Self: TUClass; const T: TUCInterfaceType);
+begin Self.InterfaceType := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassInterfaceType_R(Self: TUClass; var T: TUCInterfaceType);
+begin T := Self.InterfaceType; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassmodifiers_W(Self: TUClass; const T: string);
+begin Self.modifiers := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassmodifiers_R(Self: TUClass; var T: string);
+begin T := Self.modifiers; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassparentname_W(Self: TUClass; const T: string);
+begin Self.parentname := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassparentname_R(Self: TUClass; var T: string);
+begin T := Self.parentname; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClasspackage_W(Self: TUClass; const T: TUPackage);
+begin Self.package := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClasspackage_R(Self: TUClass; var T: TUPackage);
+begin T := Self.package; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassfilename_W(Self: TUClass; const T: string);
+begin Self.filename := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassfilename_R(Self: TUClass; var T: string);
+begin T := Self.filename; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassparent_W(Self: TUClass; const T: TUClass);
+begin Self.parent := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TUClassparent_R(Self: TUClass; var T: TUClass);
+begin T := Self.parent; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TUClassreplication_W(Self: TUClass; const T: TReplicationRecord);
@@ -543,142 +679,6 @@ Begin Self.defaultproperties := T; end;
 (*----------------------------------------------------------------------------*)
 procedure TUClassdefaultproperties_R(Self: TUClass; var T: TDefaultPropertiesRecord);
 Begin T := Self.defaultproperties; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassfiletime_W(Self: TUClass; const T: integer);
-Begin Self.filetime := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassfiletime_R(Self: TUClass; var T: integer);
-Begin T := Self.filetime; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClasstreenode2_W(Self: TUClass; const T: TObject);
-Begin Self.treenode2 := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClasstreenode2_R(Self: TUClass; var T: TObject);
-Begin T := Self.treenode2; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClasstreenode_W(Self: TUClass; const T: TObject);
-Begin Self.treenode := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClasstreenode_R(Self: TUClass; var T: TObject);
-Begin T := Self.treenode; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassdelegates_W(Self: TUClass; const T: TUFunctionList);
-Begin Self.delegates := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassdelegates_R(Self: TUClass; var T: TUFunctionList);
-Begin T := Self.delegates; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassfunctions_W(Self: TUClass; const T: TUFunctionList);
-Begin Self.functions := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassfunctions_R(Self: TUClass; var T: TUFunctionList);
-Begin T := Self.functions; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassstates_W(Self: TUClass; const T: TUstateList);
-Begin Self.states := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassstates_R(Self: TUClass; var T: TUstateList);
-Begin T := Self.states; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassstructs_W(Self: TUClass; const T: TUStructList);
-Begin Self.structs := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassstructs_R(Self: TUClass; var T: TUStructList);
-Begin T := Self.structs; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassenums_W(Self: TUClass; const T: TUEnumList);
-Begin Self.enums := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassenums_R(Self: TUClass; var T: TUEnumList);
-Begin T := Self.enums; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassproperties_W(Self: TUClass; const T: TUPropertyList);
-Begin Self.properties := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassproperties_R(Self: TUClass; var T: TUPropertyList);
-Begin T := Self.properties; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassconsts_W(Self: TUClass; const T: TUConstList);
-Begin Self.consts := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassconsts_R(Self: TUClass; var T: TUConstList);
-Begin T := Self.consts; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClasspriority_W(Self: TUClass; const T: integer);
-Begin Self.priority := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClasspriority_R(Self: TUClass; var T: integer);
-Begin T := Self.priority; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassInterfaceType_W(Self: TUClass; const T: TUCInterfaceType);
-Begin Self.InterfaceType := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassInterfaceType_R(Self: TUClass; var T: TUCInterfaceType);
-Begin T := Self.InterfaceType; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassmodifiers_W(Self: TUClass; const T: string);
-Begin Self.modifiers := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassmodifiers_R(Self: TUClass; var T: string);
-Begin T := Self.modifiers; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassparentname_W(Self: TUClass; const T: string);
-Begin Self.parentname := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassparentname_R(Self: TUClass; var T: string);
-Begin T := Self.parentname; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClasspackage_W(Self: TUClass; const T: TUPackage);
-Begin Self.package := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClasspackage_R(Self: TUClass; var T: TUPackage);
-Begin T := Self.package; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassfilename_W(Self: TUClass; const T: string);
-Begin Self.filename := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassfilename_R(Self: TUClass; var T: string);
-Begin T := Self.filename; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassparent_W(Self: TUClass; const T: TUClass);
-Begin Self.parent := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TUClassparent_R(Self: TUClass; var T: TUClass);
-Begin T := Self.parent; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TUFunctionListItems_W(Self: TUFunctionList; const T: TUFunction; const t1: Integer);
@@ -981,6 +981,8 @@ procedure RIRegister_TUClass(CL: TPSRuntimeClassImporter);
 begin
   with CL.Add(TUClass) do
   begin
+    RegisterPropertyHelper(@TUClassdefaultproperties_R,@TUClassdefaultproperties_W,'defaultproperties');
+    RegisterPropertyHelper(@TUClassreplication_R,@TUClassreplication_W,'replication');
     RegisterPropertyHelper(@TUClassparent_R,@TUClassparent_W,'parent');
     RegisterPropertyHelper(@TUClassfilename_R,@TUClassfilename_W,'filename');
     RegisterPropertyHelper(@TUClasspackage_R,@TUClasspackage_W,'package');
@@ -998,8 +1000,6 @@ begin
     RegisterPropertyHelper(@TUClasstreenode_R,@TUClasstreenode_W,'treenode');
     RegisterPropertyHelper(@TUClasstreenode2_R,@TUClasstreenode2_W,'treenode2');
     RegisterPropertyHelper(@TUClassfiletime_R,@TUClassfiletime_W,'filetime');
-    RegisterPropertyHelper(@TUClassdefaultproperties_R,@TUClassdefaultproperties_W,'defaultproperties');
-    RegisterPropertyHelper(@TUClassreplication_R,@TUClassreplication_W,'replication');
     RegisterPropertyHelper(@TUClasstagged_R,@TUClasstagged_W,'tagged');
     RegisterPropertyHelper(@TUClasschildren_R,@TUClasschildren_W,'children');
     RegisterPropertyHelper(@TUClassdeps_R,@TUClassdeps_W,'deps');
@@ -1189,7 +1189,7 @@ begin
     RegisterPropertyHelper(@TUObjectComment_R,@TUObjectComment_W,'Comment');
     RegisterPropertyHelper(@TUObjectCommentType_R,@TUObjectCommentType_W,'CommentType');
     RegisterVirtualMethod(@TUObject.HTMLdeclaration, 'HTMLdeclaration');
-    //RegisterVirtualAbstractMethod(@TUObject, @TUObject.declaration, 'declaration');
+    RegisterVirtualMethod(@TUObject.declaration, 'declaration');
   end;
 end;
 

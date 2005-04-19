@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.58 2005-04-13 06:36:07 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.59 2005-04-19 07:49:05 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -82,8 +82,7 @@ type
     property Comment: string read Fcomment write Fcomment;
     property CommentType: TUCommentType read FCommentType write FCommentType;
     function HTMLdeclaration: string; virtual;
-  public
-    function declaration: string; virtual; abstract;
+    function declaration: string; virtual; // implemented to make it work for pascalscript
   end;
 
   // used for declarations in classes(e.g. functions, variables)
@@ -285,35 +284,62 @@ type
   end;
 
   TUClass = class(TUObject)
-  //TODO
-  public
-    parent:             TUClass;
-    filename:           string;
-    package:            TUPackage;
-    parentname:         string;
-    modifiers:          string;
-    InterfaceType:      TUCInterfaceType;
+  private
+    Fparent:             TUClass;
+    Ffilename:           string;
+    Fpackage:            TUPackage;
+    Fparentname:         string;
+    Fmodifiers:          string;
+    FInterfaceType:      TUCInterfaceType;
     //implements:       TUClassList; // implements these interfaces
-    priority:           integer;
-    consts:             TUConstList;
-    properties:         TUPropertyList;
-    enums:              TUEnumList;
-    structs:            TUStructList;
-    states:             TUstateList;
-    functions:          TUFunctionList;
-    delegates:          TUFunctionList;
-    treenode:           TObject; // class tree node
-    treenode2:          TObject; // the second tree node (PackageTree)
-    filetime:           integer; // used for checking for changed files
+    Fpriority:           integer;
+    Fconsts:             TUConstList;
+    Fproperties:         TUPropertyList;
+    Fenums:              TUEnumList;
+    Fstructs:            TUStructList;
+    Fstates:             TUstateList;
+    Ffunctions:          TUFunctionList;
+    Fdelegates:          TUFunctionList;
+    Ftreenode:           TObject; // class tree node
+    Ftreenode2:          TObject; // the second tree node (PackageTree)
+    Ffiletime:           integer; // used for checking for changed files
+    Ftagged:             boolean;
+    Fchildren:           TUClassList; // not owned, don't free, don't save
+    Fdeps:               TUClassList; // dependency list, not owned, don't free (CURRENTLY NOT USED)
+    Fdefs:               TDefinitionList;
+    Fincludes:           TStringList; // #include files: "line no.=file"
+  public
     defaultproperties:  TDefaultPropertiesRecord;
     replication:        TReplicationRecord;
-    tagged:             boolean;
-    children:           TUClassList; // not owned, don't free, don't save
-    deps:               TUClassList; // dependency list, not owned, don't free (CURRENTLY NOT USED)
-    defs:               TDefinitionList;
-    includes:           TStringList; // #include files: "line no.=file"
+  published
+    property parent: TUClass read Fparent write Fparent;
+    property filename: string read Ffilename write Ffilename;
+    property package: TUPackage read Fpackage write Fpackage;
+    property parentname: string read Fparentname write Fparentname;
+    property modifiers: string read Fmodifiers write Fmodifiers;
+    property InterfaceType: TUCInterfaceType read FInterfaceType write FInterfaceType;
+    property priority: integer read Fpriority write Fpriority;
+    property consts: TUConstList read Fconsts write Fconsts;
+    property properties: TUPropertyList read Fproperties write Fproperties;
+    property enums: TUEnumList read Fenums write Fenums;
+    property structs: TUStructList read Fstructs write Fstructs;
+    property states: TUstateList read Fstates write Fstates;
+    property functions: TUFunctionList read Ffunctions write Ffunctions;
+    property delegates: TUFunctionList read Fdelegates write Fdelegates;
+    property treenode: TObject read Ftreenode write Ftreenode;
+    property treenode2: TObject read Ftreenode2 write Ftreenode2;
+    property filetime: integer read Ffiletime write Ffiletime;
+    //property defaultproperties: TDefaultPropertiesRecord read Fdefaultproperties write Fdefaultproperties;
+    //property replication: TReplicationRecord read Freplication write Freplication;
+    property tagged: boolean read Ftagged write Ftagged;
+    property children: TUClassList read Fchildren write Fchildren;
+    property deps: TUClassList read Fdeps write Fdeps;
+    property defs: TDefinitionList read Fdefs write Fdefs;
+    property includes: TStringList read Fincludes write Fincludes;
+  public
     constructor Create;
     destructor Destroy; override;
+  published
     function FullName: string;
     function FullFileName: string;
     function declaration: string; override;
@@ -373,6 +399,11 @@ implementation
 function TUObject.HTMLdeclaration: string;
 begin
   result := StringReplace(StringReplace(declaration, '>', '&gt;', [rfReplaceAll]), '<', '&lt;', [rfReplaceAll]);
+end;
+
+function TUObject.declaration: string;
+begin
+  result := '';
 end;
 
 { TUObjectList }
@@ -469,7 +500,7 @@ begin
   if (tag <> '') then begin
     result := result+'('+tag+')';
   end;
-  result := result + ' '+modifiers+' '+ptype+' '+name+';';
+  result := result+' '+modifiers+' '+ptype+' '+name+';';
 end;
 
 { TUPropertyList }
@@ -704,24 +735,24 @@ end;
 
 constructor TUClass.Create;
 begin
-  consts := TUConstList.Create(true);
-  consts.owner := self;
-  properties := TUPropertyList.Create(true);
-  properties.owner := self;
-  enums := TUEnumList.Create(true);
-  enums.owner := self;
-  structs := TUStructList.Create(true);
-  structs.owner := self;
-  states := TUStateList.Create(true);
-  states.owner := self;
-  functions := TUFunctionList.Create(true);
-  functions.owner := self;
-  delegates := TUFunctionList.Create(true);
-  delegates.owner := self;
-  children := TUClassList.Create(false);
-  deps := TUClassList.Create(false);
-  defs := TDefinitionList.Create(self);
-  includes := TStringList.Create;
+  Fconsts := TUConstList.Create(true);
+  Fconsts.owner := self;
+  Fproperties := TUPropertyList.Create(true);
+  Fproperties.owner := self;
+  Fenums := TUEnumList.Create(true);
+  Fenums.owner := self;
+  Fstructs := TUStructList.Create(true);
+  Fstructs.owner := self;
+  Fstates := TUStateList.Create(true);
+  Fstates.owner := self;
+  Ffunctions := TUFunctionList.Create(true);
+  Ffunctions.owner := self;
+  Fdelegates := TUFunctionList.Create(true);
+  Fdelegates.owner := self;
+  Fchildren := TUClassList.Create(false);
+  Fdeps := TUClassList.Create(false);
+  Fdefs := TDefinitionList.Create(self);
+  Fincludes := TStringList.Create;
   replication.expressions := TStringList.Create;
   replication.symbols := TStringList.Create;
   {$IFNDEF FPC}
@@ -732,40 +763,40 @@ end;
 
 destructor TUClass.Destroy;
 begin
-  FreeAndNil(consts);
-  FreeAndNil(properties);
-  FreeAndNil(enums);
-  FreeAndNil(structs);
-  FreeAndNil(states);
-  FreeAndNil(functions);
-  FreeAndNil(delegates);
-  FreeAndNil(children);
-  FreeAndNil(deps);
-  FreeAndNil(defs);
-  FreeAndNil(includes);
+  FreeAndNil(Fconsts);
+  FreeAndNil(Fproperties);
+  FreeAndNil(Fenums);
+  FreeAndNil(Fstructs);
+  FreeAndNil(Fstates);
+  FreeAndNil(Ffunctions);
+  FreeAndNil(Fdelegates);
+  FreeAndNil(Fchildren);
+  FreeAndNil(Fdeps);
+  FreeAndNil(Fdefs);
+  FreeAndNil(Fincludes);
   FreeAndNil(replication.expressions);
   FreeAndNil(replication.symbols);
 end;
 
 function TUClass.FullName: string;
 begin
-  result := package.name+'.'+name;
+  result := Fpackage.name+'.'+Fname;
 end;
 
 function TUClass.FullFileName: string;
 begin
-  result := package.path+PathDelim+filename
+  result := Fpackage.path+PathDelim+Ffilename
 end;
 
 function TUClass.declaration: string;
 begin
-  case InterfaceType of
+  case FInterfaceType of
     itNone:     result := 'class';
     itTribesV:  result := 'interface';
   end;
-  result := result + ' ' + name;
-  if (parentname <> '') then result := result + 'extends' + parentname;
-  result := result + ' ' + modifiers + ';'
+  result := result + ' ' + Fname;
+  if (Fparentname <> '') then result := result + 'extends' + Fparentname;
+  result := result + ' ' + Fmodifiers + ';'
 end;
 
 function TUClass.IsReplicated(symbol: string): boolean;
