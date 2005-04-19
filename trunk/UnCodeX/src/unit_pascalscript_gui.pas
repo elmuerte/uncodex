@@ -6,7 +6,7 @@
   Purpose:
     Additional GUI only PascalScript routines
 
-  $Id: unit_pascalscript_gui.pas,v 1.15 2005-04-07 08:29:11 elmuerte Exp $
+  $Id: unit_pascalscript_gui.pas,v 1.16 2005-04-19 07:49:05 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -261,16 +261,14 @@ begin
   result := frm_UnCodeX.GUIVars.IsBatching;
 end;
 
-procedure OpenSourceLine(uclass: TUClass; line, caret: integer);
+procedure OpenSourceLine(filename: string; line, caret: integer; uclass: TUClass);
 begin
-  //TODO: fix
-  frm_UnCodeX.OpenSourceLine(uclass.filename, line, caret, uclass);
+  frm_UnCodeX.OpenSourceLine(filename, line, caret, uclass);
 end;
 
-procedure OpenSourceInLine(uclass: TUClass; line, caret: integer);
+procedure OpenSourceInline(filename: string; line, caret: integer; uclass: TUClass; nohighlight: boolean);
 begin
-		//TODO: fix
-  //frm_UnCodeX.OpenSourceInLine(uclass, line, caret);
+  frm_UnCodeX.OpenSourceInline(filename, line, caret, uclass, nohighlight);
 end;
 
 procedure Sleep(time: cardinal);
@@ -336,8 +334,8 @@ begin
   //check if running, then clone, return compile errors, return execution errors
 
   //procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
-  ps.AddFunction(@OpenSourceLine, 'procedure OpenSourceLine(uclass: TUClass; line, caret: integer);');
-  ps.AddFunction(@OpenSourceInline, 'procedure OpenSourceInline(uclass: TUClass; line, caret: integer);');
+  ps.AddFunction(@OpenSourceLine, 'procedure OpenSourceLine(filename: string; line, caret: integer; uclass: TUClass);');
+  ps.AddFunction(@OpenSourceInline, 'procedure OpenSourceInline(filename: string; line, caret: integer; uclass: TUClass; nohighlight: boolean);');
   ps.AddFunction(@Sleep, 'procedure Sleep(time: cardinal);');
 
   ps.AddFunction(@ClearLog, 'procedure ClearLog();');

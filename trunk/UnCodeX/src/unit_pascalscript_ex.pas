@@ -7,7 +7,7 @@
     Defines additional PascalScript objects and functions. (Generation is
     automated)
 
-  $Id: unit_pascalscript_ex.pas,v 1.15 2005-04-13 06:36:07 elmuerte Exp $
+  $Id: unit_pascalscript_ex.pas,v 1.16 2005-04-19 07:49:05 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -59,14 +59,12 @@ type
 { compile-time registration functions }
 procedure SIRegister_TUCXIniFile(CL: TPSPascalCompiler);
 procedure SIRegister_TObjectList(CL: TPSPascalCompiler);
-procedure SIRegister_TList(CL: TPSPascalCompiler);
 procedure SIRegister_TLogEntry(CL: TPSPascalCompiler);
 procedure SIRegister_miscclasses(CL: TPSPascalCompiler);
 
 { run-time registration functions }
 procedure RIRegister_TUCXIniFile(CL: TPSRuntimeClassImporter);
 procedure RIRegister_TObjectList(CL: TPSRuntimeClassImporter);
-procedure RIRegister_TList(CL: TPSRuntimeClassImporter);
 procedure RIRegister_TLogEntry(CL: TPSRuntimeClassImporter);
 procedure RIRegister_miscclasses(CL: TPSRuntimeClassImporter);
 
@@ -142,6 +140,12 @@ begin
   with CL.AddClassN(CL.FindClass('TList'),'TObjectList') do
   begin
     RegisterMethod('Constructor Create');
+    RegisterMethod('Procedure Clear');
+    RegisterMethod('Procedure Delete( Index : Integer)');
+    RegisterMethod('Procedure Exchange( Index1, Index2 : Integer)');
+    RegisterMethod('Procedure Move( CurIndex, NewIndex : Integer)');
+    RegisterMethod('Procedure Pack');
+    RegisterMethod('Procedure Sort( Compare : TListSortCompare)');
     RegisterMethod('Function Add( AObject : TObject) : Integer');
     RegisterMethod('Function Extract( Item : TObject) : TObject');
     RegisterMethod('Function Remove( AObject : TObject) : Integer');
@@ -153,23 +157,6 @@ begin
     RegisterProperty('OwnsObjects', 'Boolean', iptrw);
     RegisterProperty('Items', 'TObject Integer', iptrw);
     SetDefaultPropery('Items');
-  end;
-end;
-
-(*----------------------------------------------------------------------------*)
-procedure SIRegister_TList(CL: TPSPascalCompiler);
-begin
-  //with RegClassS(CL,'TObject', 'TList') do
-  with CL.AddClassN(CL.FindClass('TObject'),'TList') do
-  begin
-    RegisterMethod('Procedure Clear');
-    RegisterMethod('Procedure Delete( Index : Integer)');
-    RegisterMethod('Procedure Exchange( Index1, Index2 : Integer)');
-    RegisterMethod('Function Expand : TList');
-    RegisterMethod('Procedure Move( CurIndex, NewIndex : Integer)');
-    RegisterMethod('Procedure Pack');
-    RegisterMethod('Procedure Sort( Compare : TListSortCompare)');
-    RegisterMethod('Procedure Assign( ListA : TList; AOperator : TListAssignOp; ListB : TList)');
     RegisterProperty('Capacity', 'Integer', iptrw);
     RegisterProperty('Count', 'Integer', iptrw);
   end;
@@ -194,9 +181,6 @@ procedure SIRegister_miscclasses(CL: TPSPascalCompiler);
 begin
   CL.AddTypeS('TLogType', '( ltInfo, ltWarn, ltError, ltSearch )');
   SIRegister_TLogEntry(CL);
-  CL.AddTypeS('TListAssignOp', '( laCopy, laAnd, laOr, laXor, laSrcUnique, laDe'
-   +'stUnique )');
-  SIRegister_TList(CL);
   SIRegister_TObjectList(CL);
   SIRegister_TUCXIniFile(CL);
 end;
@@ -223,6 +207,22 @@ procedure TUCXIniFileFileName_R(Self: TUCXIniFile; var T: string);
 begin T := Self.FileName; end;
 
 (*----------------------------------------------------------------------------*)
+procedure TObjectListCount_W(Self: TObjectList; const T: Integer);
+begin Self.Count := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TObjectListCount_R(Self: TObjectList; var T: Integer);
+begin T := Self.Count; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TObjectListCapacity_W(Self: TObjectList; const T: Integer);
+begin Self.Capacity := T; end;
+
+(*----------------------------------------------------------------------------*)
+procedure TObjectListCapacity_R(Self: TObjectList; var T: Integer);
+begin T := Self.Capacity; end;
+
+(*----------------------------------------------------------------------------*)
 procedure TObjectListItems_W(Self: TObjectList; const T: TObject; const t1: Integer);
 begin Self.Items[t1] := T; end;
 
@@ -237,22 +237,6 @@ begin Self.OwnsObjects := T; end;
 (*----------------------------------------------------------------------------*)
 procedure TObjectListOwnsObjects_R(Self: TObjectList; var T: Boolean);
 begin T := Self.OwnsObjects; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TListCount_W(Self: TList; const T: Integer);
-begin Self.Count := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TListCount_R(Self: TList; var T: Integer);
-begin T := Self.Count; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TListCapacity_W(Self: TList; const T: Integer);
-begin Self.Capacity := T; end;
-
-(*----------------------------------------------------------------------------*)
-procedure TListCapacity_R(Self: TList; var T: Integer);
-begin T := Self.Capacity; end;
 
 (*----------------------------------------------------------------------------*)
 procedure TLogEntrypos_W(Self: TLogEntry; const T: integer);
@@ -346,6 +330,12 @@ begin
   with CL.Add(TObjectList) do
   begin
     RegisterConstructor(@TObjectList.Create, 'Create');
+    RegisterVirtualMethod(@TObjectList.Clear, 'Clear');
+    RegisterMethod(@TObjectList.Delete, 'Delete');
+    RegisterMethod(@TObjectList.Exchange, 'Exchange');
+    RegisterMethod(@TObjectList.Move, 'Move');
+    RegisterMethod(@TObjectList.Pack, 'Pack');
+    RegisterMethod(@TObjectList.Sort, 'Sort');
     RegisterMethod(@TObjectList.Add, 'Add');
     RegisterMethod(@TObjectList.Extract, 'Extract');
     RegisterMethod(@TObjectList.Remove, 'Remove');
@@ -356,24 +346,8 @@ begin
     RegisterMethod(@TObjectList.Last, 'Last');
     RegisterPropertyHelper(@TObjectListOwnsObjects_R,@TObjectListOwnsObjects_W,'OwnsObjects');
     RegisterPropertyHelper(@TObjectListItems_R,@TObjectListItems_W,'Items');
-  end;
-end;
-
-(*----------------------------------------------------------------------------*)
-procedure RIRegister_TList(CL: TPSRuntimeClassImporter);
-begin
-  with CL.Add(TList) do
-  begin
-    RegisterVirtualMethod(@TList.Clear, 'Clear');
-    RegisterMethod(@TList.Delete, 'Delete');
-    RegisterMethod(@TList.Exchange, 'Exchange');
-    RegisterMethod(@TList.Expand, 'Expand');
-    RegisterMethod(@TList.Move, 'Move');
-    RegisterMethod(@TList.Pack, 'Pack');
-    RegisterMethod(@TList.Sort, 'Sort');
-    RegisterMethod(@TList.Assign, 'Assign');
-    RegisterPropertyHelper(@TListCapacity_R,@TListCapacity_W,'Capacity');
-    RegisterPropertyHelper(@TListCount_R,@TListCount_W,'Count');
+    RegisterPropertyHelper(@TObjectListCapacity_R,@TObjectListCapacity_W,'Capacity');
+    RegisterPropertyHelper(@TObjectListCount_R,@TObjectListCount_W,'Count');
   end;
 end;
 
@@ -394,7 +368,6 @@ end;
 procedure RIRegister_miscclasses(CL: TPSRuntimeClassImporter);
 begin
   RIRegister_TLogEntry(CL);
-  RIRegister_TList(CL);
   RIRegister_TObjectList(CL);
   RIRegister_TUCXIniFile(CL);
 end;
