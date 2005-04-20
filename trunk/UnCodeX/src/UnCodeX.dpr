@@ -6,7 +6,7 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.70 2005-04-18 15:48:55 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.71 2005-04-20 15:06:02 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -86,7 +86,8 @@ uses
   uPSI_unit_uclasses in 'uPSI_unit_uclasses.pas',
   unit_config in 'unit_config.pas',
   unit_ucxinifiles in 'unit_ucxinifiles.pas',
-  unit_ucxthread in 'unit_ucxthread.pas';
+  unit_ucxthread in 'unit_ucxthread.pas',
+  unit_defpropsframe in 'unit_defpropsframe.pas' {fr_DefPropsBrowser: TFrame};
 
 {$R *.res}
 
