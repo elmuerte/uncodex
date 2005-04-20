@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.166 2005-04-17 14:20:08 elmuerte Exp $
+  $Id: unit_main.pas,v 1.167 2005-04-20 15:06:02 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -3136,8 +3136,13 @@ begin
         if (re_SourceSnoop.uclass <> nil) then AddBrowserHistory(re_SourceSnoop.uclass, re_SourceSnoop.filename, realline+1, tmps);
         for i := 0 to tv_Classes.Items.Count-1 do begin
           if (AnsiCompareText(tv_Classes.items[i].Text, tmp) = 0) then begin
-            tv_Classes.Tag := TV_ALWAYSEXPAND;
-            tv_Classes.Select(tv_Classes.items[i]);
+            if (tv_Classes.Selected = tv_Classes.items[i]) then begin
+              tv_Classes.OnChange(tv_Classes, tv_Classes.items[i]);
+            end
+            else begin
+              tv_Classes.Tag := TV_ALWAYSEXPAND;
+              tv_Classes.Select(tv_Classes.items[i]);
+            end;
             exit;
           end;
         end;

@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class defaultproperties browser.
 
-  $Id: unit_defprops.pas,v 1.9 2005-03-27 20:10:34 elmuerte Exp $
+  $Id: unit_defprops.pas,v 1.10 2005-04-20 15:06:02 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -35,29 +35,25 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  ComCtrls, unit_uclasses, ExtCtrls, StdCtrls;
+  ComCtrls, unit_uclasses, ExtCtrls, StdCtrls, ActnList, Contnrs, Menus;
 
 type
   Tfrm_DefPropsBrowser = class(TForm)
-    lb_Properties: TListBox;
-    spl_Main: TSplitter;
-    gb_Property: TGroupBox;
-    lv_SelProperty: TListView;
-    Label1: TLabel;
-    ed_EffValue: TEdit;
-    Label2: TLabel;
-    ed_DefIn: TEdit;
-    Label3: TLabel;
-    ed_type: TEdit;
-    procedure FormShow(Sender: TObject);
-    procedure lb_PropertiesClick(Sender: TObject);
+    pc_DefPropPages: TPageControl;
+    pm_This: TPopupMenu;
+    mi_Close1: TMenuItem;
     procedure FormDestroy(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure FormCreate(Sender: TObject);
+    procedure FormActivate(Sender: TObject);
+    procedure mi_Close1Click(Sender: TObject);
+    procedure pc_DefPropPagesContextPopup(Sender: TObject;
+      MousePos: TPoint; var Handled: Boolean);
   protected
-    uclass: TUClass;
+    DoInit: boolean;
+    frames: TObjectList;
   public
-    procedure LoadDefProps;
-    procedure AddVariable(vname,vvalue: string; dclass: TUClass);
+    procedure AddPropertyPage(uclass: TUClass; delayLoad: boolean = false);
   end;
 
   procedure ShowDefaultProperties(ucls: TUClass);
@@ -67,128 +63,116 @@ var
 
 implementation
 
-uses unit_definitions;
+uses Dialogs, StrUtils, unit_main, unit_defpropsframe, unit_definitions;
 
 {$R *.dfm}
 
 procedure ShowDefaultProperties(ucls: TUClass);
+var
+  created: boolean;
 begin
-  with (Tfrm_DefPropsBrowser.Create(Application)) do begin
-    uclass := ucls;
-    ShowModal;
+  created := false;
+  if (frm_DefPropsBrowser = nil) then begin
+    frm_DefPropsBrowser := Tfrm_DefPropsBrowser.Create(Application);
+    created := true;
   end;
+  if (not created) then frm_DefPropsBrowser.Show;
+  frm_DefPropsBrowser.AddPropertyPage(ucls, created);
+  if (created) then frm_DefPropsBrowser.Show;
 end;
 
-procedure Tfrm_DefPropsBrowser.AddVariable(vname,vvalue: string; dclass: TUClass);
+procedure Tfrm_DefPropsBrowser.AddPropertyPage(uclass: TUClass; delayLoad: boolean = false);
 var
+  ts: TTabSheet;
+  fr: Tfr_DefPropsBrowser;
   i: integer;
 begin
-  i := lb_Properties.Items.IndexOf(vname);
-  if (i = -1) then begin
-    i := lb_Properties.Items.Add(vname);
-    lb_Properties.Items.Objects[i] := TStringList.Create;
+  for i := 0 to frames.Count-1 do begin
+    if (Tfr_DefPropsBrowser(frames[i]).uclass = uclass) then exit;
   end;
-  TStringList(lb_Properties.Items.Objects[i]).AddObject(vvalue, dclass);
-end;
-
-procedure Tfrm_DefPropsBrowser.LoadDefProps;
-var
-  i: integer;
-  sl: TStringList;
-  pclass: TUClass;
-  s: string;
-begin
-  pclass := uclass;
-  sl := TStringList.Create;
-  lb_Properties.Items.BeginUpdate;
-  try
-    while (pclass <> nil) do begin
-      sl.Clear;
-      sl.Text := pclass.defaultproperties.data;
-      i := 0;
-      while (i < sl.Count) do begin
-        s := trim(sl.Names[i]);
-        // if begin object -> remove
-        if (SameText('begin ', Copy(s, 1, 6))) then begin
-          repeat
-            Inc(i);
-            s := trim(sl.Names[i]);
-          until (SameText('end ', Copy(s, 1, 4)) or (i >= sl.Count-1));
-          Inc(i);
-          continue;
-        end;
-        if (s <> '') then begin
-          AddVariable(s, sl.Values[sl.Names[i]], pclass);
-        end;
-        Inc(i);
-      end;
-      pclass := pclass.parent;
-    end;
-  finally
-    sl.Free;
-    lb_Properties.Items.EndUpdate;
+  if (pc_DefPropPages.PageCount > 0) then begin
+    pc_DefPropPages.ActivePage.TabVisible := true;
+    Caption := 'Defaultproperties browser';
+  end
+  else Caption := 'Defaultproperties browser: '+uclass.FullName+' - loading ...';
+  ts := TTabSheet.Create(pc_DefPropPages);
+  ts.PageControl := pc_DefPropPages;
+  ts.TabVisible := pc_DefPropPages.PageCount > 1;
+  ts.Caption := uclass.FullName;
+  fr := Tfr_DefPropsBrowser.Create(ts);
+  fr.Parent := ts;
+  fr.uclass := uclass;
+  fr.Align := alClient;
+  fr.Show;
+  if (not delayLoad) then begin
+    ts.Caption := 'Loading...';
+    Application.ProcessMessages;
+    fr.LoadDefProps;
+    ts.Caption := uclass.FullName;
   end;
-end;
-
-procedure Tfrm_DefPropsBrowser.FormShow(Sender: TObject);
-begin
-  Caption := Caption+': '+uclass.FullName;
-  Application.ProcessMessages;
-  LoadDefProps;
-end;
-
-procedure Tfrm_DefPropsBrowser.lb_PropertiesClick(Sender: TObject);
-var
-  i: integer;
-  li: TListItem;
-  pclass: TUClass;
-  prop: TUProperty;
-  shortname: string;
-begin
-  if (lb_Properties.ItemIndex = -1) then exit;
-  gb_Property.Caption := lb_Properties.Items[lb_Properties.ItemIndex];
-  lv_SelProperty.Items.BeginUpdate;
-  lv_SelProperty.Items.Clear;
-  with lb_Properties.Items.Objects[lb_Properties.ItemIndex] as TStringList do begin
-    for i := 0 to Count-1 do begin
-      li := lv_SelProperty.Items.Add;
-      li.Caption := Strings[i];
-      if (i = 0) then ed_EffValue.Text := Strings[i];
-      li.SubItems.Add(TUClass(Objects[i]).FullName);
-      li.Data := Objects[i];
-    end;
-  end;
-  lv_SelProperty.Items.EndUpdate;
-  pclass := uclass;
-  shortname := gb_Property.Caption;
-  shortname := GetToken(shortname, '[', true);
-  shortname := GetToken(shortname, '(', true);
-  ed_type.Text := '';
-  ed_DefIn.Text := '';
-  while (pclass <> nil) do begin
-    prop := pclass.properties.FindEx(shortname);
-    if (prop <> nil) then begin
-      ed_type.Text := prop.ptype;
-      ed_DefIn.Text := pclass.FullName;
-      break;
-    end;
-    pclass := pclass.parent;
-  end;
+  frames.Add(fr);
 end;
 
 procedure Tfrm_DefPropsBrowser.FormDestroy(Sender: TObject);
 var
   i: integer;
 begin
-  for i := 0 to lb_Properties.Count-1 do begin
-    TStringList(lb_Properties.Items.Objects[i]).Free;
+  for i := 0 to frames.Count-1 do begin
+    Tfr_DefPropsBrowser(frames[i]).Clear;
   end;
+  frames.Free;
+  frm_DefPropsBrowser := nil;
 end;
 
 procedure Tfrm_DefPropsBrowser.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
   Action := caFree;
+end;
+
+procedure Tfrm_DefPropsBrowser.FormCreate(Sender: TObject);
+begin
+  DoInit := true;
+  frames := TObjectList.Create(false);
+end;
+
+procedure Tfrm_DefPropsBrowser.FormActivate(Sender: TObject);
+begin
+  if (DoInit) then begin
+    DoInit := false;
+    Application.ProcessMessages;
+    with Tfr_DefPropsBrowser(frames[0]) do begin
+      LoadDefProps;
+      Caption := 'Defaultproperties browser: '+uclass.FullName;
+    end;
+  end;
+end;
+
+var
+  closePage: integer;
+
+procedure Tfrm_DefPropsBrowser.mi_Close1Click(Sender: TObject);
+begin
+  if (closePage <> -1) then begin
+    Tfr_DefPropsBrowser(frames[closePage]).Clear;
+    frames.Delete(closePage);
+    pc_DefPropPages.Pages[closePage].Free;
+    if (pc_DefPropPages.PageCount = 1) then begin
+      //pc_DefPropPages.ActivePage := pc_DefPropPages.Pages[0];
+      Caption := 'Defaultproperties browser: '+Tfr_DefPropsBrowser(frames[0]).uclass.FullName;;
+      //pc_DefPropPages.ActivePage.TabVisible := false;
+    end
+    else if (pc_DefPropPages.PageCount = 0) then begin
+      Close;
+    end;
+  end;
+end;
+
+procedure Tfrm_DefPropsBrowser.pc_DefPropPagesContextPopup(Sender: TObject;
+  MousePos: TPoint; var Handled: Boolean);
+begin
+  closePage := pc_DefPropPages.IndexOfTabAt(MousePos.x, MousePos.y);
+  Handled := closePage = -1;
 end;
 
 end.

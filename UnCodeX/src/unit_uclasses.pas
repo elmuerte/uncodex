@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.59 2005-04-19 07:49:05 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.60 2005-04-20 15:06:03 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -111,6 +111,8 @@ type
     Fowner: TUObject; // points to uclass or ustruct
   protected
     procedure SetItem(Index: Integer; AObject: TUDeclaration);
+  public
+    procedure Notify(Ptr: Pointer; Action: TListNotification); override;
   published
     property owner: TUObject read Fowner write Fowner;
   end;
@@ -144,6 +146,8 @@ type
     property modifiers: string read Fmodifiers write Fmodifiers;
     property tag: string read Ftag write Ftag;
     function declaration: string; override;
+    function CleanName: string; // returns the name without static array
+    function GetDimension: integer; // get the array dimension, returns 0 if not an array
   end;
 
   TUPropertyList = class(TUDeclarationList)
@@ -426,7 +430,14 @@ end;
 procedure TUDeclarationList.SetItem(Index: Integer; AObject: TUDeclaration);
 begin
   inherited SetItem(Index, AObject);
-  if (AObject <> nil) then AObject.Owner := Owner;
+end;
+
+procedure TUDeclarationList.Notify(Ptr: Pointer; Action: TListNotification);
+begin
+  inherited;
+  if (Action = lnAdded) then begin
+    if (TUDeclaration(Ptr) <> nil) then TUDeclaration(Ptr).Owner := Owner;
+  end;
 end;
 
 { TUConst }
@@ -501,6 +512,42 @@ begin
     result := result+'('+tag+')';
   end;
   result := result+' '+modifiers+' '+ptype+' '+name+';';
+end;
+
+function TUProperty.CleanName: string;
+var
+  i: integer;
+begin
+  result := name;
+  i := Pos('[', result);
+  if (i > 0) then Delete(result, i, MaxInt);
+end;
+
+function TUProperty.GetDimension: integer;
+var
+  i: integer;
+  tmp: string;
+  uconst: TUConst;
+begin
+  result := 0;
+  tmp := name;
+  i := Pos('[', tmp);
+  if (i > 0) then begin
+    tmp := Copy(tmp, i+1, Length(tmp)-i-1);
+    result := StrToIntDef(tmp, -1);
+    if (result = -1) then begin
+      // tmp is a const, find it
+      uconst := nil;
+      if (Owner <> nil) then begin
+        if (Owner.ClassType = TUClass) then uconst := TUClass(Owner).consts.Find(tmp)
+        else if ((Owner.ClassType = TUStruct) and (TUStruct(owner).owner <> nil))
+          then uconst := TUClass(TUStruct(Owner).Owner).consts.Find(tmp);
+      end;
+      if (uconst <> nil) then begin
+        Result := StrToIntDef(uconst.value, -1);
+      end;
+    end;
+  end;
 end;
 
 { TUPropertyList }
@@ -666,12 +713,15 @@ end;
 
 constructor TUFunction.Create;
 begin
+  Fargs := TUPropertyList.Create(true);
+  Fargs.owner := self;
   flocals := TUPropertyList.Create(true);
   flocals.owner := self;
 end;
 
 destructor TUFunction.Destroy;
 begin
+  FreeAndNil(Fargs);
   FreeAndNil(flocals);
 end;
 
