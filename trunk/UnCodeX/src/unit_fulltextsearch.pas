@@ -6,7 +6,7 @@
   Purpose:
     Full text search thread. Includes support for regular expressions.
 
-  $Id: unit_fulltextsearch.pas,v 1.23 2005-04-17 14:20:08 elmuerte Exp $
+  $Id: unit_fulltextsearch.pas,v 1.24 2005-04-21 15:36:30 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -116,6 +116,7 @@ destructor TSearchThread.Destroy;
 begin
   SearchStack := nil;
   re.Free;
+  inherited;
 end;
 
 procedure TSearchThread.Execute;
