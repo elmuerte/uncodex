@@ -32,12 +32,12 @@ type
     procedure lv_SelPropertyDblClick(Sender: TObject);
     procedure mi_Findavariable1Click(Sender: TObject);
   protected
-  public
-    uclass: TUClass;
-    procedure LoadDefProps;
     procedure AddVariable(vname,vvalue: string; dclass: TUClass);
     procedure AddProperty(uprop: TUProperty);
     function RegisterProperty(name: string; base: TUClass): boolean;
+  public
+    uclass: TUClass;
+    procedure LoadDefProps;
     procedure Clear;
   end;
 
@@ -335,7 +335,7 @@ begin
     capt := Node.Text;
     if (capt = '') then begin
       capt := 'No category';
-      Sender.Canvas.Font.Style := [fsItalic]; //TODO: doesn't work fit it
+      Sender.Canvas.Font.Style := [fsItalic]; //TODO: doesn't work fix it
     end;
     Sender.Canvas.Brush.Color := clBtnFace;
     SetTextColor(Sender.Canvas.Handle, ColorToRGB(clWindowText));

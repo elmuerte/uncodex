@@ -6,7 +6,7 @@
   Purpose:
     TRichEdit control that uses version 2
 
-  $Id: unit_richeditex.pas,v 1.27 2005-04-11 22:20:03 elmuerte Exp $
+  $Id: unit_richeditex.pas,v 1.28 2005-04-21 15:36:30 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -71,6 +71,9 @@ type
   procedure Register;
 
 implementation
+
+uses
+  Forms;
 
 const
   RichEditModuleName = 'RICHED20.DLL';
@@ -254,17 +257,17 @@ var
   r: TRect;
   pt, pt2: TPoint;
   l: string;
-
-  tmpDC: HDC;
-  hbmp, sbmp: HBITMAP;
-  hbr: HBRUSH;
+  bmp, bmp2: TBitmap;
 begin
   HideCaret(Handle);
   inherited;
 
   with xCanvas do begin
-    hbr := CreateSolidBrush(ColorToRGB(fhighlightcolor));
-    tmpDC := CreateCompatibleDC(Handle);
+    bmp := TBitmap.Create;
+    bmp.Width := ClientWidth;
+    bmp2 := TBitmap.Create;
+    bmp2.Width := ClientWidth;
+    bmp2.Canvas.Brush.Color := clWhite;
 
     Brush.Color := Color;
     FillRect(Rect(FGutterWidth, 0, FGutterWidth+4, height));
@@ -291,14 +294,20 @@ begin
     while (offset < lines.Count-1) and (r.Top < Height) do begin
       Perform(EM_POSFROMCHAR, Integer(@pt2), Perform(EM_LINEINDEX, offset+1, 0));
       if (IsHighlighted(offset)) then begin
-        hbmp := CreateCompatibleBitmap(Handle, ClientWidth, pt2.Y-pt.Y);
-        sbmp := SelectObject(tmpDC, hbmp);
-        windows.FillRect(tmpDC, Rect(0, 0, ClientWidth, pt2.Y-pt.Y), hbr);
-        BitBlt(tmpDC, 0, 0, ClientWidth, pt2.Y-pt.Y, Handle, FGutterWidth, pt.Y, SRCAND);
-        BitBlt(Handle, FGutterWidth, pt.Y, ClientWidth, pt2.Y-pt.Y, tmpDC, 0, 0, SRCCOPY);
-        SelectObject(tmpDC, sbmp);
-        DeleteObject(hbmp);
-        DeleteObject(sbmp);
+        bmp.Canvas.FillRect(Rect(0, 0, ClientWidth, pt2.Y-pt.Y));
+        bmp.Height := pt2.Y-pt.Y;
+        bmp2.Height := pt2.Y-pt.Y;
+        bmp.Transparent := true;
+        bmp.TransparentColor := Color;
+        BitBlt(bmp.Canvas.Handle, 0, 0, ClientWidth, pt2.Y-pt.Y, Handle, FGutterWidth, pt.Y, SRCCOPY);
+        bmp2.Canvas.FillRect(Rect(0, 0, ClientWidth, pt2.Y-pt.Y));
+
+        Brush.Color := fhighlightcolor;
+        FillRect(Rect(FGutterWidth, pt.Y, ClientWidth, pt2.Y));
+        bmp2.Canvas.Draw(0, 0, bmp);
+        CopyMode := cmSrcAnd;
+        Draw(FGutterWidth, pt.Y, bmp2);
+        Brush.Color := clBtnFace;
       end;
       r := Rect(0, pt.y, FGutterWidth-10, pt2.y);
       l := format('%10d', [offset+1]);
@@ -312,14 +321,20 @@ begin
     if (offset = lines.Count-1) then begin   // bottom part
       Perform(EM_POSFROMCHAR, Integer(@pt2), Perform(EM_LINEINDEX, offset+1, 0));
       if (IsHighlighted(offset)) then begin
-        hbmp := CreateCompatibleBitmap(Handle, ClientWidth, pt2.Y-pt.Y);
-        sbmp := SelectObject(tmpDC, hbmp);
-        windows.FillRect(tmpDC, Rect(0, 0, ClientWidth, pt2.Y-pt.Y), hbr);
-        BitBlt(tmpDC, 0, 0, ClientWidth, pt2.Y-pt.Y, Handle, FGutterWidth, pt.Y, SRCAND);
-        BitBlt(Handle, FGutterWidth, pt.Y, ClientWidth, pt2.Y-pt.Y, tmpDC, 0, 0, SRCCOPY);
-        SelectObject(tmpDC, sbmp);
-        DeleteObject(hbmp);
-        DeleteObject(sbmp);
+        bmp.Canvas.FillRect(Rect(0, 0, ClientWidth, pt2.Y-pt.Y));
+        bmp.Height := pt2.Y-pt.Y;
+        bmp2.Height := pt2.Y-pt.Y;
+        bmp.Transparent := true;
+        bmp.TransparentColor := Color;
+        BitBlt(bmp.Canvas.Handle, 0, 0, ClientWidth, pt2.Y-pt.Y, Handle, FGutterWidth, pt.Y, SRCCOPY);
+        bmp2.Canvas.FillRect(Rect(0, 0, ClientWidth, pt2.Y-pt.Y));
+
+        Brush.Color := fhighlightcolor;
+        FillRect(Rect(FGutterWidth, pt.Y, ClientWidth, pt2.Y));
+        bmp2.Canvas.Draw(0, 0, bmp);
+        CopyMode := cmSrcAnd;
+        Draw(FGutterWidth, pt.Y, bmp2);
+        Brush.Color := clBtnFace;
       end;
       r := Rect(0, pt.y, FGutterWidth-10, pt.y+lh);
       l := format('%10d', [offset+1]);
@@ -330,8 +345,8 @@ begin
     else if (lines.Count = 0) then begin
       FillRect(Rect(0, 0, FGutterWidth-10, height));
     end;
-    DeleteObject(hbr);
-    DeleteDC(tmpDC);
+    bmp.Free;
+    bmp2.Free;
   end;
 end;
 
