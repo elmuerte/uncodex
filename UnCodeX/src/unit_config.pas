@@ -6,7 +6,7 @@
   Purpose:
     Contains the configuration of UnCodeX
 
-  $Id: unit_config.pas,v 1.10 2005-04-19 07:49:05 elmuerte Exp $
+  $Id: unit_config.pas,v 1.11 2005-04-23 20:24:26 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -34,7 +34,7 @@ unit unit_config;
 interface
 
 uses
-  {$IFNDEF CONSOLE}
+  {$IFDEF TUCXGUIConfig}
   Graphics, Controls, unit_searchform,
   {$ENDIF}
   unit_htmlout, Classes, SysUtils, unit_ucxinifiles, unit_uclasses;
@@ -78,7 +78,7 @@ type
     procedure SaveToIni(filename: string = '');
   end;
 
-  {$IFNDEF CONSOLE}
+  {$IFDEF TUCXGUIConfig}
   TAppBarLocation = (abNone, abLeft, abRight);
 
   TStoreControl = class(TControl)
@@ -427,7 +427,7 @@ var
   sl: TStringList;
   tmp, tmp2: string;
 begin
-  Log('Converting old configuration file');
+  //Log('Converting old configuration file');
 
   HTMLOutput.OutputDir := ini.ReadString('Config', 'HTMLOutputDir', HTMLOutput.OutputDir);
   HTMLOutput.TemplateDir := ini.ReadString('Config', 'TemplateDir', HTMLOutput.TemplateDir);
@@ -492,13 +492,13 @@ begin
       ini.Free;
     end;
   except
-    Log('Failed loading include config: '+filename, ltError);
+    //Log('Failed loading include config: '+filename, ltError);
     ini := TUCXIniFile(iniStack.Last);
     iniStack.Remove(ini);
   end;
 end;
 
-{$IFNDEF CONSOLE}
+{$IFDEF TUCXGUIConfig}
 
 function StringToFontStyles(style: string): TFontStyles;
 var

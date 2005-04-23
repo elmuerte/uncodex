@@ -6,7 +6,7 @@
   Purpose:
     Base class for all threads used in uncodex, used for more thread safety
 
-  $Id: unit_ucxthread.pas,v 1.2 2005-04-18 15:48:56 elmuerte Exp $
+  $Id: unit_ucxthread.pas,v 1.3 2005-04-23 20:24:44 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -34,7 +34,7 @@ unit unit_ucxthread;
 interface
 
 uses
-  Classes, unit_uclasses, unit_definitions;
+  Classes, unit_uclasses, unit_definitions, unit_outputdefs;
 
 type
   {$IFDEF NO_THREADS}
@@ -65,16 +65,23 @@ type
   TUCXThread = class(TBaseUCXThread)
   protected
     GuardStack: TStringList;
-    FLog: TLogProcEX;
+    FLogProc: TLogProcEX;
+    FLogMethod: TLogProcEXMethod;
+    FStatusMethod: TStatusReportMethod;
+    FStatusProc: TStatusReport;
     procedure guard(s: string);
     procedure unguard;
     procedure resetguard();
     procedure printguard(uclass: TUClass = nil);
     procedure InternalLog(msg: string; mt: TLogType = ltInfo; obj: TObject = nil);
+    procedure Status(msg: string; progress: byte = 255);
   public
     constructor Create(CreateSuspended: Boolean);
     destructor Destroy; override;
-    property Log: TLogProcEX read FLog write FLog;
+    property LogProc: TLogProcEX read FLogProc write FLogProc;
+    property LogMethod: TLogProcEXMethod read FLogMethod write FLogMethod;
+    property StatusMethod: TStatusReportMethod read FStatusMethod write FStatusMethod;
+    property StatusProc: TStatusReport read FStatusProc write FStatusProc;
   end;
 
 implementation
@@ -114,7 +121,10 @@ begin
   GuardStack := TStringList.Create;
   GuardStack.Sorted := false;
   GuardStack.Duplicates := dupIgnore;
-  Log := unit_definitions.Log; // set default
+  FLogProc := nil;
+  FLogMethod := nil;
+  FStatusMethod := nil;
+  FStatusProc := nil;
   inherited Create(CreateSuspended);
 end;
 
@@ -124,9 +134,16 @@ begin
   inherited Destroy;
 end;
 
+procedure TUCXThread.Status(msg: string; progress: byte = 255);
+begin
+  if (Assigned(FStatusMethod)) then FStatusMethod(msg, progress);
+  if (Assigned(FStatusProc)) then FStatusProc(msg, progress);
+end;
+
 procedure TUCXThread.InternalLog(msg: string; mt: TLogType = ltInfo; obj: TObject = nil);
 begin
-  if (Assigned(FLog)) then FLog(msg, mt, obj);
+  if (Assigned(FLogMethod)) then FLogMethod(msg, mt, obj);
+  if (Assigned(FLogProc)) then FLogProc(msg, mt, obj);
 end;
 
 procedure TUCXThread.guard(s: string);

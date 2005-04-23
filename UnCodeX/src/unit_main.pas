@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.167 2005-04-20 15:06:02 elmuerte Exp $
+  $Id: unit_main.pas,v 1.168 2005-04-23 20:24:26 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -72,6 +72,15 @@ type
   public
     constructor Create;
     destructor Destroy; override;
+  end;
+
+    // status redirecting
+  TCodeXStatusType = (cxstLog, cxstStatus);
+
+  TCodeXStatus = packed record
+    Msg: string[255];
+    mType: TCodeXStatusType;
+    Progress: byte;
   end;
 
   Tfrm_UnCodeX = class(TForm)
@@ -479,6 +488,7 @@ type
     DoInit: boolean; // perform initialization on startup
     InitialStartup: boolean; // is first run
     runningthread: TThread;
+    procedure SendStatusMsg(msg: string; mType: TCodeXStatusType; Progress: byte = 0);
   public
     statustext: string; // current status text
     BaseCaption: string;
@@ -487,22 +497,11 @@ type
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
     procedure OpenSourceLine(filename: string; line, caret: integer; uclass: TUClass);
     procedure OpenSourceInline(filename: string; line, caret: integer; uclass: TUClass = nil; nohighlight: boolean = false);
+    // logging
+    procedure StatusReport(msg: string; progress: byte = 255);
+    procedure Log(msg: string; mt: TLogType = ltInfo; obj: TObject = nil);
+    procedure ClearLog;
   end;
-
-  // status redirecting
-  TCodeXStatusType = (cxstLog, cxstStatus);
-
-  TCodeXStatus = packed record
-    Msg: string[255];
-    mType: TCodeXStatusType;
-    Progress: byte;
-  end;
-
-  // logging
-  procedure Log(msg: string; mt: TLogType = ltInfo; obj: TObject = nil);
-  procedure ClearLog;
-
-  procedure StatusReport(msg: string; progress: byte = 255);
 
 var
   frm_UnCodeX:      Tfrm_UnCodeX;
@@ -519,7 +518,8 @@ uses unit_settings, unit_analyse, unit_htmlout,
   unit_treestate, unit_about, unit_mshtmlhelp, unit_fulltextsearch,
   unit_tags, unit_outputdefs, unit_rtfhilight, unit_utils, unit_license,
   unit_splash, unit_ucxdocktree, unit_ucops, unit_pkgprops, unit_defprops,
-  unit_rungame, unit_pascalscript, unit_pascalscript_gui, unit_pseditor;
+  unit_rungame, unit_pascalscript, unit_pascalscript_gui, unit_pseditor,
+  unit_ucxthread;
 
 const
   PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
@@ -532,9 +532,17 @@ var
 
 {$R *.dfm}
 
+procedure LogStub(msg: string; mt: TLogType = ltInfo; obj: TObject = nil);
+begin
+  if (Assigned(frm_UnCodeX)) then frm_UnCodeX.Log(msg, mt, obj);
+end;
+
+{ Tfrm_UnCodeX }
+{ Custom methods }
+
 { Status redirecting }
 
-procedure SendStatusMsg(msg: string; mType: TCodeXStatusType; Progress: byte = 0);
+procedure Tfrm_UnCodeX.SendStatusMsg(msg: string; mType: TCodeXStatusType; Progress: byte = 0);
 var
   CopyData: TCopyDataStruct;
   Data: TCodeXStatus;
@@ -544,21 +552,20 @@ begin
   Data.mType := mType;
   Data.Progress := Progress;
   CopyData.cbData := SizeOf(Data);
-  CopyData.dwData := frm_UnCodeX.GUIVars.StatusHandle;
+  CopyData.dwData := GUIVars.StatusHandle;
   CopyData.lpData := @Data;
-  SendMessage(frm_UnCodeX.GUIVars.StatusHandle, WM_COPYDATA, frm_UnCodeX.Handle, Integer(@CopyData));
+  SendMessage(GUIVars.StatusHandle, WM_COPYDATA, Handle, Integer(@CopyData));
 end;
 
 { Status redirecting -- END }
 { Logging }
 
-procedure Log(msg: string; mt: TLogType = ltInfo; obj: TObject = nil);
+procedure Tfrm_UnCodeX.Log(msg: string; mt: TLogType = ltInfo; obj: TObject = nil);
 var
   entry: TLogEntry;
 begin
-  if (frm_UnCodeX = nil) then exit;
   if (msg='') then exit;
-  with frm_UnCodeX.lb_Log do begin
+  with lb_Log do begin
     if (not IsA(obj, TLogEntry)) then begin
       entry := CreateLogEntry(obj);
     end
@@ -576,18 +583,17 @@ begin
 
     entry.mt := mt;
     Items.AddObject(msg, entry);
-    frm_UnCodeX.lb_Log.ItemIndex := frm_UnCodeX.lb_Log.Items.Count-1;
-    if (frm_UnCodeX.GUIVars.StatusHandle <> -1) then SendStatusMsg(msg, cxstLog);
+    lb_Log.ItemIndex := lb_Log.Items.Count-1;
+    if (GUIVars.StatusHandle <> -1) then SendStatusMsg(msg, cxstLog);
   end;
 end;
 
-procedure ClearLog;
+procedure Tfrm_UnCodeX.ClearLog;
 var
   i: integer;
 begin
-  if (frm_UnCodeX = nil) then exit;
   xguard('ClearLog');
-  with frm_UnCodeX.lb_Log do begin
+  with lb_Log do begin
     for i := 0 to Items.count-1 do begin
       if (IsA(Items.Objects[i], TLogEntry)) then Items.Objects[i].Free;
     end;
@@ -598,18 +604,13 @@ end;
 
 { Logging -- END }
 
-// update status
-procedure StatusReport(msg: string; progress: byte = 255);
+procedure Tfrm_UnCodeX.StatusReport(msg: string; progress: byte = 255);
 begin
-  frm_UnCodeX.statustext := msg;
-  if (progress <> 255) then frm_UnCodeX.pb_Scan.Position := progress;
+  statustext := msg;
+  if (progress <> 255) then pb_Scan.Position := progress;
   // redirect status if set
-  if (frm_UnCodeX.GUIVars.StatusHandle <> -1) then SendStatusMsg(msg, cxstStatus, progress);
+  if (GUIVars.StatusHandle <> -1) then SendStatusMsg(msg, cxstStatus, progress);
 end;
-
-
-{ Tfrm_UnCodeX }
-{ Custom methods }
 
 // Can create a new thread
 function Tfrm_UnCodeX.ThreadCreate: boolean;
@@ -2057,8 +2058,10 @@ begin
       if (ThreadCreate) then begin
         ClearLog;
         LastAnalyseTime := Now;
-        runningthread := TClassAnalyser.Create(TUClass(Selected.Data), statusReport);
+        runningthread := TClassAnalyser.Create(TUClass(Selected.Data));
         runningthread.OnTerminate := ThreadTerminate;
+        TUCXThread(runningthread).StatusMethod := statusReport;
+        TUCXThread(runningthread).LogMethod := Log;
         runningthread.Resume;
       end;
     end;
@@ -2106,8 +2109,7 @@ begin
 
     rec.paths := config.SourcePaths;
     rec.packagetree := tv_Packages.Items;
-    rec.classtree := tv_Classes.items;
-    rec.status := statusReport;
+    rec.classtree := tv_Classes.Items;
     rec.packagelist := config.PackageList;
     rec.classlist := config.ClassList;
     rec.PackagePriority := config.PackagesPriority;
@@ -2117,6 +2119,8 @@ begin
 
     runningthread := TPackageScanner.Create(rec);
     runningthread.OnTerminate := ThreadTerminate;
+    TUCXThread(runningthread).StatusMethod := statusReport;
+    TUCXThread(runningthread).LogMethod := Log;
     runningthread.Resume;
     xunguard;
   end;
@@ -2144,9 +2148,11 @@ begin
     fr_Props.uclass := nil;
     if (fr_Props.Visible) then fr_Props.LoadClass;
 
-    runningthread := TClassAnalyser.Create(config.ClassList, statusReport, false,
+    runningthread := TClassAnalyser.Create(config.ClassList, false,
                       unit_rtfhilight.ClassesHash);
     runningthread.OnTerminate := ThreadTerminate;
+    TUCXThread(runningthread).StatusMethod := statusReport;
+    TUCXThread(runningthread).LogMethod := Log;
     runningthread.Resume;
     xunguard;
   end;
@@ -2156,8 +2162,10 @@ procedure Tfrm_UnCodeX.ac_CreateHTMLfilesExecute(Sender: TObject);
 begin
   if (ThreadCreate) then begin
     ClearLog;
-    runningthread := THTMLoutput.Create(config.HTMLOutput, StatusReport);
+    runningthread := THTMLoutput.Create(config.HTMLOutput);
     runningthread.OnTerminate := ThreadTerminate;
+    TUCXThread(runningthread).StatusMethod := statusReport;
+    TUCXThread(runningthread).LogMethod := Log;
     runningthread.Resume;
   end;
 end;
@@ -2493,8 +2501,10 @@ begin
     ClearLog;
     if (config.HTMLHelp.Title <> '') then tmp := config.HTMLHelp.Title
     else tmp := APPTITLE;
-    runningthread := TMSHTMLHelp.Create(config.HTMLHelp.Compiler, config.HTMLOutput.OutputDir, config.HTMLHelp.OutputFile, tmp, config.PackageList, config.ClassList, StatusReport);
+    runningthread := TMSHTMLHelp.Create(config.HTMLHelp.Compiler, config.HTMLOutput.OutputDir, config.HTMLHelp.OutputFile, tmp, config.PackageList, config.ClassList);
     runningthread.OnTerminate := ThreadTerminate;
+    TUCXThread(runningthread).StatusMethod := statusReport;
+    TUCXThread(runningthread).LogMethod := Log;
     runningthread.Resume;
   end;
 end;
@@ -2630,8 +2640,10 @@ begin
         ClearLog;
         if (not lb_Log.Visible) then ac_VLog.Execute;
         GUIVars.SearchConfig.searchtree := (ActiveControl as TTreeView);
-        runningthread := TSearchThread.Create(GUIVars.SearchConfig, StatusReport);
+        runningthread := TSearchThread.Create(GUIVars.SearchConfig);
         runningthread.OnTerminate := SearchThreadTerminate;
+        TUCXThread(runningthread).StatusMethod := statusReport;
+        TUCXThread(runningthread).LogMethod := Log;
         runningthread.Resume;
         if (GUIVars.SearchConfig.isFindFirst and (GUIVars.SearchConfig.Scope = 0)) then GUIVars.SearchConfig.Scope := 1;
         xunguard;
@@ -2923,8 +2935,10 @@ begin
   if (ThreadCreate) then begin
     ClearLog;
     LastAnalyseTime := Now;
-    runningthread := TClassAnalyser.Create(config.ClassList, statusReport, true, unit_rtfhilight.ClassesHash);
+    runningthread := TClassAnalyser.Create(config.ClassList, true, unit_rtfhilight.ClassesHash);
     runningthread.OnTerminate := ThreadTerminate;
+    TUCXThread(runningthread).StatusMethod := statusReport;
+    TUCXThread(runningthread).LogMethod := Log;
     runningthread.Resume;
   end;
 end;
@@ -3591,8 +3605,10 @@ procedure Tfrm_UnCodeX.ac_FindNewClassesExecute(Sender: TObject);
 begin
   if (ThreadCreate) then begin
     ClearLog;
-    runningthread := TNewClassScanner.Create(config.PackageList, config.ClassList, StatusReport, ClassesHash);
+    runningthread := TNewClassScanner.Create(config.PackageList, config.ClassList, ClassesHash);
     runningthread.OnTerminate := ThreadTerminate;
+    TUCXThread(runningthread).StatusMethod := statusReport;
+    TUCXThread(runningthread).LogMethod := Log;
     runningthread.Resume;
   end;
 end;
@@ -3667,6 +3683,6 @@ end;
 initialization
   GlobalGUIVars := TUCXGUIVars.Create;
   DefaultDockTreeClass := TUCXDockTree;
-  unit_definitions.Log := Log;
   unit_analyse.GetExternalComment := unit_definitions.RetExternalComment;
+  unit_definitions.Log := LogStub;
 end.

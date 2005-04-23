@@ -6,7 +6,7 @@
   Purpose:
     Full text search thread. Includes support for regular expressions.
 
-  $Id: unit_fulltextsearch.pas,v 1.24 2005-04-21 15:36:30 elmuerte Exp $
+  $Id: unit_fulltextsearch.pas,v 1.25 2005-04-23 20:24:26 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -42,7 +42,6 @@ type
   TSearchThread = class(TUCXThread)
     PackageList: TUPackageList;
     Tree: TTreeView;
-    Status: TStatusReport;
     re: TRegExpr;
     seltreenode: TTreeNode;
     Total: integer;
@@ -54,7 +53,7 @@ type
     function SearchFile(uclass: TUClass): boolean;
     function GetNextClass(): TUClass;
   public
-    constructor Create(var sc: TSearchConfig; Status: TStatusReport); overload;
+    constructor Create(var sc: TSearchConfig); overload;
     destructor Destroy; override;
     procedure Execute; override;
   end;
@@ -75,10 +74,9 @@ var
 const
   BUFFSIZE = 4096;
 
-constructor TSearchThread.Create(var sc: TSearchConfig; Status: TStatusReport);
+constructor TSearchThread.Create(var sc: TSearchConfig);
 begin
   Self.Tree := sc.searchtree;
-  Self.Status := Status;
   Self.PackageList := PackageList;
   Self.config := sc;
 
@@ -144,7 +142,10 @@ begin
     if (Matches = 0) then   Status('Nothing found for '''+RealExpr+'''. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds', 100)
       else Status(IntToStr(Matches)+' matches found for '''+RealExpr+'''. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds', 100);
   except
-    on E: Exception do Log('Unhandled exception: '+E.Message);
+    on E: Exception do begin
+      InternalLog('Unhandled exception: '+E.Message);
+      printguard();
+    end;
   end;
 end;
 
@@ -210,7 +211,7 @@ var
       if (re.Exec(line)) then begin
         Inc(Matches);
         result := true;
-        Log(ExtractFileName(filename)+FTS_LN_BEGIN+IntToStr(linecnt)+FTS_LN_SEP+IntToStr(re.MatchPos[0])+FTS_LN_END+line, ltSearch, CreateLogEntry(filename, linecnt, re.MatchPos[0], uclass));
+        InternalLog(ExtractFileName(filename)+FTS_LN_BEGIN+IntToStr(linecnt)+FTS_LN_SEP+IntToStr(re.MatchPos[0])+FTS_LN_END+line, ltSearch, CreateLogEntry(filename, linecnt, re.MatchPos[0], uclass));
       end;
     end
     else begin
@@ -218,7 +219,7 @@ var
       if (i > 0) then begin
         Inc(Matches);
         result := true;
-        Log(ExtractFileName(filename)+FTS_LN_BEGIN+IntToStr(linecnt)+FTS_LN_SEP+IntToStr(i)+FTS_LN_END+line, ltSearch, CreateLogEntry(filename, linecnt, re.MatchPos[0], uclass));
+        InternalLog(ExtractFileName(filename)+FTS_LN_BEGIN+IntToStr(linecnt)+FTS_LN_SEP+IntToStr(i)+FTS_LN_END+line, ltSearch, CreateLogEntry(filename, linecnt, re.MatchPos[0], uclass));
       end;
     end;
   end;

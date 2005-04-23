@@ -7,7 +7,7 @@
     Definitions shared between the main application and custom output
     modules.
 
-  $Id: unit_outputdefs.pas,v 1.16 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_outputdefs.pas,v 1.17 2005-04-23 20:24:27 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -40,13 +40,14 @@ uses
 
 type
   TStatusReport = procedure(msg: string; progress: byte = 255);
+  TStatusReportMethod = procedure(msg: string; progress: byte = 255) of object;
 
   TUCXOutputInfo = record
     // input
     AClassList: TUClassList;
     ASelectedClass: TUClass; // only used if ASingleClass = true
     APackageList: TUPackageList;
-    AStatusReport: TStatusReport;
+    AStatusReport: TStatusReportMethod;
     AThreadTerminated: TNotifyEvent;
     ABatching: boolean; // true when the module is called from a batch
     ASingleClass: boolean; // true when it's called from a single class

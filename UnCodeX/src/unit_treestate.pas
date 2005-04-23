@@ -6,7 +6,7 @@
   Purpose:
     Loading\saving of the class and package tree views
 
-  $Id: unit_treestate.pas,v 1.34 2005-03-28 09:56:20 elmuerte Exp $
+  $Id: unit_treestate.pas,v 1.35 2005-04-23 20:24:27 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -108,6 +108,7 @@ end;
 const
   UCXHeader     = 'UCX';
   UCXHTail      = #13#10#0;
+  UCXHTail2     = #13#10#26; // crnl^Z
   UCXheader059  = UCXheader+'059'+UCXHTail;
   UCXheader150  = UCXheader+'150'+UCXHTail;
   UCXheader151  = UCXheader+'151'+UCXHTail;
@@ -119,6 +120,7 @@ const
   UCXHeader213  = UCXheader+'213'+UCXHTail;
   UCXHeader214  = UCXheader+'214'+UCXHTail;
   UCXHeader222  = UCXheader+'222'+UCXHTail;
+  UCXHeader226  = UCXheader+'226'+UCXHTail2;
 
 procedure TUnCodeXState.SavePackageToStream(upackage: TUPackage; stream: TStream);
 var
@@ -621,6 +623,7 @@ begin
     else if (StrComp(tmp, UCXHeader213) = 0) then fversion := 213
     else if (StrComp(tmp, UCXHeader214) = 0) then fversion := 214
     else if (StrComp(tmp, UCXHeader222) = 0) then fversion := 222
+    else if (StrComp(tmp, UCXHeader226) = 0) then fversion := 226
     else begin
       Log('Unsupported file version, header: '+tmp);
       exit;
@@ -642,7 +645,7 @@ var
   c: cardinal;
 begin
   try
-    stream.WriteBuffer(UCXHeader222, 9);
+    stream.WriteBuffer(UCXHeader226, 9);
     // packages
     c := FPackageList.Count;
     stream.WriteBuffer(c, 4);

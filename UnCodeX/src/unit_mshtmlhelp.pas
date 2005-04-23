@@ -6,7 +6,7 @@
   Purpose:
     Creates an MS HTML Help project and compiles it.
 
-  $Id: unit_mshtmlhelp.pas,v 1.20 2005-04-05 07:58:08 elmuerte Exp $
+  $Id: unit_mshtmlhelp.pas,v 1.21 2005-04-23 20:24:27 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -35,10 +35,11 @@ unit unit_mshtmlhelp;
 interface
 
 uses
-  Windows, SysUtils, Classes, unit_definitions, unit_uclasses, unit_outputdefs;
+  Windows, SysUtils, Classes, unit_definitions, unit_uclasses, unit_outputdefs,
+  unit_ucxthread;
 
 type
-  TMSHTMLHelp = class(TThread)
+  TMSHTMLHelp = class(TUCXThread)
     HCCPath: string;
     OutputPath: string;
     ResultFile: string;
@@ -46,7 +47,6 @@ type
     hhp: TStringList;
     PackageList: TUPackageList;
     ClassList: TUClassList;
-    status: TStatusReport;
     procedure CreateHHPFile;
     procedure CreateHHCFile;
     procedure RunHHCompiler;
@@ -54,7 +54,7 @@ type
     procedure ListDir(basedir, offset: string);
     procedure HHCClassTree(uclass: TUClass; hhc: TStringList);
   public
-    constructor Create(hccpath, outputpath, resultfile, title: string; PackageList: TUPackageList; ClassList: TUClassList; status: TStatusReport);
+    constructor Create(hccpath, outputpath, resultfile, title: string; PackageList: TUPackageList; ClassList: TUClassList);
     procedure Execute; override;
     destructor Destroy; override;
   end;
@@ -67,7 +67,7 @@ uses
 var
   nFiles: integer;
 
-constructor TMSHTMLHelp.Create(hccpath, outputpath, resultfile, title: string; PackageList: TUPackageList; ClassList: TUClassList; status: TStatusReport);
+constructor TMSHTMLHelp.Create(hccpath, outputpath, resultfile, title: string; PackageList: TUPackageList; ClassList: TUClassList);
 begin
   hhp := TStringList.Create;
   Self.HCCPath := hccpath;
@@ -75,7 +75,6 @@ begin
   Self.ResultFile := resultfile;
   Self.PackageList := PackageList;
   Self.ClassList := ClassList;
-  Self.status := status;
   Self.MainTitle := title;
   if (MainTitle = '') then MainTitle := APPTITLE+' - '+APPVERSION;
   inherited Create(true);
@@ -101,7 +100,10 @@ begin
     if (FileExists(outputpath+PATHDELIM+'_htmlhelp.hhc')) then DeleteFile(outputpath+PATHDELIM+'_htmlhelp.hhc');
     Status('Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds');
   except
-    on E: Exception do Log('Unhandled exception: '+E.Message);
+    on E: Exception do begin
+      InternalLog('Unhandled exception: '+E.Message);
+      printguard;
+    end;
   end;
 end;
 
@@ -220,7 +222,7 @@ procedure TMSHTMLHelp.RunHHCompiler;
 begin
   Status('Running HTML Help compiler ...');
   try
-    Log('exec: '+HCCPath+PATHDELIM+COMPILER+' _htmlhelp.hhp ...');
+    InternalLog('exec: '+HCCPath+PATHDELIM+COMPILER+' _htmlhelp.hhp ...');
     ExecConsoleApp(HCCPath+PATHDELIM+COMPILER+' _htmlhelp.hhp');
   except
   end;
@@ -246,7 +248,7 @@ var
   begin
     LineBuf[LineBufPtr]:= #0;
     Status('Running HTML Help compiler ...', round(Lines/nFiles*100));
-    log(LineBuf);
+    InternalLog(LineBuf);
     LineBufPtr:= 0;
   end;
 
@@ -303,7 +305,7 @@ begin
           Inc(i);
           if (i > 50) then begin
             TerminateProcess(ProcessInfo.hProcess, 1); // fail safe
-            Log('HTML HELP Compiler terminated');
+            InternalLog('HTML HELP Compiler terminated');
           end;
         end;
         if (c = #9) then c := ' ';

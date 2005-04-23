@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.152 2005-04-20 15:06:02 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.153 2005-04-23 20:24:26 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -54,6 +54,7 @@ type
   // Note: if obj is of type TlogEntry is will be taken care of (e.g. clean up)
   //  you might want to use CreateLogEntry() function;
   TLogProcEX = procedure (msg: string; mt: TLogType = ltInfo; obj: TObject = nil);
+  TLogProcEXMethod = procedure (msg: string; mt: TLogType = ltInfo; obj: TObject = nil) of object;
 
   TExternalComment = function(ref: string): string;
 
@@ -536,7 +537,13 @@ begin
   result := IsA(TObject(obj), cls);
 end;
 
+// to make the Log() function safe
+procedure DummyLog(msg: string; mt: TLogType = ltInfo; obj: TObject = nil);
+begin
+end;
+
 initialization
+  Log := DummyLog;
   xGuardStack := TStringList.Create;
   kwl1 := false;
   kwl2 := false;
