@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class operations (implements subclassing, moving, ...)
 
-  $Id: unit_ucops.pas,v 1.19 2005-04-07 08:29:11 elmuerte Exp $
+  $Id: unit_ucops.pas,v 1.20 2005-04-23 20:24:44 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -267,7 +267,7 @@ begin
         if (uclass.treenode <> nil) then TTreeNode(uclass.treenode).Text := uclass.name;
         TTreeNode(uclass.treenode2).Text := uclass.name;
         for i := 0 to uclass.children.Count-1 do begin
-          Log('Class '+uclass.children[i].FullName+' needs to be updated', ltWarn, CreateLogEntry(uclass.children[i]));
+          frm_UnCodeX.Log('Class '+uclass.children[i].FullName+' needs to be updated', ltWarn, CreateLogEntry(uclass.children[i]));
           uclass.children[i].parentname := uclass.name;
         end;
 

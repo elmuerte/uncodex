@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.69 2005-04-18 15:48:55 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.70 2005-04-23 20:24:26 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -49,7 +49,6 @@ type
     UseOverWriteStruct: boolean;
     fs: TFileStream;
     p: TUCParser;
-    status: TStatusReport;
     ClassHash: TObjectHash;
     macroIfCnt: integer;
     includeParsers: TObjectList;
@@ -74,8 +73,8 @@ type
     procedure pInclude(relfilename: string);
     procedure pReplication;
   public
-    constructor Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false; myClassList: TObjectHash = nil); overload;
-    constructor Create(uclass: TUClass; status: TStatusReport; onlynew: boolean = false; myClassList: TObjectHash = nil); overload;
+    constructor Create(classes: TUClassList; onlynew: boolean = false; myClassList: TObjectHash = nil); overload;
+    constructor Create(uclass: TUClass; onlynew: boolean = false; myClassList: TObjectHash = nil); overload;
     destructor Destroy; override;
     procedure Execute; override;
   end;
@@ -154,10 +153,9 @@ begin
 end;
 
 // Create for a class list
-constructor TClassAnalyser.Create(classes: TUClassList; status: TStatusReport; onlynew: boolean = false; myClassList: TObjectHash = nil);
+constructor TClassAnalyser.Create(classes: TUClassList; onlynew: boolean = false; myClassList: TObjectHash = nil);
 begin
   self.classes := classes;
-  Self.status := status;
   Self.onlynew := onlynew;
   Self.FreeOnTerminate := true;
   ClassHash := myClassList;
@@ -166,11 +164,10 @@ begin
 end;
 
 // Create for a single class
-constructor TClassAnalyser.Create(uclass: TUClass; status: TStatusReport; onlynew: boolean = false; myClassList: TObjectHash = nil);
+constructor TClassAnalyser.Create(uclass: TUClass; onlynew: boolean = false; myClassList: TObjectHash = nil);
 begin
   self.classes := nil;
   self.uclass := uclass;
-  Self.status := status;
   Self.onlynew := onlynew;
   Self.FreeOnTerminate := true;
   ClassHash := myClassList;
@@ -195,11 +192,11 @@ begin
       ExecuteSingle;
     except
       on E: EOFException do begin
-        Log('End of file reached while parsing '+uclass.filename+': '+E.Message, ltError, CreateLogentry(uclass));
+        InternalLog('End of file reached while parsing '+uclass.filename+': '+E.Message, ltError, CreateLogentry(uclass));
         printguard(uclass);
       end;
       on E: Exception do begin
-        Log('Unhandled exception in class '+uclass.name+': '+E.Message, ltError, CreateLogentry(uclass));
+        InternalLog('Unhandled exception in class '+uclass.name+': '+E.Message, ltError, CreateLogentry(uclass));
         printguard(uclass);
       end;
     end;
@@ -235,12 +232,12 @@ var
     except
       on E: EOFException do begin
         Inc(i);
-        Log('End of file reached while parsing '+myclass.filename+': '+E.Message, ltError, CreateLogentry(myclass));
+        InternalLog('End of file reached while parsing '+myclass.filename+': '+E.Message, ltError, CreateLogentry(myclass));
         printguard(myclass);
       end;
       on E: Exception do begin
         Inc(i);
-        Log('Unhandled exception in class '+myclass.name+': '+E.Message, ltError, CreateLogentry(myclass));
+        InternalLog('Unhandled exception in class '+myclass.name+': '+E.Message, ltError, CreateLogentry(myclass));
         printguard(myclass);
       end;
     end;
@@ -265,7 +262,7 @@ begin
   Result := RES_SUCCESS;
   filename := uclass.package.path+PATHDELIM+uclass.filename;
   if (not FileExists(filename)) then begin
-    Log('Class has been removed: '+uclass.name+' '+filename);
+    InternalLog('Class has been removed: '+uclass.name+' '+filename);
     {$IFDEF USE_TREEVIEW}
     if (classes <> nil) then begin
       TTreeNode(uclass.TreeNode2).Delete;
@@ -282,7 +279,7 @@ begin
   end;
   currenttime := FileAge(filename);
   if (onlynew and (currenttime <= uclass.filetime)) then exit;
-  if (onlynew) then Log('Class changed since last time: '+uclass.name, ltInfo, CreateLogentry(uclass));
+  if (onlynew) then InternalLog('Class changed since last time: '+uclass.name, ltInfo, CreateLogentry(uclass));
   TreeUpdated := true;
   UseOverWriteStruct := false;
   uclass.filetime := currenttime;
@@ -544,7 +541,7 @@ begin
       // variable description
       if (p.Token = toString) then begin
         if (result.comment <> '') then begin
-          Log(uclass.FullName+' '+Result.name+': ignoring variable description', ltInfo, CreateLogEntry(ResolveFilename(uclass, Result), p.SourceLine , 0, uclass));
+          InternalLog(uclass.FullName+' '+Result.name+': ignoring variable description', ltInfo, CreateLogEntry(ResolveFilename(uclass, Result), p.SourceLine , 0, uclass));
         end
         else begin
           result.comment := UnQuoteString(p.TokenString);
@@ -905,31 +902,31 @@ begin
   if (macro = 'DEFINE') then begin
     macro := GetToken(args, ' ');
     uclass.defs.define(macro, args);
-    if (DEBUG_MACRO_EVAL) then Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': define '+macro+' = '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+    if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': define '+macro+' = '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
   end
   else if (macro = 'IF') then begin
     if (macroIfCnt > 0) then Inc(macroIfCnt)
     else begin
-      if (DEBUG_MACRO_EVAL) then Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': eval: '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+      if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': eval: '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
       try
         if (not uclass.defs.Eval(args)) then begin
-          if (DEBUG_MACRO_EVAL) then log(' = false');
+          if (DEBUG_MACRO_EVAL) then InternalLog(' = false');
           macroIfCnt := 1;
           while (macroIfCnt > 0) do begin
             p.SkipToken;
           end;
         end;
       except
-        on e:Exception do Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" : '+e.Message, ltError, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+        on e:Exception do InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" : '+e.Message, ltError, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
       end;
     end; // do eval
   end
   else if (macro = 'IFDEF') then begin
     if (macroIfCnt > 0) then Inc(macroIfCnt)
     else begin
-      if (DEBUG_MACRO_EVAL) then Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': if defined: '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+      if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': if defined: '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
       if (not uclass.defs.IsDefined(args)) then begin
-        if (DEBUG_MACRO_EVAL) then log(' = false');
+        if (DEBUG_MACRO_EVAL) then InternalLog(' = false');
         macroIfCnt := 1;
         while (macroIfCnt > 0) do begin
           p.SkipToken;
@@ -959,12 +956,12 @@ begin
   	// ignore, exec macro calls certain commandlets for importing sounds/textures/etc.
   end
   else if (macro = 'INCLUDE') then begin
-    if (DEBUG_MACRO_EVAL) then Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Include file '+trim(args), ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+    if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Include file '+trim(args), ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
     uclass.includes.Values[IntToStr(p.SourceLine-1)] := trim(args);
     pInclude(args);
   end
   else begin
-    Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Unsupported macro '+macro, ltWarn, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+    InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Unsupported macro '+macro, ltWarn, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
   end;
 end;
 
@@ -977,7 +974,7 @@ begin
 
   filename := iFindFile(ExpandFileName(ExtractFilePath(uclass.package.path)+relfilename));
   if (not FileExists(filename)) then begin
-    Log(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Invalid include file: '+relfilename, ltError, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+    InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Invalid include file: '+relfilename, ltError, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
     exit;
   end;
 

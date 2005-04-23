@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.84 2005-04-18 15:48:55 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.85 2005-04-23 20:24:26 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -96,7 +96,6 @@ type
     
     PackageList: TUPackageList;
     ClassList: TUClassList;
-    status: TStatusReport;
     ini: TUCXIniFile;
 
     ProcIncludeFiles: TStringList;
@@ -152,7 +151,7 @@ type
     function GetPackage(curpack: TUPackage; offset: integer; wrap: boolean = true): TUPackage;
     function GetClass(curclass: TUClass; offset: integer; wrap: boolean = true): TUClass;
   public
-    constructor Create(config: THTMLoutConfig; status: TStatusReport);
+    constructor Create(config: THTMLoutConfig);
     destructor Destroy; override;
     procedure Execute; override;
   end;
@@ -262,11 +261,10 @@ end;
 
 { THTMLOutput }
 
-constructor THTMLOutput.Create(config: THTMLoutConfig; status: TStatusReport);
+constructor THTMLOutput.Create(config: THTMLoutConfig);
 begin
   Self.PackageList := Config.PackageList;
   Self.ClassList := Config.ClassList;
-  Self.status := status;
   Self.HTMLOutputDir := Config.outputdir;
   iFindDir(Config.TemplateDir, TemplateDir);
   TemplateDir := IncludeTrailingPathDelimiter(TemplateDir);

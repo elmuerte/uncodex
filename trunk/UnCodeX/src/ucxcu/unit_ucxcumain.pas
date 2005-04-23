@@ -6,7 +6,7 @@
   Purpose:
     Main code for the commandline utility
 
-  $Id: unit_ucxcumain.pas,v 1.24 2005-04-18 15:48:56 elmuerte Exp $
+  $Id: unit_ucxcumain.pas,v 1.25 2005-04-23 20:24:58 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -227,7 +227,6 @@ begin
   PhaseLabel := format(StatusFormat, [1, 'Scanning packages']);
 
   prec.paths := config.sourcepaths;
-  prec.status := statusreport;
   prec.packagelist := config.PackageList;
   prec.classlist := config.ClassList;
   prec.PackagePriority := config.packagespriority;
@@ -238,6 +237,8 @@ begin
   ActiveThread := TPackageScanner.Create(prec);
   try
     ActiveThread.FreeOnTerminate := false;
+    ActiveThread.StatusProc := StatusReport;
+    ActiveThread.LogProc := Log;
     ActiveThread.Resume;
     {$IFNDEF NO_THREADS}
     ActiveThread.WaitFor;
@@ -252,9 +253,11 @@ begin
   end;
 
   PhaseLabel := format(StatusFormat, [2, 'Analyzing classes']);
-  ActiveThread := TClassAnalyser.Create(config.ClassList, statusreport);
+  ActiveThread := TClassAnalyser.Create(config.ClassList);
   try
     ActiveThread.FreeOnTerminate := false;
+    ActiveThread.StatusProc := StatusReport;
+    ActiveThread.LogProc := Log;
     ActiveThread.Resume;
     {$IFNDEF NO_THREADS}
     ActiveThread.WaitFor;
@@ -265,9 +268,11 @@ begin
   if (Verbose > 0) then writeln('');
 
   PhaseLabel := format(StatusFormat, [3, 'Creating HTML files']);
-  ActiveThread := THTMLOutput.Create(config.HTMLOutput, statusreport);
+  ActiveThread := THTMLOutput.Create(config.HTMLOutput);
   try
     ActiveThread.FreeOnTerminate := false;
+    ActiveThread.StatusProc := StatusReport;
+    ActiveThread.LogProc := Log;
     ActiveThread.Resume;
     {$IFNDEF NO_THREADS}
     ActiveThread.WaitFor;

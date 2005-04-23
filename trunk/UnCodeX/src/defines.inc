@@ -6,7 +6,7 @@
     Purpose:
         Global macro file, to be included by means of ($I defines.inc)
 
-    $Id: defines.inc,v 1.13 2005-04-18 15:48:55 elmuerte Exp $
+    $Id: defines.inc,v 1.14 2005-04-23 20:24:26 elmuerte Exp $
 *******************************************************************************}
 
 {$IFDEF VER140} // delphi 6
@@ -21,15 +21,30 @@
   {$DEFINE CONSOLE}
 {$ENDIF}
 
-{$IFDEF CONSOLE}
-  // Console Application
+
+{$IFDEF CONSOLE} // Console Application
   {$DEFINE NO_EXPORT}
   {$DEFINE DONT_SAVE_KEYWORDS}
   {$DEFINE NO_THREADS} // disable threading
-{$ELSE}
-  // GUI application
+{$ENDIF}
+
+{$IFDEF VSADDIN} // visual studio addin
+  {$DEFINE NO_EXPORT}
+  {$DEFINE DONT_SAVE_KEYWORDS}
   {$DEFINE USE_TREEVIEW}
 {$ENDIF}
+
+{$IFNDEF CONSOLE}
+  {$IFNDEF VSADDIN}
+    {$DEFINE FULLGUI}
+  {$ENDIF}
+{$ENDIF}
+
+{$IFDEF FULLGUI} // the original UnCodeX
+  {$DEFINE USE_TREEVIEW}
+  {$DEFINE TUCXGUIConfig}
+{$ENDIF}
+
 
 {$IFDEF IS_DELPHI}
   {$IFDEF DEBUG_BUILD}
