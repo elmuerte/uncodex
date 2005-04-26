@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.168 2005-04-23 20:24:26 elmuerte Exp $
+  $Id: unit_main.pas,v 1.169 2005-04-26 19:53:22 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -2367,6 +2367,16 @@ begin
         xunguard;
       end;
       xunguard;
+      if (InitialStartup) then begin
+        InitialStartup := false;
+        if (MessageDlg('Do you want to scan the source paths for packages and analyse the UnrealScript classes?'+#13+#10+#13+#10+
+          'You can do this at any time in the future via the menu or toolbar (Rebuild tree && Analyse All).', mtConfirmation, [mbYes, mbNo], 0) = mrYes) then begin
+          Free;
+          xunguard;
+          ac_RebuildAnalyse.Execute;
+          exit;
+        end;
+      end;
     end;
     Free;
   end;
@@ -2772,7 +2782,7 @@ begin
   end;
   if (InitialStartup) then begin
     if MessageDlg('This is the first time you start UnCodeX (with this config file),'+#13+#10+
-      'it''s advised that you first configure the program.'+#13+#10+''+#13+#10+
+      'It is advised that you first configure the program.'+#13+#10+#13+#10+
       'Do you want to edit the settings now ?', mtConfirmation, [mbYes,mbNo], 0) = mrYes
       then ac_Settings.Execute; 
   end;

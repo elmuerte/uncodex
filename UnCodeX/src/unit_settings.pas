@@ -6,7 +6,7 @@
   Purpose:
     Program settings dialog
 
-  $Id: unit_settings.pas,v 1.51 2005-04-18 15:48:56 elmuerte Exp $
+  $Id: unit_settings.pas,v 1.52 2005-04-26 19:53:22 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -351,13 +351,18 @@ procedure Tfrm_Settings.ImportPackageList(filename: string);
 var
   ini: TUCXIniFile;
   sl: TStringList;
+  prod: string;
 begin
   ini := TUCXIniFile.Create(FileName);
   sl := TStringList.Create;
   try
-    ini.ReadSectionValues('Editor.EditorEngine', sl);
     ini.ReadStringArray('Editor.EditorEngine', 'editpackages', sl);
     clb_PackagePriority.Items.Assign(sl);
+    prod := ini.ReadString('Engine.Engine', 'Product', '');
+    if (prod <> '') then begin
+      if (ed_HHTitle.Text = '') then ed_HHTitle.Text := prod+' UnrealScript';
+      if (ed_HTMLDefaultTitle.Text = '') then ed_HTMLDefaultTitle.Text := prod+' UnrealScript';
+    end;
   finally
     sl.Free;
     ini.Free;
@@ -447,12 +452,11 @@ begin
 end;
 
 procedure Tfrm_Settings.btn_SelectWorkshopClick(Sender: TObject);
-var
-  dir: string;
 begin
-  dir := ed_WorkshopPath.Text;
-  if SelectDirectory('Select the HTML Help Workshop', '', dir) then begin
-    ed_WorkshopPath.Text := dir;
+  od_BrowseExe.Title := 'Select the MS HTML Help Compiler (hhc.exe)';
+  od_BrowseExe.FileName := ed_WorkshopPath.Text;
+  if od_BrowseExe.Execute then begin
+    ed_WorkshopPath.Text := od_BrowseExe.FileName;
   end;
 end;
 
@@ -563,6 +567,7 @@ end;
 
 procedure Tfrm_Settings.btn_BrowseCompilerClick(Sender: TObject);
 begin
+  od_BrowseExe.Title := 'Select the UnrealScript compiler (handler)';
   od_BrowseExe.FileName := ed_CompilerCommandline.Text;
   if (od_BrowseExe.Execute) then ed_CompilerCommandline.Text := od_BrowseExe.FileName;
 end;
@@ -594,12 +599,14 @@ end;
 
 procedure Tfrm_Settings.btn_BrowseServerClick(Sender: TObject);
 begin
+  od_BrowseExe.Title := 'Select game server executable';
   od_BrowseExe.FileName := ed_ServerCommandline.Text;
   if (od_BrowseExe.Execute) then ed_ServerCommandline.Text := od_BrowseExe.FileName;
 end;
 
 procedure Tfrm_Settings.btn_ClientCommandlineClick(Sender: TObject);
 begin
+  od_BrowseExe.Title := 'Select the game client executable';
   od_BrowseExe.FileName := ed_ClientCommandline.Text;
   if (od_BrowseExe.Execute) then ed_ClientCommandline.Text := od_BrowseExe.FileName;
 end;
@@ -622,6 +629,7 @@ end;
 
 procedure Tfrm_Settings.btn_OpenResultCmdClick(Sender: TObject);
 begin
+  od_BrowseExe.Title := 'Select the program to open UnrealScript files';
   od_BrowseExe.FileName := ed_OpenResultCmd.Text;
   if (od_BrowseExe.Execute) then begin
     if (Pos(' ', od_BrowseExe.FileName) > 0) then ed_OpenResultCmd.Text := '"'+od_BrowseExe.FileName+'"'
@@ -798,6 +806,7 @@ end;
 
 procedure Tfrm_Settings.btn_SelectCPPClick(Sender: TObject);
 begin
+  od_BrowseExe.Title := 'Select the comment preprocessor';
   od_BrowseExe.FileName := ed_CPPApp.Text;
   if (od_BrowseExe.Execute) then ed_CPPApp.Text := od_BrowseExe.FileName;
 end;
