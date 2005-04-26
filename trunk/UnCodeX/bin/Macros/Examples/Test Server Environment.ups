@@ -1,4 +1,5 @@
--- remove this line to fix the compile, make sure you change the profile names
+-- Remove this line to fix the compile, make sure you change the profile names
+-- Also you will need to save this example in the right directory to become available
 
 const
 	PROF_SERVER = 'Server';	// the run profile name for the server

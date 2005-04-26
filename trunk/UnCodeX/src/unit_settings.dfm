@@ -71,7 +71,7 @@ object frm_Settings: Tfrm_Settings
     Top = 24
     Width = 432
     Height = 348
-    ActivePage = ts_HTMLOutput
+    ActivePage = ts_HTMLHelp
     Align = alCustom
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True

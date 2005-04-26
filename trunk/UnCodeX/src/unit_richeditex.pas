@@ -6,7 +6,7 @@
   Purpose:
     TRichEdit control that uses version 2
 
-  $Id: unit_richeditex.pas,v 1.28 2005-04-21 15:36:30 elmuerte Exp $
+  $Id: unit_richeditex.pas,v 1.29 2005-04-26 19:53:22 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -300,14 +300,24 @@ begin
         bmp.Transparent := true;
         bmp.TransparentColor := Color;
         BitBlt(bmp.Canvas.Handle, 0, 0, ClientWidth, pt2.Y-pt.Y, Handle, FGutterWidth, pt.Y, SRCCOPY);
+        bmp2.Canvas.Brush.Color := fhighlightcolor;
         bmp2.Canvas.FillRect(Rect(0, 0, ClientWidth, pt2.Y-pt.Y));
-
-        Brush.Color := fhighlightcolor;
-        FillRect(Rect(FGutterWidth, pt.Y, ClientWidth, pt2.Y));
         bmp2.Canvas.Draw(0, 0, bmp);
-        CopyMode := cmSrcAnd;
-        Draw(FGutterWidth, pt.Y, bmp2);
-        Brush.Color := clBtnFace;
+        bmp.Transparent := false;
+        bmp.Canvas.Brush.Color := fhighlightcolor;
+        bmp.Canvas.FillRect(bmp.Canvas.ClipRect);
+        bmp.Canvas.CopyMode := cmSrcAnd;
+        bmp.Canvas.Draw(0, 0, bmp2);
+        Draw(FGutterWidth, pt.Y, bmp);
+
+        //Brush.Color := fhighlightcolor;
+        //FillRect(Rect(FGutterWidth, pt.Y, ClientWidth, pt2.Y));
+        //CopyMode := cmSrcAnd;
+        //Draw(FGutterWidth, pt.Y, bmp2);
+        //Brush.Color := clBtnFace;
+
+        {R2 := Rect(FGutterWidth, pt.Y, ClientWidth, pt2.Y-pt.Y);
+        InvalidateRect(Handle, @R2, false);}
       end;
       r := Rect(0, pt.y, FGutterWidth-10, pt2.y);
       l := format('%10d', [offset+1]);

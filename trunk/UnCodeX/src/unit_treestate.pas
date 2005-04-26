@@ -6,7 +6,7 @@
   Purpose:
     Loading\saving of the class and package tree views
 
-  $Id: unit_treestate.pas,v 1.35 2005-04-23 20:24:27 elmuerte Exp $
+  $Id: unit_treestate.pas,v 1.36 2005-04-26 19:53:22 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -608,6 +608,7 @@ var
   tmp: array[0..8] of char;
   fversion: integer;
 begin
+  xguard('LoadTreeFromStream');
   Stream.Position := 0;
   Stream.Read(tmp, 9);
   result := false;
@@ -625,18 +626,23 @@ begin
     else if (StrComp(tmp, UCXHeader222) = 0) then fversion := 222
     else if (StrComp(tmp, UCXHeader226) = 0) then fversion := 226
     else begin
-      Log('Unsupported file version, header: '+tmp);
+      Log('Unsupported file version, header: '+tmp, ltError);
       exit;
     end;
-    Clear;
-    LoadPackagesFromStream(stream, fversion);
-    unit_rtfhilight.ClassesHash.Clear;
-    LoadClassesFromStream(stream, fversion);
+    try
+      Clear;
+      LoadPackagesFromStream(stream, fversion);
+      unit_rtfhilight.ClassesHash.Clear;
+      LoadClassesFromStream(stream, fversion);
+    except
+      on e:Exception do Log('Unexpected error loading the tree state, please rebuild and analyse all to fix the issue.', ltError);
+    end;
     FClassList.Sort;
     FPackageList.Sort;
     result := true;
   end
-  else Log('State file corrupt or unsupported version');
+  else Log('State file corrupt or unsupported version', ltError);
+  xunguard;
 end;
 
 procedure TUnCodeXState.SaveTreeToStream(Stream: TStream);

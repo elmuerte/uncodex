@@ -6,7 +6,7 @@
   Purpose:
     Contains the configuration of UnCodeX
 
-  $Id: unit_config.pas,v 1.11 2005-04-23 20:24:26 elmuerte Exp $
+  $Id: unit_config.pas,v 1.12 2005-04-26 19:53:22 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -557,6 +557,7 @@ begin
   Layout.PropertyInspector := false;
   Layout.MinimizeOnClose := false;
   Layout.ExpandObject := true;
+  Layout.TreeView.Color := clWindow;
   Layout.TreeView.Font.Color := clWindowText;
   Layout.TreeView.Font.Name := 'MS Sans Serif';
   Layout.TreeView.Font.Style := [];
@@ -585,7 +586,7 @@ begin
   SourcePreview.FontSize := 9;
   SourcePreview.FontColor := clBlack;
   SourcePreview.TabSize := 4;
-  SourcePreview.HighLightColor := clYellow;
+  SourcePreview.HighLightColor := $0080FFFF;
   SourcePreview.Keyword1.Color := $00000000;
   SourcePreview.Keyword1.Style := [fsBold];
   SourcePreview.Keyword2.Color := $00555555;

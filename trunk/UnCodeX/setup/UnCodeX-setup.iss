@@ -1,7 +1,7 @@
 [Setup]
 AppName=UnCodeX
-AppVerName=UnCodeX version 224
-AppVersion=224
+AppVerName=UnCodeX version 227
+AppVersion=227
 AppPublisher=Michiel 'El Muerte' Hendriks
 AppPublisherURL=http://sourceforge.net/projects/uncodex/
 AppSupportURL=http://sourceforge.net/tracker/?group_id=120421
@@ -20,7 +20,7 @@ ShowLanguageDialog=no
 UninstallDisplayIcon={app}\UnCodeX.exe
 UninstallDisplayName=UnCodeX
 AppID={{FDD6ED8B-DB77-43BC-B0B2-608A1F27AABC}}
-VersionInfoVersion=2.1.3.224
+VersionInfoVersion=2.1.3.227
 InternalCompressLevel=ultra
 MinVersion=4.0.950,4.0.1381
 ShowTasksTreeLines=true
@@ -69,10 +69,10 @@ Source: ..\src\unit_outputdefs.pas; DestDir: {app}\out_sample; Flags: ignorevers
 Source: ..\src\unit_uclasses.pas; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
 Source: ..\src\FastShareMem.pas; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
 
-Source: ..\Bin\Macros\*.example; DestDir: {app}\Macros; Flags: ignoreversion recursesubdirs; Components: pascalscript
+Source: ..\Bin\Macros\Examples\*.ups; DestDir: {app}\Macros\Examples; Flags: ignoreversion recursesubdirs; Components: pascalscript
 
 [INI]
-Filename: {app}\UnCodeX.url; Section: InternetShortcut; Key: URL; String: http://wiki.beyondunreal.com/wiki/UnCodeX
+Filename: {app}\UnCodeX.url; Section: InternetShortcut; Key: URL; String: http://sourceforge.net/projects/uncodex/
 Filename: {app}\UnrealWiki.url; Section: InternetShortcut; Key: URL; String: http://wiki.beyondunreal.com/wiki/
 Filename: {app}\Unreal Developers Network.url; Section: InternetShortcut; Key: URL; String: http://udn.epicgames.com/
 
