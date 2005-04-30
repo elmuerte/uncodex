@@ -174,7 +174,7 @@ Settings to create a MS HTML Help document from the HTML output.
 </table>
 
 <h3>[ExternalComments]</h3>
-//TODO: ...
+These files contain descriptions for various aspects (packages, classes, function, etc). This way it's possible to set a description without editing the source file.
 
 <table>
 <tr>
@@ -193,6 +193,36 @@ Settings to create a MS HTML Help document from the HTML output.
 	<td nowrap="nowrap"><a href="#string">string</a></td>
 	<td>File containing comments for classes, functions, etc.
 	<br /><em>Default:</em> <pre>Declarations={appdir}\ExternalComments.ini</pre></td>
+</tr>
+</table>
+
+
+<h2>Configuration types</h2>
+
+<table>
+<tr>
+	<th>Type</th>
+	<th>Description</th>
+</tr>
+<tr>
+	<td nowrap="nowrap"><a name="string"></a>string</td>
+	<td>Normal text</td>
+</tr>
+<tr>
+	<td nowrap="nowrap"><a name="stringarray"></a>string array</td>
+	<td>Multiple string entries with the same key.<br /><pre>Key=Array entry 1
+Key=Array entry 2</pre></td>
+</tr>
+<tr>
+	<td nowrap="nowrap"><a name="integer"></a>integer</td>
+	<td>A normal natural number (without a decimal point)</td>
+</tr>
+<tr>
+	<td nowrap="nowrap"><a name="tribool"></a>tribool</td>
+	<td>A three state boolean value. You can use either the human readable value or the nummeric value:<br />
+	<code>Maybe</code> or <code>-1</code><br />
+	<code>False</code> or <code>0</code><br />
+	<code>True</code> or <code>1</code></td>
 </tr>
 </table>
 

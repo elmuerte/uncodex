@@ -7,7 +7,7 @@
     Defines additional PascalScript objects and functions. (Generation is
     automated)
 
-  $Id: unit_pascalscript_ex.pas,v 1.16 2005-04-19 07:49:05 elmuerte Exp $
+  $Id: unit_pascalscript_ex.pas,v 1.17 2005-04-30 07:45:02 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -59,12 +59,14 @@ type
 { compile-time registration functions }
 procedure SIRegister_TUCXIniFile(CL: TPSPascalCompiler);
 procedure SIRegister_TObjectList(CL: TPSPascalCompiler);
+procedure SIRegister_TList(CL: TPSPascalCompiler);
 procedure SIRegister_TLogEntry(CL: TPSPascalCompiler);
 procedure SIRegister_miscclasses(CL: TPSPascalCompiler);
 
 { run-time registration functions }
 procedure RIRegister_TUCXIniFile(CL: TPSRuntimeClassImporter);
 procedure RIRegister_TObjectList(CL: TPSRuntimeClassImporter);
+procedure RIRegister_TList(CL: TPSRuntimeClassImporter);
 procedure RIRegister_TLogEntry(CL: TPSRuntimeClassImporter);
 procedure RIRegister_miscclasses(CL: TPSRuntimeClassImporter);
 
@@ -163,6 +165,15 @@ begin
 end;
 
 (*----------------------------------------------------------------------------*)
+procedure SIRegister_TList(CL: TPSPascalCompiler);
+begin
+  //with RegClassS(CL,'TObject', 'TList') do
+  with CL.AddClassN(CL.FindClass('TObject'),'TList') do
+  begin
+  end;
+end;
+
+(*----------------------------------------------------------------------------*)
 procedure SIRegister_TLogEntry(CL: TPSPascalCompiler);
 begin
   //with RegClassS(CL,'TObject', 'TLogEntry') do
@@ -181,6 +192,7 @@ procedure SIRegister_miscclasses(CL: TPSPascalCompiler);
 begin
   CL.AddTypeS('TLogType', '( ltInfo, ltWarn, ltError, ltSearch )');
   SIRegister_TLogEntry(CL);
+  SIRegister_TList(CL);
   SIRegister_TObjectList(CL);
   SIRegister_TUCXIniFile(CL);
 end;
@@ -352,6 +364,14 @@ begin
 end;
 
 (*----------------------------------------------------------------------------*)
+procedure RIRegister_TList(CL: TPSRuntimeClassImporter);
+begin
+  with CL.Add(TList) do
+  begin
+  end;
+end;
+
+(*----------------------------------------------------------------------------*)
 procedure RIRegister_TLogEntry(CL: TPSRuntimeClassImporter);
 begin
   with CL.Add(TLogEntry) do
@@ -368,6 +388,7 @@ end;
 procedure RIRegister_miscclasses(CL: TPSRuntimeClassImporter);
 begin
   RIRegister_TLogEntry(CL);
+  RIRegister_TList(CL);
   RIRegister_TObjectList(CL);
   RIRegister_TUCXIniFile(CL);
 end;

@@ -15,20 +15,33 @@
 <div class="content">
 <h1>TUStructList</h1>
 <pre>
-TUStructList = class(TUObjectList)
+  TUStructList = class(TUDeclarationList)
+  protected
+    function GetItem(Index: Integer): TUStruct;
+    procedure SetItem(Index: Integer; AObject: TUStruct);
+  public
+    property Items[Index: Integer]: TUStruct read GetItem write SetItem; default;
+  published
     procedure Sort;
     function Find(name: string): TUStruct;
-    property Items[Index: Integer]: TUStruct read GetItem write SetItem; default;
   end;
 </pre>
 
 <h1>TUStruct</h1>
 <pre>
-TUStruct = class(TUObject)
-    parent:     string;
-    modifiers:  string;
-    data:       string;
-    properties: TUPropertyList;
+  TUStruct = class(TUDeclaration)
+  protected
+    Fparent:     string;
+    Fmodifiers:  string;
+    Fproperties: TUPropertyList;
+  public
+    constructor Create;
+    destructor Destroy; override;
+  published
+    property parent: string read Fparent write Fparent;
+    property modifiers: string read Fmodifiers write Fmodifiers;
+    property properties: TUPropertyList read Fproperties write Fproperties;
+    function declaration: string; override;
   end;
 </pre>
 

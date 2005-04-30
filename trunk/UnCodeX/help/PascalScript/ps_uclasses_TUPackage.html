@@ -15,22 +15,36 @@
 <div class="content">
 <h1>TUPackageList</h1>
 <pre>
-TUPackageList = class(TUObjectList)
+  TUPackageList = class(TUObjectList)
+  public
+    property Items[Index: Integer]: TUPackage read GetItem write SetItem; default;
+  published
     procedure Sort;
     procedure AlphaSort;
     function Find(name: string): TUPackage;
-    property Items[Index: Integer]: TUPackage; default;
   end;
 </pre>
 
 <h1>TUPackage</h1>
 <pre>
-TUPackage = class(TUObject)
-    classes:    TUClassList;
-    priority:   integer;
-    path:       string;
-    treenode:   TObject;
-    tagged:     boolean;
+  TUPackage = class(TUObject)
+  protected
+    Fclasses:    TUClassList;
+    Fpriority:   integer;
+    Fpath:       string; // class path
+    Ftreenode:   TObject;
+    Ftagged:     boolean;
+  public
+    constructor Create;
+    destructor Destroy; override;  
+  published
+    property classes: TUClassList read Fclasses write Fclasses;
+    property priority: integer read Fpriority write Fpriority;
+    property path: string read Fpath write Fpath;
+    property treenode: TObject read Ftreenode write Ftreenode;
+    property tagged: boolean read Ftagged write Ftagged;
+    function PackageDir: string; // returns the actual package dir
+    function declaration: string; override;
   end;
 </pre>
 

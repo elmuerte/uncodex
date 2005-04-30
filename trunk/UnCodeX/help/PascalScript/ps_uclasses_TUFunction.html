@@ -15,23 +15,38 @@
 <div class="content">
 <h1>TUFunctionList</h1>
 <pre>
-TUFunctionList = class(TUObjectList)
+  TUFunctionList = class(TUDeclarationList)
+  public
+    property Items[Index: Integer]: TUFunction read GetItem write SetItem; default;
+  published
     procedure Sort;
     function Find(name: string; state: string = ''): TUFunction;
-    property Items[Index: Integer]: TUFunction; default;
   end;
 </pre>
 
 <h1>TUFunction</h1>
 <pre>
-TUFunction = class(TUObject)
-    ftype:      TUFunctionType;
-    return:     string;
-    modifiers:  string;
-    params:     string;
-    state:      TUState;
-    args:       TUPropertyList; // parsed argument list (NOT USED)
-    locals:     TUPropertyList; // local variable delcrations (NOT USED)
+  TUFunction = class(TUDeclaration)
+  protected
+    Fftype:      TUFunctionType;
+    Freturn:     string;
+    Fmodifiers:  string;
+    Fparams:     string;
+    Fstate:      TUState;
+    Fargs:       TUPropertyList; // parsed argument list (CURRENTLY NOT USED)
+    Flocals:     TUPropertyList; // local variable delcrations (CURRENTLY NOT USED)
+  public
+    constructor Create;
+    destructor Destroy; override;
+  published
+    property ftype: TUFunctionType read Fftype write Fftype;
+    property return: string read Freturn write Freturn;
+    property modifiers: string read Fmodifiers write Fmodifiers;
+    property params: string read Fparams write Fparams;
+    property state: TUState read Fstate write Fstate;
+    property args: TUPropertyList read Fargs write Fargs;
+    property locals: TUPropertyList read Flocals write Flocals;
+    function declaration: string; override;
   end;
 </pre>
 

@@ -22,10 +22,10 @@
 <pre>function IsBatching: boolean;</pre>
 
 <h2>OpenSourceLine</h2>
-<pre>procedure OpenSourceLine(uclass: TUClass; line, caret: integer);</pre>
+<pre>procedure OpenSourceLine(procedure OpenSourceLine(filename: string; line, caret: integer; uclass: TUClass););</pre>
 
 <h2>OpenSourceInline</h2>
-<pre>procedure OpenSourceInline(uclass: TUClass; line, caret: integer);</pre>
+<pre>procedure OpenSourceInline(filename: string; line, caret: integer; uclass: TUClass; nohighlight: boolean);</pre>
 
 <h2>Sleep</h2>
 <pre>procedure Sleep(time: cardinal);</pre>

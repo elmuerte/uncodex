@@ -18,8 +18,17 @@
 <h2>Log</h2>
 <pre>procedure Log(msg: string);</pre>
 
-<h2>LogClass</h2>
-<pre>procedure LogClass(msg: string; uclass: TUClass);</pre>
+<h2>LogType</h2>
+<pre>procedure LogType(msg: string; mt: TLogType);</pre>
+
+<h2>LogTypeObject</h2>
+<pre>procedure LogTypeObject(msg: string; mt: TLogType; obj: TObject);</pre>
+
+<h2>CreateLogEntry</h2>
+<pre>function CreateLogEntry(filename: string; line: integer; pos: integer; obj: TObject): TLogEntry;</pre>
+
+<h2>ClearLog</h2>
+<pre>procedure ClearLog();</pre>
 
 </div>
 </div>

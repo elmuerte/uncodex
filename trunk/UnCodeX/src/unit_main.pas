@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.169 2005-04-26 19:53:22 elmuerte Exp $
+  $Id: unit_main.pas,v 1.170 2005-04-30 07:45:02 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -1686,6 +1686,7 @@ end;
 procedure Tfrm_UnCodeX.SaveSettings;
 var
   i: integer;
+  tmp: string;
 begin
   xguard('Tfrm_UnCodeX.SaveSettings');
   config.Layout.LogWindow.Import(lb_Log);
@@ -1716,7 +1717,9 @@ begin
 
   config.HotKeys.Clear;
   for i := 0 to al_Main.ActionCount-1 do begin
-    config.HotKeys.Values[TAction(al_Main.Actions[i]).Caption] := ShortCutToText(TAction(al_Main.Actions[i]).ShortCut);
+    tmp := ShortCutToText(TAction(al_Main.Actions[i]).ShortCut);
+    if (tmp = '') then tmp := 'None';
+    config.HotKeys.Values[TAction(al_Main.Actions[i]).Caption] := tmp;
   end;
 
   config.SaveToIni();

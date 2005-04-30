@@ -20,7 +20,22 @@
 	Left, Top, Right, Bottom: Integer; 
 end;</pre>
 
-</table>
+
+<h2>TDefaultPropertiesRecord</h2>
+<pre>  TDefaultPropertiesRecord = record
+    srcline:            integer; // start of the default properties block in the source
+    definedIn:          string;
+    data:               string; // AS IS
+  end;</pre>
+
+<h2>TReplicationRecord</h2>
+<pre>  TReplicationRecord = record
+    srcline:            integer; // start of the replication block in the source
+    definedIn:          string;
+    symbols:            TStringList; // symbol=index
+    expressions:        TStringList; // expression (DO NOT SORT)
+  end;</pre>
+
 
 </div>
 </div>
