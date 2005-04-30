@@ -15,18 +15,26 @@
 <div class="content">
 <h1>TUObjectList</h1>
 <pre>
-TUObjectList = class(TObjectList)
-  	function Find(name: string): TUObject;
+  TUObjectList = class(TObjectList)
+  published
+    function Find(name: string): TUObject;
+    property Count;
   end;
 </pre>
 
 <h1>TUObject</h1>
 <pre>
-TUObject = class(TObject)
-    name:       	string;
-    srcline:    	integer;
-    comment:    	string;
-    CommentType:	TUCommentType;
+  TUObject = class(TObject)
+  protected
+    Fname:         string;
+    Fcomment:      string;
+    FCommentType:  TUCommentType;
+  published
+    property Name: string read Fname write FName;
+    property Comment: string read Fcomment write Fcomment;
+    property CommentType: TUCommentType read FCommentType write FCommentType;
+    function HTMLdeclaration: string; virtual;
+    function declaration: string; virtual; // implemented to make it work for pascalscript
   end;
 </pre>
 

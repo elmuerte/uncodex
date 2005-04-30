@@ -1,26 +1,19 @@
 
-[INFOTYPES]
-
 [OPTIONS]
 Compatibility=1.1 or later
-Compiled File=..\Bin\UnCodeX-help.chm
-Contents File=UnCodeX-help.hhc
+Compiled file=..\Bin\UnCodeX-help.chm
+Contents file=UnCodeX-help.hhc
 Default Window=main
-Default Topic=index.html
+Default topic=index.html
 Display compile progress=Yes
+Error log file=_errorlog.txt
 Full-text search=Yes
 Language=0x409 English (United States)
 Title=UnCodeX
-Binary TOC=No
-Binary Index=Yes
-Index File=
-Default Font=
-Auto Index=No
-Create CHI file=No
-Error log file=_errorlog.txt
 
 [WINDOWS]
-main="UnCodeX Help","UnCodeX-help.hhc",,"index.html","index.html",,,,,0x62520,200,0x1046,[0,0,750,500],0xB0000,,,,,,0
+main="UnCodeX Help","UnCodeX-help.hhc",,"index.html","index.html",,,,,0x62520,200,0x1046,[0,0,750,500],0xb0000,,,,,,0
+
 
 [FILES]
 commandline.html
@@ -116,5 +109,7 @@ Templates\templates_packages_list.html
 Templates\templates_packages_list_entry.html
 Templates\templates_packages_table_entry.html
 Templates\templates_sourcecode.html
+PascalScript\ps_uclasses_TUDeclaration.html
 
-[MERGE FILES]
+[INFOTYPES]
+

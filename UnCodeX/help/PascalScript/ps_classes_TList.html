@@ -14,29 +14,7 @@
 
 <div class="content">
 <h1>TList</h1>
-<pre>
-TList = class(TObject)
-    function Add(Item: Pointer): Integer;
-    procedure Clear; virtual;
-    procedure Delete(Index: Integer);
-    procedure Exchange(Index1, Index2: Integer);
-    function Expand: TList;
-    function Extract(Item: Pointer): Pointer;
-    function First: Pointer;
-    function IndexOf(Item: Pointer): Integer;
-    procedure Insert(Index: Integer; Item: Pointer);
-    function Last: Pointer;
-    procedure Move(CurIndex, NewIndex: Integer);
-    function Remove(Item: Pointer): Integer;
-    procedure Pack;
-    procedure Sort(Compare: TListSortCompare);
-    procedure Assign(ListA: TList; AOperator: TListAssignOp = laCopy; ListB: TList = nil);
-    property Capacity: Integer read FCapacity write SetCapacity;
-    property Count: Integer read FCount write SetCount;
-    property Items[Index: Integer]: Pointer read Get write Put; default;
-    property List: PPointerList read FList;
-  end;
-</pre>
+No longer used
 
 </div>
 </div>

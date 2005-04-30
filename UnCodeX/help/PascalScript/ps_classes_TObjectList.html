@@ -15,10 +15,15 @@
 <div class="content">
 <h1>TObjectList</h1>
 <pre>
-TObjectList = class(TList)
+  TObjectList = class(TList)
   public
     constructor Create;
-    constructor Create2(AOwnsObjects: Boolean);
+    procedure Clear; virtual;
+    procedure Delete(Index: Integer);
+    procedure Exchange(Index1, Index2: Integer);
+    procedure Move(CurIndex, NewIndex: Integer);
+    procedure Pack;
+    procedure Sort(Compare: TListSortCompare);
 
     function Add(AObject: TObject): Integer;
     function Extract(Item: TObject): TObject;
@@ -30,6 +35,8 @@ TObjectList = class(TList)
     function Last: TObject;
     property OwnsObjects: Boolean read FOwnsObjects write FOwnsObjects;
     property Items[Index: Integer]: TObject read GetItem write SetItem; default;
+    property Capacity: Integer read FCapacity write SetCapacity;
+    property Count: Integer read FCount write SetCount;
   end;
 </pre>
 

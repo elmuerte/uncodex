@@ -15,17 +15,23 @@
 <div class="content">
 <h1>TUConstList</h1>
 <pre>
-TUConstList = class(TUObjectList)
+  TUConstList = class(TUDeclarationList)
+  public
+    property Items[Index: Integer]: TUConst read GetItem write SetItem; default;
+  published
     procedure Sort;
     function Find(name: string): TUConst;
-    property Items[Index: Integer]: TUConst; default;
   end;
 </pre>
 
 <h1>TUConst</h1>
 <pre>
-TUConst = class(TUObject)
-    value:      string;
+  TUConst = class(TUDeclaration)
+  protected
+    Fvalue:  string;
+  published
+    property value: string read Fvalue write Fvalue;
+    function declaration: string; override;
   end;
 </pre>
 

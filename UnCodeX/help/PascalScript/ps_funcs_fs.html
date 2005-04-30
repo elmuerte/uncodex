@@ -87,6 +87,18 @@
 <h2>ExtractBaseName</h2>
 <pre>function ExtractBaseName(filename: string): string;</pre>
 
+<h2>iFindFile</h2>
+<pre>function iFindFile(filename: string): string;</pre>
+Resolve a filename (fixes case issues in Linux)
+
+<h2>iFindDir</h2>
+<pre>function iFindDir(dirname: string; var output: string): boolean;</pre>
+Resolve a directory
+
+<h2>ResolveFilename</h2>
+<pre>function ResolveFilename(uclass: TUClass; udecl: TUDeclaration): string;</pre>
+Used to resolve filenames from the declaredIn value.
+
 </div>
 </div>
 </body>
