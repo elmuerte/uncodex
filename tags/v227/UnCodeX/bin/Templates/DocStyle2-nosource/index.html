@@ -1,0 +1,25 @@
+<html>
+<head>
+	<title>%default_title%</title>
+	<meta name="Generator" value="%UNCODEX% %VERSION%">
+%include:stylesheet.inc%
+	<script type="text/javascript">
+	<!-- allows linking to a subpage via a hash code -->
+	function SetContent()
+	{
+		if (location.hash)
+		{
+			dest = location.hash.substr(1);
+			if (content) content.location = dest;
+		}
+	}
+	</script>
+</head>
+<frameset cols="200,*" onload="SetContent();">
+	<frameset rows="200,*">
+		<frame name="packages" src="%packages_list_link%" marginwidth="4" marginheight="4">
+		<frame name="classes" src="%classes_list_link%" marginwidth="4" marginheight="4">
+	</frameset>
+	<frame name="content" src="%overview_link%">
+</frameset>
+</html>

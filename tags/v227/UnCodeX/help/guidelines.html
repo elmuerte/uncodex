@@ -1,0 +1,114 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<title>UnCodeX - Coding guidelines</title>
+	<link href="images/default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="images/UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">coding guidelines</div>
+</div>
+
+<div class="content">
+<h1>Coding guidelines</h1>
+To get the maximum out of the documentation created by UnCodeX you must follow a few simple coding guidelines.
+
+<a name="package"></a><h2>Package descriptions</h2>
+For every package create a UnCodeX.ini file in it's base directory with the following content, alternatively you can also place the package description in the package configuration file (&lt;package name&gt;.upkg):
+<pre>
+[package_description]
+Enter here you package description, it may contain HTML formatting. 
+It will included as is in the generated HTML output.
+</pre>
+UnCodeX will look at the following places for a package description (in this order):
+<ol>
+<li>&lt;package name&gt;\Classes\&lt;package name&gt;.upkg
+<li>&lt;package name&gt;\uncodex.ini
+<li>PackageDescription.ini
+</ol>
+
+<a name="class"></a><h2>Class descriptions</h2>
+Two types are accepted:
+<h3>Single line comments</h3>
+<pre>
+//================================
+// Class X does Y for Z
+//================================
+</pre>
+Single comments are only accepted before the class declaration. Comments that have the same content in reverse order will be ignored in the final output, so the first and the last line in the above example are excluded. Ofcourse the two leading slashes are stripped first before it's being processed. In the HTML output each single line comment will be appended with a HTML linebreak.
+<br>
+<br>
+The following lines are <u>bad</u>:
+<pre>
+/// ====================
+// =+=+=+=+=+=+=+=+=+=+
+</pre>
+
+<h3>Multi line comments</h3>
+<pre>
+/**
+	Class X does Y for Z
+*/
+</pre>
+Using the format /** ... */ is generally accepted as a special comment to be included in the documentation. The /** and */ are stripped from the comment and the rest is included as is. Unlike the single line comments the newline are not replaced with HTML linebreaks.
+<br>
+Note: in the current versions of UT (451) and UT2003 (2225) the compiler does not accept the word <i>class</i> in a multiline comment before the class declaration, this should be fixed in upcoming versions. But there's a way around it to fool the current compiler. Just create a comment like this:
+<pre>
+/**
+	class MyClass extends Object;
+	MyClass does Y for Z
+*/
+<b>class</b> MyClass <b>extends</b> Object;
+...
+</pre>
+
+<a name="declaration"></a><h2>Declaration descriptions</h2>
+To add descriptions to declarations (structs/vars/functions/...) include the special multiline comment <u>before</u> it's declaration.
+<pre>
+/** Var x is used to keep the usage count */
+<b>var</b> <b>int</b> x;
+
+/** Return the highest of both variables */
+<b>native</b>(250) <b>static</b> <b>final</b> <b>function</b> <b>int</b> Max ( <b>int</b> A, <b>int</b> B );
+</pre>
+<b>UnrealEngine2 note:</b> In UnrealEngine2 there's an alternative method to add variable descriptions. These variable descriptions will become visible in UnrealEd. It may not be available for all games, Tribes:Vengeance does show these hints in UnrealEd. However all UnrealEngine2 game do access this in the source code.
+<pre>
+<b>var</b>() <b>int</b> x "This is also allowed for variables";
+</pre>
+
+<a name="external"></a><h2>External descriptions</h2>
+since you can't change the code maybe by somebody else (e.g. Epic), you can't add descriptions for declarations in the source code. For this it's possible to declare the descriptions in an external comment file. This file has the following format:
+<pre>
+[&lt;package name&gt;.&lt;class name&gt;.&lt;member name&gt;]
+&lt;descriptions&gt;
+</pre>
+&lt;member name&gt; would be the name of the function, variable, constant, etc.<br />
+For example thw above example would be:
+<pre>
+[Core.Object.Max]
+Return the highest of both variables
+</pre>
+The comment may contain newlines.<br />
+There are a few additional cases. To comment the variables of a struct use the following:
+<pre>
+[&lt;package name&gt;.&lt;class name&gt;.&lt;struct name&gt;.&lt;member name&gt;]
+</pre>
+And to give a seperate comment to functions defined in different states use the following:
+<pre>
+[&lt;package name&gt;.&lt;class name&gt;.&lt;function name&gt; &lt;state name&gt;]
+</pre>
+
+
+<h1>Special comments</h1>
+<h2>@ignore</h2>
+If you want to ingore a class or declaration in the HTML output just add a comment with the only text: @ignore
+<pre>/** @ignore */</pre>
+Now this declaration will be ignored in all HTML files (except ofcourse the source code listing)
+
+</div>
+</div>
+</body>
+</html>
