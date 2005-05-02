@@ -10,7 +10,7 @@ DefaultDirName={pf}\UnCodeX
 DefaultGroupName=UnCodeX
 AllowNoIcons=true
 LicenseFile=..\Bin\LICENSE.TXT
-Compression=lzma
+Compression=lzma/ultra
 SolidCompression=true
 OutputBaseFilename=UnCodeX-setup
 WizardImageFile=InstallLarge2.bmp
@@ -24,6 +24,8 @@ VersionInfoVersion=2.1.3.227
 InternalCompressLevel=ultra
 MinVersion=4.0.950,4.0.1381
 ShowTasksTreeLines=true
+VersionInfoCompany=Michiel "El Muerte" Hendriks
+VersionInfoDescription=UnCodeX Installer
 
 [Types]
 Name: full; Description: Full installation
@@ -49,17 +51,16 @@ Name: quicklaunchicon; Description: Create a &Quick Launch icon; GroupDescriptio
 [Files]
 Source: ..\Bin\UnCodeX.exe; DestDir: {app}; Flags: ignoreversion; Components: gui
 Source: ..\Bin\LICENSE.TXT; DestDir: {app}; Flags: ignoreversion overwritereadonly; Components: main
-Source: ..\Bin\PackageDescriptions.ini; DestDir: {app}; Flags: ignoreversion; Components: main
-Source: ..\Bin\ExternalComments.ini; DestDir: {app}; Flags: ignoreversion; Components: main
+Source: ..\Bin\PackageDescriptions.ini; DestDir: {app}; Flags: ignoreversion confirmoverwrite; Components: main
+Source: ..\Bin\ExternalComments.ini; DestDir: {app}; Flags: ignoreversion confirmoverwrite; Components: main
 Source: ..\Bin\ucxcu.exe; DestDir: {app}; Flags: ignoreversion; Components: commandline
 Source: ..\Bin\UnCodeX-help.chm; DestDir: {app}; Flags: ignoreversion; Components: help
-Source: ..\Bin\Templates\*.*; DestDir: {app}\Templates\DocStyle2; Flags: ignoreversion recursesubdirs; Components: templates; Excludes: CVS
+Source: ..\Bin\Templates\*.*; DestDir: {app}\Templates; Flags: ignoreversion recursesubdirs; Components: templates; Excludes: CVS
 Source: ..\Bin\out_wikifier.dll; DestDir: {app}; Flags: ignoreversion; Components: gui\customoutput
 Source: ..\Bin\out_graphviz.dll; DestDir: {app}; Flags: ignoreversion; Components: gui\customoutput
 Source: ..\Bin\out_ctags.dll; DestDir: {app}; Flags: ignoreversion; Components: gui\customoutput
 Source: ..\Bin\out_unrealwiki.dll; DestDir: {app}; Flags: ignoreversion; Components: gui\customoutput
 
-Source: ..\Bin\out_sample\*.*; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
 Source: ..\src\out_sample\*.pas; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
 Source: ..\src\out_sample\*.dfm; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
 Source: ..\src\out_sample\*.dpr; DestDir: {app}\out_sample; Flags: ignoreversion recursesubdirs; Components: gui\customoutput
@@ -89,7 +90,7 @@ Name: {commondesktop}\UnCodeX; Filename: {app}\UnCodeX.exe; Tasks: desktopicon\c
 Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\UnCodeX; Filename: {app}\UnCodeX.exe; Tasks: quicklaunchicon
 
 [Run]
-Filename: {app}\UnCodeX.exe; Description: Launch UnCodeX; Flags: nowait postinstall skipifsilent
+Filename: {app}\UnCodeX.exe; Description: Launch UnCodeX; Flags: nowait postinstall skipifsilent skipifdoesntexist; WorkingDir: {app}
 
 [UninstallDelete]
 Type: files; Name: {app}\UnCodeX.url

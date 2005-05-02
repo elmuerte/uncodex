@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.170 2005-04-30 07:45:02 elmuerte Exp $
+  $Id: unit_main.pas,v 1.171 2005-05-02 07:08:09 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -3422,7 +3422,7 @@ end;
 procedure Tfrm_UnCodeX.dckLeftUnDock(Sender: TObject; Client: TControl;
   NewTarget: TWinControl; var Allow: Boolean);
 begin
-  Allow := (NewTarget <> nil); // prevent floating
+  Allow := (NewTarget <> nil) and (runningthread = nil); // prevent floating
   if (not Allow) then exit;
   if (visible) then ShowDockPanel(Sender as TPanel, False, nil);
 end;
@@ -3467,7 +3467,7 @@ end;
 procedure Tfrm_UnCodeX.pnlCenterUnDock(Sender: TObject; Client: TControl;
   NewTarget: TWinControl; var Allow: Boolean);
 begin
-  Allow := (NewTarget <> nil) and (Client <> tv_Classes);
+  Allow := (NewTarget <> nil) and (Client <> tv_Classes) and (runningthread = nil);
   if (visible) then (Sender as TPanel).DockManager.ResetBounds(True);
 end;
 
