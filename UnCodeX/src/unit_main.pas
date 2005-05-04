@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.171 2005-05-02 07:08:09 elmuerte Exp $
+  $Id: unit_main.pas,v 1.172 2005-05-04 08:27:09 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -2722,9 +2722,9 @@ begin
   if (lb_Log.ItemIndex = -1) then exit;
   if (lb_Log.Items.Objects[lb_Log.ItemIndex] = nil) then exit;
   if (not IsA(lb_Log.Items.Objects[lb_Log.ItemIndex], TLogEntry)) then exit;
-
   entry := TLogEntry(lb_Log.Items.Objects[lb_Log.ItemIndex]);
-  OpenSourceline(entry.filename, entry.line-1, entry.pos, TUClass(entry));
+  if (not IsA(entry.obj, TUClass)) then exit;
+  OpenSourceline(entry.filename, entry.line-1, entry.pos, TUClass(entry.obj));
 end;
 
 procedure Tfrm_UnCodeX.lb_LogClick(Sender: TObject);

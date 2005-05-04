@@ -6,7 +6,7 @@
   Purpose:
     Program settings dialog
 
-  $Id: unit_settings.pas,v 1.52 2005-04-26 19:53:22 elmuerte Exp $
+  $Id: unit_settings.pas,v 1.53 2005-05-04 08:27:10 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -630,6 +630,7 @@ end;
 procedure Tfrm_Settings.btn_OpenResultCmdClick(Sender: TObject);
 begin
   od_BrowseExe.Title := 'Select the program to open UnrealScript files';
+  //TODO: doesn't work when there are argumnets on the list
   od_BrowseExe.FileName := ed_OpenResultCmd.Text;
   if (od_BrowseExe.Execute) then begin
     if (Pos(' ', od_BrowseExe.FileName) > 0) then ed_OpenResultCmd.Text := '"'+od_BrowseExe.FileName+'"'
