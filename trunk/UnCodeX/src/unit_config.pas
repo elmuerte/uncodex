@@ -6,7 +6,7 @@
   Purpose:
     Contains the configuration of UnCodeX
 
-  $Id: unit_config.pas,v 1.12 2005-04-26 19:53:22 elmuerte Exp $
+  $Id: unit_config.pas,v 1.13 2005-05-04 08:27:09 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -77,6 +77,12 @@ type
     procedure LoadFromIni;
     procedure SaveToIni(filename: string = '');
   end;
+
+  {$IFDEF VSADDIN}
+  TUCXAddinConfig = class(TUCXConfig)
+    StateFile:            string;
+  end;
+  {$ENDIF}
 
   {$IFDEF TUCXGUIConfig}
   TAppBarLocation = (abNone, abLeft, abRight);
