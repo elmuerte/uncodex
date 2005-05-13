@@ -6,7 +6,7 @@
     Purpose:
         Global macro file, to be included by means of ($I defines.inc)
 
-    $Id: defines.inc,v 1.14 2005-04-23 20:24:26 elmuerte Exp $
+    $Id: defines.inc,v 1.15 2005-05-13 10:20:18 elmuerte Exp $
 *******************************************************************************}
 
 {$IFDEF VER140} // delphi 6
@@ -26,12 +26,14 @@
   {$DEFINE NO_EXPORT}
   {$DEFINE DONT_SAVE_KEYWORDS}
   {$DEFINE NO_THREADS} // disable threading
+  {$DEFINE WITH_ZLIB} // enables compression for HTML output
 {$ENDIF}
 
 {$IFDEF VSADDIN} // visual studio addin
   {$DEFINE NO_EXPORT}
   {$DEFINE DONT_SAVE_KEYWORDS}
   {$DEFINE USE_TREEVIEW}
+  {$DEFINE WITHOUT_ZLIB}
 {$ENDIF}
 
 {$IFNDEF CONSOLE}
@@ -43,6 +45,7 @@
 {$IFDEF FULLGUI} // the original UnCodeX
   {$DEFINE USE_TREEVIEW}
   {$DEFINE TUCXGUIConfig}
+  {$DEFINE WITH_ZLIB} // enables compression for HTML output
 {$ENDIF}
 
 
@@ -77,8 +80,6 @@
 // add pascalscript support for HTML Output
 //{ $DEFINE HTMLOUT_PASCALSCRIPT} //not yet
 
-// enables compression for HTML output
-{$DEFINE WITH_ZLIB}
 
 {$IFDEF WITH_ZLIB}
   {$IFDEF IS_DELPHI}

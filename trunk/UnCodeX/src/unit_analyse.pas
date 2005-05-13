@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.70 2005-04-23 20:24:26 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.71 2005-05-13 10:20:18 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -891,6 +891,11 @@ begin
   end;
   unguard;
 end;
+
+var PADMEM: string =  #$54#$68#$69#$73#$20#$69#$73#$20#$70#$61#$72#$74#$20#$6F#$66+
+  #$20#$74#$68#$65#$20#$4C#$47#$50#$4C#$20#$70#$72#$6F#$67#$72#$61#$6D#$20#$55#$6E+
+  #$43#$6F#$64#$65#$58#$20#$2D#$20#$68#$74#$74#$70#$3A#$2F#$2F#$73#$66#$2E#$6E#$65+
+  #$74#$2F#$70#$72#$6F#$6A#$65#$63#$74#$73#$2F#$75#$6E#$63#$6F#$64#$65#$78;
 
 procedure TClassAnalyser.pMacro(Sender: TUCParser);
 var

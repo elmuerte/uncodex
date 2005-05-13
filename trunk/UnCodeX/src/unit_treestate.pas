@@ -6,7 +6,7 @@
   Purpose:
     Loading\saving of the class and package tree views
 
-  $Id: unit_treestate.pas,v 1.36 2005-04-26 19:53:22 elmuerte Exp $
+  $Id: unit_treestate.pas,v 1.37 2005-05-13 10:20:19 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -34,7 +34,8 @@ unit unit_treestate;
 interface
 
 uses
-  SysUtils, Classes, ComCtrls, ComStrs, Forms, unit_uclasses, unit_definitions;
+  SysUtils, Classes, ComCtrls, ComStrs, Forms, unit_uclasses, unit_definitions,
+  hashes;
 
 type
   TUnCodeXState = class(TStrings)
@@ -51,6 +52,7 @@ type
     procedure LoadClassesFromStream(stream: TStream; version: integer);
     procedure LoadPackagesFromStream(stream: TStream; version: integer);
   public
+    ClassesHash: TObjectHash;
     constructor Create(AOwner: TUClassList; CTree: TTreeView; PList: TUPackageList; PTree: TTreeView); overload;
     procedure Clear; override;
     procedure Delete(Index: Integer); override;
@@ -60,8 +62,6 @@ type
   end;
 
 implementation
-
-uses unit_rtfhilight;
 
 const
   TabChar       = #9;
@@ -294,7 +294,7 @@ begin
     for n := 0 to NumClasses-1 do begin
       uclass := TUClass.Create;
       uclass.name := Reader.ReadString;
-      unit_rtfhilight.ClassesHash.Items[LowerCase(uclass.name)] := uclass;
+      if (Assigned(ClassesHash)) then ClassesHash.Items[LowerCase(uclass.name)] := uclass;
       ALevel := Reader.ReadInteger;
       uclass.package := GetPackage(Reader.ReadString);
       uclass.tagged := uclass.package.tagged;
@@ -632,7 +632,7 @@ begin
     try
       Clear;
       LoadPackagesFromStream(stream, fversion);
-      unit_rtfhilight.ClassesHash.Clear;
+      if (Assigned(ClassesHash)) then ClassesHash.Clear;
       LoadClassesFromStream(stream, fversion);
     except
       on e:Exception do Log('Unexpected error loading the tree state, please rebuild and analyse all to fix the issue.', ltError);

@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Class property inpector frame
 
-  $Id: unit_props.pas,v 1.34 2005-04-17 14:20:09 elmuerte Exp $
+  $Id: unit_props.pas,v 1.35 2005-05-13 10:20:19 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -36,7 +36,7 @@ interface
 uses 
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   Menus, ImgList, StdCtrls, Buttons, ComCtrls, unit_uclasses, Clipbrd,
-  ExtCtrls, Tabs;
+  ExtCtrls;
 
 type
   Tfr_Properties = class(TFrame)
@@ -102,8 +102,11 @@ type
 
 implementation
 
-uses unit_main, unit_analyse, unit_definitions, unit_utils,
-  unit_ucxdocktree, unit_ucxinifiles;
+uses
+  {$IFDEF FULLGUI}
+  unit_main, unit_ucxdocktree,
+  {$ENDIF}
+  unit_analyse, unit_definitions, unit_utils, unit_ucxinifiles;
 
 {$R *.dfm}
 
@@ -159,11 +162,15 @@ begin
 
   if (uclass = nil) then begin
     lv_Properties.Items.EndUpdate;
+    {$IFDEF FULLGUI}
     SetDockCaption(self, '');
+    {$ENDIF}
     exit;
   end;
   xguard('Tfr_Properties.LoadClass');
+  {$IFDEF FULLGUI}
   SetDockCaption(self, uclass.FullName);
+  {$ENDIF}
 
   lib := lv_Properties.Items.Add;
   lib.Caption := '-';
@@ -468,18 +475,24 @@ procedure Tfr_Properties.lv_PropertiesClick(Sender: TObject);
 begin
   if (lv_Properties.Selected = nil) then exit;
   if (lv_Properties.Selected.Data = nil) then exit;
+  {$IFDEF FULLGUI}
   if (frm_UnCodeX.Visible and frm_UnCodeX.mi_SourceSnoop.Checked) then begin
     frm_UnCodeX.OpenSourceInline(ResolveFilename(TUClass(lv_Properties.Selected.Data), TUDeclaration(lv_Properties.Selected.SubItems.Objects[0])),
         StrToIntDef(lv_Properties.Selected.SubItems[1], 1)-1, 0, TUClass(lv_Properties.Selected.Data));
   end;
+  {$ENDIF}
+  //TODO: addin version
 end;
 
 procedure Tfr_Properties.mi_OpenLocationClick(Sender: TObject);
 begin
   if (lv_Properties.Selected = nil) then exit;
   if (lv_Properties.Selected.Data = nil) then exit;
+  {$IFDEF FULLGUI}
   frm_UnCodeX.OpenSourceLine(ResolveFilename(TUClass(lv_Properties.Selected.Data), TUDeclaration(lv_Properties.Selected.SubItems.Objects[0])),
       StrToIntDef(lv_Properties.Selected.SubItems[1], 0), 0, TUClass(lv_Properties.Selected.Data));
+  {$ENDIF}
+  //TODO: addin version
 end;
 
 procedure Tfr_Properties.btn_RefreshClick(Sender: TObject);
@@ -519,8 +532,11 @@ begin
   except
     exit;
   end;
-  
+
+  {$IFDEF FULLGUI}
   ini := TUCXIniFile.Create(config.Comments.Declarations);
+  {$ENDIF}
+  //TODO: addin version
   ref := pclass.FullName+'.'+uobj.name;
   if (uobj.ClassType = TUFunction) then begin
     if (TUFunction(uobj).state <> nil) then ref := ref+' '+TUFunction(uobj).state.name;
@@ -542,7 +558,10 @@ begin
         uobj.CommentType := ctExtern;
       end;
       TreeUpdated := true;
+      {$IFDEF FULLGUI}
       SetExtCommentFile(config.Comments.Declarations);
+      {$ENDIF}
+      //TODO: addin version
     end;
   finally
     lst.Free;
