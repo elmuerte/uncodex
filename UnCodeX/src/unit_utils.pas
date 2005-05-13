@@ -6,7 +6,7 @@
   Purpose:
     Utility functions that have a GUI dependency
 
-  $Id: unit_utils.pas,v 1.20 2005-04-18 15:48:56 elmuerte Exp $
+  $Id: unit_utils.pas,v 1.21 2005-05-13 10:20:19 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -75,12 +75,12 @@ begin
   HTMLView.ParentWindow := Handle;
   bInitialized := false;
   HTMLView.OnDocumentComplete := HTMLOnDocumentComplete;
-  HTMLView.Navigate('about:blank');
   HTMLView.Align := alClient;
   HTMLView.Offline := true;
   HTMLView.RegisterAsBrowser := false;
   HTMLView.RegisterAsDropTarget := false;
   HTMLView.Silent := true;
+  HTMLView.Navigate('about:blank');
 end;
 
 procedure THTMLHintWindow.HTMLOnDocumentComplete(Sender: TObject; const pDisp: IDispatch; var URL: OleVariant);
@@ -108,6 +108,7 @@ end;
 
 destructor THTMLHintWindow.Destroy;
 begin
+  HTMLView.OnDocumentComplete := nil;
   if (Assigned(HTMLView)) then FreeAndNil(HTMLView);
   inherited Destroy;
 end;
@@ -191,5 +192,7 @@ end;
 
 initialization
   Application.HintColor := clWindow;
+  {$IFNDEF VSADDIN} // broken for vs.net ?!
   HintWindowClass := THTMLHintWindow;
+  {$ENDIF}
 end.

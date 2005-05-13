@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.172 2005-05-04 08:27:09 elmuerte Exp $
+  $Id: unit_main.pas,v 1.173 2005-05-13 10:20:19 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -704,6 +704,7 @@ begin
   fs := TFileStream.Create(config.StateFile, fmOpenRead or fmShareExclusive);
   try
     with (TUnCodeXState.Create(config.ClassList, tv_Classes, config.PackageList, tv_Packages)) do begin
+      ClassesHash := unit_rtfhilight.ClassesHash;
       res := LoadTreeFromStream(fs);
       Free;
     end;

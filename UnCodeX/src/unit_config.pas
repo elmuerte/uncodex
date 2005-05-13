@@ -6,7 +6,7 @@
   Purpose:
     Contains the configuration of UnCodeX
 
-  $Id: unit_config.pas,v 1.13 2005-05-04 08:27:09 elmuerte Exp $
+  $Id: unit_config.pas,v 1.14 2005-05-13 10:20:19 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -80,7 +80,12 @@ type
 
   {$IFDEF VSADDIN}
   TUCXAddinConfig = class(TUCXConfig)
+  protected
+    procedure InternalLoadFromIni; override;
+    procedure InternalSaveToIni; override;
+  public
     StateFile:            string;
+    constructor Create(filename: string);
   end;
   {$ENDIF}
 
@@ -503,6 +508,34 @@ begin
     iniStack.Remove(ini);
   end;
 end;
+
+{$IFDEF VSADDIN}
+constructor TUCXAddinConfig.Create(filename: string);
+begin
+  inherited Create(filename);
+  StateFile := ChangeFileExt(filename, '.ucx');
+
+  //Comments.Packages := ExtractFilePath(ParamStr(0))+DefaultPDF;
+  //Comments.Declarations := ExtractFilePath(ParamStr(0))+DefaultECF;
+end;
+
+procedure TUCXAddinConfig.InternalLoadFromIni;
+begin
+  inherited InternalLoadFromIni;
+  StateFile := ini.ReadString('VSADDIN.General', 'StateFile', StateFile);
+  if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ini.filename)+StateFile;
+end;
+
+procedure TUCXAddinConfig.InternalSaveToIni;
+var
+  tmp: string;
+begin
+  inherited InternalSaveToIni;
+  tmp := StateFile;
+  if (SameText(ExtractFilePath(tmp), ExtractFilePath(ini.FileName))) then tmp := ExtractFileName(tmp);
+  ini.WriteString('VSADDIN.General', 'StateFile', tmp);
+end;
+{$ENDIF}
 
 {$IFDEF TUCXGUIConfig}
 
