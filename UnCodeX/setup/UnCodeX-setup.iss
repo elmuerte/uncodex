@@ -1,7 +1,7 @@
 [Setup]
 AppName=UnCodeX
-AppVerName=UnCodeX version 227
-AppVersion=227
+AppVerName=UnCodeX version 228
+AppVersion=228
 AppPublisher=Michiel 'El Muerte' Hendriks
 AppPublisherURL=http://sourceforge.net/projects/uncodex/
 AppSupportURL=http://sourceforge.net/tracker/?group_id=120421
@@ -20,7 +20,7 @@ ShowLanguageDialog=no
 UninstallDisplayIcon={app}\UnCodeX.exe
 UninstallDisplayName=UnCodeX
 AppID={{FDD6ED8B-DB77-43BC-B0B2-608A1F27AABC}}
-VersionInfoVersion=2.1.3.227
+VersionInfoVersion=2.1.3.228
 InternalCompressLevel=ultra
 MinVersion=4.0.950,4.0.1381
 ShowTasksTreeLines=true
@@ -51,7 +51,9 @@ Name: quicklaunchicon; Description: Create a &Quick Launch icon; GroupDescriptio
 [Files]
 Source: ..\Bin\UnCodeX.exe; DestDir: {app}; Flags: ignoreversion; Components: gui
 Source: ..\Bin\LICENSE.TXT; DestDir: {app}; Flags: ignoreversion overwritereadonly; Components: main
-Source: ..\Bin\PackageDescriptions.ini; DestDir: {app}; Flags: ignoreversion confirmoverwrite; Components: main
+Source: ..\Bin\PackageDescriptions.default.ini; DestDir: {app}; Flags: ignoreversion confirmoverwrite; Components: main
+Source: ..\Bin\ExternalComments.default.ini; DestDir: {app}; Flags: ignoreversion; Components: main
+Source: ..\Bin\PackageDescriptions.ini; DestDir: {app}; Flags: ignoreversion; Components: main
 Source: ..\Bin\ExternalComments.ini; DestDir: {app}; Flags: ignoreversion confirmoverwrite; Components: main
 Source: ..\Bin\ucxcu.exe; DestDir: {app}; Flags: ignoreversion; Components: commandline
 Source: ..\Bin\UnCodeX-help.chm; DestDir: {app}; Flags: ignoreversion; Components: help

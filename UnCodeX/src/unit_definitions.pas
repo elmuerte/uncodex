@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.154 2005-04-26 19:53:22 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.155 2005-05-14 13:27:33 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -51,7 +51,7 @@ type
     line, pos: integer;
   end;
 
-  // Note: if obj is of type TlogEntry is will be taken care of (e.g. clean up)
+  // Note: if obj is of type TlogEntry is will be taken care of (e.g. cleaned up)
   //  you might want to use CreateLogEntry() function;
   TLogProcEX = procedure (msg: string; mt: TLogType = ltInfo; obj: TObject = nil);
   TLogProcEXMethod = procedure (msg: string; mt: TLogType = ltInfo; obj: TObject = nil) of object;
@@ -112,7 +112,7 @@ type
   procedure xprintguard(uclass: TUClass = nil);
 
   function RetExternalComment(ref: string): string;
-  procedure SetExtCommentFile(ini: string);
+  procedure SetExtCommentFile(inifile: string);
 
   function IsA(obj: TObject; cls: TClass): boolean; overload;
   function IsA(obj: pointer; cls: TClass): boolean; overload;
@@ -197,8 +197,8 @@ uses
   SysUtils, unit_UCXIniFiles;
 
 var
-  sl, TmpExtCmt: TStringList;
-  ExtCommentIni: TUCXIniFile;
+  sl: TStringList;
+  ExtComments: TStringList;
   xGuardStack: TStringList;
 
 {$IFDEF WITH_OWN_ZLIB}
@@ -454,17 +454,46 @@ end;
 
 function RetExternalComment(ref: string): string;
 begin
-  if (ExtCommentIni = nil) then exit;
-  TmpExtCmt.Clear;
-  ExtCommentIni.ReadSectionRaw(ref, TmpExtCmt);
-  result := trim(TmpExtCmt.Text);
+  result := trim(ExtComments.Values[ref]);
 end;
 
-procedure SetExtCommentFile(ini: string);
+procedure SetExtCommentFile(inifile: string);
+
+  procedure InternalSetExtCommentFile(filename: string);
+  var
+    ini: TUCXIniFile;
+    lst, dmy: TStringList;
+    i: integer;
+    tmp: string;
+  begin
+    if (not FileExists(filename)) then exit;
+    lst := TStringList.Create;
+    dmy := TStringList.Create;
+    ini := TUCXIniFile.Create(filename);
+    try
+      ini.ReadStringArray('#include', 'Pre', lst);
+      for i := 0 to lst.Count-1 do begin
+        tmp := lst[i];
+        if (ExtractFilePath(tmp) = '') then tmp := ExtractFilePath(filename)+tmp;
+        InternalSetExtCommentFile(tmp);
+      end;
+      lst.Clear;
+      ini.ReadSections(lst);
+      for i := 0 to lst.count-1 do begin
+        dmy.Clear;
+        ini.ReadSectionRaw(lst[i], dmy);
+        ExtComments.Values[lst[i]] := dmy.Text;
+      end;
+    finally
+      ini.Free;
+      lst.Free;
+      dmy.Free;
+    end;
+  end;
+
 begin
-  if (not FileExists(ini)) then exit;
-  if (ExtCommentIni <> nil) then FreeAndNil(ExtCommentIni);
-  ExtCommentIni := TUCXIniFile.Create(ini);
+  ExtComments.Clear;
+  InternalSetExtCommentFile(inifile);
 end;
 
 function GetFiles(path: string; Attr: Integer; var files: TStringList): boolean;
@@ -661,12 +690,11 @@ initialization
     {$ENDIF}
   end;
   // fill keyword table -- end
-  TmpExtCmt := TStringList.Create;
+  ExtComments := TStringList.Create;
 finalization
   FreeAndNil(Keywords1);
   FreeAndNil(Keywords2);
   assert((xGuardStack.Count = 0), 'GuardStack is not empty');
   FreeAndNil(xGuardStack);
-  FreeAndNil(TmpExtCmt);
-  if (Assigned(ExtCommentIni)) then FreeAndNil(ExtCommentIni);
+  FreeAndNil(ExtComments);
 end.
