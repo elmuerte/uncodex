@@ -12,7 +12,7 @@
     - configurable delayed file update
 	- a few bug fixes that have been contributed back to the FPC community
 
-  $Id: unit_ucxinifiles.pas,v 1.6 2005-04-07 08:29:11 elmuerte Exp $
+  $Id: unit_ucxinifiles.pas,v 1.7 2005-05-14 13:27:33 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -155,6 +155,8 @@ type
     
     procedure WriteBinaryStream(const Section, Name: string; Value: TStream); virtual;
     function ReadBinaryStream(const Section, Name: string; Value: TStream): Integer; virtual;
+
+    procedure UpdateFile; override;
   end;
 
 implementation
@@ -810,7 +812,8 @@ begin
   end;
   oSection.KeyList.Clear;
   for i := 0 to Strings.count-1 do begin
-    oKey := TIniFileKey.Create(Strings.Names[i], Strings.Values[Strings.Names[i]]);
+    if (Strings.Names[i] <> '') then oKey := TIniFileKey.Create(Strings.Names[i], Strings.Values[Strings.Names[i]])
+    else oKey := TIniFileKey.Create('', Strings[i]);
     oSection.KeyList.Add(oKey);
   end;
   if (not FDelayedUpdate) then UpdateFile;
@@ -954,6 +957,44 @@ begin
     end;
   end
   else result := 0;
+end;
+
+procedure TUCXIniFile.UpdateFile;
+var
+  slLines: TStringList;
+  i, j: integer;
+begin
+  slLines := TStringList.Create;
+  try
+    for i := 0 to FSectionList.Count-1 do
+      with FSectionList[i] do begin
+        if IsComment(Name) then
+          // comment
+          slLines.Add(Name)
+        else
+          // regular section
+          slLines.Add(Brackets[0] + Name + Brackets[1]);
+        for j := 0 to KeyList.Count-1 do
+          if IsComment(KeyList[j].Ident) then
+            // comment
+            slLines.Add(KeyList[j].Ident)
+          else if (KeyList[j].Ident <> '') then
+            // regular key
+            slLines.Add(KeyList[j].Ident + Separator + KeyList[j].Value)
+          else
+            // keyless entry
+            slLines.Add(KeyList[j].Value);
+        if (i < FSectionList.Count-1) and not IsComment(Name) then
+          slLines.Add('');
+      end;
+    if FFileName > '' then
+      slLines.SaveToFile(FFileName)
+    else if FStream <> nil then
+      slLines.SaveToStream(FStream);
+    FillSectionList(slLines);
+  finally
+    slLines.Free;
+  end;
 end;
 
 end.

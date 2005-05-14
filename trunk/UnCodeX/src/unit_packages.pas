@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript package scanner, search for UnrealScript classes
 
-  $Id: unit_packages.pas,v 1.47 2005-05-13 10:20:19 elmuerte Exp $
+  $Id: unit_packages.pas,v 1.48 2005-05-14 13:27:33 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -68,7 +68,8 @@ type
     IgnorePackages: TStringList;
     ClassHash: TObjectHash;
     DuplicateHash: TStringHash;
-    PDF: TUCXIniFile;
+    PkgDesc: TStringList;
+    procedure LoadPackageDescriptions(filename: string);
     procedure ScanPackages;
     {$IFDEF USE_TREEVIEW}
     procedure CreateClassTree(classlist: TUClassList; parent: TUClass = nil;
@@ -190,12 +191,8 @@ begin
   self.IgnorePackages := rec.IgnorePackages;
   Self.FreeOnTerminate := true;
   Self.ClassHash := rec.CHash;
-  try
-    if (FileExists(rec.PDFile)) then Self.PDF := TUCXIniFile.Create(rec.PDFile);
-  except
-    InternalLog('Failed loading PackageDescriptionFile: '+rec.PDFile, ltError);
-    Self.PDF := nil;
-  end;
+  PkgDesc := TStringList.Create;
+  if (FileExists(rec.PDFile)) then LoadPackageDescriptions(rec.PDFile);
   DuplicateHash := TStringHash.Create;
   inherited Create(true);
 end;
@@ -203,7 +200,7 @@ end;
 destructor TPackageScanner.Destroy;
 begin
   FreeAndNil(DuplicateHash);
-  if (PDF <> nil) then FreeAndNil(PDF);
+  FreeAndNil(PkgDesc);
   inherited Destroy();
 end;
 
@@ -222,6 +219,37 @@ begin
     end;
   end;
   Status('Operation completed in '+Format('%.3f', [Millisecondsbetween(Now(), stime)/1000])+' seconds, '+IntToStr(classlist.Count)+' classes - '+IntToStr(packagelist.Count)+' packages');
+end;
+
+procedure TPackageScanner.LoadPackageDescriptions(filename: string);
+var
+  ini: TUCXIniFile;
+  lst, dmy: TStringList;
+  i: integer;
+  tmp: string;
+begin
+  lst := TStringList.Create;
+  dmy := TStringList.Create;
+  ini := TUCXIniFile.Create(filename);
+  try
+    ini.ReadStringArray('#include', 'Pre', lst);
+    for i := 0 to lst.Count-1 do begin
+      tmp := lst[i];
+      if (ExtractFilePath(tmp) = '') then tmp := ExtractFilePath(filename)+tmp;
+      LoadPackageDescriptions(tmp);
+    end;
+    lst.Clear;
+    ini.ReadSections(lst);
+    for i := 0 to lst.count-1 do begin
+      dmy.Clear;
+      ini.ReadSectionRaw(lst[i], dmy);
+      PkgDesc.Values[lst[i]] := dmy.Text;
+    end;
+  finally
+    ini.Free;
+    lst.Free;
+    dmy.Free;
+  end;
 end;
 
 procedure TPackageScanner.ScanPackages;
@@ -303,16 +331,7 @@ begin
                   end;
                   // third location, general file
                   if (UPackage.comment = '') then begin
-                    if (PDF <> nil) then begin
-                      // get from package description file
-                      lst := TStringList.Create;
-                      try
-                        PDF.ReadSectionRaw(UPackage.name, lst);
-                        UPackage.comment := lst.Text;
-                      finally
-                        lst.Free;
-                      end;
-                    end;
+                    UPackage.comment := PkgDesc.Values[UPackage.Name];
                   end;
                   PackageList.Add(UPackage);
                   knownpackages.Add(LowerCase(sr.Name));

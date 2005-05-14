@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Package properties viewer\editor
 
-  $Id: unit_pkgprops.pas,v 1.12 2005-04-06 10:10:53 elmuerte Exp $
+  $Id: unit_pkgprops.pas,v 1.13 2005-05-14 13:27:33 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -53,6 +53,7 @@ type
     UPackage: TUPackage;
     ini: TUCXIniFile;
   public
+    flagschanged: boolean;
   end;
 
   procedure ShowPackageProps(pkg: TUPackage);
@@ -74,27 +75,34 @@ begin
     UPackage := pkg;
     ini := TUCXIniFile.Create(pkg.path+PathDelim+pkg.name+PKGCFG);
     try
-      cb_AllowDownload.Checked := StrToBool(ini.ReadString('Flags', 'AllowDownload', BoolToStr(cb_AllowDownload.Checked)));
-      cb_ServerSideOnly.Checked := StrToBool(ini.ReadString('Flags', 'ServerSideOnly', BoolToStr(cb_ServerSideOnly.Checked)));
-      cb_ClientOptional.Checked := StrToBool(ini.ReadString('Flags', 'ClientOptional', BoolToStr(cb_ClientOptional.Checked)));
-      cb_Official.Checked := StrToBool(ini.ReadString('Flags', 'Official', BoolToStr(cb_Official.Checked)));
+      try //TODO: bug in Delphi 6 on my laptop for StrToBool
+        cb_AllowDownload.Checked := StrToBool(ini.ReadString('Flags', 'AllowDownload', BoolToStr(cb_AllowDownload.Checked)));
+        cb_ServerSideOnly.Checked := StrToBool(ini.ReadString('Flags', 'ServerSideOnly', BoolToStr(cb_ServerSideOnly.Checked)));
+        cb_ClientOptional.Checked := StrToBool(ini.ReadString('Flags', 'ClientOptional', BoolToStr(cb_ClientOptional.Checked)));
+        cb_Official.Checked := StrToBool(ini.ReadString('Flags', 'Official', BoolToStr(cb_Official.Checked)));
+      except
+      end;
       ini.ReadSectionRaw('Package_Description', mm_Desc.Lines);
       if (mm_Desc.Lines.Count = 0) then begin
         mm_Desc.Lines.Text := pkg.comment;
         cb_ExternalDescription.Checked := mm_Desc.Lines.count > 0;
       end;
       Caption := pkg.name+' - '+pkg.name+PKGCFG;
+      flagschanged := false;
       if (ShowModal = mrOk) then begin
         UPackage.comment := mm_Desc.Text;
         TreeUpdated := true;
 
-        ini.WriteString('Flags', 'AllowDownload', BoolToStr(cb_AllowDownload.Checked, true));
-        ini.WriteString('Flags', 'ServerSideOnly', BoolToStr(cb_ServerSideOnly.Checked, true));
-        ini.WriteString('Flags', 'ClientOptional', BoolToStr(cb_ClientOptional.Checked, true));
-        ini.WriteString('Flags', 'Official', BoolToStr(cb_Official.Checked, true));
+        if (flagschanged) then begin
+          ini.WriteString('Flags', 'AllowDownload', BoolToStr(cb_AllowDownload.Checked, true));
+          ini.WriteString('Flags', 'ServerSideOnly', BoolToStr(cb_ServerSideOnly.Checked, true));
+          ini.WriteString('Flags', 'ClientOptional', BoolToStr(cb_ClientOptional.Checked, true));
+          ini.WriteString('Flags', 'Official', BoolToStr(cb_Official.Checked, true));
+        end;
         if (not cb_ExternalDescription.Checked) then begin
+          flagschanged := true;
+          ini.EraseSection('Package_Description');
           if (mm_Desc.Lines.Count > 0) then begin
-            ini.EraseSection('Package_Description');
             sl := TStringList.Create;
             try
               ini.GetStrings(sl);
@@ -106,7 +114,7 @@ begin
             end;
           end;
         end;
-        ini.UpdateFile;
+        if (flagschanged) then ini.UpdateFile;
       end;
     finally
       ini.Free;
