@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.155 2005-05-14 13:27:33 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.156 2005-05-27 13:45:07 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -119,7 +119,7 @@ type
 
 const
   APPTITLE        = 'UnCodeX';
-  APPVERSION      = '227';
+  APPVERSION      = '228';
   {$IFDEF DEBUG_BUILD}
   DEBUGBUILD      = true;
   DEBUGBUILD_STR  = 'Debug Build';
