@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Class property inpector frame
 
-  $Id: unit_props.pas,v 1.35 2005-05-13 10:20:19 elmuerte Exp $
+  $Id: unit_props.pas,v 1.36 2005-05-27 13:45:07 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -105,6 +105,9 @@ implementation
 uses
   {$IFDEF FULLGUI}
   unit_main, unit_ucxdocktree,
+  {$ENDIF}
+  {$IFDEF VSADDIN}
+  unit_ucxdotnetcore,
   {$ENDIF}
   unit_analyse, unit_definitions, unit_utils, unit_ucxinifiles;
 
@@ -536,7 +539,9 @@ begin
   {$IFDEF FULLGUI}
   ini := TUCXIniFile.Create(config.Comments.Declarations);
   {$ENDIF}
-  //TODO: addin version
+  {$IFDEF VSADDIN}
+  ini := TUCXIniFile.Create(ucxcore.config.Comments.Declarations);
+  {$ENDIF}
   ref := pclass.FullName+'.'+uobj.name;
   if (uobj.ClassType = TUFunction) then begin
     if (TUFunction(uobj).state <> nil) then ref := ref+' '+TUFunction(uobj).state.name;
@@ -561,7 +566,9 @@ begin
       {$IFDEF FULLGUI}
       SetExtCommentFile(config.Comments.Declarations);
       {$ENDIF}
-      //TODO: addin version
+      {$IFDEF VSADDIN}
+      SetExtCommentFile(ucxcore.config.Comments.Declarations);
+      {$ENDIF}
     end;
   finally
     lst.Free;

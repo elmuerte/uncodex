@@ -37,6 +37,7 @@ object frm_PackageProps: Tfrm_PackageProps
       Checked = True
       State = cbChecked
       TabOrder = 0
+      OnClick = cb_AllowDownloadClick
     end
     object cb_ClientOptional: TCheckBox
       Left = 8
@@ -45,6 +46,7 @@ object frm_PackageProps: Tfrm_PackageProps
       Height = 17
       Caption = '&Client Optional'
       TabOrder = 1
+      OnClick = cb_AllowDownloadClick
     end
     object cb_ServerSideOnly: TCheckBox
       Left = 144
@@ -53,6 +55,7 @@ object frm_PackageProps: Tfrm_PackageProps
       Height = 17
       Caption = '&Server Side Only'
       TabOrder = 2
+      OnClick = cb_AllowDownloadClick
     end
     object cb_Official: TCheckBox
       Left = 144
@@ -61,6 +64,7 @@ object frm_PackageProps: Tfrm_PackageProps
       Height = 17
       Caption = '&Official'
       TabOrder = 3
+      OnClick = cb_AllowDownloadClick
     end
   end
   object gb_Description: TGroupBox

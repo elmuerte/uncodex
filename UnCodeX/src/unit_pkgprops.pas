@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Package properties viewer\editor
 
-  $Id: unit_pkgprops.pas,v 1.13 2005-05-14 13:27:33 elmuerte Exp $
+  $Id: unit_pkgprops.pas,v 1.14 2005-05-27 13:45:07 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -49,6 +49,7 @@ type
     btn_Cancel: TBitBtn;
     cb_ExternalDescription: TCheckBox;
     procedure FormShow(Sender: TObject);
+    procedure cb_AllowDownloadClick(Sender: TObject);
   protected
     UPackage: TUPackage;
     ini: TUCXIniFile;
@@ -75,7 +76,7 @@ begin
     UPackage := pkg;
     ini := TUCXIniFile.Create(pkg.path+PathDelim+pkg.name+PKGCFG);
     try
-      try //TODO: bug in Delphi 6 on my laptop for StrToBool
+      try // bug in Delphi 6 on my laptop for StrToBool
         cb_AllowDownload.Checked := StrToBool(ini.ReadString('Flags', 'AllowDownload', BoolToStr(cb_AllowDownload.Checked)));
         cb_ServerSideOnly.Checked := StrToBool(ini.ReadString('Flags', 'ServerSideOnly', BoolToStr(cb_ServerSideOnly.Checked)));
         cb_ClientOptional.Checked := StrToBool(ini.ReadString('Flags', 'ClientOptional', BoolToStr(cb_ClientOptional.Checked)));
@@ -141,6 +142,11 @@ begin
   if (PixelsPerInch <> Screen.PixelsPerInch) then begin
     ScaleBy(Screen.PixelsPerInch, PixelsPerInch);
   end;
+end;
+
+procedure Tfrm_PackageProps.cb_AllowDownloadClick(Sender: TObject);
+begin
+  flagschanged := true;
 end;
 
 end.
