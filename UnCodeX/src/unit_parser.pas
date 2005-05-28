@@ -7,7 +7,7 @@
     Parser for UnrealScript, used for analysing the unrealscript source.
     Based on TParser by Borland.
 
-  $Id: unit_parser.pas,v 1.28 2004-12-18 14:36:48 elmuerte Exp $
+  $Id: unit_parser.pas,v 1.29 2005-05-28 19:14:33 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -216,6 +216,9 @@ begin
               Result := toFloat;
             end;
           end;
+        end;
+        if (P-FSourcePtr = 1) then begin
+          Result := (P-1)^;
         end;
       end;
     { macro }

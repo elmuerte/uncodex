@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.71 2005-05-13 10:20:18 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.72 2005-05-28 19:14:32 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -774,6 +774,7 @@ begin
     else if (p.TokenSymbolIs(KEYWORD_delegate)) then result.ftype := uftDelegate
     else result.ftype := uftFunction;
     result.comment := trim(p.GetCopyData);
+
     p.NextToken;
     pBrackets; // possible operator precendence
     // function <mod> ...
