@@ -6,7 +6,7 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.71 2005-04-20 15:06:02 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.72 2005-05-29 22:24:03 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -93,7 +93,7 @@ uses
 
 var
   HasPrevInst: boolean = false;
-  PrevInst: HWND;
+  PrevInst: HWND = 0;
   RedirectData: TRedirectStruct;
 
 const  
@@ -127,10 +127,13 @@ var
   ClassName: array[0..30] of Char;
   iAppID: integer;
 begin
+  FillChar(ClassName, sizeof(ClassName), 0);
   GetClassName(Handle, ClassName, 30);
-  iAppID := SendMessage(Handle, UM_APP_ID_CHECK, 0, 0); // get app id
-  if (CompareText(ClassName, Tfrm_UnCodeX.ClassName) = 0) and (iAppID = GlobalGUIVars.AppInstanceId) then begin
-    PrevInst:= handle; // previous instance
+  if (SameText(ClassName, Tfrm_UnCodeX.ClassName)) then begin
+    iAppID := SendMessage(Handle, UM_APP_ID_CHECK, 0, 0); // get app id
+    if (iAppID = GlobalGUIVars.AppInstanceId) then begin
+      PrevInst:= handle; // previous instance
+    end;
   end;
 end;
 
@@ -139,6 +142,7 @@ var
   CopyData: TCopyDataStruct;
   RestoreHandle: HWND;
 begin
+  PrevInst := 0;
   EnumWindows(@EnumWindowCallBack, 0);
   if (PrevInst <> 0) then begin
     CopyData.cbData := SizeOf(RedirectData);
