@@ -51,7 +51,7 @@ Conditionals=DEBUG_BUILD
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
-RunParams=
+RunParams=-reuse
 HostApplication=
 Launcher=
 UseLauncher=0
