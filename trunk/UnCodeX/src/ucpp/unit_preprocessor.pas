@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.3 2005-06-11 15:52:01 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.4 2005-06-11 16:26:21 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -370,7 +370,7 @@ end;
 
 initialization
   BaseClass := TUClass.Create;
-  if (not FindCmdLineSwitch('N', ['-'], false)) then begin
+  if (not FindCmdLineSwitch('undef', ['-'], false)) then begin
     BaseClass.defs.define('UCPP_VERSION', UCPP_VERSION);
     BaseClass.defs.define('UCPP_HOMEPAGE', '"'+UCPP_HOMEPAGE+'"');
   end

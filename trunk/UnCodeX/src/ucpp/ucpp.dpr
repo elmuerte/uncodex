@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.3 2005-06-11 15:52:01 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.4 2005-06-11 16:26:21 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -80,7 +80,8 @@ begin
                 #9'Define a <name> with a <value>. This overrides the standards as'#13#10+
                 #9'defined in the configuration file.');
   writeln('  -L'#9'Print the program''s license');
-  writeln('  -N'#9'Do not use predefinitions (like __FILE__).');
+  writeln('  -undef'+#13#10+
+                #9'Do not use predefinitions (like __FILE__).');
   writeln('  -P'#9'Enable package mode. The provided names are package names.'#13#10+
                 #9'In package mode the base directory must be defined using'#13#10+
                 #9'either the SYSTEM or BASE setting');
