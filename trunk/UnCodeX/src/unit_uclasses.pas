@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.61 2005-06-11 07:45:35 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.62 2005-06-11 10:40:24 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -1004,7 +1004,7 @@ begin
     result := (val <> UNDEFINED);
   end
   else if (fowner <> nil) then begin
-    if (fowner.parent <> nil) then result := fowner.parent.defs.IsDefined(name);
+    if (fowner.parent <> nil) then result := fowner.parent.defs.IsRealDefined(name);
   end;
 end;
 
@@ -1206,7 +1206,7 @@ function TDefinitionList._unaryx(var line: string): integer;
 begin
   if ( curToken = '!' ) then begin
     _nextToken(line);
-    result := not _operand(line);
+    result := ord(_operand(line) = 0); // 0 => 1; * => 0
   end
   else result := _operand(line);
 end;
@@ -1230,7 +1230,8 @@ begin
         Result := StrToIntDef(GetDefine(curToken), 1); // default to 1 if defined
       end
       else begin
-        result := 0; //TODO: warning
+        result := 0; //TODO: warning if -warn ?
+        //TODO: no exception?
         raise Exception.Create('Identifier does not exist "'+curToken+'"');
       end;
     end

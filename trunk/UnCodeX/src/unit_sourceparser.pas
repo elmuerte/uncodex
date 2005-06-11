@@ -7,7 +7,7 @@
     UnrealScript parser. Used for syntax highlighting, not for analysing.
     Bases on the TParser by Borland.
 
-  $Id: unit_sourceparser.pas,v 1.23 2005-06-11 07:45:35 elmuerte Exp $
+  $Id: unit_sourceparser.pas,v 1.24 2005-06-11 10:40:24 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -346,8 +346,8 @@ end;
 function TSourceParser.SkipToken(CopyBlanks: Boolean): Char;
 begin
   Result := SkipToNextToken(CopyBlanks, False);
-  if (result = toMacro) then begin
-    if (assigned(FProcessMacro) and MacroCallBack) then FProcessMacro(self);
+  if ((result = toMacro) and MacroCallBack) then begin
+    if (assigned(FProcessMacro)) then FProcessMacro(self);
     // macro processed, get the real next token, unless the token already changed
     if (FToken = toMacro) then result := SkipToNextToken(CopyBlanks, False);
   end;
