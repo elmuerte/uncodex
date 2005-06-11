@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.1 2005-06-10 13:45:16 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.2 2005-06-11 07:45:38 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -145,6 +145,24 @@ begin
       end;
     end;
     LoadConfiguration();
+
+    // debug code
+    {writeln(BoolToStr(BaseClass.defs.Eval('1'), true));
+    writeln(BoolToStr(BaseClass.defs.Eval('1 + 2 - 3'), true));
+    writeln(BoolToStr(BaseClass.defs.Eval('2 * 1'), true));
+    writeln(BoolToStr(BaseClass.defs.Eval('1 * 0'), true));
+    writeln(BoolToStr(BaseClass.defs.Eval('UCPP_VERSION > 0'), true));
+    writeln(BoolToStr(BaseClass.defs.Eval('UCPP_VERSION == '+UCPP_VERSION), true));
+    writeln(BoolToStr(BaseClass.defs.Eval('1 >= 0'), true));
+    writeln(BoolToStr(BaseClass.defs.Eval('1 != 1'), true));
+    writeln(BoolToStr(BaseClass.defs.Eval('1 <= 1'), true));
+    writeln(BoolToStr(BaseClass.defs.Eval('2 % 1 == 0'), true));
+    writeln(BoolToStr(BaseClass.defs.Eval('3 % 2 == 1'), true));
+    writeln(BoolToStr(BaseClass.defs.Eval('BLA'), true)); }
+    writeln(BoolToStr(BaseClass.defs.Eval('Defined(DEBUG)'), true));
+    // debug code
+
+
     if (cfgMod <> '') then cfgBase := cfgBase+PathDelim+cfgMod+PathDelim;
     if (sl.Count = 0) then begin
       ErrorMessage('No input files or packages');

@@ -7,7 +7,7 @@
     UnrealScript parser. Used for syntax highlighting, not for analysing.
     Bases on the TParser by Borland.
 
-  $Id: unit_sourceparser.pas,v 1.22 2004-12-18 14:36:48 elmuerte Exp $
+  $Id: unit_sourceparser.pas,v 1.23 2005-06-11 07:45:35 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -37,6 +37,10 @@ uses
   Classes, SysUtils;
 
 type
+  TSourceParser = class;
+
+  TProcessMacro = procedure(Sender: TSourceParser);
+
   TSourceParser = class(TObject)
   private
     FStream: TStream;
@@ -54,22 +58,26 @@ type
     FToken: Char;
     IsInMComment: boolean;
     commentdepth: integer;
+    FProcessMacro: TProcessMacro;
     procedure ReadBuffer;
     procedure SkipBlanks(DoCopy: Boolean);
     function SkipToNextToken(CopyBlanks, DoCopy: Boolean): Char;
     procedure UpdateOutStream(StartPos: PChar);
   public
     TabIsWS: boolean;
+    MacroCallBack: boolean;
     constructor Create(Stream, OutStream: TStream; TabIsWhiteSpace: boolean = true);
     destructor Destroy; override;
     procedure CopyTokenToOutput;
     function NextToken: Char;
     function SkipToken(CopyBlanks: Boolean): Char;
     function TokenString: string;
+    procedure OutputString(data: string);
     property SourceLine: Integer read FSourceLine;
     property LinePos: Integer read FLinePos write FLinePos;
     property Token: Char read FToken;
     property OutputStream: TStream read FOutStream write FOutStream;
+    property ProcessMacro: TProcessMacro write FProcessMacro;
   end;
 
 const
@@ -99,7 +107,8 @@ begin
   FSourceEnd := FBuffer;
   FTokenPtr := FBuffer;
   FSourceLine := 1;
-  SkipToken(True);
+  FToken := ' ';
+  //SkipToken(True);
 end;
 
 destructor TSourceParser.Destroy;
@@ -116,6 +125,7 @@ begin
   UpdateOutStream(FTokenPtr);
 end;
 
+//TODO: obsolete?
 function TSourceParser.NextToken: Char;
 begin
   result := SkipToNextToken(True, True);
@@ -336,6 +346,11 @@ end;
 function TSourceParser.SkipToken(CopyBlanks: Boolean): Char;
 begin
   Result := SkipToNextToken(CopyBlanks, False);
+  if (result = toMacro) then begin
+    if (assigned(FProcessMacro) and MacroCallBack) then FProcessMacro(self);
+    // macro processed, get the real next token, unless the token already changed
+    if (FToken = toMacro) then result := SkipToNextToken(CopyBlanks, False);
+  end;
 end;
 
 procedure TSourceParser.ReadBuffer;
@@ -399,6 +414,11 @@ procedure TSourceParser.UpdateOutStream(StartPos: PChar);
 begin
   if FOutStream <> nil then
     FOutStream.WriteBuffer(StartPos^, FSourcePtr - StartPos);
+end;
+
+procedure TSourceParser.OutputString(data: string);
+begin
+  OutputStream.WriteBuffer(PChar(data)^, length(data));
 end;
 
 end.

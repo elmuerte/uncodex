@@ -6,7 +6,7 @@
   Purpose:
     Creates a syntax highlighted RTF file from an UnrealScript file
 
-  $Id: unit_rtfhilight.pas,v 1.26 2004-12-18 14:36:48 elmuerte Exp $
+  $Id: unit_rtfhilight.pas,v 1.27 2005-06-11 07:45:35 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -121,6 +121,7 @@ begin
     '{\f0\fs'+IntToStr(textfont.Size*2)+'\cf1 '; // set default fontsize/color
   Output.WriteBuffer(PChar(replacement)^, Length(replacement));
   p := TSourceParser.Create(input, output);
+  p.SkipToken(true); // to get the first token
   try
     while (p.Token <> toEOF) do begin
       if (p.Token = '{') then begin
