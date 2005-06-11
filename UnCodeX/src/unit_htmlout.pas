@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.85 2005-04-23 20:24:26 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.86 2005-06-11 07:45:35 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -2827,6 +2827,7 @@ begin
   guard('parseCode');
   ms := TMemoryStream.Create;
   p := TSourceParser.Create(input, ms, false);
+  p.SkipToken(true); // to get the first token
   try
     replacement := '';
     if (not nopre) then replacement := '<pre class="source">';

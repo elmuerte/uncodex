@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.60 2005-04-20 15:06:03 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.61 2005-06-11 07:45:35 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -54,14 +54,20 @@ type
     defines:  TStringList;
     curToken: string;
     procedure _nextToken(var line: string);
-    function _expr(var line: string): boolean;
-    function _orx(var line: string): boolean;
-    function _andx(var line: string): boolean;
-    function _unaryx(var line: string): boolean;
-    function _operand(var line: string): boolean;
-    function _lvalue(var line: string): boolean;
+    procedure _requireToken(token: string; var line: string);
+    function _expr(var line: string): integer;
+    function _cmpx(var line: string): integer;
+    function _orx(var line: string): integer;
+    function _accumx(var line: string): integer;
+    function _andx(var line: string): integer;
+    function _multx(var line: string): integer;
+    function _unaryx(var line: string): integer;
+    function _operand(var line: string): integer;
+    function _lvalue(var line: string): integer;
+    function _builtin(var line: string; var res: integer): boolean;
   public
     function IsDefined(name: string): boolean;
+    function IsRealDefined(name: string): boolean;
     function GetDefine(name: string): string;
     function Eval(line: string): boolean;
     function define(name, value: string): boolean;
@@ -959,7 +965,8 @@ end;
 { TDefinitionList }
 
 const
-  UNDEFINED = #1#9#1#2;
+  UNDEFINED = #1#9#1#2#255;
+  DEFINED = #1#9#1#3#255;
 
 constructor TDefinitionList.Create(owner: TUClass);
 begin
@@ -987,6 +994,20 @@ begin
   end;
 end;
 
+function TDefinitionList.IsRealDefined(name: string): boolean;
+var
+  val: string;
+begin
+  result := false;
+  if (defines.IndexOfName(name) > -1) then begin
+    val := defines.Values[name];
+    result := (val <> UNDEFINED);
+  end
+  else if (fowner <> nil) then begin
+    if (fowner.parent <> nil) then result := fowner.parent.defs.IsDefined(name);
+  end;
+end;
+
 function TDefinitionList.GetDefine(name: string): string;
 var
   val: string;
@@ -994,6 +1015,7 @@ begin
   result := UNDEFINED;
   if (defines.IndexOfName(name) > -1) then begin
     val := defines.Values[name];
+    if (val = DEFINED) then val := ''; // was an empty define
     result := val;
   end
   else if (fowner <> nil) then begin
@@ -1005,12 +1027,18 @@ end;
 {
   EBNF:
 
-EXPR      ::= ORX
-ORX       ::= ANDX ( '||' ORX )*
-ANDX      ::= UNARYX ( '&&' ANDX )*
+EXPR      ::= CMPX
+CMPX      ::= ORX ( CMPOP CMPX )*
+ORX       ::= ACCUM ( '||' ORX )*
+ACCUMX    ::= ANDX ( '+'|'-' ACCUM )*
+ANDX      ::= MULTX ( '&&' ANDX )*
+MULTX     ::= UNARYX ( '*'|'/' MULTX )*
 UNARYX    ::= ( '!' )? OPERAND
 OPERAND   ::= LVALUE | '(' EXPR ')'
-LVALUE    ::= integer | IDENTIFIER
+LVALUE    ::= integer | BUILTIN '(' EXPR ')' | IDENTIFIER
+
+CMPOP     ::= '<' | '<=' | '=>' | '>' | '==' | '!='
+BUILTIN   ::= 'defined' | ... 
 
   supported operators:
   && || () !
@@ -1047,46 +1075,134 @@ begin
   j := i;
   case line[j] of
     '(', ')': Inc(j);
-    '!', '&', '|':
-      while line[j] in ['!', '&', '|'] do begin
+    '!', '&', '|', '+', '-', '=', '<', '>', '%', '*', '/':
+      while line[j] in ['!', '&', '|', '+', '-', '=', '<', '>', '%', '*', '/'] do begin
         Inc(j);
         if (j > length(line)) then break;
       end;
-  else // identifier/number
-    while (not isblank(line[j]) and (line[j] in CHAR_IDENTIFIER)) do begin
-      Inc(j);
-      if (j > length(line)) then break;
-    end;
+    // identifier/number
+    'a' .. 'z', 'A' .. 'Z', '0' .. '9', '_':
+      while (not isblank(line[j]) and (line[j] in CHAR_IDENTIFIER)) do begin
+        Inc(j);
+        if (j > length(line)) then break;
+      end;
+  else
+    raise Exception.Create('Illegal token "'+line[j]+'"');
   end;
   curToken := Copy(line, i, j-i);
   Delete(line, 1, j-1);
 end;
 
-function TDefinitionList._expr(var line: string): boolean;
+procedure TDefinitionList._requireToken(token: string; var line: string);
+begin
+  if ( curToken = token) then _nextToken(line)
+  else raise Exception.Create('Expected token "'+token+'" got "'+curToken+'"');
+end;
+
+function TDefinitionList._expr(var line: string): integer;
 begin
   _nextToken(line); // because it's not set yet
-  result := _orx(line);
+  result := _cmpx(line);
 end;
 
-function TDefinitionList._orx(var line: string): boolean;
+function TDefinitionList._cmpx(var line: string): integer;
+var
+  cmdopidx: integer;
+
+  function GetCmdOpIdx(): integer;
+  begin
+    result := -1;
+    if (curToken = '<') then result := 0
+    else if (curToken = '<=') then result := 1
+    else if (curToken = '=>') then result := 2
+    else if (curToken = '>') then result := 3
+    else if (curToken = '==') then result := 4
+    else if (curToken = '!=') then result := 5;
+    cmdopidx := result;
+  end;
+
 begin
-  result := _andx(line);
+  result := _orx(line);
+  while (GetCmdOpIdx() > -1) do begin
+    _nextToken(line);
+    case cmdopidx of
+      0: result := ord(result < _cmpx(line));
+      1: result := ord(result <= _cmpx(line));
+      2: result := ord(result >= _cmpx(line));
+      3: result := ord(result > _cmpx(line));
+      4: result := ord(result = _cmpx(line));
+      5: result := ord(result <> _cmpx(line));
+    end;
+  end;
+end;
+
+function TDefinitionList._orx(var line: string): integer;
+begin
+  result := _accumx(line);
   while (curToken = '||') do begin
     _nextToken(line);
-    result := result and  _orx(line);
+    result := ord((result <> 0) or (_orx(line) <> 0));
   end;
 end;
 
-function TDefinitionList._andx(var line: string): boolean;
+function TDefinitionList._accumx(var line: string): integer;
+var
+  cmdopidx: integer;
+
+  function GetCmdOpIdx(): integer;
+  begin
+    result := -1;
+    if (curToken = '-') then result := 0
+    else if (curToken = '+') then result := 1;
+    cmdopidx := result;
+  end;
+  
 begin
-  result := _unaryx(line);
+  result := _andx(line);
+  while (GetCmdOpIdx() > -1) do begin
+    _nextToken(line);
+    case cmdopidx of
+      0: result := result - _accumx(line);
+      1: result := result + _accumx(line);
+    end;
+  end;
+end;
+
+function TDefinitionList._andx(var line: string): integer;
+begin
+  result := _multx(line);
   while (curToken = '&&') do begin
     _nextToken(line);
-    result := result and  _andx(line);
+    result := ord((result <> 0) and (_orx(line) <> 0));
   end;
 end;
 
-function TDefinitionList._unaryx(var line: string): boolean;
+function TDefinitionList._multx(var line: string): integer;
+var
+  cmdopidx: integer;
+
+  function GetCmdOpIdx(): integer;
+  begin
+    result := -1;
+    if (curToken = '*') then result := 0
+    else if (curToken = '/') then result := 1
+    else if (curToken = '%') then result := 2;
+    cmdopidx := result;
+  end;
+  
+begin
+  result := _unaryx(line);
+  while (GetCmdOpIdx() > -1) do begin
+    _nextToken(line);
+    case cmdopidx of
+      0: result := result * _multx(line);
+      1: result := result div _multx(line);
+      2: result := result mod _multx(line);
+    end;
+  end;
+end;
+
+function TDefinitionList._unaryx(var line: string): integer;
 begin
   if ( curToken = '!' ) then begin
     _nextToken(line);
@@ -1095,26 +1211,34 @@ begin
   else result := _operand(line);
 end;
 
-function TDefinitionList._operand(var line: string): boolean;
+function TDefinitionList._operand(var line: string): integer;
 begin
   if ( curToken = '(') then begin
     //_nextToken(line); DON'T, this will be done in _expr()
     result := _expr(line);
-    if ( curToken = ')') then _nextToken(line)
-    else raise Exception.Create('Unterminated bracket. Token = "'+curToken+'"');
+    _requireToken(')', line);
   end
   else result := _lvalue(line);
 end;
 
-function TDefinitionList._lvalue(var line: string): boolean;
+function TDefinitionList._lvalue(var line: string): integer;
 begin
   try
-    if (IsValidIdent(curToken)) then result := IsDefined(curToken)
+    if (IsValidIdent(curToken)) then begin
+      if (_builtin(line, Result)) then exit;
+      if (IsRealDefined(curToken)) then begin
+        Result := StrToIntDef(GetDefine(curToken), 1); // default to 1 if defined
+      end
+      else begin
+        result := 0; //TODO: warning
+        raise Exception.Create('Identifier does not exist "'+curToken+'"');
+      end;
+    end
     else begin
       try
-        result := StrToInt(curToken) <> 0;
+        result := StrToInt(curToken); //TODO:
       except
-        result := false;
+        result := 0;
         raise Exception.Create('Invalid literal value "'+curToken+'"');
       end;
     end;
@@ -1123,18 +1247,31 @@ begin
   end;
 end;
 
+function TDefinitionList._builtin(var line: string; var res: integer): boolean;
+begin
+  Result := false;
+  if (SameText(curToken, 'defined')) then begin
+    _nextToken(line);
+    Result := true;
+    _requireToken('(', line);
+    res := ord(IsRealDefined(curToken));
+    _nextToken(line);
+    _requireToken(')', line);
+  end;
+end;
+
 { evaluator -- END }
 
 function TDefinitionList.Eval(line: string): boolean;
 begin
-  result := _expr(line);
-  //result := IsDefined(line);
+  result := _expr(line) <> 0;
 end;
 
 // returns true when a new value was added
 function TDefinitionList.define(name, value: string): boolean;
 begin
   result := defines.IndexOfName(name) = -1;
+  if (value = '') then value := DEFINED;
   defines.Values[name] := value;
 end;
 
