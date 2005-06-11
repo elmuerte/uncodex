@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.2 2005-06-11 10:40:24 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.3 2005-06-11 15:52:01 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -48,9 +48,10 @@ var
   BaseClass: TUClass;
   supportIf: boolean = true;
   supportDefine: boolean = true;
+  supportPreDefine: boolean = true;
 
 const
-  UCPP_VERSION = '004';
+  UCPP_VERSION = '005';
   UCPP_HOMEPAGE = 'http://wiki.beyondunreal.com/wiki/UCPP';
   UCPP_COPYRIGHT = 'Copyright (C) 2005 Michiel Hendriks';
 
@@ -59,7 +60,7 @@ implementation
 uses unit_sourceparser, unit_pputils, unit_ucxinifiles;
 
 var
-  curfile: string;
+  ucfile, pucfile: string;
   CurClass: TUClass;
 
 const
@@ -80,40 +81,59 @@ var
     p.SkipToken(true);
   end;
 
+  // removes comments from the macro line; not always used
+  procedure StripComment;
+  var
+    i: integer;
+  begin
+    i := pos('//', args);
+    if (i > 0) then Delete(args, i, Length(args));
+    i := pos('/*', args);
+    if (i > 0) then Delete(args, i, Length(args));
+  end;
+
 var
-  hadNewLine: boolean;
+  hadNewLine, evalval: boolean;
 begin
   hadNewLine := true;
   args := trim(p.TokenString);
   cmd := GetToken(args, ' ');
-  writeln('Macro "'+cmd+'" @ '+IntToStr(p.SourceLine-1));
+  DebugMessage('Macro "'+cmd+'" @ '+IntToStr(p.SourceLine-1));
   if (SameText(cmd, '#if') and supportIf) then begin
     CommentMacro;
+    StripComment;
     if (macroIfCnt > 0) then Inc(macroIfCnt);
     begin
       try
-        if (not CurClass.defs.Eval(args)) then begin
-          macroIfCnt := 1;
-          while (macroIfCnt > 0) do begin
-            if (hadNewLine) then begin
-              p.OutputString(UCPP_COMMENT);
-              hadNewLine := false;
-            end;
-            p.CopyTokenToOutput;
-            if (p.Token = #10) then hadNewLine := true;
-            p.SkipToken(true);
-          end;
-        end;
+        evalval := CurClass.defs.Eval(args);
+        DebugMessage('Eval('+args+') = '+BoolToStr(evalval, true));
       except
-        ErrorMessage('Unexpected EOF');
+        on e:Exception do begin
+          ErrorMessage(pucfile+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" (defaulting to false): '+e.Message);
+          evalval := false;
+        end;
+      end;
+      if (not evalval) then begin
+        macroIfCnt := 1;
+        while (macroIfCnt > 0) do begin
+          if (hadNewLine) then begin
+            p.OutputString(UCPP_COMMENT);
+            hadNewLine := false;
+          end;
+          p.CopyTokenToOutput;
+          if (p.Token = #10) then hadNewLine := true;
+          p.SkipToken(true);
+        end;
       end;
     end; // do eval
   end
-  else if (SameText(cmd, '#ifdef') and supportIf) then begin
+  else if ((SameText(cmd, '#ifdef') or (SameText(cmd, '#ifndef'))) and supportIf) then begin
     CommentMacro;
+    StripComment;
     if (macroIfCnt > 0) then Inc(macroIfCnt)
     else begin
-      if (not CurClass.defs.IsDefined(args)) then begin
+      evalval := SameText(cmd, '#ifdef');
+      if (CurClass.defs.IsRealDefined(args) = evalval) then begin
         macroIfCnt := 1;
         while (macroIfCnt > 0) do begin
           if (hadNewLine) then begin
@@ -153,25 +173,28 @@ begin
     CommentMacro;
   end
   else if (SameText(cmd, '#define') and supportDefine) then begin
-    CommentMacro;
+    CommentMacro;  // don't strip comment, everything is included
     if (macroIfCnt = 0) then begin
       cmd := GetToken(args, ' ');
       CurClass.defs.define(cmd, args);
+      DebugMessage(cmd+' = '+args);
     end;
     exit;
   end
-  {else if (SameText(cmd, '#undefine') and supportDefine) then begin
+  else if (SameText(cmd, '#undef') and supportDefine) then begin
     CommentMacro;
+    StripComment;
     if (macroIfCnt = 0) then begin
       cmd := GetToken(args, ' ');
-      CurClass.defs.define(cmd, args);
+      CurClass.defs.undefine(cmd);
+      DebugMessage('Undefined '+cmd);
     end;
     exit;
-  end}
-  // UsUnit support macro - should become a CHECK(%1, %2)
+  end
+  // UsUnit support macro - should become a CHECK(expr,msg), CHECK(expr)
   else if (SameText(cmd, '#check')) then begin
     // for macro's the line is always one more than actual
-    rep := 'check( '+args+', "'+StringReplace(args, '"', '\"', [rfReplaceAll])+'"$chr(3)$"'+curfile+':'+IntToStr(p.SourceLine-1)+'");'+NL;
+    rep := 'check( '+args+', "'+StringReplace(args, '"', '\"', [rfReplaceAll])+'"$chr(3)$"'+ucfile+':'+IntToStr(p.SourceLine-1)+'");'+NL;
     p.OutputString(rep);
     p.SkipToken(true);
     exit;
@@ -210,25 +233,42 @@ procedure _ppIdentifier(p: TSourceParser);
 var
   tstr: string;
   repl: string;
+  hasrepl: boolean;
 begin
   tstr := p.TokenString;
+  hasrepl := false;
   if (UpperCase(tstr) = tstr) then begin
     // first check internal consts
-    if (SameText(tstr, '__FILE__')) then begin
-      repl := '"'+curfile+'"';
-    end
-    else if (SameText(tstr, '__BASE_FILE__')) then begin
-      repl := '"'+ExtractFileName(curfile)+'"';
-    end
-    else if (SameText(tstr, '__LINE__')) then begin
-      repl := IntToStr(p.SourceLine);
-    end
+    if (supportPreDefine) then begin
+      if (SameText(tstr, '__FILE__')) then begin
+        repl := '"'+ucfile+'"';
+        hasrepl := true;
+      end
+      else if (SameText(tstr, '__BASE_FILE__')) then begin
+        repl := '"'+ExtractFileName(ucfile)+'"';
+        hasrepl := true;
+      end
+      else if (SameText(tstr, '__LINE__')) then begin
+        repl := IntToStr(p.SourceLine);
+        hasrepl := true;
+      end
+      else if (SameText(tstr, '__DATE__')) then begin
+        repl := '"'+FormatDateTime('dddddd', now())+'"';
+        hasrepl := true;
+      end
+      else if (SameText(tstr, '__TIME__')) then begin
+        repl := '"'+FormatDateTime('tt', now())+'"';
+        hasrepl := true;
+      end
+    end;
     // check declaration list
-    else if (CurClass.defs.IsDefined(tstr)) then begin
+    if ((not hasrepl) and CurClass.defs.IsRealDefined(tstr)) then begin
       repl := CurClass.defs.GetDefine(tstr);
+      hasrepl := true;
     end;
 
-    if (repl <> '') then begin
+    if (hasrepl) then begin
+      DebugMessage('Replaced '+tstr+' with: '+repl);
       p.OutputString(repl);
       p.SkipToken(true);
       exit;
@@ -238,6 +278,7 @@ begin
   p.SkipToken(true);
 end;
 
+// main processing function
 procedure internalPP(p: TSourceParser);
 begin
   while (p.Token <> toEof) do begin
@@ -267,18 +308,19 @@ begin
     ErrorMessage('Could not open file "'+filename+'" for reading.');
     exit;
   end;
-  curfile := ChangeFileExt(filename, '.uc');
+  pucfile := filename;
+  ucfile := ChangeFileExt(filename, '.uc');
   try
     try
-      fsout := TFileStream.Create(curfile, fmCreate or fmShareExclusive);
+      fsout := TFileStream.Create(ucfile, fmCreate or fmShareExclusive);
     except
-      ErrorMessage('Could not open file "'+curfile+'" for writing.');
+      ErrorMessage('Could not open file "'+ucfile+'" for writing.');
       exit;
     end;
     parser := TSourceParser.Create(fsin, fsout);
     parser.ProcessMacro := _ppMacro;
     parser.MacroCallBack := true;
-    Writeln('Processing "'+filename+'" -> "'+curfile+'"');
+    Writeln('Processing "'+pucfile+'" -> "'+ucfile+'"');
     internalPP(parser);
   finally;
     FreeAndNil(fsout);
@@ -317,7 +359,7 @@ begin
     ini.ReadSection('Defines', sl);
     for i := 0 to sl.count-1 do begin
       // doesn't override commandline definitions
-      if (not BaseClass.defs.IsDefined(sl[i])) then
+      if (not BaseClass.defs.IsRealDefined(sl[i])) then
         BaseClass.defs.define(sl[i], ini.ReadString('Defines', sl[i], ''));
     end;
   finally
@@ -328,8 +370,11 @@ end;
 
 initialization
   BaseClass := TUClass.Create;
-  BaseClass.defs.define('UCPP_VERSION', UCPP_VERSION);
-  BaseClass.defs.define('UCPP_HOMEPAGE', '"'+UCPP_HOMEPAGE+'"');
+  if (not FindCmdLineSwitch('N', ['-'], false)) then begin
+    BaseClass.defs.define('UCPP_VERSION', UCPP_VERSION);
+    BaseClass.defs.define('UCPP_HOMEPAGE', '"'+UCPP_HOMEPAGE+'"');
+  end
+  else supportPreDefine := false;
 finalization
   FreeAndNil(BaseClass);  
 end.

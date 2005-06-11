@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.2 2005-06-11 07:45:38 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.3 2005-06-11 15:52:01 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -74,16 +74,22 @@ begin
   writeln('');
   writeln('  <name> is the name of a file or package, depeding on the mode.');
   writeln('');
-  writeln('Switches:');
+  writeln('Switches (case sensitive):');
   writeln('  -?'#9'This message');
-  writeln('  -D<name>=<value>' +#13#10+
-                #9'Define a name with a value. This overrides the standards as'#13#10+
+  writeln('  -D<name>=<value>'+#13#10+
+                #9'Define a <name> with a <value>. This overrides the standards as'#13#10+
                 #9'defined in the configuration file.');
   writeln('  -L'#9'Print the program''s license');
+  writeln('  -N'#9'Do not use predefinitions (like __FILE__).');
   writeln('  -P'#9'Enable package mode. The provided names are package names.'#13#10+
                 #9'In package mode the base directory must be defined using'#13#10+
                 #9'either the SYSTEM or BASE setting');
+  writeln('  -U<name>'+#13#10+
+                #9'Undefine <name>. Note: this has a lower precedence than'+#13#10+
+                #9'definitions made in the file.');
   writeln('  -V'#9'Show the program version');
+  writeln('  -wait'#9'Pause at the end of executiong when there where errors.');
+  writeln('  -WAIT'#9'Always pause at the end of processing');
   writeln('');
   writeln('Settings are always in the format "<Key>=<Value>". The following');
   writeln('keys are accepted:');
@@ -99,6 +105,7 @@ var
   sl: TStringList;
   usePackages: boolean;
 begin
+  debug_mode := FindCmdLineSwitch('debug', ['-'], false);
   if (FindCmdLineSwitch('V', ['-'], false)) then begin
     printVersion();
     exit;
@@ -122,6 +129,10 @@ begin
           Delete(s2, 1, 2);
           s1 := GetToken(s2, '=');
           if (s1 <> '') then BaseClass.defs.define(s1, s2);
+        end
+        else if (Copy(s2, 1, 2) = '-U') then begin
+          Delete(s2, 1, 2);
+          if (s2 <> '') then BaseClass.defs.undefine(s2);
         end;
         continue; // is a switch
       end;
@@ -146,23 +157,6 @@ begin
     end;
     LoadConfiguration();
 
-    // debug code
-    {writeln(BoolToStr(BaseClass.defs.Eval('1'), true));
-    writeln(BoolToStr(BaseClass.defs.Eval('1 + 2 - 3'), true));
-    writeln(BoolToStr(BaseClass.defs.Eval('2 * 1'), true));
-    writeln(BoolToStr(BaseClass.defs.Eval('1 * 0'), true));
-    writeln(BoolToStr(BaseClass.defs.Eval('UCPP_VERSION > 0'), true));
-    writeln(BoolToStr(BaseClass.defs.Eval('UCPP_VERSION == '+UCPP_VERSION), true));
-    writeln(BoolToStr(BaseClass.defs.Eval('1 >= 0'), true));
-    writeln(BoolToStr(BaseClass.defs.Eval('1 != 1'), true));
-    writeln(BoolToStr(BaseClass.defs.Eval('1 <= 1'), true));
-    writeln(BoolToStr(BaseClass.defs.Eval('2 % 1 == 0'), true));
-    writeln(BoolToStr(BaseClass.defs.Eval('3 % 2 == 1'), true));
-    writeln(BoolToStr(BaseClass.defs.Eval('BLA'), true)); }
-    writeln(BoolToStr(BaseClass.defs.Eval('Defined(DEBUG)'), true));
-    // debug code
-
-
     if (cfgMod <> '') then cfgBase := cfgBase+PathDelim+cfgMod+PathDelim;
     if (sl.Count = 0) then begin
       ErrorMessage('No input files or packages');
@@ -174,9 +168,10 @@ begin
   finally
     sl.Free;
   end;
-  if (FindCmdLineSwitch('wait', ['-'], false)) then begin
+  if (FindCmdLineSwitch('WAIT', ['-'], false) or
+    (FindCmdLineSwitch('wait', ['-'], false) and (ErrorCount > 0))) then begin
     writeln('');
-    writeln('--- done - press enter ---');
+    writeln('--- done - press enter to continue ---');
     Readln(Input);
   end;
 end.

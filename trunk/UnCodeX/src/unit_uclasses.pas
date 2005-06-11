@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.62 2005-06-11 10:40:24 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.63 2005-06-11 15:52:05 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -1230,14 +1230,13 @@ begin
         Result := StrToIntDef(GetDefine(curToken), 1); // default to 1 if defined
       end
       else begin
-        result := 0; //TODO: warning if -warn ?
-        //TODO: no exception?
+        result := 0;
         raise Exception.Create('Identifier does not exist "'+curToken+'"');
       end;
     end
     else begin
       try
-        result := StrToInt(curToken); //TODO:
+        result := StrToInt(curToken);
       except
         result := 0;
         raise Exception.Create('Invalid literal value "'+curToken+'"');
