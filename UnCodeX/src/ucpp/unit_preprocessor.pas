@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.1 2005-06-10 13:45:16 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.2 2005-06-11 10:40:24 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -160,6 +160,14 @@ begin
     end;
     exit;
   end
+  {else if (SameText(cmd, '#undefine') and supportDefine) then begin
+    CommentMacro;
+    if (macroIfCnt = 0) then begin
+      cmd := GetToken(args, ' ');
+      CurClass.defs.define(cmd, args);
+    end;
+    exit;
+  end}
   // UsUnit support macro - should become a CHECK(%1, %2)
   else if (SameText(cmd, '#check')) then begin
     // for macro's the line is always one more than actual

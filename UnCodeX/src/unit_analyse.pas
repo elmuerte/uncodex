@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.72 2005-05-28 19:14:32 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.73 2005-06-11 10:40:24 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -901,6 +901,7 @@ var PADMEM: string =  #$54#$68#$69#$73#$20#$69#$73#$20#$70#$61#$72#$74#$20#$6F#$
 procedure TClassAnalyser.pMacro(Sender: TUCParser);
 var
   macro, args: string;
+  evalres: boolean;
 begin
   args := TrimMacro(Sender.TokenString);
   macro := GetToken(args, ' ');
@@ -915,15 +916,19 @@ begin
     else begin
       if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': eval: '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
       try
-        if (not uclass.defs.Eval(args)) then begin
-          if (DEBUG_MACRO_EVAL) then InternalLog(' = false');
-          macroIfCnt := 1;
-          while (macroIfCnt > 0) do begin
-            p.SkipToken;
-          end;
-        end;
+        evalres := uclass.defs.Eval(args);
       except
-        on e:Exception do InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" : '+e.Message, ltError, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+        on e:Exception do begin
+          InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" (defaulting to false): '+e.Message, ltError, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+          evalres := false;
+        end;
+      end;
+      if (not evalres) then begin
+        if (DEBUG_MACRO_EVAL) then InternalLog(' = false');
+        macroIfCnt := 1;
+        while (macroIfCnt > 0) do begin
+          p.SkipToken;
+        end;
       end;
     end; // do eval
   end
@@ -931,7 +936,7 @@ begin
     if (macroIfCnt > 0) then Inc(macroIfCnt)
     else begin
       if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': if defined: '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
-      if (not uclass.defs.IsDefined(args)) then begin
+      if (not uclass.defs.IsRealDefined(args)) then begin
         if (DEBUG_MACRO_EVAL) then InternalLog(' = false');
         macroIfCnt := 1;
         while (macroIfCnt > 0) do begin
