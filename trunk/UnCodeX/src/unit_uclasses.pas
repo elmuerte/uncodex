@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.63 2005-06-11 15:52:05 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.64 2005-06-12 20:21:56 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -35,7 +35,7 @@ unit unit_uclasses;
 interface
 
 uses
-  Classes, Contnrs, SysUtils;
+  Classes, Contnrs, SysUtils, unit_definitionlist;
 
 const
   // used for output module compatibility testing
@@ -47,35 +47,6 @@ type
   TUClass = class;
   TUPackage = class;
   TUFunctionList = class;
-
-  TDefinitionList = class(TObject)
-  protected
-    fowner:   TUClass;
-    defines:  TStringList;
-    curToken: string;
-    procedure _nextToken(var line: string);
-    procedure _requireToken(token: string; var line: string);
-    function _expr(var line: string): integer;
-    function _cmpx(var line: string): integer;
-    function _orx(var line: string): integer;
-    function _accumx(var line: string): integer;
-    function _andx(var line: string): integer;
-    function _multx(var line: string): integer;
-    function _unaryx(var line: string): integer;
-    function _operand(var line: string): integer;
-    function _lvalue(var line: string): integer;
-    function _builtin(var line: string; var res: integer): boolean;
-  public
-    function IsDefined(name: string): boolean;
-    function IsRealDefined(name: string): boolean;
-    function GetDefine(name: string): string;
-    function Eval(line: string): boolean;
-    function define(name, value: string): boolean;
-    function undefine(name: string): boolean;
-    constructor Create(owner: TUClass);
-    destructor Destroy; override;
-    property Definitions: TStringList read defines;
-  end;
 
   // general Unreal Object
   TUObject = class(TObject)
@@ -318,11 +289,12 @@ type
     Fdeps:               TUClassList; // dependency list, not owned, don't free (CURRENTLY NOT USED)
     Fdefs:               TDefinitionList;
     Fincludes:           TStringList; // #include files: "line no.=file"
+    procedure SetParent(Parent: TUClass);
   public
     defaultproperties:  TDefaultPropertiesRecord;
     replication:        TReplicationRecord;
   published
-    property parent: TUClass read Fparent write Fparent;
+    property parent: TUClass read Fparent write SetParent;
     property filename: string read Ffilename write Ffilename;
     property package: TUPackage read Fpackage write Fpackage;
     property parentname: string read Fparentname write Fparentname;
@@ -807,7 +779,7 @@ begin
   Fdelegates.owner := self;
   Fchildren := TUClassList.Create(false);
   Fdeps := TUClassList.Create(false);
-  Fdefs := TDefinitionList.Create(self);
+  Fdefs := TDefinitionList.Create(nil);
   Fincludes := TStringList.Create;
   replication.expressions := TStringList.Create;
   replication.symbols := TStringList.Create;
@@ -832,6 +804,12 @@ begin
   FreeAndNil(Fincludes);
   FreeAndNil(replication.expressions);
   FreeAndNil(replication.symbols);
+end;
+
+procedure TUClass.SetParent(Parent: TUClass);
+begin
+  Fparent := Parent;
+  defs.Parent := Parent.defs;
 end;
 
 function TUClass.FullName: string;
@@ -960,336 +938,6 @@ end;
 procedure TUPackageList.SetItem(Index: Integer; AObject: TUPackage);
 begin
   inherited SetItem(index, AObject);
-end;
-
-{ TDefinitionList }
-
-const
-  UNDEFINED = #1#9#1#2#255;
-  DEFINED = #1#9#1#3#255;
-
-constructor TDefinitionList.Create(owner: TUClass);
-begin
-  fowner := owner;
-  defines := TStringList.Create;
-end;
-
-destructor TDefinitionList.Destroy;
-begin
-  fowner := nil;
-  FreeAndNil(defines);
-end;
-
-function TDefinitionList.IsDefined(name: string): boolean;
-var
-  val: string;
-begin
-  result := false;
-  if (defines.IndexOfName(name) > -1) then begin
-    val := defines.Values[name];
-    result := (val <> '0') and (val <> UNDEFINED);
-  end
-  else if (fowner <> nil) then begin
-    if (fowner.parent <> nil) then result := fowner.parent.defs.IsDefined(name);
-  end;
-end;
-
-function TDefinitionList.IsRealDefined(name: string): boolean;
-var
-  val: string;
-begin
-  result := false;
-  if (defines.IndexOfName(name) > -1) then begin
-    val := defines.Values[name];
-    result := (val <> UNDEFINED);
-  end
-  else if (fowner <> nil) then begin
-    if (fowner.parent <> nil) then result := fowner.parent.defs.IsRealDefined(name);
-  end;
-end;
-
-function TDefinitionList.GetDefine(name: string): string;
-var
-  val: string;
-begin
-  result := UNDEFINED;
-  if (defines.IndexOfName(name) > -1) then begin
-    val := defines.Values[name];
-    if (val = DEFINED) then val := ''; // was an empty define
-    result := val;
-  end
-  else if (fowner <> nil) then begin
-    if (fowner.parent <> nil) then result := fowner.parent.defs.GetDefine(name);
-  end;
-end;
-
-{ evaluator -- BEGIN }
-{
-  EBNF:
-
-EXPR      ::= CMPX
-CMPX      ::= ORX ( CMPOP CMPX )*
-ORX       ::= ACCUM ( '||' ORX )*
-ACCUMX    ::= ANDX ( '+'|'-' ACCUM )*
-ANDX      ::= MULTX ( '&&' ANDX )*
-MULTX     ::= UNARYX ( '*'|'/' MULTX )*
-UNARYX    ::= ( '!' )? OPERAND
-OPERAND   ::= LVALUE | '(' EXPR ')'
-LVALUE    ::= integer | BUILTIN '(' EXPR ')' | IDENTIFIER
-
-CMPOP     ::= '<' | '<=' | '=>' | '>' | '==' | '!='
-BUILTIN   ::= 'defined' | ... 
-
-  supported operators:
-  && || () !
-
-  symbols will be resolved to integers (if undefined => 0)
-}
-
-procedure TDefinitionList._nextToken(var line: string);
-const
-  CHAR_IDENTIFIER = ['a' .. 'z', 'A' .. 'Z', '0' .. '9', '_'];
-
-  function isblank(c: char): boolean;
-  begin
-    result := false;
-    case c of
-      #0..#32:  result := true;
-    end;
-  end;
-
-var
-  i,j: integer;
-begin
-  if (length(line) = 0) then begin
-    curToken := '';
-    exit;
-  end;
-  i := 1;
-  while (isblank(line[i]) and (i <= length(line))) do begin
-    Inc(i);
-  end;
-  {while (not isblank(line[j]) and (j <= length(line))) do begin
-    Inc(j);
-  end;}
-  j := i;
-  case line[j] of
-    '(', ')': Inc(j);
-    '!', '&', '|', '+', '-', '=', '<', '>', '%', '*', '/':
-      while line[j] in ['!', '&', '|', '+', '-', '=', '<', '>', '%', '*', '/'] do begin
-        Inc(j);
-        if (j > length(line)) then break;
-      end;
-    // identifier/number
-    'a' .. 'z', 'A' .. 'Z', '0' .. '9', '_':
-      while (not isblank(line[j]) and (line[j] in CHAR_IDENTIFIER)) do begin
-        Inc(j);
-        if (j > length(line)) then break;
-      end;
-  else
-    raise Exception.Create('Illegal token "'+line[j]+'"');
-  end;
-  curToken := Copy(line, i, j-i);
-  Delete(line, 1, j-1);
-end;
-
-procedure TDefinitionList._requireToken(token: string; var line: string);
-begin
-  if ( curToken = token) then _nextToken(line)
-  else raise Exception.Create('Expected token "'+token+'" got "'+curToken+'"');
-end;
-
-function TDefinitionList._expr(var line: string): integer;
-begin
-  _nextToken(line); // because it's not set yet
-  result := _cmpx(line);
-end;
-
-function TDefinitionList._cmpx(var line: string): integer;
-var
-  cmdopidx: integer;
-
-  function GetCmdOpIdx(): integer;
-  begin
-    result := -1;
-    if (curToken = '<') then result := 0
-    else if (curToken = '<=') then result := 1
-    else if (curToken = '=>') then result := 2
-    else if (curToken = '>') then result := 3
-    else if (curToken = '==') then result := 4
-    else if (curToken = '!=') then result := 5;
-    cmdopidx := result;
-  end;
-
-begin
-  result := _orx(line);
-  while (GetCmdOpIdx() > -1) do begin
-    _nextToken(line);
-    case cmdopidx of
-      0: result := ord(result < _cmpx(line));
-      1: result := ord(result <= _cmpx(line));
-      2: result := ord(result >= _cmpx(line));
-      3: result := ord(result > _cmpx(line));
-      4: result := ord(result = _cmpx(line));
-      5: result := ord(result <> _cmpx(line));
-    end;
-  end;
-end;
-
-function TDefinitionList._orx(var line: string): integer;
-begin
-  result := _accumx(line);
-  while (curToken = '||') do begin
-    _nextToken(line);
-    result := ord((result <> 0) or (_orx(line) <> 0));
-  end;
-end;
-
-function TDefinitionList._accumx(var line: string): integer;
-var
-  cmdopidx: integer;
-
-  function GetCmdOpIdx(): integer;
-  begin
-    result := -1;
-    if (curToken = '-') then result := 0
-    else if (curToken = '+') then result := 1;
-    cmdopidx := result;
-  end;
-  
-begin
-  result := _andx(line);
-  while (GetCmdOpIdx() > -1) do begin
-    _nextToken(line);
-    case cmdopidx of
-      0: result := result - _accumx(line);
-      1: result := result + _accumx(line);
-    end;
-  end;
-end;
-
-function TDefinitionList._andx(var line: string): integer;
-begin
-  result := _multx(line);
-  while (curToken = '&&') do begin
-    _nextToken(line);
-    result := ord((result <> 0) and (_orx(line) <> 0));
-  end;
-end;
-
-function TDefinitionList._multx(var line: string): integer;
-var
-  cmdopidx: integer;
-
-  function GetCmdOpIdx(): integer;
-  begin
-    result := -1;
-    if (curToken = '*') then result := 0
-    else if (curToken = '/') then result := 1
-    else if (curToken = '%') then result := 2;
-    cmdopidx := result;
-  end;
-  
-begin
-  result := _unaryx(line);
-  while (GetCmdOpIdx() > -1) do begin
-    _nextToken(line);
-    case cmdopidx of
-      0: result := result * _multx(line);
-      1: result := result div _multx(line);
-      2: result := result mod _multx(line);
-    end;
-  end;
-end;
-
-function TDefinitionList._unaryx(var line: string): integer;
-begin
-  if ( curToken = '!' ) then begin
-    _nextToken(line);
-    result := ord(_operand(line) = 0); // 0 => 1; * => 0
-  end
-  else result := _operand(line);
-end;
-
-function TDefinitionList._operand(var line: string): integer;
-begin
-  if ( curToken = '(') then begin
-    //_nextToken(line); DON'T, this will be done in _expr()
-    result := _expr(line);
-    _requireToken(')', line);
-  end
-  else result := _lvalue(line);
-end;
-
-function TDefinitionList._lvalue(var line: string): integer;
-begin
-  try
-    if (IsValidIdent(curToken)) then begin
-      if (_builtin(line, Result)) then exit;
-      if (IsRealDefined(curToken)) then begin
-        Result := StrToIntDef(GetDefine(curToken), 1); // default to 1 if defined
-      end
-      else begin
-        result := 0;
-        raise Exception.Create('Identifier does not exist "'+curToken+'"');
-      end;
-    end
-    else begin
-      try
-        result := StrToInt(curToken);
-      except
-        result := 0;
-        raise Exception.Create('Invalid literal value "'+curToken+'"');
-      end;
-    end;
-  finally
-    _nextToken(line);
-  end;
-end;
-
-function TDefinitionList._builtin(var line: string; var res: integer): boolean;
-begin
-  Result := false;
-  if (SameText(curToken, 'defined')) then begin
-    _nextToken(line);
-    Result := true;
-    _requireToken('(', line);
-    res := ord(IsRealDefined(curToken));
-    _nextToken(line);
-    _requireToken(')', line);
-  end;
-end;
-
-{ evaluator -- END }
-
-function TDefinitionList.Eval(line: string): boolean;
-begin
-  result := _expr(line) <> 0;
-end;
-
-// returns true when a new value was added
-function TDefinitionList.define(name, value: string): boolean;
-begin
-  result := defines.IndexOfName(name) = -1;
-  if (value = '') then value := DEFINED;
-  defines.Values[name] := value;
-end;
-
-// returns true when definition was deletes
-// if false it was UNDEFINED
-function TDefinitionList.undefine(name: string): boolean;
-var
-  i: integer;
-begin
-  i := defines.IndexOfName(name);
-  result := false;
-  if (i <> -1) then begin
-    result := true;
-    defines.Delete(i);
-  end
-  else begin
-    defines.Values[name] := UNDEFINED;
-  end;
 end;
 
 end.

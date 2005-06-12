@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.4 2005-06-11 16:26:21 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.5 2005-06-12 20:21:53 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -34,7 +34,7 @@ unit unit_preprocessor;
 interface
 
 uses
-  Classes, SysUtils, unit_uclasses;
+  Classes, SysUtils, unit_definitionlist;
 
   procedure PreProcessFile(filename: string);
   procedure PreProcessDirectory(dir: string);
@@ -45,7 +45,7 @@ var
   cfgBase: string;
   cfgMod: string;
   cfgFile: string;
-  BaseClass: TUClass;
+  BaseDefs: TDefinitionList;
   supportIf: boolean = true;
   supportDefine: boolean = true;
   supportPreDefine: boolean = true;
@@ -61,7 +61,7 @@ uses unit_sourceparser, unit_pputils, unit_ucxinifiles;
 
 var
   ucfile, pucfile: string;
-  CurClass: TUClass;
+  CurDefs: TDefinitionList;
 
 const
   UCPP_COMMENT = '// ';
@@ -105,7 +105,7 @@ begin
     if (macroIfCnt > 0) then Inc(macroIfCnt);
     begin
       try
-        evalval := CurClass.defs.Eval(args);
+        evalval := CurDefs.Eval(args);
         DebugMessage('Eval('+args+') = '+BoolToStr(evalval, true));
       except
         on e:Exception do begin
@@ -133,7 +133,7 @@ begin
     if (macroIfCnt > 0) then Inc(macroIfCnt)
     else begin
       evalval := SameText(cmd, '#ifdef');
-      if (CurClass.defs.IsRealDefined(args) = evalval) then begin
+      if (CurDefs.IsRealDefined(args) = evalval) then begin
         macroIfCnt := 1;
         while (macroIfCnt > 0) do begin
           if (hadNewLine) then begin
@@ -176,7 +176,7 @@ begin
     CommentMacro;  // don't strip comment, everything is included
     if (macroIfCnt = 0) then begin
       cmd := GetToken(args, ' ');
-      CurClass.defs.define(cmd, args);
+      CurDefs.define(cmd, args);
       DebugMessage(cmd+' = '+args);
     end;
     exit;
@@ -186,7 +186,7 @@ begin
     StripComment;
     if (macroIfCnt = 0) then begin
       cmd := GetToken(args, ' ');
-      CurClass.defs.undefine(cmd);
+      CurDefs.undefine(cmd);
       DebugMessage('Undefined '+cmd);
     end;
     exit;
@@ -262,8 +262,8 @@ begin
       end
     end;
     // check declaration list
-    if ((not hasrepl) and CurClass.defs.IsRealDefined(tstr)) then begin
-      repl := CurClass.defs.GetDefine(tstr);
+    if ((not hasrepl) and CurDefs.IsRealDefined(tstr)) then begin
+      repl := CurDefs.GetDefine(tstr);
       hasrepl := true;
     end;
 
@@ -297,8 +297,7 @@ var
   parser: TSourceParser;
   fsin, fsout: TFileStream;
 begin
-  CurClass := TUClass.Create;
-  CurClass.parent := BaseClass;
+  CurDefs := TDefinitionList.Create(BaseDefs);
   if (not SameText(ExtractFileExt(filename), '.puc')) then begin
     ErrorMessage('The .puc extention is required.');
   end;
@@ -325,7 +324,7 @@ begin
   finally;
     FreeAndNil(fsout);
     FreeAndNil(fsin);
-    FreeAndNil(CurClass);
+    FreeAndNil(CurDefs);
   end;
 end;
 
@@ -359,8 +358,8 @@ begin
     ini.ReadSection('Defines', sl);
     for i := 0 to sl.count-1 do begin
       // doesn't override commandline definitions
-      if (not BaseClass.defs.IsRealDefined(sl[i])) then
-        BaseClass.defs.define(sl[i], ini.ReadString('Defines', sl[i], ''));
+      if (not BaseDefs.IsRealDefined(sl[i])) then
+        BaseDefs.define(sl[i], ini.ReadString('Defines', sl[i], ''));
     end;
   finally
     sl.Free;
@@ -369,12 +368,12 @@ begin
 end;
 
 initialization
-  BaseClass := TUClass.Create;
+  BaseDefs := TDefinitionList.Create(nil);
   if (not FindCmdLineSwitch('undef', ['-'], false)) then begin
-    BaseClass.defs.define('UCPP_VERSION', UCPP_VERSION);
-    BaseClass.defs.define('UCPP_HOMEPAGE', '"'+UCPP_HOMEPAGE+'"');
+    BaseDefs.define('UCPP_VERSION', UCPP_VERSION);
+    BaseDefs.define('UCPP_HOMEPAGE', '"'+UCPP_HOMEPAGE+'"');
   end
   else supportPreDefine := false;
 finalization
-  FreeAndNil(BaseClass);  
+  FreeAndNil(BaseDefs);
 end.

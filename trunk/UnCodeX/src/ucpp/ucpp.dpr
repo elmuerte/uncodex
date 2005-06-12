@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.4 2005-06-11 16:26:21 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.5 2005-06-12 20:21:53 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -38,8 +38,8 @@ uses
   unit_sourceparser in '..\unit_sourceparser.pas',
   unit_preprocessor in 'unit_preprocessor.pas',
   unit_pputils in 'unit_pputils.pas',
-  unit_uclasses in '..\unit_uclasses.pas',
-  unit_ucxinifiles in '..\unit_ucxinifiles.pas';
+  unit_ucxinifiles in '..\unit_ucxinifiles.pas',
+  unit_definitionlist in '..\unit_definitionlist.pas';
 
 procedure printVersion();
 begin
@@ -129,11 +129,11 @@ begin
         if (Copy(s2, 1, 2) = '-D') then begin
           Delete(s2, 1, 2);
           s1 := GetToken(s2, '=');
-          if (s1 <> '') then BaseClass.defs.define(s1, s2);
+          if (s1 <> '') then BaseDefs.define(s1, s2);
         end
         else if (Copy(s2, 1, 2) = '-U') then begin
           Delete(s2, 1, 2);
-          if (s2 <> '') then BaseClass.defs.undefine(s2);
+          if (s2 <> '') then BaseDefs.undefine(s2);
         end;
         continue; // is a switch
       end;
