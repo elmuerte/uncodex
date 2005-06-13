@@ -6,7 +6,7 @@
   Purpose:
     Various utility functions
 
-  $Id: unit_pputils.pas,v 1.2 2005-06-11 15:52:01 elmuerte Exp $
+  $Id: unit_pputils.pas,v 1.3 2005-06-13 11:40:09 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -39,6 +39,9 @@ uses
   function GetToken(var input: string; delim: char; nocut: boolean = false): string;
   procedure ErrorMessage(msg: string);
   procedure DebugMessage(msg: string);
+  {$IFDEF FPC}
+  function BoolToStr(b : boolean; useString: boolean = false): string;
+  {$ENDIF}
 
 var
   ErrorCount: integer = 0;
@@ -70,5 +73,12 @@ procedure DebugMessage(msg: string);
 begin
   if (debug_mode) then Writeln('DEBUG: '+msg);
 end;
+
+{$IFDEF FPC}
+function BoolToStr(b: boolean; useString: boolean = false): string;
+begin
+   //TODO: implement
+end;
+{$ENDIF}
 
 end.
