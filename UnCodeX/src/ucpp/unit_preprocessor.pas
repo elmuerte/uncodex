@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.5 2005-06-12 20:21:53 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.6 2005-06-13 11:40:09 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -333,9 +333,9 @@ var
   sr: TSearchRec;
 begin
   dir := cfgBase+PathDelim+dir+PathDelim+'Classes'+PathDelim;
-  {$WARN SYMBOL_PLATFORM OFF}
-  if FindFirst(dir+'*.puc', faAnyFile - faDirectory	- faVolumeID, sr) = 0 then begin
-  {$WARN SYMBOL_PLATFORM ON}
+  {$IFNDEF FPC}{$WARN SYMBOL_PLATFORM OFF}{$ENDIF}
+  if FindFirst(dir+'*.puc', faAnyFile - faDirectory - faVolumeID, sr) = 0 then begin
+  {$IFNDEF FPC}{$WARN SYMBOL_PLATFORM ON}{$ENDIF}
     repeat
       PreProcessFile(dir+sr.Name);
     until FindNext(sr) <> 0;

@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.5 2005-06-12 20:21:53 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.6 2005-06-13 11:40:09 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -29,7 +29,10 @@
 }
 program ucpp;
 
+{$IFNDEF FPC}
 {$APPTYPE CONSOLE}
+{$ENDIF}
+
 {$I ..\defines.inc}
 
 uses
