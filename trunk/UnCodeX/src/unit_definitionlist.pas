@@ -6,7 +6,7 @@
   Purpose:
     Keeps track of macro definitions and stuff like that
 
-  $Id: unit_definitionlist.pas,v 1.1 2005-06-12 20:21:56 elmuerte Exp $
+  $Id: unit_definitionlist.pas,v 1.2 2005-06-15 07:09:53 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -46,7 +46,7 @@ type
     argCount:   integer; // if > 0 then it's a function
     //constructor Create(name, value: string);
     //function evalFunction(args: array of string): string;
-    //function baseName();
+    //function baseName(): string;
   end;
 
   TDefinitionList = class(TObject)
