@@ -6,7 +6,7 @@
   Purpose:
     Loading\saving of the class and package tree views
 
-  $Id: unit_treestate.pas,v 1.37 2005-05-13 10:20:19 elmuerte Exp $
+  $Id: unit_treestate.pas,v 1.38 2005-06-16 10:10:02 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -169,9 +169,9 @@ begin
       Writer.WriteString(uclass.replication.expressions[i]);
     end;
 
-    Writer.WriteInteger(uclass.defs.Definitions.Count);
-    for i := 0 to uclass.defs.Definitions.Count-1 do begin
-      Writer.WriteString(uclass.defs.Definitions[i]);
+    Writer.WriteInteger(uclass.defs.Count);
+    for i := 0 to uclass.defs.Count-1 do begin
+      Writer.WriteString(uclass.defs.Entry[i]);
     end;
 
     Writer.WriteInteger(uclass.includes.Count);
@@ -326,7 +326,7 @@ begin
       if (version >= 213) then begin
         m := Reader.ReadInteger;
         for i := 0 to m-1 do begin
-          uclass.defs.Definitions.Add(Reader.ReadString);
+          uclass.defs.AddEntry(Reader.ReadString);
         end;
       end;
 
