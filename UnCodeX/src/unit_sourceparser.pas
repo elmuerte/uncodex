@@ -7,7 +7,7 @@
     UnrealScript parser. Used for syntax highlighting, not for analysing.
     Bases on the TParser by Borland.
 
-  $Id: unit_sourceparser.pas,v 1.24 2005-06-11 10:40:24 elmuerte Exp $
+  $Id: unit_sourceparser.pas,v 1.25 2005-06-16 15:42:14 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -45,6 +45,7 @@ type
   private
     FStream: TStream;
     FOutStream: TStream;
+
     FOrigin: Longint;
     FBuffer: PChar;
     FBufPtr: PChar;
@@ -58,7 +59,9 @@ type
     FToken: Char;
     IsInMComment: boolean;
     commentdepth: integer;
+
     FProcessMacro: TProcessMacro;
+
     procedure ReadBuffer;
     procedure SkipBlanks(DoCopy: Boolean);
     function SkipToNextToken(CopyBlanks, DoCopy: Boolean): Char;
@@ -74,10 +77,14 @@ type
     function TokenString: string;
     procedure OutputString(data: string);
     property SourceLine: Integer read FSourceLine;
-    property LinePos: Integer read FLinePos write FLinePos;
+    property LinePos: Integer read FLinePos {write FLinePos};
     property Token: Char read FToken;
     property OutputStream: TStream read FOutStream write FOutStream;
     property ProcessMacro: TProcessMacro write FProcessMacro;
+
+    procedure PushState;
+    procedure PopState;
+    procedure DiscardState;
   end;
 
 const
@@ -419,6 +426,21 @@ end;
 procedure TSourceParser.OutputString(data: string);
 begin
   OutputStream.WriteBuffer(PChar(data)^, length(data));
+end;
+
+procedure TSourceParser.PushState;
+begin
+
+end;
+
+procedure TSourceParser.PopState;
+begin
+
+end;
+
+procedure TSourceParser.DiscardState;
+begin
+
 end;
 
 end.

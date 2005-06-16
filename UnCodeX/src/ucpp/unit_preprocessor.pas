@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.6 2005-06-13 11:40:09 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.7 2005-06-16 15:42:12 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -133,7 +133,7 @@ begin
     if (macroIfCnt > 0) then Inc(macroIfCnt)
     else begin
       evalval := SameText(cmd, '#ifdef');
-      if (CurDefs.IsRealDefined(args) = evalval) then begin
+      if (CurDefs.IsRealDefined(args) <> evalval) then begin
         macroIfCnt := 1;
         while (macroIfCnt > 0) do begin
           if (hadNewLine) then begin
@@ -234,9 +234,11 @@ var
   tstr: string;
   repl: string;
   hasrepl: boolean;
+  args: array of string;
 begin
   tstr := p.TokenString;
   hasrepl := false;
+  SetLength(args, 0);
   if (UpperCase(tstr) = tstr) then begin
     // first check internal consts
     if (supportPreDefine) then begin
@@ -246,6 +248,10 @@ begin
       end
       else if (SameText(tstr, '__BASE_FILE__')) then begin
         repl := '"'+ExtractFileName(ucfile)+'"';
+        hasrepl := true;
+      end
+      else if (SameText(tstr, '__CLASS__')) then begin
+        repl := '"'+ChangeFileExt(ExtractFileName(ucfile), '')+'"';
         hasrepl := true;
       end
       else if (SameText(tstr, '__LINE__')) then begin
@@ -262,6 +268,32 @@ begin
       end
     end;
     // check declaration list
+    if (not hasrepl) then begin
+      p.PushState;
+      p.SkipToken(false);
+      if (p.Token = '(') then begin
+        p.SkipToken(false);
+        while (p.Token <> ')') do begin
+          if (p.Token = ',') then begin
+            SetLength(args, High(args)+1);
+            args[High(args)] := 'dummy';
+          end;
+          p.SkipToken(false);
+        end;
+        if (CurDefs.IsRealDefined(tstr+'/'+IntToStr(High(args)))) then begin
+          //repl := CurDefs.CallDefine(tstr, args);
+          hasrepl := true;
+          p.DiscardState;
+        end
+        else begin
+          p.PopState;
+        end;
+      end
+      else begin
+        p.PopState;
+      end;
+    end;
+
     if ((not hasrepl) and CurDefs.IsRealDefined(tstr)) then begin
       repl := CurDefs.GetDefine(tstr);
       hasrepl := true;

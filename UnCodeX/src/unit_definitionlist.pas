@@ -6,7 +6,7 @@
   Purpose:
     Keeps track of macro definitions and stuff like that
 
-  $Id: unit_definitionlist.pas,v 1.2 2005-06-15 07:09:53 elmuerte Exp $
+  $Id: unit_definitionlist.pas,v 1.3 2005-06-16 15:42:14 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -31,29 +31,63 @@ unit unit_definitionlist;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, Contnrs;
 
 type
+  EDefinitionList = class(Exception);
+  ENoDefinitionParser = class(EDefinitionList);
+  // eval() exceptions
+  EDefinitionListEval = class(EDefinitionList);
+  EIllegalToken = class(EDefinitionListEval);
+  ERequireToken = class(EDefinitionListEval);
+  EInvalidLiteral = class(EDefinitionListEval);
+  EUnknownIdentifier = class(EDefinitionListEval);
+
+  TDefinitionList = class;
+
+  TArgumentRecord = class(TObject)
+  public
+    name: string;
+    offset: array of integer;
+    constructor Create(nname: string);
+    procedure AddOffset(idx: integer);
+  end;
+
+  TArgumentList = class(TObjectList)
+  protected
+    function GetItem(Index: Integer): TArgumentRecord;
+    procedure SetItem(Index: Integer; AArgument: TArgumentRecord);
+  public
+    procedure AddArgument(name: string);
+    property Items[Index: Integer]: TArgumentRecord read GetItem write SetItem; default;
+  end;
 
   TDefinitionEntry = class(TObject)
   protected
-    //TODO:
-    // delay parsing of function until first use
-    // store temp info
+    fname:       string; // AS IS
+    fvalue:      string; // AS IS
+    fargList:    TArgumentList;
+    function GetArgCount: integer;
   public
-    name:       string; // AS IS
-    value:      string; // AS IS
-    argCount:   integer; // if > 0 then it's a function
-    //constructor Create(name, value: string);
-    //function evalFunction(args: array of string): string;
-    //function baseName(): string;
+    owner:      TDefinitionList;
+    constructor Create(name, value: string);
+    destructor Destroy; override;
+    function evalFunction(args: array of string): string;
+    function baseName: string;
+    property Name: string read fname;
+    property Value: string read fvalue;
+    property ArgCount: integer read GetArgCount;
+    property ArgList: TArgumentList read fargList;
   end;
+
+  TOnParseDefinition = procedure(def: TDefinitionEntry);
 
   TDefinitionList = class(TObject)
   protected
     fparent:  TDefinitionList;
     defines:  TStringList;
     curToken: string;
+    FOnParseDefinition: TOnParseDefinition;
     procedure _nextToken(var line: string);
     procedure _requireToken(token: string; var line: string);
     function _expr(var line: string): integer;
@@ -77,15 +111,101 @@ type
     function Eval(line: string): boolean;
     function define(name, value: string): boolean;
     function undefine(name: string): boolean;
+    procedure ParseDefinition(def: TDefinitionEntry);
     constructor Create(parent: TDefinitionList);
     destructor Destroy; override;
     procedure AddEntry(entry: string);
     property Parent: TDefinitionList read fparent write fparent;
     property Count: integer read GetCount;
     property Entry[Index: Integer]: string read GetEntry;
+    property OnParseDefinition: TOnParseDefinition read FOnParseDefinition write FOnParseDefinition;
   end;
 
+const
+  ENO_DEFINITION_PARSER = 'Event TDefinitionList.OnParseDefinition not set.';
+  EILLEGAL_TOKEN = 'Illegal token "%s".';
+  EREQUIRE_TOKEN = 'Expected token "%s" got "%s".';
+  EINVALID_LITERAL = 'Invalid literal value "%s"';
+  EUNKNOWN_IDENTIFIER = 'Identifier does not exist "%s"';
+
 implementation
+
+{ TArgumentRecord }
+
+constructor TArgumentRecord.Create(nname: string);
+begin
+  name := nname;
+end;
+
+procedure TArgumentRecord.AddOffset(idx: integer);
+begin
+  SetLength(offset, High(offset)+1);
+  offset[High(offset)] := idx;
+end;
+
+{ TArgumentList }
+
+procedure TArgumentList.AddArgument(name: string);
+begin
+  Add(TArgumentRecord.Create(name));
+end;
+
+function TArgumentList.GetItem(Index: Integer): TArgumentRecord;
+begin
+  result := TArgumentRecord(inherited GetItem(index));
+end;
+
+procedure TArgumentList.SetItem(Index: Integer; AArgument: TArgumentRecord);
+begin
+   inherited SetItem(Index, AArgument);
+end;
+
+{ TDefinitionEntry }
+
+constructor TDefinitionEntry.Create(name, value: string);
+var
+  i, j: integer;
+begin
+  fname := name;
+  fvalue := value;
+  // parse name for arg count
+  i := pos('(', fname);
+  while (i > 0) do begin
+    if (fargList = nil) then fargList := TArgumentList.Create(true);
+    Inc(i); // begin
+    j := i+1;
+    while ((fname[j] <> ',') and (fname[j] <> ')') and (j < Length(fname))) do inc(j);
+    ArgList.AddArgument(Copy(fname, i, j-i));
+    if ((fname[j] = ')') or (j >= Length(fname))) then break;
+    i := j;
+  end;
+end;
+
+destructor TDefinitionEntry.Destroy;
+begin
+  FreeAndNil(fargList);
+  inherited;
+end;
+
+function TDefinitionEntry.GetArgCount: integer;
+begin
+  if (fargList = nil) then result := 0
+  else result := fargList.Count;
+end;
+
+function TDefinitionEntry.baseName: string;
+var
+  i: integer;
+begin
+  i := pos('(', fname);
+  if (i = 0) then result := fname;
+  result := Copy(fname, 1, i-1);
+end;
+
+function TDefinitionEntry.evalFunction(args: array of string): string;
+begin
+
+end;
 
 { TDefinitionList }
 
@@ -132,11 +252,13 @@ end;
 
 function TDefinitionList.IsDefined(name: string): boolean;
 var
+  idx: integer;
   val: string;
 begin
   result := false;
-  if (defines.IndexOfName(name) > -1) then begin
-    val := defines.Values[name];
+  idx := defines.IndexOf(name);
+  if (idx > -1) then begin
+    val := TDefinitionEntry(defines.Objects[idx]).Value;
     result := (val <> '0') and (val <> UNDEFINED);
   end
   else if (fparent <> nil) then begin
@@ -146,11 +268,13 @@ end;
 
 function TDefinitionList.IsRealDefined(name: string): boolean;
 var
+  idx: integer;
   val: string;
 begin
   result := false;
-  if (defines.IndexOfName(name) > -1) then begin
-    val := defines.Values[name];
+  idx := defines.IndexOf(name);
+  if (defines.IndexOf(name) > -1) then begin
+    val := TDefinitionEntry(defines.Objects[idx]).Value;
     result := (val <> UNDEFINED);
   end
   else if (fparent <> nil) then begin
@@ -160,17 +284,25 @@ end;
 
 function TDefinitionList.GetDefine(name: string): string;
 var
+  idx: integer;
   val: string;
 begin
   result := UNDEFINED;
-  if (defines.IndexOfName(name) > -1) then begin
-    val := defines.Values[name];
-    if (val = DEFINED) then val := ''; // was an empty define
+  idx := defines.IndexOf(name);
+  if (defines.IndexOf(name) > -1) then begin
+    val := TDefinitionEntry(defines.Objects[idx]).Value;
+    //if (val = DEFINED) then val := ''; // was an empty define
     result := val;
   end
   else if (fparent <> nil) then begin
     result := fparent.GetDefine(name);
   end;
+end;
+
+procedure TDefinitionList.ParseDefinition(def: TDefinitionEntry);
+begin
+  if (Assigned(fOnParseDefinition)) then fOnParseDefinition(def)
+  else raise ENoDefinitionParser.Create(ENO_DEFINITION_PARSER);
 end;
 
 { evaluator -- BEGIN }
@@ -237,7 +369,7 @@ begin
         if (j > length(line)) then break;
       end;
   else
-    raise Exception.Create('Illegal token "'+line[j]+'"');
+    raise EIllegalToken.CreateFmt(EILLEGAL_TOKEN, [line[j]]);
   end;
   curToken := Copy(line, i, j-i);
   Delete(line, 1, j-1);
@@ -246,7 +378,7 @@ end;
 procedure TDefinitionList._requireToken(token: string; var line: string);
 begin
   if ( curToken = token) then _nextToken(line)
-  else raise Exception.Create('Expected token "'+token+'" got "'+curToken+'"');
+  else raise ERequireToken.CreateFmt(EREQUIRE_TOKEN, [token, curToken]);
 end;
 
 function TDefinitionList._expr(var line: string): integer;
@@ -381,7 +513,7 @@ begin
       end
       else begin
         result := 0;
-        raise Exception.Create('Identifier does not exist "'+curToken+'"');
+        raise EUnknownIdentifier.CreateFmt(EUNKNOWN_IDENTIFIER, [curToken])
       end;
     end
     else begin
@@ -389,7 +521,7 @@ begin
         result := StrToInt(curToken);
       except
         result := 0;
-        raise Exception.Create('Invalid literal value "'+curToken+'"');
+        raise EInvalidLiteral.Createfmt(EINVALID_LITERAL, [curToken]);
       end;
     end;
   finally
@@ -419,18 +551,49 @@ end;
 
 // returns true when a new value was added
 function TDefinitionList.define(name, value: string): boolean;
+var
+  i,j,cnt: integer;
+  fname: string;
+  entry: TDefinitionEntry;
+
+  procedure CountArgs;
+  begin
+    cnt := 0;
+    fname := Copy(name, 1, i-1);
+    while (i > 0) do begin
+      Inc(i); // begin
+      j := i+1;
+      while ((name[j] <> ',') and (name[j] <> ')') and (j < Length(name))) do inc(j);
+      Inc(cnt);
+      if ((name[j] = ')') or (j >= Length(name))) then break;
+      i := j;
+    end;
+    fname := fname+'/'+IntToStr(cnt);
+  end;
+
 begin
-  result := defines.IndexOfName(name) = -1;
-  if (value = '') then value := DEFINED;
-  defines.Values[name] := value;
+  i := Pos('(', name);
+  if (i > 0) then CountArgs()
+  else fname := name;
+
+  j := defines.IndexOf(fname);
+  result := j = -1;
+  if (not result) then begin
+    //WARN: override in the same class in progress, not right
+    defines.Objects[j].Free;
+  end;
+  entry := TDefinitionEntry.Create(name, value);
+  entry.owner := self;
+  defines.AddObject(fname, entry);
 end;
 
-// returns true when definition was deletes
+// returns true when definition was deleted
 // if false it was UNDEFINED
 function TDefinitionList.undefine(name: string): boolean;
-var
+{var
   i: integer;
 begin
+  //TODO: improve
   i := defines.IndexOfName(name);
   result := false;
   if (i <> -1) then begin
@@ -439,6 +602,24 @@ begin
   end
   else begin
     defines.Values[name] := UNDEFINED;
+  end;}
+var
+  idx: integer;
+  val: string;
+  entry: TDefinitionEntry;
+begin
+  //TODO: translate to name/args
+  idx := defines.IndexOf(name);
+  if (defines.IndexOf(name) > -1) then begin
+    defines.Objects[idx].Free;
+    defines.Delete(idx);
+    result := true;
+  end
+  else begin
+    entry := TDefinitionEntry.Create(name, UNDEFINED);
+    entry.owner := self;
+    defines.AddObject(name, entry);
+    result := false;
   end;
 end;
 
