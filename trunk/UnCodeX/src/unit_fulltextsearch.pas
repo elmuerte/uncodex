@@ -6,7 +6,7 @@
   Purpose:
     Full text search thread. Includes support for regular expressions.
 
-  $Id: unit_fulltextsearch.pas,v 1.25 2005-04-23 20:24:26 elmuerte Exp $
+  $Id: unit_fulltextsearch.pas,v 1.26 2005-06-16 10:10:02 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -139,11 +139,11 @@ begin
       uclass := GetNextClass();
       if (Self.Terminated) then break;
     end;
-    if (Matches = 0) then   Status('Nothing found for '''+RealExpr+'''. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds', 100)
+    if (Matches = 0) then Status('Nothing found for '''+RealExpr+'''. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds', 100)
       else Status(IntToStr(Matches)+' matches found for '''+RealExpr+'''. Operation completed in '+Format('%.3f', [(GetTickCount()-stime)/1000])+' seconds', 100);
   except
     on E: Exception do begin
-      InternalLog('Unhandled exception: '+E.Message);
+      InternalLog('Unhandled exception: '+E.Message, ltError);
       printguard();
     end;
   end;
@@ -153,6 +153,7 @@ function TSearchThread.GetNextClass: TUClass;
 var
   obj: TObject;
 begin
+  guard('GetNextClass');
   result := nil;
   case config.Scope of
     0,1:begin // all or from selection
@@ -193,6 +194,7 @@ begin
           result := curclass;
         end;
   end;
+  unguard;
 end;
 
 function TSearchThread.SearchFile(uclass: TUClass): boolean;
@@ -256,6 +258,7 @@ var
 
   procedure SearchFile();
   begin
+    guard('SearchFile '+filename);
     fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
     try
       bufcnt := BUFFSIZE;
@@ -272,6 +275,7 @@ var
     finally
       fs.Free;
     end;
+    unguard;
   end;
 
 begin

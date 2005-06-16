@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.173 2005-05-13 10:20:19 elmuerte Exp $
+  $Id: unit_main.pas,v 1.174 2005-06-16 10:10:02 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -666,18 +666,24 @@ var
   fs: TFileStream;
 begin
   xguard('Tfrm_UnCodeX.SaveState');
-  StatusReport('Saving state to '+config.StateFile);
+  StatusReport('Saving state to '+config.StateFile+'.tmp');
   tmr_StatusText.OnTimer(nil);
   Application.ProcessMessages;
-  fs := TFileStream.Create(config.StateFile, fmCreate or fmShareExclusive);
+  fs := TFileStream.Create(config.StateFile+'.tmp', fmCreate or fmShareExclusive);
   try
-    with (TUnCodeXState.Create(config.ClassList, tv_Classes, config.PackageList, tv_Packages)) do begin
-      SaveTreeToStream(fs);
-      Free;
+    try
+      with (TUnCodeXState.Create(config.ClassList, tv_Classes, config.PackageList, tv_Packages)) do begin
+        SaveTreeToStream(fs);
+        Free;
+      end;
+    finally
+      fs.Free;
     end;
-  finally
-    fs.Free;
+  except
+    DeleteFile(config.StateFile+'.tmp');
+    raise;
   end;
+  MoveFileEx(PChar(config.StateFile+'.tmp'), PChar(config.StateFile), MOVEFILE_REPLACE_EXISTING);
   StatusReport('State saved');
   xunguard;
 end;
@@ -2492,7 +2498,13 @@ begin
     tmr_StatusText.Enabled := false;
     sb_Status.Panels[0].Text := 'Saving state and settings ...';
     Application.ProcessMessages;
-    if (TreeUpdated) then SaveState;
+    if (TreeUpdated) then begin
+      try
+        SaveState;
+      except
+        on e:Exception do MessageDlg('An exception occured while saving the current state. The current state hasn''t been saved.'+#13#10+'Exception message:'+#13#10#9+e.Message, mtError, [mbOK], 0);
+      end;
+    end;
     SaveLayoutSettings;
   end;
   xunguard;

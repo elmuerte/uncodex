@@ -6,7 +6,7 @@
   Purpose:
     Class definitions for UnrealScript elements
 
-  $Id: unit_uclasses.pas,v 1.64 2005-06-12 20:21:56 elmuerte Exp $
+  $Id: unit_uclasses.pas,v 1.65 2005-06-16 10:10:03 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -809,7 +809,7 @@ end;
 procedure TUClass.SetParent(Parent: TUClass);
 begin
   Fparent := Parent;
-  defs.Parent := Parent.defs;
+  if (Parent <> nil) then defs.Parent := Parent.defs;
 end;
 
 function TUClass.FullName: string;

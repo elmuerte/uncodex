@@ -47,7 +47,6 @@ procedure SIRegister_TUDeclarationList(CL: TPSPascalCompiler);
 procedure SIRegister_TUObjectList(CL: TPSPascalCompiler);
 procedure SIRegister_TUDeclaration(CL: TPSPascalCompiler);
 procedure SIRegister_TUObject(CL: TPSPascalCompiler);
-procedure SIRegister_TDefinitionList(CL: TPSPascalCompiler);
 procedure SIRegister_unit_uclasses(CL: TPSPascalCompiler);
 
 { run-time registration functions }
@@ -72,7 +71,6 @@ procedure RIRegister_TUDeclarationList(CL: TPSRuntimeClassImporter);
 procedure RIRegister_TUObjectList(CL: TPSRuntimeClassImporter);
 procedure RIRegister_TUDeclaration(CL: TPSRuntimeClassImporter);
 procedure RIRegister_TUObject(CL: TPSRuntimeClassImporter);
-procedure RIRegister_TDefinitionList(CL: TPSRuntimeClassImporter);
 procedure RIRegister_unit_uclasses(CL: TPSRuntimeClassImporter);
 
 procedure Register;
@@ -82,6 +80,7 @@ implementation
 
 uses
    Contnrs
+  ,unit_definitionlist
   ,unit_uclasses
   ;
  
@@ -303,6 +302,8 @@ begin
     RegisterProperty('ptype', 'string', iptrw);
     RegisterProperty('modifiers', 'string', iptrw);
     RegisterProperty('tag', 'string', iptrw);
+    RegisterMethod('Function CleanName : string');
+    RegisterMethod('Function GetDimension : integer');
   end;
 end;
 
@@ -376,22 +377,6 @@ begin
 end;
 
 (*----------------------------------------------------------------------------*)
-procedure SIRegister_TDefinitionList(CL: TPSPascalCompiler);
-begin
-  //with RegClassS(CL,'TObject', 'TDefinitionList') do
-  with CL.AddClassN(CL.FindClass('TObject'),'TDefinitionList') do
-  begin
-    RegisterMethod('Function IsDefined( name : string) : boolean');
-    RegisterMethod('Function GetDefine( name : string) : string');
-    RegisterMethod('Function Eval( line : string) : boolean');
-    RegisterMethod('Function define( name, value : string) : boolean');
-    RegisterMethod('Function undefine( name : string) : boolean');
-    RegisterMethod('Constructor Create( owner : TUClass)');
-    RegisterProperty('Definitions', 'TStringList', iptr);
-  end;
-end;
-
-(*----------------------------------------------------------------------------*)
 procedure SIRegister_unit_uclasses(CL: TPSPascalCompiler);
 begin
  CL.AddConstantN('UCLASSES_REV','LongInt').SetInt( 6);
@@ -399,7 +384,6 @@ begin
   CL.AddClassN(CL.FindClass('TOBJECT'),'TUClass');
   CL.AddClassN(CL.FindClass('TOBJECT'),'TUPackage');
   CL.AddClassN(CL.FindClass('TOBJECT'),'TUFunctionList');
-  SIRegister_TDefinitionList(CL);
   SIRegister_TUObject(CL);
   SIRegister_TUDeclaration(CL);
   SIRegister_TUObjectList(CL);
@@ -929,10 +913,6 @@ procedure TUObjectName_R(Self: TUObject; var T: string);
 begin T := Self.Name; end;
 
 (*----------------------------------------------------------------------------*)
-procedure TDefinitionListDefinitions_R(Self: TDefinitionList; var T: TStringList);
-begin T := Self.Definitions; end;
-
-(*----------------------------------------------------------------------------*)
 procedure RIRegister_unit_uclasses_Routines(S: TPSExec);
 begin
  S.RegisterDelphiFunction(@UFunctionTypeToString, 'UFunctionTypeToString', cdRegister);
@@ -1128,6 +1108,8 @@ begin
     RegisterPropertyHelper(@TUPropertyptype_R,@TUPropertyptype_W,'ptype');
     RegisterPropertyHelper(@TUPropertymodifiers_R,@TUPropertymodifiers_W,'modifiers');
     RegisterPropertyHelper(@TUPropertytag_R,@TUPropertytag_W,'tag');
+    RegisterMethod(@TUProperty.CleanName, 'CleanName');
+    RegisterMethod(@TUProperty.GetDimension, 'GetDimension');
   end;
 end;
 
@@ -1194,27 +1176,11 @@ begin
 end;
 
 (*----------------------------------------------------------------------------*)
-procedure RIRegister_TDefinitionList(CL: TPSRuntimeClassImporter);
-begin
-  with CL.Add(TDefinitionList) do
-  begin
-    RegisterMethod(@TDefinitionList.IsDefined, 'IsDefined');
-    RegisterMethod(@TDefinitionList.GetDefine, 'GetDefine');
-    RegisterMethod(@TDefinitionList.Eval, 'Eval');
-    RegisterMethod(@TDefinitionList.define, 'define');
-    RegisterMethod(@TDefinitionList.undefine, 'undefine');
-    RegisterConstructor(@TDefinitionList.Create, 'Create');
-    RegisterPropertyHelper(@TDefinitionListDefinitions_R,nil,'Definitions');
-  end;
-end;
-
-(*----------------------------------------------------------------------------*)
 procedure RIRegister_unit_uclasses(CL: TPSRuntimeClassImporter);
 begin
   with CL.Add(TUClass) do
   with CL.Add(TUPackage) do
   with CL.Add(TUFunctionList) do
-  RIRegister_TDefinitionList(CL);
   RIRegister_TUObject(CL);
   RIRegister_TUDeclaration(CL);
   RIRegister_TUObjectList(CL);
