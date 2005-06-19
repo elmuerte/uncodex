@@ -6,7 +6,7 @@
   Purpose:
     Keeps track of macro definitions and stuff like that
 
-  $Id: unit_definitionlist.pas,v 1.3 2005-06-16 15:42:14 elmuerte Exp $
+  $Id: unit_definitionlist.pas,v 1.4 2005-06-19 22:08:29 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -42,32 +42,27 @@ type
   ERequireToken = class(EDefinitionListEval);
   EInvalidLiteral = class(EDefinitionListEval);
   EUnknownIdentifier = class(EDefinitionListEval);
+  EUnknownFunction = class(EDefinitionListEval);
 
   TDefinitionList = class;
 
-  TArgumentRecord = class(TObject)
-  public
-    name: string;
-    offset: array of integer;
-    constructor Create(nname: string);
-    procedure AddOffset(idx: integer);
-  end;
+  TArgumentAction = ( aaNone, aaQuote, aaConcat );
 
-  TArgumentList = class(TObjectList)
-  protected
-    function GetItem(Index: Integer): TArgumentRecord;
-    procedure SetItem(Index: Integer; AArgument: TArgumentRecord);
-  public
-    procedure AddArgument(name: string);
-    property Items[Index: Integer]: TArgumentRecord read GetItem write SetItem; default;
+  TArgumentRecord = record
+    idx:    integer;
+    offset: integer;
+    len:    integer;
+    action: TArgumentAction
   end;
 
   TDefinitionEntry = class(TObject)
   protected
     fname:       string; // AS IS
     fvalue:      string; // AS IS
-    fargList:    TArgumentList;
+    farglist:    array of string;
+    argreps:     array of TArgumentRecord;
     function GetArgCount: integer;
+    function getArgItem(index: integer): string;
   public
     owner:      TDefinitionList;
     constructor Create(name, value: string);
@@ -77,7 +72,8 @@ type
     property Name: string read fname;
     property Value: string read fvalue;
     property ArgCount: integer read GetArgCount;
-    property ArgList: TArgumentList read fargList;
+    property ArgList[index: integer]: string read getArgItem;
+    procedure AddOffset(argidx, offset: integer; len: integer = -1; action: TArgumentAction = aaNone);
   end;
 
   TOnParseDefinition = procedure(def: TDefinitionEntry);
@@ -107,7 +103,7 @@ type
     function IsDefined(name: string): boolean;
     function IsRealDefined(name: string): boolean;
     function GetDefine(name: string): string;
-    //function CallDefine(name: string; args: array of string);
+    function CallDefine(name: string; args: array of string): string;
     function Eval(line: string): boolean;
     function define(name, value: string): boolean;
     function undefine(name: string): boolean;
@@ -127,38 +123,12 @@ const
   EREQUIRE_TOKEN = 'Expected token "%s" got "%s".';
   EINVALID_LITERAL = 'Invalid literal value "%s"';
   EUNKNOWN_IDENTIFIER = 'Identifier does not exist "%s"';
+  EUNKNOWN_FUNCTION = 'No function defined with that footprint "%s"';
 
 implementation
 
-{ TArgumentRecord }
-
-constructor TArgumentRecord.Create(nname: string);
-begin
-  name := nname;
-end;
-
-procedure TArgumentRecord.AddOffset(idx: integer);
-begin
-  SetLength(offset, High(offset)+1);
-  offset[High(offset)] := idx;
-end;
-
-{ TArgumentList }
-
-procedure TArgumentList.AddArgument(name: string);
-begin
-  Add(TArgumentRecord.Create(name));
-end;
-
-function TArgumentList.GetItem(Index: Integer): TArgumentRecord;
-begin
-  result := TArgumentRecord(inherited GetItem(index));
-end;
-
-procedure TArgumentList.SetItem(Index: Integer; AArgument: TArgumentRecord);
-begin
-   inherited SetItem(Index, AArgument);
-end;
+uses
+  RTLConsts;
 
 { TDefinitionEntry }
 
@@ -170,12 +140,14 @@ begin
   fvalue := value;
   // parse name for arg count
   i := pos('(', fname);
+  SetLength(farglist, 0);
+  SetLength(argreps, 0);
   while (i > 0) do begin
-    if (fargList = nil) then fargList := TArgumentList.Create(true);
     Inc(i); // begin
     j := i+1;
     while ((fname[j] <> ',') and (fname[j] <> ')') and (j < Length(fname))) do inc(j);
-    ArgList.AddArgument(Copy(fname, i, j-i));
+    SetLength(farglist, High(farglist)+2);
+    farglist[High(farglist)] := Copy(fname, i, j-i);
     if ((fname[j] = ')') or (j >= Length(fname))) then break;
     i := j;
   end;
@@ -190,7 +162,13 @@ end;
 function TDefinitionEntry.GetArgCount: integer;
 begin
   if (fargList = nil) then result := 0
-  else result := fargList.Count;
+  else result := High(farglist)+1;
+end;
+
+function TDefinitionEntry.getArgItem(index: integer): string;
+begin
+  if ((index < Low(farglist)) and (index > High(farglist))) then raise EListError.CreateFmt(SListIndexError, [index]);
+  result := farglist[index];
 end;
 
 function TDefinitionEntry.baseName: string;
@@ -202,9 +180,39 @@ begin
   result := Copy(fname, 1, i-1);
 end;
 
-function TDefinitionEntry.evalFunction(args: array of string): string;
+procedure TDefinitionEntry.AddOffset(argidx, offset: integer; len: integer = -1; action: TArgumentAction = aaNone);
+var
+  i: integer;
 begin
+  if ((argidx < Low(farglist)) and (argidx > High(farglist))) then raise EListError.CreateFmt(SListIndexError, [argidx]);
+  i := High(argreps)+1;
+  SetLength(argreps, i+1);
+  argreps[i].idx := argidx;
+  argreps[i].offset := offset;
+  if (len = -1) then argreps[i].len := length(farglist[argidx])
+  else argreps[i].len := len;
+  argreps[i].action := action;
+end;
 
+
+function TDefinitionEntry.evalFunction(args: array of string): string;
+var
+  i: integer;
+  argentry: string;
+begin
+  //TODO: other exception
+  // not enough args
+  if (High(fargList) < High(args)) then raise Exception.CreateFmt('Not enough arguments, expected %d, received %d.', [High(fargList), High(args)]);
+  if (high(argreps) = -1) then owner.ParseDefinition(self);
+  result := Value;
+  for i := High(argreps) downto Low(argreps) do begin
+    argentry := args[argreps[i].idx];
+    if (argreps[i].action = aaQuote) then begin
+      argentry := StringReplace(argentry, '"', '\"', [rfReplaceAll]);
+      argentry := '"'+argentry+'"';
+    end;
+    result := Copy(result, 1, argreps[i].offset)+argentry+Copy(result, argreps[i].offset+1+argreps[i].len, MaxInt);
+  end;
 end;
 
 { TDefinitionList }
@@ -297,6 +305,22 @@ begin
   else if (fparent <> nil) then begin
     result := fparent.GetDefine(name);
   end;
+end;
+
+function TDefinitionList.CallDefine(name: string; args: array of string): string;
+var
+  idx: integer;
+  sname: string;
+begin
+  sname := name+'/'+IntToStr(high(args)+1);
+  idx := defines.IndexOf(sname);
+  if (defines.IndexOf(sname) > -1) then begin
+    result := TDefinitionEntry(defines.Objects[idx]).evalFunction(args);
+  end
+  else if (fparent <> nil) then begin
+    result := fparent.CallDefine(name, args);
+  end
+  else raise EUnknownFunction.CreateFmt(EUNKNOWN_FUNCTION, [sname]);
 end;
 
 procedure TDefinitionList.ParseDefinition(def: TDefinitionEntry);
@@ -605,7 +629,6 @@ begin
   end;}
 var
   idx: integer;
-  val: string;
   entry: TDefinitionEntry;
 begin
   //TODO: translate to name/args
