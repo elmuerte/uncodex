@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.7 2005-06-16 15:42:12 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.8 2005-06-19 22:07:54 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -34,11 +34,17 @@ unit unit_preprocessor;
 interface
 
 uses
-  Classes, SysUtils, unit_definitionlist;
+  Classes, SysUtils, unit_definitionlist, unit_sourceparser;
 
   procedure PreProcessFile(filename: string);
   procedure PreProcessDirectory(dir: string);
   procedure LoadConfiguration();
+
+  // protected functions
+  procedure _ppMacro(p: TSourceParser);
+  function _reparseFuncDef(input: string): string;
+  procedure _ppIdentifier(p: TSourceParser);
+  procedure internalPP(p: TSourceParser);
 
 // config stuff
 var
@@ -51,16 +57,17 @@ var
   supportPreDefine: boolean = true;
 
 const
-  UCPP_VERSION = '005';
+  UCPP_VERSION = '006';
   UCPP_HOMEPAGE = 'http://wiki.beyondunreal.com/wiki/UCPP';
   UCPP_COPYRIGHT = 'Copyright (C) 2005 Michiel Hendriks';
 
 implementation
 
-uses unit_sourceparser, unit_pputils, unit_ucxinifiles;
+uses unit_pputils, unit_ucxinifiles;
 
 var
   ucfile, pucfile: string;
+  globalP: TSourceParser;
   CurDefs: TDefinitionList;
 
 const
@@ -192,13 +199,13 @@ begin
     exit;
   end
   // UsUnit support macro - should become a CHECK(expr,msg), CHECK(expr)
-  else if (SameText(cmd, '#check')) then begin
+  {else if (SameText(cmd, '#check')) then begin
     // for macro's the line is always one more than actual
     rep := 'check( '+args+', "'+StringReplace(args, '"', '\"', [rfReplaceAll])+'"$chr(3)$"'+ucfile+':'+IntToStr(p.SourceLine-1)+'");'+NL;
     p.OutputString(rep);
     p.SkipToken(true);
     exit;
-  end
+  end}
 
 
   // do this last
@@ -229,7 +236,47 @@ begin
   p.SkipToken(true);
 end;
 
+// reparse the result of a function define
+function _reparseFuncDef(input: string): string;
+var
+  sin: TStringStream;
+  sou: TStringStream;
+  sp: TSourceParser;
+begin
+  sin := TStringStream.Create(input);
+  sou := TStringStream.Create('');
+  sp := TSourceParser.Create(sin, sou);
+  try
+    internalPP(sp);
+    result := sou.DataString;
+  finally
+    sin.Free;
+    sou.Free;
+  end;
+end;
+
 procedure _ppIdentifier(p: TSourceParser);
+
+  // used by define function parsing to match brackets
+  procedure _pBrackets(p: TSourceParser);
+  var
+    bcount: integer;
+  begin
+    bcount := 0;
+    if (p.Token = '(') then begin
+      Inc(bcount);
+      p.SkipToken(false);
+      while ((bcount > 0) and (p.Token <> toEOF)) do begin
+        case (p.Token) of
+          '(': Inc(bcount);
+          ')': Dec(bcount);
+        end;
+        if (bcount = 0) then exit;
+        p.SkipToken(false);
+      end;
+    end;
+  end;
+
 var
   tstr: string;
   repl: string;
@@ -251,11 +298,11 @@ begin
         hasrepl := true;
       end
       else if (SameText(tstr, '__CLASS__')) then begin
-        repl := '"'+ChangeFileExt(ExtractFileName(ucfile), '')+'"';
+        repl := ChangeFileExt(ExtractFileName(ucfile), '');
         hasrepl := true;
       end
       else if (SameText(tstr, '__LINE__')) then begin
-        repl := IntToStr(p.SourceLine);
+        repl := IntToStr(globalP.SourceLine);
         hasrepl := true;
       end
       else if (SameText(tstr, '__DATE__')) then begin
@@ -272,16 +319,28 @@ begin
       p.PushState;
       p.SkipToken(false);
       if (p.Token = '(') then begin
+        p.FullCopy := true;
+        p.GetCopyData(true);
         p.SkipToken(false);
         while (p.Token <> ')') do begin
           if (p.Token = ',') then begin
-            SetLength(args, High(args)+1);
-            args[High(args)] := 'dummy';
+            SetLength(args, High(args)+2);
+            repl := p.GetCopyData(true);
+            Delete(repl, Length(repl), MaxInt);
+            args[High(args)] := trim(repl); // get buffer
           end;
+          _pBrackets(p);
           p.SkipToken(false);
         end;
-        if (CurDefs.IsRealDefined(tstr+'/'+IntToStr(High(args)))) then begin
-          //repl := CurDefs.CallDefine(tstr, args);
+        p.FullCopy := false;
+        SetLength(args, High(args)+2);
+        repl := p.GetCopyData(true);
+        Delete(repl, Length(repl), MaxInt);
+        args[High(args)] := trim(repl); // get buffer
+        repl := '';
+        if (CurDefs.IsRealDefined(tstr+'/'+IntToStr(High(args)+1))) then begin
+          repl := _reparseFuncDef(CurDefs.CallDefine(tstr, args));
+          tstr := tstr+'/'+IntToStr(High(args)+1); // for nicer debug output
           hasrepl := true;
           p.DiscardState;
         end
@@ -324,12 +383,62 @@ begin
   end;
 end;
 
+// parse a definition entry
+procedure ParseDef(def: TDefinitionEntry);
+var
+  p: TSourceParser;
+  ss, dummy: TStringStream;
+  sl: TStringList;
+  i,n: integer;
+  act: TArgumentAction;
+begin
+  ss := TStringStream.Create(def.Value);
+  dummy := TStringstream.Create('');
+  p := TSourceParser.Create(ss, dummy);
+  sl := TStringList.Create;
+  try
+    p.DoMacro := false;
+    for i := 0 to def.ArgCount-1 do begin
+      sl.Add(def.ArgList[i]);
+    end;
+    while (p.Token <> toEof) do begin
+      act := aaNone;
+      i := p.LinePos-Length(p.TokenString);
+      if (p.Token = '#') then begin
+        act := aaQuote;
+        p.SkipToken(false);
+        if (p.Token = '#') then begin
+          act := aaConcat;
+          p.SkipToken(false);
+        end;
+      end;
+      if (p.Token = toSymbol) then begin
+        n := sl.IndexOf(p.TokenString);
+        if (n > -1) then begin
+          if (act <> aaNone) then begin
+            if (act = aaConcat) then p.SkipToken(false);
+            def.AddOffset(n, i, p.LinePos-i, act);
+            if (act = aaQuote) then p.SkipToken(false);
+            continue;
+          end
+          else def.AddOffset(n, i);
+        end;
+      end;
+      p.SkipToken(false);
+    end;
+  finally
+    sl.Free;
+    ss.Free;
+    dummy.Free;
+  end;
+end;
+
 procedure PreProcessFile(filename: string);
 var
-  parser: TSourceParser;
   fsin, fsout: TFileStream;
 begin
   CurDefs := TDefinitionList.Create(BaseDefs);
+  CurDefs.OnParseDefinition := ParseDef;
   if (not SameText(ExtractFileExt(filename), '.puc')) then begin
     ErrorMessage('The .puc extention is required.');
   end;
@@ -348,12 +457,13 @@ begin
       ErrorMessage('Could not open file "'+ucfile+'" for writing.');
       exit;
     end;
-    parser := TSourceParser.Create(fsin, fsout);
-    parser.ProcessMacro := _ppMacro;
-    parser.MacroCallBack := true;
+    globalP := TSourceParser.Create(fsin, fsout);
+    globalP.ProcessMacro := _ppMacro;
+    globalP.MacroCallBack := true;
     Writeln('Processing "'+pucfile+'" -> "'+ucfile+'"');
-    internalPP(parser);
+    internalPP(globalP);
   finally;
+    FreeandNil(globalP);
     FreeAndNil(fsout);
     FreeAndNil(fsin);
     FreeAndNil(CurDefs);
@@ -401,6 +511,7 @@ end;
 
 initialization
   BaseDefs := TDefinitionList.Create(nil);
+  BaseDefs.OnParseDefinition := ParseDef;
   if (not FindCmdLineSwitch('undef', ['-'], false)) then begin
     BaseDefs.define('UCPP_VERSION', UCPP_VERSION);
     BaseDefs.define('UCPP_HOMEPAGE', '"'+UCPP_HOMEPAGE+'"');

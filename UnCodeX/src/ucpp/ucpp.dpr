@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.6 2005-06-13 11:40:09 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.7 2005-06-19 22:07:54 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -178,4 +178,5 @@ begin
     writeln('--- done - press enter to continue ---');
     Readln(Input);
   end;
+  if (ErrorCount > 0) then Halt(1); // maybe more error codes
 end.
