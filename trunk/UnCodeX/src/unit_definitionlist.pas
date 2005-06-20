@@ -6,7 +6,7 @@
   Purpose:
     Keeps track of macro definitions and stuff like that
 
-  $Id: unit_definitionlist.pas,v 1.4 2005-06-19 22:08:29 elmuerte Exp $
+  $Id: unit_definitionlist.pas,v 1.5 2005-06-20 08:40:07 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -529,6 +529,7 @@ end;
 
 function TDefinitionList._lvalue(var line: string): integer;
 begin
+  result := 0;
   try
     if (IsValidIdent(curToken)) then begin
       if (_builtin(line, Result)) then exit;
