@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.9 2005-06-20 12:11:03 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.10 2005-06-20 17:25:17 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -47,20 +47,23 @@ uses
   procedure internalPP(p: TSourceParser);
   function _ExternalDefine(token: string; var output: string): boolean;
 
+const
+  UCPP_VERSION = '007';
+  UCPP_HOMEPAGE = 'http://wiki.beyondunreal.com/wiki/UCPP';
+  UCPP_COPYRIGHT = 'Copyright (C) 2005 Michiel Hendriks';
+  UCPP_STRIP_MSG = '// UCPP: code stripped';
+
 // config stuff
 var
   cfgBase: string;
   cfgMod: string;
   cfgFile: string;
+  cfgStripMessage: string = UCPP_STRIP_MSG;
   BaseDefs: TDefinitionList;
   supportIf: boolean = true;
   supportDefine: boolean = true;
   supportPreDefine: boolean = true;
-
-const
-  UCPP_VERSION = '007';
-  UCPP_HOMEPAGE = 'http://wiki.beyondunreal.com/wiki/UCPP';
-  UCPP_COPYRIGHT = 'Copyright (C) 2005 Michiel Hendriks';
+  stripCode: boolean = false;
 
 implementation
 
@@ -84,7 +87,8 @@ var
 
   procedure CommentMacro();
   begin
-    rep := UCPP_COMMENT+cmd+' '+args+NL;
+    if (stripCode) then rep := cfgStripMessage+NL
+    else rep := UCPP_COMMENT+cmd+' '+args+NL;
     p.OutputString(rep);
     p.SkipToken(true);
   end;
@@ -125,12 +129,13 @@ begin
         macroIfCnt := 1;
         while (macroIfCnt > 0) do begin
           if (hadNewLine) then begin
-            p.OutputString(UCPP_COMMENT);
+            if (stripCode) then p.OutputString(cfgStripMessage+NL)
+            else p.OutputString(UCPP_COMMENT);
             hadNewLine := false;
           end;
-          p.CopyTokenToOutput;
+          if (not stripCode) then p.CopyTokenToOutput;
           if (p.Token = #10) then hadNewLine := true;
-          p.SkipToken(true);
+          p.SkipToken(not stripCode);
         end;
       end;
     end; // do eval
@@ -145,10 +150,11 @@ begin
         macroIfCnt := 1;
         while (macroIfCnt > 0) do begin
           if (hadNewLine) then begin
-            p.OutputString(UCPP_COMMENT);
+            if (stripCode) then p.OutputString(cfgStripMessage+NL)
+            else p.OutputString(UCPP_COMMENT);
             hadNewLine := false;
           end;
-          p.CopyTokenToOutput;
+          if (not stripCode) then p.CopyTokenToOutput;
           if (p.Token = #10) then hadNewLine := true;
           p.SkipToken(true);
         end;
@@ -164,10 +170,11 @@ begin
       macroIfCnt := 1;
       while (macroIfCnt > 0) do begin
         if (hadNewLine) then begin
-          p.OutputString(UCPP_COMMENT);
+          if (stripCode) then p.OutputString(cfgStripMessage+NL)
+          else p.OutputString(UCPP_COMMENT);
           hadNewLine := false;
         end;
-        p.CopyTokenToOutput;
+        if (not stripCode) then p.CopyTokenToOutput;
         if (p.Token = #10) then hadNewLine := true;
         p.SkipToken(true);
       end;
@@ -184,7 +191,14 @@ begin
     CommentMacro;  // don't strip comment, everything is included
     if (macroIfCnt = 0) then begin
       cmd := GetToken(args, [' ', #9]);
-      CurDefs.define(cmd, args);
+      try
+        CurDefs.define(cmd, args);
+      except
+        on e:ERedefinition do begin
+          //TODO: implicit undefine?
+          WarningMessage(Format(e.Message+' The first definition will be used. Near line #%d.', [p.SourceLine-1]));
+        end;
+      end;
       DebugMessage(cmd+' = '+args);
     end;
     exit;
@@ -351,7 +365,7 @@ begin
         tmp := tstr+'/'+IntToStr(High(args)+1);
         if (CurDefs.IsRealDefined(tmp)) then begin
           if (reparseStack.IndexOf(tmp) > -1) then begin
-            raise Exception.CreateFmt('Recursive function define encountered "%s" at line #%d:%d; call stack = "%s"', [tmp, globalp.SourceLine, globalp.linePos, reparseStack.commaText]);
+            raise Exception.CreateFmt('Recursive function define encountered "%s" at line #%d:%d; call stack = "%s".', [tmp, globalp.SourceLine, globalp.linePos, reparseStack.commaText]);
           end;
           reparseStack.Add(tmp);
           repl := _reparseFuncDef(CurDefs.CallDefine(tstr, args));
@@ -405,7 +419,7 @@ var
   p: TSourceParser;
   ss, dummy: TStringStream;
   sl: TStringList;
-  i,n: integer;
+  i,n,x: integer;
   act: TArgumentAction;
 begin
   ss := TStringStream.Create(def.Value);
@@ -431,6 +445,7 @@ begin
         else i := n;
       end;
       if (p.Token = toSymbol) then begin
+        x := p.LinePos-length(p.TokenString); // real start offset for normal arguments
         n := sl.IndexOf(p.TokenString);
         if (n > -1) then begin
           if (act <> aaNone) then begin
@@ -456,8 +471,8 @@ begin
                 continue;
               end
               else p.PopState; // quote is only leading
-            end;  
-            def.AddOffset(n, i);
+            end;
+            def.AddOffset(n, x);
             continue;
           end;
         end;
@@ -505,7 +520,7 @@ begin
     try
       internalPP(globalP);
     except
-      on e:Exception do ErrorMessage(e.Message);
+      on e:Exception do ErrorMessage(e.Message+' The resulting file will mostlikely be broken.');
     end;
   finally;
     FreeandNil(globalP);
@@ -540,8 +555,9 @@ begin
   ini := TUCXIniFile.Create(cfgFile);
   sl := TStringList.Create;
   try
-    ini.ReadBool('Options', 'supportIf', supportIf);
-    ini.ReadBool('Options', 'supportDefine', supportDefine);
+    supportIf := ini.ReadBool('Options', 'supportIf', supportIf);
+    supportDefine := ini.ReadBool('Options', 'supportDefine', supportDefine);
+    cfgStripMessage := ini.ReadString('Options', 'stripMessage', cfgStripMessage);
     ini.ReadSection('Defines', sl);
     for i := 0 to sl.count-1 do begin
       // doesn't override commandline definitions

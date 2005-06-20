@@ -51,7 +51,7 @@ Conditionals=DEBUG_BUILD
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
-RunParams=-WAIT -debug TestFile.puc -DDEBUG
+RunParams=-WAIT TestFile.puc -DDEBUG -debug
 HostApplication=
 Launcher=
 UseLauncher=0
