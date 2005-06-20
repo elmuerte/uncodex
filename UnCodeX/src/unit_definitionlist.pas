@@ -6,7 +6,7 @@
   Purpose:
     Keeps track of macro definitions and stuff like that
 
-  $Id: unit_definitionlist.pas,v 1.7 2005-06-20 17:25:32 elmuerte Exp $
+  $Id: unit_definitionlist.pas,v 1.8 2005-06-20 20:04:24 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -211,6 +211,7 @@ begin
   for i := High(argreps) downto Low(argreps) do begin
     argentry := args[argreps[i].idx];
     if (argreps[i].action = aaQuote) then begin
+      argentry := StringReplace(argentry, '\', '\\', [rfReplaceAll]);
       argentry := StringReplace(argentry, '"', '\"', [rfReplaceAll]);
       argentry := '"'+argentry+'"';
     end;

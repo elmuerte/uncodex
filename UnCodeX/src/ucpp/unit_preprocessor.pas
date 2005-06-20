@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.10 2005-06-20 17:25:17 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.11 2005-06-20 20:04:12 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -277,11 +277,11 @@ function _ExternalDefine(token: string; var output: string): boolean;
 begin
   result := false;
   if (SameText(token, '__FILE__')) then begin
-    output := '"'+ucfile+'"';
+    output := '"'+StringReplace(ucfile, '\', '\\', [rfReplaceAll])+'"';
     result := true;
   end
   else if (SameText(token, '__BASE_FILE__')) then begin
-    output := '"'+ExtractFileName(ucfile)+'"';
+    output := '"'+StringReplace(ExtractFileName(ucfile), '\', '\\', [rfReplaceAll])+'"';
     result := true;
   end
   else if (SameText(token, '__CLASS__')) then begin
