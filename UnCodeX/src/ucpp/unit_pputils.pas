@@ -6,7 +6,7 @@
   Purpose:
     Various utility functions
 
-  $Id: unit_pputils.pas,v 1.3 2005-06-13 11:40:09 elmuerte Exp $
+  $Id: unit_pputils.pas,v 1.4 2005-06-20 08:39:59 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -77,7 +77,14 @@ end;
 {$IFDEF FPC}
 function BoolToStr(b: boolean; useString: boolean = false): string;
 begin
-   //TODO: implement
+  if (useString) then begin
+    if (b) then result := 'True'
+    else result := 'False';
+  end
+  else begin
+    if (b) then result := '1'
+    else result := '0';
+  end;
 end;
 {$ENDIF}
 
