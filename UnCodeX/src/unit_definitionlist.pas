@@ -6,7 +6,7 @@
   Purpose:
     Keeps track of macro definitions and stuff like that
 
-  $Id: unit_definitionlist.pas,v 1.6 2005-06-20 12:11:06 elmuerte Exp $
+  $Id: unit_definitionlist.pas,v 1.7 2005-06-20 17:25:32 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -35,6 +35,7 @@ uses
 
 type
   EDefinitionList = class(Exception);
+  ERedefinition = class(EDefinitionList);
   ENoDefinitionParser = class(EDefinitionList);
   // eval() exceptions
   EDefinitionListEval = class(EDefinitionList);
@@ -126,7 +127,7 @@ const
   EREQUIRE_TOKEN = 'Expected token "%s" got "%s".';
   EINVALID_LITERAL = 'Invalid literal value "%s"';
   EUNKNOWN_IDENTIFIER = 'Identifier does not exist "%s"';
-  EUNKNOWN_FUNCTION = 'No function defined with that footprint "%s"';
+  EUNKNOWN_FUNCTION = 'No function defined with that footprint "%s".';
 
 implementation
 
@@ -158,7 +159,6 @@ end;
 
 destructor TDefinitionEntry.Destroy;
 begin
-  FreeAndNil(fargList);
   inherited;
 end;
 
@@ -612,11 +612,16 @@ begin
   if (i > 0) then CountArgs()
   else fname := name;
 
+  if (IsRealDefined(fname)) then begin
+    raise ERedefinition.CreateFmt('"%s" is already defined.', [fname]);
+  end;
+
   j := defines.IndexOf(fname);
   result := j = -1;
   if (not result) then begin
-    //WARN: override in the same class in progress, not right
-    defines.Objects[j].Free;
+    entry := TDefinitionEntry(defines.Objects[j]);
+    defines.Delete(j);
+    entry.Free;
   end;
   entry := TDefinitionEntry.Create(name, value);
   entry.owner := self;
@@ -625,25 +630,12 @@ end;
 
 // returns true when definition was deleted
 // if false it was UNDEFINED
+// requires footprints for functions
 function TDefinitionList.undefine(name: string): boolean;
-{var
-  i: integer;
-begin
-  //TODO: improve
-  i := defines.IndexOfName(name);
-  result := false;
-  if (i <> -1) then begin
-    result := true;
-    defines.Delete(i);
-  end
-  else begin
-    defines.Values[name] := UNDEFINED;
-  end;}
 var
   idx: integer;
   entry: TDefinitionEntry;
 begin
-  //TODO: translate to name/args
   idx := defines.IndexOf(name);
   if (defines.IndexOf(name) > -1) then begin
     defines.Objects[idx].Free;
