@@ -6,7 +6,7 @@
   Purpose:
     Keeps track of macro definitions and stuff like that
 
-  $Id: unit_definitionlist.pas,v 1.5 2005-06-20 08:40:07 elmuerte Exp $
+  $Id: unit_definitionlist.pas,v 1.6 2005-06-20 12:11:06 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -77,6 +77,7 @@ type
   end;
 
   TOnParseDefinition = procedure(def: TDefinitionEntry);
+  TOnExternalDefine = function(token: string; var output: string): boolean;
 
   TDefinitionList = class(TObject)
   protected
@@ -84,6 +85,7 @@ type
     defines:  TStringList;
     curToken: string;
     FOnParseDefinition: TOnParseDefinition;
+    FOnExternalDefine: TOnExternalDefine; 
     procedure _nextToken(var line: string);
     procedure _requireToken(token: string; var line: string);
     function _expr(var line: string): integer;
@@ -115,6 +117,7 @@ type
     property Count: integer read GetCount;
     property Entry[Index: Integer]: string read GetEntry;
     property OnParseDefinition: TOnParseDefinition read FOnParseDefinition write FOnParseDefinition;
+    property OnExternalDefine: TOnExternalDefine read FOnExternalDefine write FOnExternalDefine;
   end;
 
 const
@@ -528,6 +531,8 @@ begin
 end;
 
 function TDefinitionList._lvalue(var line: string): integer;
+var
+  tmp: string;
 begin
   result := 0;
   try
@@ -537,6 +542,12 @@ begin
         Result := StrToIntDef(GetDefine(curToken), 1); // default to 1 if defined
       end
       else begin
+        if (Assigned(FOnExternalDefine)) then begin
+          if (FOnExternalDefine(curToken, tmp)) then begin
+            Result := StrToIntDef(tmp, 1);
+            exit;
+          end;
+        end;
         result := 0;
         raise EUnknownIdentifier.CreateFmt(EUNKNOWN_IDENTIFIER, [curToken])
       end;
