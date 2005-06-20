@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.8 2005-06-20 12:11:03 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.9 2005-06-20 13:41:47 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -46,7 +46,12 @@ uses
 
 procedure printVersion();
 begin
-  writeln('UCPP Version '+UCPP_VERSION);
+  writeln(' ____ ___ _________  __________ __________');
+  writeln('|    |   \\_   ___ \ \______   \\______   \');
+  writeln('|    |   //    \  \/  |     ___/ |     ___/');
+  writeln('|    |  / \     \____ |    |     |    | ');
+  writeln('|______/   \______  / |____|     |____| UCPP');
+  writeln('                  \/                    v'+UCPP_VERSION);
   writeln(UCPP_COPYRIGHT);
   writeln(UCPP_HOMEPAGE);
 end;
@@ -72,6 +77,8 @@ end;
 
 procedure printHelp();
 begin
+  printVersion();
+  writeln('');
   writeln('Usage:');
   writeln('  '+ParamStr(0)+' [switches] [settings] <name> <name> ... ');
   writeln('');
