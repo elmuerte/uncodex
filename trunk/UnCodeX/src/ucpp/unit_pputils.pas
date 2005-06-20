@@ -6,7 +6,7 @@
   Purpose:
     Various utility functions
 
-  $Id: unit_pputils.pas,v 1.4 2005-06-20 08:39:59 elmuerte Exp $
+  $Id: unit_pputils.pas,v 1.5 2005-06-20 12:11:03 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -36,8 +36,9 @@ interface
 uses
   Classes, SysUtils;
 
-  function GetToken(var input: string; delim: char; nocut: boolean = false): string;
+  function GetToken(var input: string; delim: TSysCharSet; nocut: boolean = false): string;
   procedure ErrorMessage(msg: string);
+  procedure WarningMessage(msg: string);
   procedure DebugMessage(msg: string);
   {$IFDEF FPC}
   function BoolToStr(b : boolean; useString: boolean = false): string;
@@ -45,18 +46,19 @@ uses
 
 var
   ErrorCount: integer = 0;
+  WarnCount: integer = 0;
   debug_mode: boolean = false;
 
 implementation
 
-function GetToken(var input: string; delim: char; nocut: boolean = false): string;
+function GetToken(var input: string; delim: TSysCharSet; nocut: boolean = false): string;
 var
   i,j: integer;
 begin
   i := 1;
-  while ((i <= length(input)) and (input[i] = delim)) do Inc(i);
+  while ((i <= length(input)) and (input[i] in delim)) do Inc(i);
   j := i;
-  while ((j <= length(input)) and (input[j] <> delim)) do Inc(j);
+  while ((j <= length(input)) and (not (input[j] in delim))) do Inc(j);
   result := copy(input, i, j-i);
   if (not nocut) then begin
     delete(input, 1, j);
@@ -67,6 +69,12 @@ procedure ErrorMessage(msg: string);
 begin
   Writeln(ErrOutput, 'Error: '+msg);
   Inc(ErrorCount);
+end;
+
+procedure WarningMessage(msg: string);
+begin
+  Writeln(ErrOutput, 'Warning: '+msg);
+  Inc(WarnCount);
 end;
 
 procedure DebugMessage(msg: string);

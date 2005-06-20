@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.7 2005-06-19 22:07:54 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.8 2005-06-20 12:11:03 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -131,7 +131,7 @@ begin
       if (Pos('-', s2) = 1) then begin
         if (Copy(s2, 1, 2) = '-D') then begin
           Delete(s2, 1, 2);
-          s1 := GetToken(s2, '=');
+          s1 := GetToken(s2, ['=']);
           if (s1 <> '') then BaseDefs.define(s1, s2);
         end
         else if (Copy(s2, 1, 2) = '-U') then begin
@@ -141,7 +141,7 @@ begin
         continue; // is a switch
       end;
       if (Pos('=', s2) > 0) then begin
-        s1 := GetToken(s2, '=');
+        s1 := GetToken(s2, ['=']);
         if (SameText(s1, 'SYSTEM')) then
           cfgBase := ExcludeTrailingPathDelimiter(ExtractFilePath(ExcludeTrailingPathDelimiter(s2)))
         else if (SameText(s1, 'MOD')) then cfgMod := s2
@@ -173,7 +173,7 @@ begin
     sl.Free;
   end;
   if (FindCmdLineSwitch('WAIT', ['-'], false) or
-    (FindCmdLineSwitch('wait', ['-'], false) and (ErrorCount > 0))) then begin
+    (FindCmdLineSwitch('wait', ['-'], false) and (ErrorCount+WarnCount > 0))) then begin
     writeln('');
     writeln('--- done - press enter to continue ---');
     Readln(Input);
