@@ -51,7 +51,7 @@ Conditionals=DEBUG_BUILD
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
-RunParams=-WAIT TestFile.puc -DDEBUG -debug
+RunParams=-WAIT TestFile.puc -DDEBUG -debug -imacros test.inc
 HostApplication=
 Launcher=
 UseLauncher=0

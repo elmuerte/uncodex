@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.10 2005-06-20 17:25:17 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.11 2005-06-21 19:55:27 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -136,18 +136,38 @@ begin
   if (usePackages) then writeln('Package mode enabled');
   sl := TStringList.Create;
   try
-    for i := 1 to ParamCount do begin
+    i := 1;
+    while (i < ParamCount) do begin
       s2 := ParamStr(i);
       if (Pos('-', s2) = 1) then begin
         if (Copy(s2, 1, 2) = '-D') then begin
           Delete(s2, 1, 2);
+          if (s2 = '') then begin // was "-D NAME"
+            Inc(i);
+            s2 := ParamStr(i);
+          end;
           s1 := GetToken(s2, ['=']);
           if (s1 <> '') then BaseDefs.define(s1, s2);
         end
         else if (Copy(s2, 1, 2) = '-U') then begin
           Delete(s2, 1, 2);
+          if (s2 = '') then begin // was "-U NAME"
+            Inc(i);
+            s2 := ParamStr(i);
+          end;
           if (s2 <> '') then BaseDefs.undefine(s2);
+        end
+        else if ((s2 = '-imacros') or (s2 = '-include')) then begin
+          Inc(i);
+          s2 := ExpandFileName(ParamStr(i));
+          if (not FileExists(s2)) then begin
+            ErrorMessage('Include file "'+s2+'" does not exist.');
+            Inc(i);
+            continue;
+          end;
+          includeFiles.Add(s2);
         end;
+        Inc(i);
         continue; // is a switch
       end;
       if (Pos('=', s2) > 0) then begin
@@ -163,11 +183,13 @@ begin
           s2 := ExpandFileName(s2);
           if (not FileExists(s2)) then begin
             ErrorMessage('File "'+s2+'" does not exist.');
+            Inc(i);
             continue;
           end;
         end;
         sl.Add(s2)
       end;
+      Inc(i);
     end;
     LoadConfiguration();
 
