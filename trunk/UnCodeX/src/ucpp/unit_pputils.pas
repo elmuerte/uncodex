@@ -6,7 +6,7 @@
   Purpose:
     Various utility functions
 
-  $Id: unit_pputils.pas,v 1.5 2005-06-20 12:11:03 elmuerte Exp $
+  $Id: unit_pputils.pas,v 1.6 2005-06-21 19:55:27 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -43,6 +43,7 @@ uses
   {$IFDEF FPC}
   function BoolToStr(b : boolean; useString: boolean = false): string;
   {$ENDIF}
+  function StrRepeat(line: string; count: integer): string;
 
 var
   ErrorCount: integer = 0;
@@ -95,5 +96,14 @@ begin
   end;
 end;
 {$ENDIF}
+
+function StrRepeat(line: string; count: integer): string;
+begin
+  result := '';
+  while (count > 0) do begin
+    result := result+line;
+    Dec(count);
+  end;
+end;
 
 end.

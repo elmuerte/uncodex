@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.11 2005-06-20 20:04:12 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.12 2005-06-21 19:55:27 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -37,6 +37,7 @@ uses
   Classes, SysUtils, unit_definitionlist, unit_sourceparser;
 
   procedure PreProcessFile(filename: string);
+  procedure PreProcessIncludeFile(filename: string; const global: boolean = false);
   procedure PreProcessDirectory(dir: string);
   procedure LoadConfiguration();
 
@@ -48,7 +49,7 @@ uses
   function _ExternalDefine(token: string; var output: string): boolean;
 
 const
-  UCPP_VERSION = '007';
+  UCPP_VERSION = '008';
   UCPP_HOMEPAGE = 'http://wiki.beyondunreal.com/wiki/UCPP';
   UCPP_COPYRIGHT = 'Copyright (C) 2005 Michiel Hendriks';
   UCPP_STRIP_MSG = '// UCPP: code stripped';
@@ -64,6 +65,7 @@ var
   supportDefine: boolean = true;
   supportPreDefine: boolean = true;
   stripCode: boolean = false;
+  includeFiles: TStringList;
 
 implementation
 
@@ -73,6 +75,8 @@ var
   ucfile, pucfile: string;
   globalP: TSourceParser;
   CurDefs: TDefinitionList;
+  stackDepth: integer;
+  filestack: TStringList; 
 
 const
   UCPP_COMMENT = '// ';
@@ -83,12 +87,13 @@ var
 
 procedure _ppMacro(p: TSourceParser);
 var
+  orig: string;
   cmd, args, rep: string;
 
   procedure CommentMacro();
   begin
     if (stripCode) then rep := cfgStripMessage+NL
-    else rep := UCPP_COMMENT+cmd+' '+args+NL;
+    else rep := UCPP_COMMENT+orig+NL;
     p.OutputString(rep);
     p.SkipToken(true);
   end;
@@ -108,14 +113,17 @@ var
   hadNewLine, evalval: boolean;
 begin
   hadNewLine := true;
+  orig := trim(p.TokenString);
   args := trim(p.TokenString);
   cmd := GetToken(args, [' ', #9]);
   DebugMessage('Macro "'+cmd+'" @ '+IntToStr(p.SourceLine-1));
   if (SameText(cmd, '#if') and supportIf) then begin
-    CommentMacro;
     StripComment;
-    if (macroIfCnt > 0) then Inc(macroIfCnt);
-    begin
+    if (macroIfCnt > 0) then begin
+      Inc(macroIfCnt);
+      CommentMacro;
+    end
+    else begin
       try
         evalval := CurDefs.Eval(args);
         DebugMessage('Eval('+args+') = '+BoolToStr(evalval, true));
@@ -127,6 +135,7 @@ begin
       end;
       if (not evalval) then begin
         macroIfCnt := 1;
+        CommentMacro;
         while (macroIfCnt > 0) do begin
           if (hadNewLine) then begin
             if (stripCode) then p.OutputString(cfgStripMessage+NL)
@@ -137,17 +146,21 @@ begin
           if (p.Token = #10) then hadNewLine := true;
           p.SkipToken(not stripCode);
         end;
-      end;
+      end
+      else CommentMacro;
     end; // do eval
   end
   else if ((SameText(cmd, '#ifdef') or (SameText(cmd, '#ifndef'))) and supportIf) then begin
-    CommentMacro;
     StripComment;
-    if (macroIfCnt > 0) then Inc(macroIfCnt)
+    if (macroIfCnt > 0) then begin
+      Inc(macroIfCnt);
+      CommentMacro;
+    end
     else begin
       evalval := SameText(cmd, '#ifdef');
       if (CurDefs.IsRealDefined(args) <> evalval) then begin
         macroIfCnt := 1;
+        CommentMacro;
         while (macroIfCnt > 0) do begin
           if (hadNewLine) then begin
             if (stripCode) then p.OutputString(cfgStripMessage+NL)
@@ -158,16 +171,20 @@ begin
           if (p.Token = #10) then hadNewLine := true;
           p.SkipToken(true);
         end;
-      end;
-    end; // do eval
+      end
+      else CommentMacro;
+    end;
   end
   else if (SameText(cmd, '#else') and supportIf) then begin
-    CommentMacro;
     // the else part of something we want
-    if (macroIfCnt = 1) then Dec(macroIfCnt)
+    if (macroIfCnt = 1) then begin
+      Dec(macroIfCnt);
+      CommentMacro;
+    end
     // last IF was true, so ignore
     else if (macroIfCnt = 0) then begin
       macroIfCnt := 1;
+      CommentMacro;
       while (macroIfCnt > 0) do begin
         if (hadNewLine) then begin
           if (stripCode) then p.OutputString(cfgStripMessage+NL)
@@ -178,7 +195,8 @@ begin
         if (p.Token = #10) then hadNewLine := true;
         p.SkipToken(true);
       end;
-    end;
+    end
+    else CommentMacro;
     // else we don't care
   end
   else if (SameText(cmd, '#endif') and supportIf) then begin
@@ -237,7 +255,12 @@ begin
       exit;
     end
     else if (SameText(cmd, 'include')) then begin
-      // TODO: process include file for defines and stuff
+      StripComment;
+      if (macroIfCnt = 0) then begin
+        args := trim(args);
+        args := ExpandFileName(ExtractFilePath(filestack[0])+args); // expand the filename
+        PreProcessIncludeFile(args);
+      end;
       CommentMacro;
       exit;
     end;
@@ -487,9 +510,60 @@ begin
   end;
 end;
 
+var
+  includeStack: TStringList;
+
+// to be used for #ucpp include filename or -imacros
+procedure PreProcessIncludeFile(filename: string; const global: boolean = false);
+var
+  fsin: TFileStream;
+  dummy: TMemoryStream;
+  p: TSourceParser;
+  defsback: TDefinitionList;
+  idx: integer;
+begin
+  if (includeStack.IndexOf(filename) > -1) then begin
+    WarningMessage('Recursive include, "'+filename+'" was already included, include file stack: "'+includeStack.CommaText+'"');
+    exit;
+  end;
+  try
+    fsin := TFileStream.Create(filename, fmOpenRead	or fmShareDenyWrite);
+  except
+    ErrorMessage('Could not open file "'+filename+'" for reading.');
+    exit;
+  end;
+  defsback := nil;
+  if (global) then begin
+    defsback := CurDefs;
+    CurDefs := BaseDefs;
+  end;
+  dummy := TMemoryStream.Create;
+  idx := includeStack.Add(filename);
+  Inc(stackDepth);
+  try
+    filestack.Insert(0, filename);
+    p := TSourceParser.Create(fsin, dummy);
+    p.ProcessMacro := _ppMacro;
+    p.MacroCallBack := true;
+    Writeln(StrRepeat('>', stackDepth)+' Processing include file "'+filename+'"');
+    internalPP(p);
+  finally;
+    filestack.Delete(0);
+    FreeAndNil(fsin);
+    FreeAndNil(dummy);
+    if (global) then begin
+      CurDefs := defsback;
+    end;
+    Writeln(StrRepeat('<', stackDepth)+' Finished processing include file "'+filename+'"');
+    Dec(stackDepth);
+    includeStack.Delete(idx);
+  end;
+end;
+
 procedure PreProcessFile(filename: string);
 var
   fsin, fsout: TFileStream;
+  i: integer;
 begin
   if (not SameText(ExtractFileExt(filename), '.puc')) then begin
     ErrorMessage('The .puc extention is required.');
@@ -506,6 +580,7 @@ begin
   CurDefs.define('CLASS_'+ChangeFileExt(ExtractFileName(filename), ''), '');
   pucfile := filename;
   ucfile := ChangeFileExt(filename, '.uc');
+  stackDepth := 1;
   try
     try
       fsout := TFileStream.Create(ucfile, fmCreate or fmShareExclusive);
@@ -513,20 +588,34 @@ begin
       ErrorMessage('Could not open file "'+ucfile+'" for writing.');
       exit;
     end;
+    Writeln('> Processing "'+pucfile+'" -> "'+ucfile+'"');
+    for i := 0 to includeFiles.Count-1 do begin
+      try
+        if (includeFiles[i] <> '') then
+          PreProcessIncludeFile(includeFiles[i]);
+      except
+        on e:Exception do begin
+          ErrorMessage(e.Message+' This include file will be excluded from future processing.');
+          includeFiles[i] := '';
+        end;
+      end;
+    end;
+    filestack.Insert(0, filename);
     globalP := TSourceParser.Create(fsin, fsout);
     globalP.ProcessMacro := _ppMacro;
     globalP.MacroCallBack := true;
-    Writeln('Processing "'+pucfile+'" -> "'+ucfile+'"');
     try
       internalPP(globalP);
     except
       on e:Exception do ErrorMessage(e.Message+' The resulting file will mostlikely be broken.');
     end;
   finally;
+    filestack.Delete(0);
     FreeandNil(globalP);
     FreeAndNil(fsout);
     FreeAndNil(fsin);
     FreeAndNil(CurDefs);
+    Writeln('< Finished processing "'+pucfile+'" -> "'+ucfile+'"');
   end;
 end;
 
@@ -579,7 +668,13 @@ initialization
   end
   else supportPreDefine := false;
   reparseStack := TStringList.Create;
+  includeFiles := TStringList.Create;
+  includeStack := TStringList.Create;
+  filestack := TStringList.Create;
 finalization
   FreeAndNil(BaseDefs);
   FreeAndNil(reparseStack);
+  FreeAndNil(includeFiles);
+  FreeAndNil(includeStack);
+  FreeAndNil(filestack);
 end.
