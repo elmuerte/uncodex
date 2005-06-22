@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.11 2005-06-21 19:55:27 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.12 2005-06-22 18:41:23 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -88,20 +88,25 @@ begin
   writeln('  -?'#9'This message');
   writeln('  -D<name>=<value>'+#13#10+
                 #9'Define a <name> with a <value>. This overrides the standards as'#13#10+
-                #9'defined in the configuration file.');
+                #9'defined in the configuration file');
+  writeln('  -imacros <filename>'+#13#10+
+                #9'Process <filename> for macros. This will be done for every file'#13#10+
+                #9'that needs to be processed');
+  writeln('  -include <filename>'+#13#10+
+                #9'Alias for -imacros');
   writeln('  -L'#9'Print the program''s license');
   writeln('  -undef'+#13#10+
-                #9'Do not use predefinitions (like __FILE__).');
+                #9'Do not use predefinitions (like __FILE__)');
   writeln('  -P'#9'Enable package mode. The provided names are package names.'#13#10+
                 #9'In package mode the base directory must be defined using'#13#10+
                 #9'either the SYSTEM or BASE setting');
   writeln('  -strip'+#13#10+
-                #9'Strip the code instead of commenting it out.');
+                #9'Strip the code instead of commenting it out');
   writeln('  -U<name>'+#13#10+
                 #9'Undefine <name>. Note: this has a lower precedence than'+#13#10+
-                #9'definitions made in the file.');
+                #9'definitions made in the file');
   writeln('  -V'#9'Show the program version');
-  writeln('  -wait'#9'Pause at the end of executiong when there where errors.');
+  writeln('  -wait'#9'Pause at the end of executiong when there where errors');
   writeln('  -WAIT'#9'Always pause at the end of processing');
   writeln('');
   writeln('Settings are always in the format "<Key>=<Value>". The following');

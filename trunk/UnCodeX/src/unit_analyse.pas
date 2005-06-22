@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.73 2005-06-11 10:40:24 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.74 2005-06-22 18:41:13 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -301,6 +301,7 @@ begin
     uclass.functions.Clear;
     uclass.delegates.Clear;
     uclass.states.Clear;
+    uclass.defs.Clear;
     AnalyseClass();
     if (not Self.Terminated) then begin
       uclass.consts.Sort;
@@ -927,6 +928,7 @@ begin
         if (DEBUG_MACRO_EVAL) then InternalLog(' = false');
         macroIfCnt := 1;
         while (macroIfCnt > 0) do begin
+          if (p.Token = toEOF) then raise EOFException.CreateFmt(EOFExceptionFmt, ['pMacro #if', uclass.name, p.SourceLine, '']);
           p.SkipToken;
         end;
       end;
@@ -940,6 +942,7 @@ begin
         if (DEBUG_MACRO_EVAL) then InternalLog(' = false');
         macroIfCnt := 1;
         while (macroIfCnt > 0) do begin
+          if (p.Token = toEOF) then raise EOFException.CreateFmt(EOFExceptionFmt, ['pMacro #ifdef', uclass.name, p.SourceLine, '']);
           p.SkipToken;
         end;
       end;
@@ -952,9 +955,42 @@ begin
     else if (macroIfCnt = 0) then begin
       macroIfCnt := 1;
       while (macroIfCnt > 0) do begin
+        if (p.Token = toEOF) then raise EOFException.CreateFmt(EOFExceptionFmt, ['pMacro #else', uclass.name, p.SourceLine, '']);
         p.SkipToken;
       end;
     end;
+    // else we don't care
+  end
+  else if (macro = 'ELIF') then begin // #else if
+    // the else part of something we want
+    if (macroIfCnt = 1) then begin
+      // but it doesn't change the macroIfCnt count (--++)
+      if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': eval: '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+      try
+        evalres := uclass.defs.Eval(args);
+      except
+        on e:Exception do begin
+          InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" (defaulting to false): '+e.Message, ltError, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+          evalres := false;
+        end;
+      end;
+      if (not evalres) then begin
+        if (DEBUG_MACRO_EVAL) then InternalLog(' = false');
+        while (macroIfCnt > 0) do begin
+          if (p.Token = toEOF) then raise EOFException.CreateFmt(EOFExceptionFmt, ['pMacro #elif if part', uclass.name, p.SourceLine, '']);
+          p.SkipToken;
+        end;
+      end;
+    end
+    // last IF was true, so ignore
+    else if (macroIfCnt = 0) then begin
+      macroIfCnt := 1;
+      while (macroIfCnt > 0) do begin
+        if (p.Token = toEOF) then raise EOFException.CreateFmt(EOFExceptionFmt, ['pMacro #elif else part', uclass.name, p.SourceLine, '']);
+        p.SkipToken;
+      end;
+    end
+    else if (macroIfCnt > 1) then Inc(macroIfCnt); // another #if that needs an #endif 
     // else we don't care
   end
   else if (macro = 'ENDIF') then begin
