@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.174 2005-06-16 10:10:02 elmuerte Exp $
+  $Id: unit_main.pas,v 1.175 2005-06-22 18:41:16 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -3016,6 +3016,7 @@ begin
     SourceSnoopOpenClass(ResolveFilename(GUIVars.SelectedUClass, nil), GUIVars.SelectedUClass)
   else if (GUIVars.SelectedUPackage <> nil) then
     SourceSnoopOpenPackage(GUIVars.SelectedUPackage);
+  re_SourceSnoop.Invalidate;
 end;
 
 procedure Tfrm_UnCodeX.tv_ClassesChange(Sender: TObject; Node: TTreeNode);

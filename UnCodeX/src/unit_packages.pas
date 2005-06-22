@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript package scanner, search for UnrealScript classes
 
-  $Id: unit_packages.pas,v 1.48 2005-05-14 13:27:33 elmuerte Exp $
+  $Id: unit_packages.pas,v 1.49 2005-06-22 18:41:22 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -162,6 +162,15 @@ begin
           try
             result.name := p.TokenString;
             result.InterfaceType := itTribesV;
+            p.NextToken;
+            if (p.TokenSymbolIs('extends') or p.TokenSymbolIs('expands')) then begin
+              p.NextToken;
+              result.parentname := p.TokenString;
+              if (p.NextToken = '.') then begin // package.class
+                p.NextToken;                    // (should work with checking package)
+                result.parentname := result.parentname+'.'+p.TokenString;
+              end;
+            end;
           except
             FreeAndNil(result);
             raise;
@@ -518,7 +527,7 @@ begin
         classlist[i].parent := parent;
         if (parent <> nil) then parent.children.Add(classlist[i]);
         {$IFDEF USE_TREEVIEW}
-        if (classlist[i].InterfaceType = itTribesV) then begin
+        if ((classlist[i].InterfaceType = itTribesV) and (parent = nil)) then begin
           if (InterfaceNode = nil) then begin
             InterfaceNode := classtree.AddChild(nil, 'Interfaces');
           end;

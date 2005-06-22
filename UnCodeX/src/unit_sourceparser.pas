@@ -7,7 +7,7 @@
     UnrealScript parser. Used for syntax highlighting, not for analysing.
     Bases on the TParser by Borland.
 
-  $Id: unit_sourceparser.pas,v 1.27 2005-06-21 19:55:35 elmuerte Exp $
+  $Id: unit_sourceparser.pas,v 1.28 2005-06-22 18:41:22 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -97,7 +97,7 @@ type
     function TokenString: string;
     procedure OutputString(data: string);
     property SourceLine: Integer read FSourceLine;
-    property LinePos: Integer read FLinePos {write FLinePos};
+    property LinePos: Integer read FLinePos write FLinePos;
     property Token: Char read FToken;
     property OutputStream: TStream read FOutStream write FOutStream;
     property ProcessMacro: TProcessMacro write FProcessMacro;

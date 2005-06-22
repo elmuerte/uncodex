@@ -7,7 +7,7 @@
     Parser for UnrealScript, used for analysing the unrealscript source.
     Based on TParser by Borland.
 
-  $Id: unit_parser.pas,v 1.29 2005-05-28 19:14:33 elmuerte Exp $
+  $Id: unit_parser.pas,v 1.30 2005-06-22 18:41:22 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -226,7 +226,7 @@ begin
       begin
         while not (P^ in [#10, toEOF]) do Inc(P);
         if (P^ = toEOF) then begin
-          Result := toEOF;
+          Result := toMacro;
         end
         else begin
           Inc(P);

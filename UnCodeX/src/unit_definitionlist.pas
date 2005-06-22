@@ -6,7 +6,7 @@
   Purpose:
     Keeps track of macro definitions and stuff like that
 
-  $Id: unit_definitionlist.pas,v 1.8 2005-06-20 20:04:24 elmuerte Exp $
+  $Id: unit_definitionlist.pas,v 1.9 2005-06-22 18:41:16 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -110,6 +110,7 @@ type
     function Eval(line: string): boolean;
     function define(name, value: string): boolean;
     function undefine(name: string): boolean;
+    procedure Clear;
     procedure ParseDefinition(def: TDefinitionEntry);
     constructor Create(parent: TDefinitionList);
     destructor Destroy; override;
@@ -249,6 +250,16 @@ var
 begin
   entry := TDefinitionEntry(defines.Objects[index]);
   if (entry <> nil) then result := entry.name+DEF_SEP+entry.value;
+end;
+
+procedure TDefinitionList.Clear;
+var
+  i: integer;
+begin
+  for i :=  defines.Count-1 downto 0 do begin
+    defines.Objects[i].Free;
+  end;
+  defines.Clear;
 end;
 
 procedure TDefinitionList.AddEntry(entry: string);
@@ -451,7 +462,7 @@ begin
   result := _accumx(line);
   while (curToken = '||') do begin
     _nextToken(line);
-    result := ord((result <> 0) or (_orx(line) <> 0));
+    result := ord((_orx(line) <> 0) or (result <> 0));
   end;
 end;
 
@@ -483,7 +494,7 @@ begin
   result := _multx(line);
   while (curToken = '&&') do begin
     _nextToken(line);
-    result := ord((result <> 0) and (_orx(line) <> 0));
+    result := ord((_andx(line) <> 0) and (result <> 0));
   end;
 end;
 
