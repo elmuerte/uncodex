@@ -7,7 +7,7 @@
     UnrealScript parser. Used for syntax highlighting, not for analysing.
     Bases on the TParser by Borland.
 
-  $Id: unit_sourceparser.pas,v 1.28 2005-06-22 18:41:22 elmuerte Exp $
+  $Id: unit_sourceparser.pas,v 1.29 2005-06-23 08:45:43 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -167,6 +167,15 @@ end;
 function TSourceParser.SkipToNextToken(CopyBlanks, DoCopy: Boolean): Char;
 var
   P, StartPos: PChar;
+  
+  procedure EatNewLine;
+  begin
+    if (P^ = #13) then begin
+      Inc(P);
+      if (P^ <> #10) then Dec(P);
+    end;
+  end;
+
 begin
   SkipBlanks(CopyBlanks);
   P := FSourcePtr;
@@ -179,7 +188,8 @@ begin
               Inc(P);
               Inc(FLinePos);
             end;
-      #10:  begin
+      #13, #10:  begin
+              EatNewLine;
               Inc(P);
               Inc(FSourceLine);
               FLinePos := 0;
@@ -318,7 +328,7 @@ begin
             Inc(FLinePos);
           end
           else begin
-            while not (P^ in [#10, toEOF]) do begin
+            while not (P^ in [#13, #10, toEOF]) do begin
               Inc(P);
               Inc(FLinePos);
             end;
@@ -327,6 +337,7 @@ begin
               Result := toMacro;
             end
             else begin
+              EatNewLine;
               Inc(P);
               Inc(FSourceLine); // next line
               FLinePos := 0;
@@ -341,11 +352,12 @@ begin
           if (P^ = '/') then begin // comment
             Inc(P);
             Inc(FLinePos);
-            while not (P^ in [#10, toEOF]) do begin
+            while not (P^ in [#13, #10, toEOF]) do begin
               Inc(P);
               Inc(FLinePos);
             end;
             if (P^ <> toEOF) then begin
+              EatNewLine;
               Inc(P);
               Inc(FSourceLine); // next line
               FLinePos := 0;
@@ -363,8 +375,9 @@ begin
             Result := P^;
           end
         end;
-      #10:
+      #13, #10:
         begin
+          EatNewLine;
           Inc(P);
           Inc(FSourceLine);
           FLinePos := 0;
@@ -438,7 +451,7 @@ begin
         end;
       #9:
         if (not TabIsWS) then Break;
-      #10:
+      #13, #10:
         begin
           FLinePos := 0;
           break;
