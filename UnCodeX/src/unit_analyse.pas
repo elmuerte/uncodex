@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.74 2005-06-22 18:41:13 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.75 2005-06-23 08:45:42 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -51,6 +51,7 @@ type
     p: TUCParser;
     ClassHash: TObjectHash;
     macroIfCnt: integer;
+    macroLastIf: boolean;
     includeParsers: TObjectList;
     includeFiles: TStringList;
     incFilename: string;
@@ -287,6 +288,7 @@ begin
   includeFiles := TStringList.Create;
   fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
   p := TUCParser.Create(fs);
+  macroLastIf := false;
   try
     p.ProcessMacro := pMacro;
     uclass.defaultproperties.data := '';
@@ -902,7 +904,6 @@ var PADMEM: string =  #$54#$68#$69#$73#$20#$69#$73#$20#$70#$61#$72#$74#$20#$6F#$
 procedure TClassAnalyser.pMacro(Sender: TUCParser);
 var
   macro, args: string;
-  evalres: boolean;
 begin
   args := TrimMacro(Sender.TokenString);
   macro := GetToken(args, ' ');
@@ -917,14 +918,14 @@ begin
     else begin
       if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': eval: '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
       try
-        evalres := uclass.defs.Eval(args);
+        macroLastIf := uclass.defs.Eval(args);
       except
         on e:Exception do begin
           InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" (defaulting to false): '+e.Message, ltError, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
-          evalres := false;
+          macroLastIf := false;
         end;
       end;
-      if (not evalres) then begin
+      if (not macroLastIf) then begin
         if (DEBUG_MACRO_EVAL) then InternalLog(' = false');
         macroIfCnt := 1;
         while (macroIfCnt > 0) do begin
@@ -950,9 +951,9 @@ begin
   end
   else if (macro = 'ELSE') then begin
     // the else part of something we want
-    if (macroIfCnt = 1) then Dec(macroIfCnt)
+    if ((macroIfCnt = 1) and not macroLastIf) then Dec(macroIfCnt)
     // last IF was true, so ignore
-    else if (macroIfCnt = 0) then begin
+    else if (macroLastIf) then begin
       macroIfCnt := 1;
       while (macroIfCnt > 0) do begin
         if (p.Token = toEOF) then raise EOFException.CreateFmt(EOFExceptionFmt, ['pMacro #else', uclass.name, p.SourceLine, '']);
@@ -963,18 +964,18 @@ begin
   end
   else if (macro = 'ELIF') then begin // #else if
     // the else part of something we want
-    if (macroIfCnt = 1) then begin
+    if ((macroIfCnt = 1) and not macroLastIf) then begin
       // but it doesn't change the macroIfCnt count (--++)
       if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': eval: '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
       try
-        evalres := uclass.defs.Eval(args);
+        macroLastIf := uclass.defs.Eval(args);
       except
         on e:Exception do begin
           InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" (defaulting to false): '+e.Message, ltError, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
-          evalres := false;
+          macroLastIf := false;
         end;
       end;
-      if (not evalres) then begin
+      if (not macroLastIf) then begin
         if (DEBUG_MACRO_EVAL) then InternalLog(' = false');
         while (macroIfCnt > 0) do begin
           if (p.Token = toEOF) then raise EOFException.CreateFmt(EOFExceptionFmt, ['pMacro #elif if part', uclass.name, p.SourceLine, '']);
@@ -983,7 +984,7 @@ begin
       end;
     end
     // last IF was true, so ignore
-    else if (macroIfCnt = 0) then begin
+    else if (macroLastIf) then begin
       macroIfCnt := 1;
       while (macroIfCnt > 0) do begin
         if (p.Token = toEOF) then raise EOFException.CreateFmt(EOFExceptionFmt, ['pMacro #elif else part', uclass.name, p.SourceLine, '']);

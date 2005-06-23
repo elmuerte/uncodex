@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.12 2005-06-21 19:55:27 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.13 2005-06-23 08:45:58 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -49,7 +49,7 @@ uses
   function _ExternalDefine(token: string; var output: string): boolean;
 
 const
-  UCPP_VERSION = '008';
+  UCPP_VERSION = '009';
   UCPP_HOMEPAGE = 'http://wiki.beyondunreal.com/wiki/UCPP';
   UCPP_COPYRIGHT = 'Copyright (C) 2005 Michiel Hendriks';
   UCPP_STRIP_MSG = '// UCPP: code stripped';
@@ -84,7 +84,11 @@ const
 
 var
   macroIfCnt: integer = 0;
+  macroLastIf: boolean = false;
 
+var
+  hadNewLine: boolean;
+  
 procedure _ppMacro(p: TSourceParser);
 var
   orig: string;
@@ -95,7 +99,12 @@ var
     if (stripCode) then rep := cfgStripMessage+NL
     else rep := UCPP_COMMENT+orig+NL;
     p.OutputString(rep);
-    p.SkipToken(true);
+    p.SkipToken(not stripCode);
+    if (hadNewLine and (macroIfCnt > 0)) then begin
+      if (stripCode) then p.OutputString(cfgStripMessage+NL)
+      else p.OutputString(UCPP_COMMENT);
+      hadNewLine := p.Token = toEOL;
+    end;
   end;
 
   // removes comments from the macro line; not always used
@@ -109,31 +118,29 @@ var
     if (i > 0) then Delete(args, i, Length(args));
   end;
 
-var
-  hadNewLine, evalval: boolean;
 begin
   hadNewLine := true;
   orig := trim(p.TokenString);
-  args := trim(p.TokenString);
+  args := orig;
   cmd := GetToken(args, [' ', #9]);
   DebugMessage('Macro "'+cmd+'" @ '+IntToStr(p.SourceLine-1));
   if (SameText(cmd, '#if') and supportIf) then begin
     StripComment;
     if (macroIfCnt > 0) then begin
-      Inc(macroIfCnt);
       CommentMacro;
+      Inc(macroIfCnt);
     end
     else begin
       try
-        evalval := CurDefs.Eval(args);
-        DebugMessage('Eval('+args+') = '+BoolToStr(evalval, true));
+        macroLastIf := CurDefs.Eval(args);
+        DebugMessage('Eval('+args+') = '+BoolToStr(macroLastIf, true));
       except
         on e:Exception do begin
           WarningMessage(pucfile+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" (defaulting to false): '+e.Message);
-          evalval := false;
+          macroLastIf := false;
         end;
       end;
-      if (not evalval) then begin
+      if (not macroLastIf) then begin
         macroIfCnt := 1;
         CommentMacro;
         while (macroIfCnt > 0) do begin
@@ -143,7 +150,7 @@ begin
             hadNewLine := false;
           end;
           if (not stripCode) then p.CopyTokenToOutput;
-          if (p.Token = #10) then hadNewLine := true;
+          hadNewLine := p.Token = toEOL;
           p.SkipToken(not stripCode);
         end;
       end
@@ -157,8 +164,8 @@ begin
       CommentMacro;
     end
     else begin
-      evalval := SameText(cmd, '#ifdef');
-      if (CurDefs.IsRealDefined(args) <> evalval) then begin
+      macroLastIf := SameText(cmd, '#ifdef');
+      if (CurDefs.IsRealDefined(args) <> macroLastIf) then begin
         macroIfCnt := 1;
         CommentMacro;
         while (macroIfCnt > 0) do begin
@@ -168,21 +175,44 @@ begin
             hadNewLine := false;
           end;
           if (not stripCode) then p.CopyTokenToOutput;
-          if (p.Token = #10) then hadNewLine := true;
+          hadNewLine := p.Token = toEOL;
           p.SkipToken(true);
         end;
       end
       else CommentMacro;
     end;
   end
-  else if (SameText(cmd, '#else') and supportIf) then begin
+  else if (SameText(cmd, '#elif') and supportIf) then begin
     // the else part of something we want
-    if (macroIfCnt = 1) then begin
-      Dec(macroIfCnt);
-      CommentMacro;
+    if ((macroIfCnt = 1) and not macroLastIf) then begin
+      macroIfCnt := 0;
+      try
+        macroLastIf := CurDefs.Eval(args);
+        DebugMessage('Eval('+args+') = '+BoolToStr(macroLastIf, true));
+      except
+        on e:Exception do begin
+          WarningMessage(pucfile+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" (defaulting to false): '+e.Message);
+          macroLastIf := false;
+        end;
+      end;
+      if (not macroLastIf) then begin
+        macroIfCnt := 1;
+        CommentMacro;
+        while (macroIfCnt > 0) do begin
+          if (hadNewLine) then begin
+            if (stripCode) then p.OutputString(cfgStripMessage+NL)
+            else p.OutputString(UCPP_COMMENT);
+            hadNewLine := false;
+          end;
+          if (not stripCode) then p.CopyTokenToOutput;
+          hadNewLine := p.Token = toEOL;
+          p.SkipToken(not stripCode);
+        end;
+      end
+      else CommentMacro;
     end
     // last IF was true, so ignore
-    else if (macroIfCnt = 0) then begin
+    else if (macroLastIf) then begin
       macroIfCnt := 1;
       CommentMacro;
       while (macroIfCnt > 0) do begin
@@ -192,7 +222,34 @@ begin
           hadNewLine := false;
         end;
         if (not stripCode) then p.CopyTokenToOutput;
-        if (p.Token = #10) then hadNewLine := true;
+        hadNewLine := p.Token = toEOL;
+        p.SkipToken(true);
+      end;
+    end
+    else begin
+      if (macroIfCnt > 1) then Inc(macroIfCnt);
+      CommentMacro;
+    end;
+    // else we don't care
+  end
+  else if (SameText(cmd, '#else') and supportIf) then begin
+    // the else part of something we want
+    if ((macroIfCnt = 1) and not macroLastIf) then begin
+      Dec(macroIfCnt);
+      CommentMacro;
+    end
+    // last IF was true, so ignore
+    else if (macroLastIf) then begin
+      macroIfCnt := 1;
+      CommentMacro;
+      while (macroIfCnt > 0) do begin
+        if (hadNewLine) then begin
+          if (stripCode) then p.OutputString(cfgStripMessage+NL)
+          else p.OutputString(UCPP_COMMENT);
+          hadNewLine := false;
+        end;
+        if (not stripCode) then p.CopyTokenToOutput;
+        hadNewLine := p.Token = toEOL;
         p.SkipToken(true);
       end;
     end
