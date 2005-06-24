@@ -51,7 +51,7 @@ Conditionals=DEBUG_BUILD
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
-RunParams=-WAIT TestFile.puc -DDEBUG -debug -imacros test.inc
+RunParams=-WAIT -P BASE=D:\dev\UnCodeX\src\ucpp Tests -debug
 HostApplication=
 Launcher=
 UseLauncher=0
