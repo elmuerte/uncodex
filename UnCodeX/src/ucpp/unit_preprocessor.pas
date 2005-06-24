@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.13 2005-06-23 08:45:58 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.14 2005-06-24 17:19:05 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -166,6 +166,7 @@ begin
     else begin
       macroLastIf := SameText(cmd, '#ifdef');
       if (CurDefs.IsRealDefined(args) <> macroLastIf) then begin
+        macroLastIf := false;
         macroIfCnt := 1;
         CommentMacro;
         while (macroIfCnt > 0) do begin
@@ -179,7 +180,10 @@ begin
           p.SkipToken(true);
         end;
       end
-      else CommentMacro;
+      else begin
+        CommentMacro;
+        macroLastIf := true;
+      end;
     end;
   end
   else if (SameText(cmd, '#elif') and supportIf) then begin
@@ -435,6 +439,7 @@ begin
           end;
           _pBrackets(p);
           p.SkipToken(false);
+          //if (p.Token = toEOF) raise enf of file exception 
         end;
         p.FullCopy := false;
         SetLength(args, High(args)+2);

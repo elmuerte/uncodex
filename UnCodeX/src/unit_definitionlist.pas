@@ -6,7 +6,7 @@
   Purpose:
     Keeps track of macro definitions and stuff like that
 
-  $Id: unit_definitionlist.pas,v 1.9 2005-06-22 18:41:16 elmuerte Exp $
+  $Id: unit_definitionlist.pas,v 1.10 2005-06-24 17:19:24 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -88,7 +88,7 @@ type
     FOnParseDefinition: TOnParseDefinition;
     FOnExternalDefine: TOnExternalDefine; 
     procedure _nextToken(var line: string);
-    procedure _requireToken(token: string; var line: string);
+    procedure _requireToken(token: string; var line: string; getnext: boolean = true);
     function _expr(var line: string): integer;
     function _cmpx(var line: string): integer;
     function _orx(var line: string): integer;
@@ -414,9 +414,11 @@ begin
   Delete(line, 1, j-1);
 end;
 
-procedure TDefinitionList._requireToken(token: string; var line: string);
+procedure TDefinitionList._requireToken(token: string; var line: string; getnext: boolean = true);
 begin
-  if ( curToken = token) then _nextToken(line)
+  if ( curToken = token) then begin
+    if (getnext) then _nextToken(line);
+  end
   else raise ERequireToken.CreateFmt(EREQUIRE_TOKEN, [token, curToken]);
 end;
 
@@ -586,7 +588,7 @@ begin
     _requireToken('(', line);
     res := ord(IsRealDefined(curToken));
     _nextToken(line);
-    _requireToken(')', line);
+    _requireToken(')', line, false);
   end;
 end;
 
