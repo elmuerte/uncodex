@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.14 2005-06-24 17:19:05 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.15 2005-06-25 09:22:41 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -36,6 +36,9 @@ interface
 uses
   Classes, SysUtils, unit_definitionlist, unit_sourceparser;
 
+type
+  EEOF = class(Exception);
+
   procedure PreProcessFile(filename: string);
   procedure PreProcessIncludeFile(filename: string; const global: boolean = false);
   procedure PreProcessDirectory(dir: string);
@@ -49,7 +52,7 @@ uses
   function _ExternalDefine(token: string; var output: string): boolean;
 
 const
-  UCPP_VERSION = '009';
+  UCPP_VERSION = '1.0';
   UCPP_HOMEPAGE = 'http://wiki.beyondunreal.com/wiki/UCPP';
   UCPP_COPYRIGHT = 'Copyright (C) 2005 Michiel Hendriks';
   UCPP_STRIP_MSG = '// UCPP: code stripped';
@@ -71,6 +74,10 @@ implementation
 
 uses unit_pputils, unit_ucxinifiles;
 
+resourcestring
+  END_OF_FILE_EXCEPTION_IF = 'Unexpected end of file. Missing #endif.';
+  END_OF_FILE_EXCEPTION = 'Unexpected end of file.';
+
 var
   ucfile, pucfile: string;
   globalP: TSourceParser;
@@ -88,7 +95,8 @@ var
 
 var
   hadNewLine: boolean;
-  
+
+// note: when a macro has been processed, exit from the function
 procedure _ppMacro(p: TSourceParser);
 var
   orig: string;
@@ -136,7 +144,7 @@ begin
         DebugMessage('Eval('+args+') = '+BoolToStr(macroLastIf, true));
       except
         on e:Exception do begin
-          WarningMessage(pucfile+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" (defaulting to false): '+e.Message);
+          WarningMessage(Format('%s(%i) : evaluation error of "%s"  (defaulting to false): %s', [filestack[0], p.SourceLine-1, args, e.Message]));
           macroLastIf := false;
         end;
       end;
@@ -144,6 +152,7 @@ begin
         macroIfCnt := 1;
         CommentMacro;
         while (macroIfCnt > 0) do begin
+          if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION_IF);
           if (hadNewLine) then begin
             if (stripCode) then p.OutputString(cfgStripMessage+NL)
             else p.OutputString(UCPP_COMMENT);
@@ -156,6 +165,7 @@ begin
       end
       else CommentMacro;
     end; // do eval
+    exit;
   end
   else if ((SameText(cmd, '#ifdef') or (SameText(cmd, '#ifndef'))) and supportIf) then begin
     StripComment;
@@ -170,6 +180,7 @@ begin
         macroIfCnt := 1;
         CommentMacro;
         while (macroIfCnt > 0) do begin
+          if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION_IF);
           if (hadNewLine) then begin
             if (stripCode) then p.OutputString(cfgStripMessage+NL)
             else p.OutputString(UCPP_COMMENT);
@@ -185,6 +196,7 @@ begin
         macroLastIf := true;
       end;
     end;
+    exit;
   end
   else if (SameText(cmd, '#elif') and supportIf) then begin
     // the else part of something we want
@@ -195,7 +207,7 @@ begin
         DebugMessage('Eval('+args+') = '+BoolToStr(macroLastIf, true));
       except
         on e:Exception do begin
-          WarningMessage(pucfile+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" (defaulting to false): '+e.Message);
+          WarningMessage(Format('%s(%i) : evaluation error of "%s"  (defaulting to false): %s', [filestack[0], p.SourceLine-1, args, e.Message]));
           macroLastIf := false;
         end;
       end;
@@ -203,6 +215,7 @@ begin
         macroIfCnt := 1;
         CommentMacro;
         while (macroIfCnt > 0) do begin
+          if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION_IF);
           if (hadNewLine) then begin
             if (stripCode) then p.OutputString(cfgStripMessage+NL)
             else p.OutputString(UCPP_COMMENT);
@@ -220,6 +233,7 @@ begin
       macroIfCnt := 1;
       CommentMacro;
       while (macroIfCnt > 0) do begin
+        if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION_IF);
         if (hadNewLine) then begin
           if (stripCode) then p.OutputString(cfgStripMessage+NL)
           else p.OutputString(UCPP_COMMENT);
@@ -235,6 +249,7 @@ begin
       CommentMacro;
     end;
     // else we don't care
+    exit;
   end
   else if (SameText(cmd, '#else') and supportIf) then begin
     // the else part of something we want
@@ -247,6 +262,7 @@ begin
       macroIfCnt := 1;
       CommentMacro;
       while (macroIfCnt > 0) do begin
+        if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION_IF);
         if (hadNewLine) then begin
           if (stripCode) then p.OutputString(cfgStripMessage+NL)
           else p.OutputString(UCPP_COMMENT);
@@ -259,12 +275,14 @@ begin
     end
     else CommentMacro;
     // else we don't care
+    exit;
   end
   else if (SameText(cmd, '#endif') and supportIf) then begin
     if (macroIfCnt > 0) then begin
       Dec(macroIfCnt);
     end;
     CommentMacro;
+    exit;
   end
   else if (SameText(cmd, '#define') and supportDefine) then begin
     CommentMacro;  // don't strip comment, everything is included
@@ -324,6 +342,12 @@ begin
       end;
       CommentMacro;
       exit;
+    end
+    else if (SameText(cmd, 'error')) then begin
+      ErrorMessage(Format('%s(%d): %s', [filestack[0] , p.SourceLine-1, args]));
+    end
+    else if (SameText(cmd, 'warning')) then begin
+      WarningMessage(Format('%s(%d): %s', [filestack[0] , p.SourceLine-1, args]));
     end;
 
     // unknown ucpp macro
@@ -431,6 +455,7 @@ begin
         p.GetCopyData(true);
         p.SkipToken(false);
         while (p.Token <> ')') do begin
+          if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION);
           if (p.Token = ',') then begin
             SetLength(args, High(args)+2);
             repl := p.GetCopyData(true);
@@ -439,7 +464,6 @@ begin
           end;
           _pBrackets(p);
           p.SkipToken(false);
-          //if (p.Token = toEOF) raise enf of file exception 
         end;
         p.FullCopy := false;
         SetLength(args, High(args)+2);
@@ -678,6 +702,7 @@ begin
     FreeAndNil(fsin);
     FreeAndNil(CurDefs);
     Writeln('< Finished processing "'+pucfile+'" -> "'+ucfile+'"');
+    writeln('');
   end;
 end;
 

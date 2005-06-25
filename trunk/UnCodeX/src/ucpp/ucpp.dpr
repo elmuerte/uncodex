@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.12 2005-06-22 18:41:23 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.13 2005-06-25 09:22:41 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -142,7 +142,7 @@ begin
   sl := TStringList.Create;
   try
     i := 1;
-    while (i < ParamCount) do begin
+    while (i <= ParamCount) do begin
       s2 := ParamStr(i);
       if (Pos('-', s2) = 1) then begin
         if (Copy(s2, 1, 2) = '-D') then begin
