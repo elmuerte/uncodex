@@ -3,7 +3,7 @@
               |    |   //    \  \/  |     ___/ |     ___/
               |    |  / \     \____ |    |     |    |
               |______/   \______  / |____|     |____| UCPP
-                                \/                    v1.0
+                                \/                    v1.1
 
                         Saturday, June 25, 2005
                       Michiel "El Muerte" Hendriks
