@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.13 2005-06-25 09:22:41 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.14 2005-07-28 15:56:45 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -100,6 +100,7 @@ begin
   writeln('  -P'#9'Enable package mode. The provided names are package names.'#13#10+
                 #9'In package mode the base directory must be defined using'#13#10+
                 #9'either the SYSTEM or BASE setting');
+  writeln('  -q'#9'Be quite, only show errors\warnings');                
   writeln('  -strip'+#13#10+
                 #9'Strip the code instead of commenting it out');
   writeln('  -U<name>'+#13#10+
@@ -136,9 +137,12 @@ begin
     printHelp();
     exit;
   end;
+  if (FindCmdLineSwitch('q', ['-'], false)) then begin
+    verbosity := 0;
+  end;
   stripCode := FindCmdLineSwitch('strip', ['-'], false);
   usePackages := FindCmdLineSwitch('P', ['-'], false);
-  if (usePackages) then writeln('Package mode enabled');
+  if (usePackages) then if (verbosity > 0) then writeln('Package mode enabled');
   sl := TStringList.Create;
   try
     i := 1;
