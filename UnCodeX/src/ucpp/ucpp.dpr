@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.14 2005-07-28 15:56:45 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.15 2005-07-28 16:02:42 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -51,7 +51,7 @@ begin
   writeln('|    |   //    \  \/  |     ___/ |     ___/');
   writeln('|    |  / \     \____ |    |     |    | ');
   writeln('|______/   \______  / |____|     |____| UCPP');
-  writeln('                  \/                    v'+UCPP_VERSION);
+  writeln('                  \/                    v'+UCPP_VERSION_PRINT);
   writeln(UCPP_COPYRIGHT);
   writeln(UCPP_HOMEPAGE);
 end;
