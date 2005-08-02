@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.18 2005-08-02 09:45:51 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.19 2005-08-02 11:43:12 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -97,6 +97,7 @@ var
 
 var
   hadNewLine: boolean;
+  processedNewLine: boolean;
 
 // note: when a macro has been processed, exit from the function
 procedure _ppMacro(p: TSourceParser);
@@ -111,8 +112,11 @@ var
     p.OutputString(rep);
     p.SkipToken(not stripCode);
     if (hadNewLine and (macroIfCnt > 0)) then begin
-      if (stripCode) then p.OutputString(cfgStripMessage+NL)
-      else p.OutputString(UCPP_COMMENT);
+      if (not processedNewLine) then begin
+        if (stripCode) then p.OutputString(cfgStripMessage+NL)
+        else p.OutputString(UCPP_COMMENT);
+        processedNewLine := true;
+      end;
       hadNewLine := (p.Token = toEOL) or (p.token = toComment);
     end;
   end;
@@ -126,6 +130,23 @@ var
     if (i > 0) then Delete(args, i, Length(args));
     i := pos('/*', args);
     if (i > 0) then Delete(args, i, Length(args));
+  end;
+
+  procedure macroIfCntLoop;
+  begin
+    while (macroIfCnt > 0) do begin
+      if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION_IF);
+      if (hadNewLine and not processedNewLine) then begin
+        if (stripCode) then p.OutputString(cfgStripMessage+NL)
+        else p.OutputString(UCPP_COMMENT);
+        hadNewLine := false;
+        processedNewLine := true;
+      end;
+      if (not stripCode) then p.CopyTokenToOutput;
+      hadNewLine := (p.Token = toEOL) or (p.token = toComment);
+      processedNewLine := false;
+      p.SkipToken(not stripCode);
+    end;
   end;
 
 begin
@@ -153,17 +174,18 @@ begin
       if (not macroLastIf) then begin
         macroIfCnt := 1;
         CommentMacro;
-        while (macroIfCnt > 0) do begin
+        macroIfCntLoop;
+        {while (macroIfCnt > 0) do begin
           if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION_IF);
           if (hadNewLine) then begin
             if (stripCode) then p.OutputString(cfgStripMessage+NL)
-            else p.OutputString(UCPP_COMMENT);
+            else if (p.token <> toComment) then p.OutputString(UCPP_COMMENT);
             hadNewLine := false;
           end;
           if (not stripCode) then p.CopyTokenToOutput;
           hadNewLine := (p.Token = toEOL) or (p.token = toComment);
           p.SkipToken(not stripCode);
-        end;
+        end;}
       end
       else CommentMacro;
     end; // do eval
@@ -181,17 +203,18 @@ begin
         macroLastIf := false;
         macroIfCnt := 1;
         CommentMacro;
-        while (macroIfCnt > 0) do begin
+        macroIfCntLoop;
+        {while (macroIfCnt > 0) do begin
           if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION_IF);
           if (hadNewLine) then begin
             if (stripCode) then p.OutputString(cfgStripMessage+NL)
-            else p.OutputString(UCPP_COMMENT);
+            else  if (p.token <> toComment) then p.OutputString(UCPP_COMMENT);
             hadNewLine := false;
           end;
           if (not stripCode) then p.CopyTokenToOutput;
           hadNewLine := (p.Token = toEOL) or (p.token = toComment);
           p.SkipToken(true);
-        end;
+        end;}
       end
       else begin
         CommentMacro;
@@ -216,17 +239,18 @@ begin
       if (not macroLastIf) then begin
         macroIfCnt := 1;
         CommentMacro;
-        while (macroIfCnt > 0) do begin
+        macroIfCntLoop;
+        {while (macroIfCnt > 0) do begin
           if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION_IF);
           if (hadNewLine) then begin
             if (stripCode) then p.OutputString(cfgStripMessage+NL)
-            else p.OutputString(UCPP_COMMENT);
+            else  if (p.token <> toComment) then p.OutputString(UCPP_COMMENT);
             hadNewLine := false;
           end;
           if (not stripCode) then p.CopyTokenToOutput;
           hadNewLine := (p.Token = toEOL) or (p.token = toComment);
           p.SkipToken(not stripCode);
-        end;
+        end;}
       end
       else CommentMacro;
     end
@@ -234,17 +258,18 @@ begin
     else if (macroLastIf) then begin
       macroIfCnt := 1;
       CommentMacro;
-      while (macroIfCnt > 0) do begin
+      macroIfCntLoop;
+      {while (macroIfCnt > 0) do begin
         if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION_IF);
         if (hadNewLine) then begin
           if (stripCode) then p.OutputString(cfgStripMessage+NL)
-          else p.OutputString(UCPP_COMMENT);
+          else  if (p.token <> toComment) then p.OutputString(UCPP_COMMENT);
           hadNewLine := false;
         end;
         if (not stripCode) then p.CopyTokenToOutput;
         hadNewLine := (p.Token = toEOL) or (p.token = toComment);
         p.SkipToken(true);
-      end;
+      end;}
     end
     else begin
       if (macroIfCnt > 1) then Inc(macroIfCnt);
@@ -263,17 +288,18 @@ begin
     else if (macroLastIf) then begin
       macroIfCnt := 1;
       CommentMacro;
-      while (macroIfCnt > 0) do begin
+      macroIfCntLoop;
+      {while (macroIfCnt > 0) do begin
         if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION_IF);
         if (hadNewLine) then begin
           if (stripCode) then p.OutputString(cfgStripMessage+NL)
-          else p.OutputString(UCPP_COMMENT);
+          else  if (p.token <> toComment) then p.OutputString(UCPP_COMMENT);
           hadNewLine := false;
         end;
         if (not stripCode) then p.CopyTokenToOutput;
         hadNewLine := (p.Token = toEOL) or (p.token = toComment);
         p.SkipToken(true);
-      end;
+      end;}
     end
     else CommentMacro;
     // else we don't care
