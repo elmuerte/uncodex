@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.17 2005-07-28 16:02:42 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.18 2005-08-02 09:45:51 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -52,8 +52,8 @@ type
   function _ExternalDefine(token: string; var output: string): boolean;
 
 const
-  UCPP_VERSION        = '101';
-  UCPP_VERSION_PRINT  = '1.1';
+  UCPP_VERSION        = '102';
+  UCPP_VERSION_PRINT  = '1.2';
   UCPP_HOMEPAGE       = 'http://wiki.beyondunreal.com/wiki/UCPP';
   UCPP_COPYRIGHT      = 'Copyright (C) 2005 Michiel Hendriks';
   UCPP_STRIP_MSG      = '// UCPP: code stripped';
@@ -287,8 +287,8 @@ begin
     exit;
   end
   else if (SameText(cmd, '#define') and supportDefine) then begin
-    CommentMacro;  // don't strip comment, everything is included
     if (macroIfCnt = 0) then begin
+      CommentMacro;  // don't strip comment, everything is included
       cmd := GetToken(args, [' ', #9]);
       try
         CurDefs.define(cmd, args);
@@ -299,7 +299,8 @@ begin
         end;
       end;
       DebugMessage(cmd+' = '+args);
-    end;
+    end
+    else CommentMacro;  // don't strip comment, everything is included
     exit;
   end
   else if (SameText(cmd, '#undef') and supportDefine) then begin
