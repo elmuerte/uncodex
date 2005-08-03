@@ -3,7 +3,7 @@
               |    |   //    \  \/  |     ___/ |     ___/
               |    |  / \     \____ |    |     |    |
               |______/   \______  / |____|     |____| UCPP
-                                \/                    v1.2
+                                \/                    v1.3
 
                        Wednesday, August 03, 2005
                       Michiel "El Muerte" Hendriks
@@ -24,6 +24,14 @@ UnrealWiki:
 	http://wiki.beyondunreal.com/wiki/UCPP
 
 ------------------------------------------------------------------------
+
+Changes since version 1.2
+
+Changed:
+- You can now use relative paths in SYSTEM or BASE, for example SYSTEM=. 
+  will assume that the current directory is the system directory (in 
+  case you didn't know "." is the current directory and ".." is the 
+  parent directory).
 
 Changes since version 1.1
 
