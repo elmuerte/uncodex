@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.19 2005-08-02 11:43:12 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.20 2005-08-03 07:56:36 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -363,7 +363,7 @@ begin
       exit;
     end
     else if (SameText(cmd, 'version')) then begin
-      p.OutputString('// UCPP Version '+UCPP_VERSION+'; '+UCPP_HOMEPAGE+NL);
+      p.OutputString('// UCPP Version '+UCPP_VERSION_PRINT+'; '+UCPP_HOMEPAGE+NL);
       p.SkipToken(true);
       exit;
     end
