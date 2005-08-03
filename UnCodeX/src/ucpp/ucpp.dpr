@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.15 2005-07-28 16:02:42 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.16 2005-08-03 07:56:36 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -142,7 +142,7 @@ begin
   end;
   stripCode := FindCmdLineSwitch('strip', ['-'], false);
   usePackages := FindCmdLineSwitch('P', ['-'], false);
-  if (usePackages) then if (verbosity > 0) then writeln('Package mode enabled');
+  if (usePackages) then if (verbosity > 0) then writeln('Info: Package mode enabled');
   sl := TStringList.Create;
   try
     i := 1;
@@ -216,7 +216,7 @@ begin
   if (FindCmdLineSwitch('WAIT', ['-'], false) or
     (FindCmdLineSwitch('wait', ['-'], false) and (ErrorCount+WarnCount > 0))) then begin
     writeln('');
-    writeln('--- done - press enter to continue ---');
+    writeln('Info: --- done - press enter to continue ---');
     Readln(Input);
   end;
   if (ErrorCount > 0) then Halt(1); // maybe more error codes
