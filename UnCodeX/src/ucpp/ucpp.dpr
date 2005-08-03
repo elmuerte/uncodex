@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.16 2005-08-03 07:56:36 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.17 2005-08-03 19:07:33 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -182,9 +182,9 @@ begin
       if (Pos('=', s2) > 0) then begin
         s1 := GetToken(s2, ['=']);
         if (SameText(s1, 'SYSTEM')) then
-          cfgBase := ExcludeTrailingPathDelimiter(ExtractFilePath(ExcludeTrailingPathDelimiter(s2)))
+          cfgBase := ExcludeTrailingPathDelimiter(ExtractFilePath(ExcludeTrailingPathDelimiter(ExpandFileName(s2))))
         else if (SameText(s1, 'MOD')) then cfgMod := s2
-        else if (SameText(s1, 'BASE')) then cfgBase := ExcludeTrailingPathDelimiter(s2)
+        else if (SameText(s1, 'BASE')) then cfgBase := ExcludeTrailingPathDelimiter(ExpandFileName(s2))
         else if (SameText(s1, 'CONFIG')) then cfgFile := ExpandFileName(s2);
       end
       else begin
