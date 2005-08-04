@@ -6,7 +6,7 @@
   Purpose:
     Various utility functions
 
-  $Id: unit_pputils.pas,v 1.6 2005-06-21 19:55:27 elmuerte Exp $
+  $Id: unit_pputils.pas,v 1.7 2005-08-04 14:44:29 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -44,6 +44,7 @@ uses
   function BoolToStr(b : boolean; useString: boolean = false): string;
   {$ENDIF}
   function StrRepeat(line: string; count: integer): string;
+  procedure GetEnvironmentVariables(sl: TStringList);
 
 var
   ErrorCount: integer = 0;
@@ -51,6 +52,9 @@ var
   debug_mode: boolean = false;
 
 implementation
+
+uses
+  Windows;
 
 function GetToken(var input: string; delim: TSysCharSet; nocut: boolean = false): string;
 var
@@ -103,6 +107,38 @@ begin
   while (count > 0) do begin
     result := result+line;
     Dec(count);
+  end;
+end;
+
+function EscapeString(input: string): string;
+begin
+  result := StringReplace(input, '\', '\\', [rfReplaceAll]);
+  result := StringReplace(result, '"', '\"', [rfReplaceAll]);
+end;
+
+procedure GetEnvironmentVariables(sl: TStringList);
+var
+  op, p: pchar;
+  k,v: string;
+  idx: integer;
+begin
+  p := GetEnvironmentStrings();
+  op := p;
+  sl.Clear;
+  try
+    while p^ <> #0 do begin
+      k := StrPas(p);
+      idx := Pos('=', k);
+      if (idx > 1) then begin
+        v := '"'+EscapeString(Copy(k, idx+1, MaxInt))+'"';
+        Delete(k, idx, MaxInt);
+        k := UpperCase(k);
+        sl.Values[k] := v;
+      end;
+      Inc(p, lStrLen(p)+1);
+    end;
+  finally
+    FreeEnvironmentStrings(op);
   end;
 end;
 

@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.17 2005-08-03 19:07:33 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.18 2005-08-04 14:44:29 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -89,6 +89,7 @@ begin
   writeln('  -D<name>=<value>'+#13#10+
                 #9'Define a <name> with a <value>. This overrides the standards as'#13#10+
                 #9'defined in the configuration file');
+  writeln('  -env'#9'Import environment variables as declarations');
   writeln('  -imacros <filename>'+#13#10+
                 #9'Process <filename> for macros. This will be done for every file'#13#10+
                 #9'that needs to be processed');
@@ -139,6 +140,9 @@ begin
   end;
   if (FindCmdLineSwitch('q', ['-'], false)) then begin
     verbosity := 0;
+  end;
+  if (FindCmdLineSwitch('env', ['-'], false)) then begin
+    importEnvironment := true;
   end;
   stripCode := FindCmdLineSwitch('strip', ['-'], false);
   usePackages := FindCmdLineSwitch('P', ['-'], false);
