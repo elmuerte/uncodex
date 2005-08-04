@@ -51,7 +51,7 @@ Conditionals=
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
-RunParams=-WAIT -P BASE=D:\dev\UnCodeX\src\ucpp Tests -debug
+RunParams=-WAIT -P BASE=D:\dev\UnCodeX\src\ucpp Tests -debug -env
 HostApplication=
 Launcher=
 UseLauncher=0
@@ -91,6 +91,9 @@ Item0=DEBUG_BUILD
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
+[HistoryLists\hlSearchPath]
+Count=1
+Item0=$(DELPHI)\Lib\Debug
 [HistoryLists\hlUnitOutputDirectory]
 Count=1
 Item0=..\..\dcu\ucpp

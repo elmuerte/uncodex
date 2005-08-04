@@ -6,7 +6,7 @@
   Purpose:
     Keeps track of macro definitions and stuff like that
 
-  $Id: unit_definitionlist.pas,v 1.10 2005-06-24 17:19:24 elmuerte Exp $
+  $Id: unit_definitionlist.pas,v 1.11 2005-08-04 14:44:47 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -39,11 +39,13 @@ type
   ENoDefinitionParser = class(EDefinitionList);
   // eval() exceptions
   EDefinitionListEval = class(EDefinitionList);
+  EInvalidExpression = class(EDefinitionListEval);
   EIllegalToken = class(EDefinitionListEval);
   ERequireToken = class(EDefinitionListEval);
   EInvalidLiteral = class(EDefinitionListEval);
   EUnknownIdentifier = class(EDefinitionListEval);
   EUnknownFunction = class(EDefinitionListEval);
+  EUnterminatedStringConstant = class(EDefinitionListEval);
 
   TDefinitionList = class;
 
@@ -129,6 +131,8 @@ const
   EINVALID_LITERAL = 'Invalid literal value "%s"';
   EUNKNOWN_IDENTIFIER = 'Identifier does not exist "%s"';
   EUNKNOWN_FUNCTION = 'No function defined with that footprint "%s".';
+  ENON_EMPTY_EXPRESSION = 'Invalid expression, failed token: "%s"';
+  EUNTERMINATED_STRING_CONSTANT = 'Unterminated string constant';
 
 implementation
 
@@ -395,7 +399,7 @@ begin
   end;}
   j := i;
   case line[j] of
-    '(', ')': Inc(j);
+    '(', ')', ',': Inc(j);
     '!', '&', '|', '+', '-', '=', '<', '>', '%', '*', '/':
       while line[j] in ['!', '&', '|', '+', '-', '=', '<', '>', '%', '*', '/'] do begin
         Inc(j);
@@ -406,6 +410,17 @@ begin
       while (not isblank(line[j]) and (line[j] in CHAR_IDENTIFIER)) do begin
         Inc(j);
         if (j > length(line)) then break;
+      end;
+    // string
+    '"':
+      begin
+        repeat
+          if (line[j] = '\') then Inc(j);
+          Inc(j);
+          if (j > length(line)) then break;
+        until (line[j] = '"');
+        Inc(j);
+        if (j > length(line)) then raise EUnterminatedStringConstant.Create(EUNTERMINATED_STRING_CONSTANT);
       end;
   else
     raise EIllegalToken.CreateFmt(EILLEGAL_TOKEN, [line[j]]);
@@ -580,6 +595,8 @@ begin
 end;
 
 function TDefinitionList._builtin(var line: string; var res: integer): boolean;
+var
+  v1, v2: string;
 begin
   Result := false;
   if (SameText(curToken, 'defined')) then begin
@@ -589,6 +606,44 @@ begin
     res := ord(IsRealDefined(curToken));
     _nextToken(line);
     _requireToken(')', line, false);
+  end
+  // strcmp(string|token, string|token)
+  else if (SameText(curToken, 'strcmp')) then begin
+    _nextToken(line);
+    Result := true;
+    _requireToken('(', line);
+    // curtoken = v1
+    v1 := curToken;
+    if (IsValidIdent(v1)) then v1 := GetDefine(v1);
+    if (v1 = UNDEFINED) then raise EUnknownIdentifier.CreateFmt(EUNKNOWN_IDENTIFIER, [v1]);
+    _nextToken(line);
+    _requireToken(',', line);
+    // curtoken = v2
+    v2 := curToken;
+    if (IsValidIdent(v2)) then v2 := GetDefine(v2);
+    if (v2 = UNDEFINED) then raise EUnknownIdentifier.CreateFmt(EUNKNOWN_IDENTIFIER, [v2]);
+    _nextToken(line);
+    res := CompareStr(v1, v2);
+    _requireToken(')', line, false);
+  end
+  // stricmp(string|token, string|token)
+  else if (SameText(curToken, 'stricmp')) then begin
+    _nextToken(line);
+    Result := true;
+    _requireToken('(', line);
+    // curtoken = v1
+    v1 := curToken;
+    if (IsValidIdent(v1)) then v1 := GetDefine(v1);
+    if (v1 = UNDEFINED) then raise EUnknownIdentifier.CreateFmt(EUNKNOWN_IDENTIFIER, [curToken]);
+    _nextToken(line);
+    _requireToken(',', line);
+    // curtoken = v2
+    v2 := curToken;
+    if (IsValidIdent(v2)) then v2 := GetDefine(v2);
+    if (v2 = UNDEFINED) then raise EUnknownIdentifier.CreateFmt(EUNKNOWN_IDENTIFIER, [curToken]);
+    _nextToken(line);
+    res := CompareText(v1, v2);
+    _requireToken(')', line, false);
   end;
 end;
 
@@ -597,6 +652,7 @@ end;
 function TDefinitionList.Eval(line: string): boolean;
 begin
   result := _expr(line) <> 0;
+  if (line <> '') then raise EInvalidExpression.CreateFmt(ENON_EMPTY_EXPRESSION, [curToken]);
 end;
 
 // returns true when a new value was added
@@ -665,4 +721,3 @@ begin
 end;
 
 end.
- 
