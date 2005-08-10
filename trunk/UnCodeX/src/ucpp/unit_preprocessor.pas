@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.21 2005-08-04 14:44:29 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.22 2005-08-10 22:40:00 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -52,8 +52,8 @@ type
   function _ExternalDefine(token: string; var output: string): boolean;
 
 const
-  UCPP_VERSION        = '103';
-  UCPP_VERSION_PRINT  = '1.3';
+  UCPP_VERSION        = '104';
+  UCPP_VERSION_PRINT  = '1.4';
   UCPP_HOMEPAGE       = 'http://wiki.beyondunreal.com/wiki/UCPP';
   UCPP_COPYRIGHT      = 'Copyright (C) 2005 Michiel Hendriks';
   UCPP_STRIP_MSG      = '// UCPP: code stripped';
@@ -158,9 +158,11 @@ begin
   hadNewLine := true;
   orig := trim(p.TokenString);
   args := orig;
+  if (args[1] = '#') then Delete(args, 1, 1); // this should always be the case
+  args := TrimLeft(args); // strip all WS until the first word
   cmd := GetToken(args, [' ', #9]);
   DebugMessage('Macro "'+cmd+'" @ '+IntToStr(p.SourceLine-1));
-  if (SameText(cmd, '#if') and supportIf) then begin
+  if (SameText(cmd, 'if') and supportIf) then begin
     StripComment;
     if (macroIfCnt > 0) then begin
       CommentMacro;
@@ -196,14 +198,14 @@ begin
     end; // do eval
     exit;
   end
-  else if ((SameText(cmd, '#ifdef') or (SameText(cmd, '#ifndef'))) and supportIf) then begin
+  else if ((SameText(cmd, 'ifdef') or (SameText(cmd, 'ifndef'))) and supportIf) then begin
     StripComment;
     if (macroIfCnt > 0) then begin
       Inc(macroIfCnt);
       CommentMacro;
     end
     else begin
-      macroLastIf := SameText(cmd, '#ifdef');
+      macroLastIf := SameText(cmd, 'ifdef');
       if (CurDefs.IsRealDefined(args) <> macroLastIf) then begin
         macroLastIf := false;
         macroIfCnt := 1;
@@ -228,7 +230,7 @@ begin
     end;
     exit;
   end
-  else if (SameText(cmd, '#elif') and supportIf) then begin
+  else if (SameText(cmd, 'elif') and supportIf) then begin
     // the else part of something we want
     if ((macroIfCnt = 1) and not macroLastIf) then begin
       macroIfCnt := 0;
@@ -283,7 +285,7 @@ begin
     // else we don't care
     exit;
   end
-  else if (SameText(cmd, '#else') and supportIf) then begin
+  else if (SameText(cmd, 'else') and supportIf) then begin
     // the else part of something we want
     if ((macroIfCnt = 1) and not macroLastIf) then begin
       Dec(macroIfCnt);
@@ -310,14 +312,14 @@ begin
     // else we don't care
     exit;
   end
-  else if (SameText(cmd, '#endif') and supportIf) then begin
+  else if (SameText(cmd, 'endif') and supportIf) then begin
     if (macroIfCnt > 0) then begin
       Dec(macroIfCnt);
     end;
     CommentMacro;
     exit;
   end
-  else if (SameText(cmd, '#define') and supportDefine) then begin
+  else if (SameText(cmd, 'define') and supportDefine) then begin
     if (macroIfCnt = 0) then begin
       CommentMacro;  // don't strip comment, everything is included
       cmd := GetToken(args, [' ', #9]);
@@ -334,7 +336,7 @@ begin
     else CommentMacro;  // don't strip comment, everything is included
     exit;
   end
-  else if (SameText(cmd, '#undef') and supportDefine) then begin
+  else if (SameText(cmd, 'undef') and supportDefine) then begin
     CommentMacro;
     StripComment;
     if (macroIfCnt = 0) then begin
@@ -368,10 +370,19 @@ begin
 
 
   // do this last
-  else if (SameText(cmd, '#ucpp')) then begin
+  else if (SameText(cmd, 'ucpp') or SameText(cmd, 'pragma')) then begin
     if (macroIfCnt > 0) then begin
       CommentMacro;
       exit;
+    end;
+
+    if (SameText(cmd, 'pragma')) then begin
+      cmd := GetToken(args, [' ', #9]);
+      if (not SameText(cmd, 'ucpp')) then begin // not for us
+        CommentMacro;
+        exit;
+      end;
+      DebugMessage('Pragma Macro "'+cmd+'" @ '+IntToStr(p.SourceLine-1));
     end;
 
     cmd := GetToken(args, [' ', #9]);
