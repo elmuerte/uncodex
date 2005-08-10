@@ -3,9 +3,9 @@
               |    |   //    \  \/  |     ___/ |     ___/
               |    |  / \     \____ |    |     |    |
               |______/   \______  / |____|     |____| UCPP
-                                \/                    v1.3
+                                \/                    v1.4
 
-                       Thursday, August 04, 2005
+                       Thursday, August 11, 2005
                       Michiel "El Muerte" Hendriks
                       <elmuerte@drunksnipers.com>
 ------------------------------------------------------------------------
@@ -24,6 +24,16 @@ UnrealWiki:
 	http://wiki.beyondunreal.com/wiki/UCPP
 
 ------------------------------------------------------------------------
+
+Changes since version 1.3
+
+Changed:
+- directives may contains spaces and tabs between '#' ad the name, e.g.:
+  #	ifdef SOMETHING
+  #	endif
+- "#pragma ucpp" does the same as "#ucpp", but using "#pragma ucpp" is 
+  safer because of better code portability in case of other 
+  preprocessors.
 
 Changes since version 1.2
 
