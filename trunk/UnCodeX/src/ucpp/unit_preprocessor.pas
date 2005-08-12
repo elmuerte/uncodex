@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.22 2005-08-10 22:40:00 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.23 2005-08-12 10:41:06 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -42,6 +42,7 @@ type
   procedure PreProcessFile(filename: string);
   procedure PreProcessIncludeFile(filename: string; const global: boolean = false);
   procedure PreProcessDirectory(dir: string);
+  procedure PreProcessPipe(filename: string = '');
   procedure LoadConfiguration();
 
   // protected functions
@@ -75,6 +76,7 @@ var
   includeFiles: TStringList;
   verbosity: integer = 1;
   importEnvironment: boolean = false;
+  pipeMode: boolean = false;
 
 implementation
 
@@ -801,6 +803,61 @@ begin
     FindClose(sr);
   end;
 end;
+
+// the filename is defined on the commandline, can be empty
+procedure PreProcessPipe(filename: string = '');
+var
+  fsin, fsout: THandleStream;
+  i: integer;
+  origucfile: string;
+begin
+  CurDefs := TDefinitionList.Create(BaseDefs);
+  CurDefs.OnParseDefinition := ParseDef;
+  CurDefs.OnExternalDefine := _ExternalDefine;
+  if (filename <> '') then
+    CurDefs.define('CLASS_'+ChangeFileExt(ExtractFileName(filename), ''), '');
+  pucfile := filename;
+  ucfile := ChangeFileExt(filename, '.uc');
+  origucfile := ucfile;
+  renameUcFile := false;
+  stackDepth := 1;
+  fsin := THandleStream.Create(GetStdHandle(stdin));
+  fsout := THandleStream.Create(GetStdHandle(stdout));
+  try
+    if (verbosity > 0) then Writeln('> Processing from STDIN');
+    for i := 0 to includeFiles.Count-1 do begin
+      try
+        if (includeFiles[i] <> '') then
+          PreProcessIncludeFile(includeFiles[i]);
+      except
+        on e:Exception do begin
+          ErrorMessage(e.Message+' This include file will be excluded from future processing.');
+          includeFiles[i] := '';
+        end;
+      end;
+    end;
+    filestack.Insert(0, filename);
+    globalP := TSourceParser.Create(fsin, fsout);
+    globalP.ProcessMacro := _ppMacro;
+    globalP.MacroCallBack := true;
+    try
+      internalPP(globalP);
+    except
+      on e:Exception do ErrorMessage(e.Message+' The resulting file will mostlikely be broken.');
+    end;
+  finally;
+    filestack.Delete(0);
+    FreeandNil(globalP);
+    FreeAndNil(fsout);
+    FreeAndNil(fsin);
+    FreeAndNil(CurDefs);
+    if (verbosity > 0) then begin
+      Writeln('< Finished processing from STDIN"');
+      writeln('');
+    end;
+  end;
+end;
+
 
 procedure LoadConfiguration();
 var

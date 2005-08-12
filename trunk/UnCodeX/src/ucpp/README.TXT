@@ -35,6 +35,14 @@ Changed:
   safer because of better code portability in case of other 
   preprocessors.
 
+Added:
+- new argument '-pipe', this will read from the standard input and 
+  write to the standard output. In order for some additional magic it 
+  will assume that the last normal argument is the filename of the 
+  piped file. This feature is intended for UnrealEngine2 licensees to
+  quickly add support for preprocessor features directly into their
+  game.
+
 Changes since version 1.2
 
 Changed:
