@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.18 2005-08-04 14:44:29 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.19 2005-08-12 10:41:06 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -101,6 +101,9 @@ begin
   writeln('  -P'#9'Enable package mode. The provided names are package names.'#13#10+
                 #9'In package mode the base directory must be defined using'#13#10+
                 #9'either the SYSTEM or BASE setting');
+  writeln('  -pipe'+#13#10+
+                #9'Read from the stdin and write to the stdout. Only works for'#13#10+
+                #9'single files and not in package mode.');
   writeln('  -q'#9'Be quite, only show errors\warnings');                
   writeln('  -strip'+#13#10+
                 #9'Strip the code instead of commenting it out');
@@ -124,6 +127,7 @@ var
   s1, s2: string;
   sl: TStringList;
   usePackages: boolean;
+  pipeFileName: string;  
 begin
   debug_mode := FindCmdLineSwitch('debug', ['-'], false);
   if (FindCmdLineSwitch('V', ['-'], false)) then begin
@@ -147,6 +151,14 @@ begin
   stripCode := FindCmdLineSwitch('strip', ['-'], false);
   usePackages := FindCmdLineSwitch('P', ['-'], false);
   if (usePackages) then if (verbosity > 0) then writeln('Info: Package mode enabled');
+  if (FindCmdLineSwitch('pipe', ['-'], false)) then begin
+    if (usePackages) then begin
+      ErrorMessage('Can not use pipe mode and package mode at the same time.');
+      halt(1);
+    end;
+    verbosity := 0; // default
+    pipeMode := true;
+  end;
   sl := TStringList.Create;
   try
     i := 1;
@@ -192,6 +204,11 @@ begin
         else if (SameText(s1, 'CONFIG')) then cfgFile := ExpandFileName(s2);
       end
       else begin
+        if (pipeMode) then begin
+          pipeFileName := s2;
+          Inc(i);
+          continue; // skip the rest in pipemode
+        end;
         if (not usePackages) then begin
           s2 := ExpandFileName(s2);
           if (not FileExists(s2)) then begin
@@ -207,12 +224,17 @@ begin
     LoadConfiguration();
 
     if (cfgMod <> '') then cfgBase := cfgBase+PathDelim+cfgMod+PathDelim;
-    if (sl.Count = 0) then begin
-      ErrorMessage('No input files or packages');
-    end;
-    for i := 0 to sl.Count-1 do begin
-      if (usePackages) then PreProcessDirectory(sl[i])
-      else PreProcessFile(sl[i]);
+    if (pipeMode) then begin
+      PreProcessPipe(pipeFileName);
+    end
+    else begin
+      if (sl.Count = 0) then begin
+        ErrorMessage('No input files or packages');
+      end;
+      for i := 0 to sl.Count-1 do begin
+        if (usePackages) then PreProcessDirectory(sl[i])
+        else PreProcessFile(sl[i]);
+      end;
     end;
   finally
     sl.Free;

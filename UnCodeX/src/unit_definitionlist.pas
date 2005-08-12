@@ -6,7 +6,7 @@
   Purpose:
     Keeps track of macro definitions and stuff like that
 
-  $Id: unit_definitionlist.pas,v 1.11 2005-08-04 14:44:47 elmuerte Exp $
+  $Id: unit_definitionlist.pas,v 1.12 2005-08-12 10:41:07 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -452,7 +452,9 @@ var
     result := -1;
     if (curToken = '<') then result := 0
     else if (curToken = '<=') then result := 1
+    else if (curToken = '=<') then result := 1
     else if (curToken = '=>') then result := 2
+    else if (curToken = '>=') then result := 2
     else if (curToken = '>') then result := 3
     else if (curToken = '==') then result := 4
     else if (curToken = '!=') then result := 5;

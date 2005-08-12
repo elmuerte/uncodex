@@ -6,7 +6,7 @@
   Purpose:
     Various utility functions
 
-  $Id: unit_pputils.pas,v 1.7 2005-08-04 14:44:29 elmuerte Exp $
+  $Id: unit_pputils.pas,v 1.8 2005-08-12 10:41:06 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -36,6 +36,9 @@ interface
 uses
   Classes, SysUtils;
 
+type
+  TStdHandle = (stdin, stdout, stderr);  
+
   function GetToken(var input: string; delim: TSysCharSet; nocut: boolean = false): string;
   procedure ErrorMessage(msg: string);
   procedure WarningMessage(msg: string);
@@ -45,6 +48,8 @@ uses
   {$ENDIF}
   function StrRepeat(line: string; count: integer): string;
   procedure GetEnvironmentVariables(sl: TStringList);
+
+  function GetStdHandle(hdl: TStdHandle): THandle;
 
 var
   ErrorCount: integer = 0;
@@ -140,6 +145,20 @@ begin
   finally
     FreeEnvironmentStrings(op);
   end;
+end;
+
+function GetStdHandle(hdl: TStdHandle): THandle;
+var
+  handle: DWORD;
+begin
+  handle := 0;
+  case (hdl) of
+    stdin: handle := STD_INPUT_HANDLE;
+    stdout: handle := STD_OUTPUT_HANDLE;
+    stderr: handle := STD_ERROR_HANDLE;
+  end;
+  if (handle <> 0) then result := windows.GetStdHandle(handle)
+  else result := 0;
 end;
 
 end.
