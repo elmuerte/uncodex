@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.23 2005-08-12 10:41:06 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.24 2005-08-14 20:10:49 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -77,6 +77,7 @@ var
   verbosity: integer = 1;
   importEnvironment: boolean = false;
   pipeMode: boolean = false;
+  pipeModeOutOnly: boolean = false;
 
 implementation
 
@@ -807,7 +808,7 @@ end;
 // the filename is defined on the commandline, can be empty
 procedure PreProcessPipe(filename: string = '');
 var
-  fsin, fsout: THandleStream;
+  fsin, fsout: TStream;
   i: integer;
   origucfile: string;
 begin
@@ -821,7 +822,15 @@ begin
   origucfile := ucfile;
   renameUcFile := false;
   stackDepth := 1;
-  fsin := THandleStream.Create(GetStdHandle(stdin));
+  if (pipeModeOutOnly) then begin
+    try
+      fsin := TFileStream.Create(filename, fmOpenRead	or fmShareDenyWrite);
+    except
+      ErrorMessage('Could not open file "'+filename+'" for reading.');
+      exit;
+    end;
+  end
+  else fsin := THandleStream.Create(GetStdHandle(stdin));
   fsout := THandleStream.Create(GetStdHandle(stdout));
   try
     if (verbosity > 0) then Writeln('> Processing from STDIN');

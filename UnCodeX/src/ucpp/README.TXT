@@ -42,6 +42,10 @@ Added:
   piped file. This feature is intended for UnrealEngine2 licensees to
   quickly add support for preprocessor features directly into their
   game.
+- new argument '-stdout', this is similar to '-pipe' except that the
+  input is read from the file provided on the commandline. In other
+  words, this is short for the DOS command:
+    type filename | ucpp -pipe filename
 
 Changes since version 1.2
 

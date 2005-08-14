@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.19 2005-08-12 10:41:06 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.20 2005-08-14 20:10:49 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -104,7 +104,11 @@ begin
   writeln('  -pipe'+#13#10+
                 #9'Read from the stdin and write to the stdout. Only works for'#13#10+
                 #9'single files and not in package mode.');
-  writeln('  -q'#9'Be quite, only show errors\warnings');                
+  writeln('  -q'#9'Be quite, only show errors\warnings');
+  writeln('  -stdout'+#13#10+
+                #9'Similar to -pipe except that the file is not read from the'#13#10+
+                #9'standard in, but from the file provided on the commandline.'#13#10+
+                #9'So it will just write to the standard output.');
   writeln('  -strip'+#13#10+
                 #9'Strip the code instead of commenting it out');
   writeln('  -U<name>'+#13#10+
@@ -151,7 +155,9 @@ begin
   stripCode := FindCmdLineSwitch('strip', ['-'], false);
   usePackages := FindCmdLineSwitch('P', ['-'], false);
   if (usePackages) then if (verbosity > 0) then writeln('Info: Package mode enabled');
-  if (FindCmdLineSwitch('pipe', ['-'], false)) then begin
+  
+  pipeModeOutOnly := FindCmdLineSwitch('stdout', ['-'], false);
+  if (FindCmdLineSwitch('pipe', ['-'], false) or pipeModeOutOnly) then begin
     if (usePackages) then begin
       ErrorMessage('Can not use pipe mode and package mode at the same time.');
       halt(1);
@@ -225,7 +231,13 @@ begin
 
     if (cfgMod <> '') then cfgBase := cfgBase+PathDelim+cfgMod+PathDelim;
     if (pipeMode) then begin
-      PreProcessPipe(pipeFileName);
+      if (pipeModeOutOnly) then begin
+        pipeFileName := ExpandFileName(pipeFileName);
+        if (not FileExists(pipeFileName)) then begin
+          ErrorMessage('File "'+pipeFileName+'" does not exist.');
+        end;
+      end;
+      if (ErrorCount = 0) then PreProcessPipe(pipeFileName);
     end
     else begin
       if (sl.Count = 0) then begin
