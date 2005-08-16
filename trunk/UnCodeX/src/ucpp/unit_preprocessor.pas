@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.24 2005-08-14 20:10:49 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.25 2005-08-16 15:45:45 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -426,7 +426,12 @@ begin
     exit;
   end;
   // not one of our macros
-  p.CopyTokenToOutput;
+  if (macroIfCnt > 0) then begin
+    if (stripCode) then rep := cfgStripMessage+NL
+    else rep := UCPP_COMMENT+orig+NL;
+    p.OutputString(rep);
+  end
+  else p.CopyTokenToOutput;
   p.SkipToken(true);
 end;
 

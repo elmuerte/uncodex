@@ -27,6 +27,9 @@ UnrealWiki:
 
 Changes since version 1.3
 
+Fixed:
+- unknown directives are now also commented out when needed
+
 Changed:
 - directives may contains spaces and tabs between '#' ad the name, e.g.:
   #	ifdef SOMETHING
