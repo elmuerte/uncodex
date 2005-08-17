@@ -44,7 +44,8 @@ Added:
   will assume that the last normal argument is the filename of the 
   piped file. This feature is intended for UnrealEngine2 licensees to
   quickly add support for preprocessor features directly into their
-  game.
+  game. UE2 licensees can contact me through the UDN IRC for 
+  information on how to implement this.
 - new argument '-stdout', this is similar to '-pipe' except that the
   input is read from the file provided on the commandline. In other
   words, this is short for the DOS command:
