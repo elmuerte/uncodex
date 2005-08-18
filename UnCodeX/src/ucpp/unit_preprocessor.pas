@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.25 2005-08-16 15:45:45 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.26 2005-08-18 11:40:41 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -52,7 +52,7 @@ type
   procedure internalPP(p: TSourceParser);
   function _ExternalDefine(token: string; var output: string): boolean;
 
-const
+resourcestring
   UCPP_VERSION        = '104';
   UCPP_VERSION_PRINT  = '1.4';
   UCPP_HOMEPAGE       = 'http://wiki.beyondunreal.com/wiki/UCPP';
@@ -132,11 +132,17 @@ var
   // removes comments from the macro line; not always used
   procedure StripComment;
   var
-    i: integer;
+    i, j: integer;
   begin
+    repeat
+      i := pos('/*', args);
+      if (i > 0) then begin
+        j := pos('*/', args);
+        if (j = 0) then j := MaxInt;
+        Delete(args, i, j+2-i);
+      end;
+    until (i = 0);
     i := pos('//', args);
-    if (i > 0) then Delete(args, i, Length(args));
-    i := pos('/*', args);
     if (i > 0) then Delete(args, i, Length(args));
   end;
 

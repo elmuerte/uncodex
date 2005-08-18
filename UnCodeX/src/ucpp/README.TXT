@@ -29,6 +29,8 @@ Changes since version 1.3
 
 Fixed:
 - unknown directives are now also commented out when needed
+- fixed invalid expression evaluation when there was whitespace left
+  on the expression.
 
 Changed:
 - directives may contains spaces and tabs between '#' ad the name, e.g.:
@@ -37,6 +39,10 @@ Changed:
 - "#pragma ucpp" does the same as "#ucpp", but using "#pragma ucpp" is 
   safer because of better code portability in case of other 
   preprocessors.
+- block comments are not correctly stripped
+	#if 1 /**/ && /**/ 0 // results in false
+  but becareful, block comments covering multiple lines should not 
+  start on a directive line
 
 Added:
 - new argument '-pipe', this will read from the standard input and 
