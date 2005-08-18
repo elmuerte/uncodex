@@ -1,0 +1,28 @@
+#define TEST
+
+#ifdef TEST
+    "this will be included"
+#endif
+
+
+#undef TEST
+
+#ifdef TEST
+    "this will NOT be included"
+#endif
+
+#ifndef TEST
+    "this will be included"
+#endif
+
+#ifdef TEST
+    "this will NOT be included"
+#else
+    "this will be included"
+#endif
+
+#define TEST This was a test.
+
+Q: What was this?
+A: TEST
+
