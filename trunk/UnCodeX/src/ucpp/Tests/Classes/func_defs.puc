@@ -1,0 +1,21 @@
+#define F1(a)	doSomethingWith(a)
+
+F1(this piece of code)
+F1(test$test$test)
+F1(functionResult(test))
+
+#define CONCAT(a,b) a##b
+
+CONCAT(test, string)
+CONCAT(F1(test), string)
+
+#define QUOTE(a) #a
+
+QUOTE(this stuff)
+QUOTE(CONCAT(test, string))
+
+#define OVERLOAD(a,b) This is a, this is b
+#define OVERLOAD(a) OVERLOAD(a,a)
+
+OVERLOAD(1, 2)
+OVERLOAD(3)
