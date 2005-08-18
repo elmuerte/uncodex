@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.20 2005-08-14 20:10:49 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.21 2005-08-18 16:42:46 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -251,11 +251,13 @@ begin
   finally
     sl.Free;
   end;
-  if (FindCmdLineSwitch('WAIT', ['-'], false) or
-    (FindCmdLineSwitch('wait', ['-'], false) and (ErrorCount+WarnCount > 0))) then begin
-    writeln('');
-    writeln('Info: --- done - press enter to continue ---');
-    Readln(Input);
+  if (not pipeMode) then begin
+    if (FindCmdLineSwitch('WAIT', ['-'], false) or
+      (FindCmdLineSwitch('wait', ['-'], false) and (ErrorCount+WarnCount > 0))) then begin
+      writeln('');
+      writeln('Info: --- done - press enter to continue ---');
+      Readln(Input);
+    end;
   end;
   if (ErrorCount > 0) then Halt(1); // maybe more error codes
 end.
