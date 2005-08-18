@@ -6,7 +6,7 @@
   Purpose:
     Keeps track of macro definitions and stuff like that
 
-  $Id: unit_definitionlist.pas,v 1.12 2005-08-12 10:41:07 elmuerte Exp $
+  $Id: unit_definitionlist.pas,v 1.13 2005-08-18 11:40:42 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -124,7 +124,7 @@ type
     property OnExternalDefine: TOnExternalDefine read FOnExternalDefine write FOnExternalDefine;
   end;
 
-const
+resourcestring
   ENO_DEFINITION_PARSER = 'Event TDefinitionList.OnParseDefinition not set.';
   EILLEGAL_TOKEN = 'Illegal token "%s".';
   EREQUIRE_TOKEN = 'Expected token "%s" got "%s".';
@@ -653,8 +653,9 @@ end;
 
 function TDefinitionList.Eval(line: string): boolean;
 begin
+  line := trim(line);
   result := _expr(line) <> 0;
-  if (line <> '') then raise EInvalidExpression.CreateFmt(ENON_EMPTY_EXPRESSION, [curToken]);
+  if (trim(line) <> '') then raise EInvalidExpression.CreateFmt(ENON_EMPTY_EXPRESSION, [curToken]);
 end;
 
 // returns true when a new value was added
