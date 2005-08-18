@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.26 2005-08-18 11:40:41 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.27 2005-08-18 16:42:46 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -416,10 +416,10 @@ begin
       exit;
     end
     else if (SameText(cmd, 'error')) then begin
-      ErrorMessage(Format('%s(%d): %s', [filestack[0] , p.SourceLine-1, args]));
+      ErrorMessage(Format('%s(%d) : %s', [filestack[0] , p.SourceLine-1, args]));
     end
     else if (SameText(cmd, 'warning')) then begin
-      WarningMessage(Format('%s(%d): %s', [filestack[0] , p.SourceLine-1, args]));
+      WarningMessage(Format('%s(%d) : %s', [filestack[0] , p.SourceLine-1, args]));
     end
     else if (SameText(cmd, 'rename')) then begin
       StripComment;
