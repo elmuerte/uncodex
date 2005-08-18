@@ -5,7 +5,7 @@
               |______/   \______  / |____|     |____| UCPP
                                 \/                    v1.4
 
-                       Thursday, August 11, 2005
+                       Thursday, August 18, 2005
                       Michiel "El Muerte" Hendriks
                       <elmuerte@drunksnipers.com>
 ------------------------------------------------------------------------
