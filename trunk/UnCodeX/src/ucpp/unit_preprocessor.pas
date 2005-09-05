@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.27 2005-08-18 16:42:46 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.28 2005-09-05 08:01:33 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -53,8 +53,8 @@ type
   function _ExternalDefine(token: string; var output: string): boolean;
 
 resourcestring
-  UCPP_VERSION        = '104';
-  UCPP_VERSION_PRINT  = '1.4';
+  UCPP_VERSION        = '105';
+  UCPP_VERSION_PRINT  = '1.5';
   UCPP_HOMEPAGE       = 'http://wiki.beyondunreal.com/wiki/UCPP';
   UCPP_COPYRIGHT      = 'Copyright (C) 2005 Michiel Hendriks';
   UCPP_STRIP_MSG      = '// UCPP: code stripped';
@@ -191,17 +191,6 @@ begin
         macroIfCnt := 1;
         CommentMacro;
         macroIfCntLoop;
-        {while (macroIfCnt > 0) do begin
-          if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION_IF);
-          if (hadNewLine) then begin
-            if (stripCode) then p.OutputString(cfgStripMessage+NL)
-            else if (p.token <> toComment) then p.OutputString(UCPP_COMMENT);
-            hadNewLine := false;
-          end;
-          if (not stripCode) then p.CopyTokenToOutput;
-          hadNewLine := (p.Token = toEOL) or (p.token = toComment);
-          p.SkipToken(not stripCode);
-        end;}
       end
       else CommentMacro;
     end; // do eval
@@ -220,17 +209,6 @@ begin
         macroIfCnt := 1;
         CommentMacro;
         macroIfCntLoop;
-        {while (macroIfCnt > 0) do begin
-          if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION_IF);
-          if (hadNewLine) then begin
-            if (stripCode) then p.OutputString(cfgStripMessage+NL)
-            else  if (p.token <> toComment) then p.OutputString(UCPP_COMMENT);
-            hadNewLine := false;
-          end;
-          if (not stripCode) then p.CopyTokenToOutput;
-          hadNewLine := (p.Token = toEOL) or (p.token = toComment);
-          p.SkipToken(true);
-        end;}
       end
       else begin
         CommentMacro;
@@ -256,17 +234,6 @@ begin
         macroIfCnt := 1;
         CommentMacro;
         macroIfCntLoop;
-        {while (macroIfCnt > 0) do begin
-          if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION_IF);
-          if (hadNewLine) then begin
-            if (stripCode) then p.OutputString(cfgStripMessage+NL)
-            else  if (p.token <> toComment) then p.OutputString(UCPP_COMMENT);
-            hadNewLine := false;
-          end;
-          if (not stripCode) then p.CopyTokenToOutput;
-          hadNewLine := (p.Token = toEOL) or (p.token = toComment);
-          p.SkipToken(not stripCode);
-        end;}
       end
       else CommentMacro;
     end
@@ -275,17 +242,6 @@ begin
       macroIfCnt := 1;
       CommentMacro;
       macroIfCntLoop;
-      {while (macroIfCnt > 0) do begin
-        if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION_IF);
-        if (hadNewLine) then begin
-          if (stripCode) then p.OutputString(cfgStripMessage+NL)
-          else  if (p.token <> toComment) then p.OutputString(UCPP_COMMENT);
-          hadNewLine := false;
-        end;
-        if (not stripCode) then p.CopyTokenToOutput;
-        hadNewLine := (p.Token = toEOL) or (p.token = toComment);
-        p.SkipToken(true);
-      end;}
     end
     else begin
       if (macroIfCnt > 1) then Inc(macroIfCnt);
@@ -305,17 +261,6 @@ begin
       macroIfCnt := 1;
       CommentMacro;
       macroIfCntLoop;
-      {while (macroIfCnt > 0) do begin
-        if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION_IF);
-        if (hadNewLine) then begin
-          if (stripCode) then p.OutputString(cfgStripMessage+NL)
-          else  if (p.token <> toComment) then p.OutputString(UCPP_COMMENT);
-          hadNewLine := false;
-        end;
-        if (not stripCode) then p.CopyTokenToOutput;
-        hadNewLine := (p.Token = toEOL) or (p.token = toComment);
-        p.SkipToken(true);
-      end;}
     end
     else CommentMacro;
     // else we don't care
@@ -355,15 +300,6 @@ begin
     end;
     exit;
   end
-  // UsUnit support macro - should become a CHECK(expr,msg), CHECK(expr)
-  {else if (SameText(cmd, '#check')) then begin
-    // for macro's the line is always one more than actual
-    rep := 'check( '+args+', "'+StringReplace(args, '"', '\"', [rfReplaceAll])+'"$chr(3)$"'+ucfile+':'+IntToStr(p.SourceLine-1)+'");'+NL;
-    p.OutputString(rep);
-    p.SkipToken(true);
-    exit;
-  end}
-
   // this isn't usefull, because the unrealengine will include the file AS IS
   // so it won't be able to compile it because of unknown compiler directives
   {else if (SameText(cmd, '#include') and supportInclude) then begin
@@ -416,10 +352,18 @@ begin
       exit;
     end
     else if (SameText(cmd, 'error')) then begin
-      ErrorMessage(Format('%s(%d) : %s', [filestack[0] , p.SourceLine-1, args]));
+      if (SameText(args, 'on') or SameText(args, 'off')) then begin
+        reportError := SameText(args, 'on');
+        DebugMessage('Error reporting turned '+args);
+      end
+      else ErrorMessage(Format('%s(%d) : %s', [filestack[0] , p.SourceLine-1, args]));
     end
     else if (SameText(cmd, 'warning')) then begin
-      WarningMessage(Format('%s(%d) : %s', [filestack[0] , p.SourceLine-1, args]));
+      if (SameText(args, 'on') or SameText(args, 'off')) then begin
+        reportWarning := SameText(args, 'on');
+        DebugMessage('Warning reporting turned '+args);
+      end
+      else WarningMessage(Format('%s(%d) : %s', [filestack[0] , p.SourceLine-1, args]));
     end
     else if (SameText(cmd, 'rename')) then begin
       StripComment;
@@ -743,6 +687,9 @@ begin
     ErrorMessage('Could not open file "'+filename+'" for reading.');
     exit;
   end;
+  // reset reporting
+  reportError := true;
+  reportWarning := true;
   CurDefs := TDefinitionList.Create(BaseDefs);
   CurDefs.OnParseDefinition := ParseDef;
   CurDefs.OnExternalDefine := _ExternalDefine;
