@@ -6,7 +6,7 @@
   Purpose:
     Various utility functions
 
-  $Id: unit_pputils.pas,v 1.8 2005-08-12 10:41:06 elmuerte Exp $
+  $Id: unit_pputils.pas,v 1.9 2005-09-05 08:01:33 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -55,6 +55,8 @@ var
   ErrorCount: integer = 0;
   WarnCount: integer = 0;
   debug_mode: boolean = false;
+  reportError: boolean = true;
+  reportWarning: boolean = true;
 
 implementation
 
@@ -77,14 +79,18 @@ end;
 
 procedure ErrorMessage(msg: string);
 begin
-  Writeln(ErrOutput, 'Error: '+msg);
-  Inc(ErrorCount);
+  if (reportError) then begin
+    Writeln(ErrOutput, 'Error: '+msg);
+    Inc(ErrorCount);
+  end;
 end;
 
 procedure WarningMessage(msg: string);
 begin
-  Writeln(ErrOutput, 'Warning: '+msg);
-  Inc(WarnCount);
+  if (reportWarning) then begin
+    Writeln(ErrOutput, 'Warning: '+msg);
+    Inc(WarnCount);
+  end;
 end;
 
 procedure DebugMessage(msg: string);

@@ -3,7 +3,7 @@
               |    |   //    \  \/  |     ___/ |     ___/
               |    |  / \     \____ |    |     |    |
               |______/   \______  / |____|     |____| UCPP
-                                \/                    v1.4
+                                \/                    v1.5
 
                        Thursday, August 18, 2005
                       Michiel "El Muerte" Hendriks
@@ -24,6 +24,14 @@ UnrealWiki:
 	http://wiki.beyondunreal.com/wiki/UCPP
 
 ------------------------------------------------------------------------
+
+Changes since version 1.4
+
+Added:
+- "#pragma ucpp warning off" will turn off the warning reporting and
+  "#pragma ucpp warning on" will turn it back on. The same works for
+  error reporting. Note that it should be just "on" or "off" anything
+  else will be seen as the warning\error message
 
 Changes since version 1.3
 
