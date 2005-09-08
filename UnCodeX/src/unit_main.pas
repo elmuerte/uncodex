@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.175 2005-06-22 18:41:16 elmuerte Exp $
+  $Id: unit_main.pas,v 1.176 2005-09-08 12:09:08 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -2436,6 +2436,10 @@ end;
 procedure Tfrm_UnCodeX.FormDestroy(Sender: TObject);
 begin
   xguard('Tfrm_UnCodeX.FormDestroy');
+  if (OutputModule <> 0) then begin
+    FreeLibrary(OutputModule);
+    OutputModule := 0;
+  end;
   ClearLog;
   FreeAndnil(hh_Help);
   HHCloseAll;
