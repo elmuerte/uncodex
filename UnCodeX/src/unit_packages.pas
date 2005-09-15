@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript package scanner, search for UnrealScript classes
 
-  $Id: unit_packages.pas,v 1.49 2005-06-22 18:41:22 elmuerte Exp $
+  $Id: unit_packages.pas,v 1.50 2005-09-15 09:34:35 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -261,6 +261,28 @@ begin
   end;
 end;
 
+{$IFDEF UCPP_SUPPORT}
+// removes duplicate files (e.g. puc vs uc)
+procedure FilterSourceFiles(lst: TStringList);
+var
+  i, j: integer;
+  tmp: string;
+begin
+  i := 0;
+  while (i < lst.count) do begin
+    if (SameText(ExtractFileExt(lst[i]), PUCEXT)) then begin
+      tmp := ChangeFileExt(lst[i], UCEXT);
+      j := lst.IndexOf(tmp);
+      if (j > -1) then begin
+        lst.Delete(j);
+        if (j < i) then dec(i);
+      end;
+    end;
+    Inc(i);
+  end;
+end;
+{$ENDIF}
+
 procedure TPackageScanner.ScanPackages;
 var
   sr: TSearchRec;
@@ -392,6 +414,16 @@ begin
         FindFiles(Packagelist[i].path, '', SOURCECARD_2, faAnyFile, lst, true);
         FindFiles(Packagelist[i].path, '', SOURCECARD_3, faAnyFile, lst, true);
         {$ENDIF}
+
+        {$IFDEF UCPP_SUPPORT}
+        FindFiles(Packagelist[i].path, '', PPSOURCECARD, faAnyFile, lst, true);
+        {$IFDEF UNIX}
+        //FindFiles(Packagelist[i].path, '', PPSOURCECARD_1, faAnyFile, lst, true);
+        // ...
+        {$ENDIF}
+        FilterSourceFiles(lst);
+        {$ENDIF}
+
         for j := 0 to lst.Count-1 do begin
           Status('Parsing file '+Packagelist[i].path+PATHDELIM+lst[j]);
           try
