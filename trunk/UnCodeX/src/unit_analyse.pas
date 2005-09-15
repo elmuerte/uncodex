@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.75 2005-06-23 08:45:42 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.76 2005-09-15 09:34:35 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -1007,6 +1007,9 @@ begin
     if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Include file '+trim(args), ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
     uclass.includes.Values[IntToStr(p.SourceLine-1)] := trim(args);
     pInclude(args);
+  end
+  else if ((macro = 'PRAGMA') or (macro = 'UCPP')) then begin
+    //TODO: 
   end
   else begin
     InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Unsupported macro '+macro, ltWarn, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));

@@ -6,7 +6,7 @@
     Purpose:
         Global macro file, to be included by means of ($I defines.inc)
 
-    $Id: defines.inc,v 1.15 2005-05-13 10:20:18 elmuerte Exp $
+    $Id: defines.inc,v 1.16 2005-09-15 09:34:35 elmuerte Exp $
 *******************************************************************************}
 
 {$IFDEF VER140} // delphi 6
@@ -21,6 +21,8 @@
   {$DEFINE CONSOLE}
 {$ENDIF}
 
+// puc files precede uc files
+{$DEFINE UCPP_SUPPORT}
 
 {$IFDEF CONSOLE} // Console Application
   {$DEFINE NO_EXPORT}

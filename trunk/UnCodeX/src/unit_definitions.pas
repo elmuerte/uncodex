@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.158 2005-09-08 12:09:08 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.159 2005-09-15 09:34:35 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -119,7 +119,7 @@ type
 
 const
   APPTITLE        = 'UnCodeX';
-  APPVERSION      = '230';
+  APPVERSION      = '231';
   {$IFDEF DEBUG_BUILD}
   DEBUGBUILD      = true;
   DEBUGBUILD_STR  = 'Debug Build';
@@ -157,6 +157,17 @@ const
   SOURCECARD_2    = '*.Uc';
   SOURCECARD_3    = '*.uC';
   {$ENDIF}
+
+  {$IFDEF UCPP_SUPPORT}
+  PUCEXT          = '.puc';
+  PPSOURCECARD    = '*'+PUCEXT;
+  {$IFDEF UNIX} // because the find is not case-insensitive
+  //SOURCECARD_1    = '*.UC';
+  //SOURCECARD_2    = '*.Uc';
+  //SOURCECARD_3    = '*.uC';
+  {$ENDIF}
+  {$ENDIF}
+
   CLASSDIR        = 'Classes';
   TEMPLATEPATH    = 'Templates';
   DEFTEMPLATE     = 'DocStyle2';

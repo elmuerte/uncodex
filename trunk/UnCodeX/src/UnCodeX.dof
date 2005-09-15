@@ -47,11 +47,11 @@ PackageDLLOutputDir=
 PackageDCPOutputDir=
 SearchPath=paszlib
 Packages=vcl;rtl;dbrtl;adortl;vcldb;vclx;bdertl;vcldbx;ibxpress;dsnap;cds;bdecds;qrpt;teeui;teedb;tee;dss;teeqr;visualclx;dsnapcrba;dsnapcon;VclSmp;vclshlctrls;vclie;xmlrtl;inet;inetdbbde;inetdbxpress;inetdb;nmfast;webdsnap;websnap;soaprtl;dbexpress;dbxcds;indy;dclOffice2k;visualdbclx;TAC2comps
-Conditionals=
+Conditionals=DEBUG_BUILD
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
-RunParams=
+RunParams=-debug
 HostApplication=
 Launcher=
 UseLauncher=0
