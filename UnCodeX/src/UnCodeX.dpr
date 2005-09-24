@@ -6,7 +6,7 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.72 2005-05-29 22:24:03 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.73 2005-09-24 11:19:35 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -36,7 +36,7 @@ uses
   FastShareMem in 'FastShareMem.pas',
   {$IFDEF DETECT_MEM_LEAK}
   MemCheck in 'MemCheck.pas',
-  {$ENDIF}
+  {$endif}
   Windows,
   Messages,
   SysUtils,
@@ -87,7 +87,8 @@ uses
   unit_config in 'unit_config.pas',
   unit_ucxinifiles in 'unit_ucxinifiles.pas',
   unit_ucxthread in 'unit_ucxthread.pas',
-  unit_defpropsframe in 'unit_defpropsframe.pas' {fr_DefPropsBrowser: TFrame};
+  unit_defpropsframe in 'unit_defpropsframe.pas' {fr_DefPropsBrowser: TFrame},
+  unit_definitionlist in 'unit_definitionlist.pas';
 
 {$R *.res}
 
@@ -238,9 +239,9 @@ begin
     Application.Initialize;
     Application.Title := 'Loading UnCodeX ...';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-    Application.CreateForm(Tfrm_About, frm_About);
-    Application.CreateForm(Tfrm_License, frm_License);
-    if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+  Application.CreateForm(Tfrm_About, frm_About);
+  Application.CreateForm(Tfrm_License, frm_License);
+  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end
   else if (frm_Splash <> nil) then frm_Splash.Close;

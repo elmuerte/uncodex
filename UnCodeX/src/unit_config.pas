@@ -6,7 +6,7 @@
   Purpose:
     Contains the configuration of UnCodeX
 
-  $Id: unit_config.pas,v 1.14 2005-05-13 10:20:19 elmuerte Exp $
+  $Id: unit_config.pas,v 1.15 2005-09-24 11:19:35 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -37,7 +37,8 @@ uses
   {$IFDEF TUCXGUIConfig}
   Graphics, Controls, unit_searchform,
   {$ENDIF}
-  unit_htmlout, Classes, SysUtils, unit_ucxinifiles, unit_uclasses;
+  unit_htmlout, Classes, SysUtils, unit_ucxinifiles, unit_uclasses,
+  unit_definitionlist;
 
 type
   TUCXConfig = class(TObject)
@@ -57,6 +58,7 @@ type
     end;
     PackageList:          TUPackageList;
     ClassList:            TUClassList;
+    BaseDefinitions:      TDefinitionList;
 
     PackagesPriority:     TStringList;
     IgnorePackages:       TStringList;
@@ -236,6 +238,7 @@ begin
   iniStack := Tlist.Create;
   PackageList := TUPackageList.Create(true);
   ClassList := TUClassList.Create(true);
+  BaseDefinitions := TDefinitionList.Create(nil);
 
   IncludeConfig.Pre := TStringList.Create;
   IncludeConfig.Post := TStringList.Create;
@@ -275,6 +278,7 @@ begin
   FreeAndNil(iniStack);
   FreeAndNil(PackageList);
   FreeAndNil(ClassList);
+  FreeAndNil(BaseDefinitions);
 end;
 
 function TriBoolToString(bool: TTriBool): string;
@@ -376,6 +380,16 @@ begin
   end;
   ini.ReadStringArray('Packages', 'IgnorePackage', IgnorePackages);
   ini.ReadStringArray('Sources', 'Path', SourcePaths);
+
+  sl := TStringList.Create;
+  ini.ReadSectionRaw('Defines', sl);
+  try
+    for i := 0 to sl.Count-1 do begin
+      BaseDefinitions.AddEntry(sl[i]);
+    end;
+  finally
+    sl.Free;
+  end;
 
   with HTMLOutput do begin
     OutputDir := ini.ReadString('HTMLOutput', 'OutputDir', OutputDir);

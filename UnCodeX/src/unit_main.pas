@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.176 2005-09-08 12:09:08 elmuerte Exp $
+  $Id: unit_main.pas,v 1.177 2005-09-24 11:19:35 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -2068,7 +2068,7 @@ begin
       if (ThreadCreate) then begin
         ClearLog;
         LastAnalyseTime := Now;
-        runningthread := TClassAnalyser.Create(TUClass(Selected.Data));
+        runningthread := TClassAnalyser.Create(TUClass(Selected.Data),false,nil, config.BaseDefinitions);
         runningthread.OnTerminate := ThreadTerminate;
         TUCXThread(runningthread).StatusMethod := statusReport;
         TUCXThread(runningthread).LogMethod := Log;
@@ -2159,7 +2159,7 @@ begin
     if (fr_Props.Visible) then fr_Props.LoadClass;
 
     runningthread := TClassAnalyser.Create(config.ClassList, false,
-                      unit_rtfhilight.ClassesHash);
+                      unit_rtfhilight.ClassesHash, config.BaseDefinitions);
     runningthread.OnTerminate := ThreadTerminate;
     TUCXThread(runningthread).StatusMethod := statusReport;
     TUCXThread(runningthread).LogMethod := Log;
@@ -2965,7 +2965,7 @@ begin
   if (ThreadCreate) then begin
     ClearLog;
     LastAnalyseTime := Now;
-    runningthread := TClassAnalyser.Create(config.ClassList, true, unit_rtfhilight.ClassesHash);
+    runningthread := TClassAnalyser.Create(config.ClassList, true, unit_rtfhilight.ClassesHash, config.BaseDefinitions);
     runningthread.OnTerminate := ThreadTerminate;
     TUCXThread(runningthread).StatusMethod := statusReport;
     TUCXThread(runningthread).LogMethod := Log;
