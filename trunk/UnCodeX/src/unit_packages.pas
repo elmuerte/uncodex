@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript package scanner, search for UnrealScript classes
 
-  $Id: unit_packages.pas,v 1.50 2005-09-15 09:34:35 elmuerte Exp $
+  $Id: unit_packages.pas,v 1.51 2005-09-24 11:19:35 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -132,6 +132,7 @@ begin
   result := nil;
   fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
   p := TUCParser.Create(fs);
+  p.NextToken;
   try
     token := p.Token;
     while (token <> toEOF) do begin
@@ -464,7 +465,7 @@ begin
               else ClassHash.Items[LowerCase(uclass.name)] := uclass;
             end;
           end
-          else InternalLog('Scanner: No class found in this file: '+sr.Name, ltWarn);
+          else InternalLog('Scanner: No class found in this file: '+lst[j], ltWarn);
         end;
         if (Self.Terminated) then break;
       finally

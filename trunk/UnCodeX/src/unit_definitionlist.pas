@@ -6,7 +6,7 @@
   Purpose:
     Keeps track of macro definitions and stuff like that
 
-  $Id: unit_definitionlist.pas,v 1.13 2005-08-18 11:40:42 elmuerte Exp $
+  $Id: unit_definitionlist.pas,v 1.14 2005-09-24 11:19:35 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -27,6 +27,8 @@
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 }
 unit unit_definitionlist;
+
+{$I defines.inc}
 
 interface
 

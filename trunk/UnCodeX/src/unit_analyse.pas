@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.76 2005-09-15 09:34:35 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.77 2005-09-24 11:19:35 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -35,7 +35,7 @@ interface
 
 uses
   SysUtils, Classes, DateUtils, unit_uclasses, unit_parser, unit_outputdefs,
-  unit_definitions, Hashes, Contnrs, unit_ucxthread;
+  unit_definitions, Hashes, Contnrs, unit_ucxthread, unit_definitionlist;
 
 type
   TClassAnalyser = class(TUCXThread)
@@ -55,6 +55,9 @@ type
     includeParsers: TObjectList;
     includeFiles: TStringList;
     incFilename: string;
+    BaseDefinitions: TDefinitionList;
+    function GetLogFilename(): string;
+    procedure SetParentDefs();
     procedure AnalyseClass();
     function pConst: TUConst;
     function pVar: TUProperty;
@@ -71,11 +74,11 @@ type
     function ExecuteSingle: integer;
     function GetSecondaryComment(ref :string): string;
     procedure pMacro(Sender: TUCParser);
-    procedure pInclude(relfilename: string);
+    procedure pInclude(relfilename: string; classRelative: boolean = false);
     procedure pReplication;
   public
-    constructor Create(classes: TUClassList; onlynew: boolean = false; myClassList: TObjectHash = nil); overload;
-    constructor Create(uclass: TUClass; onlynew: boolean = false; myClassList: TObjectHash = nil); overload;
+    constructor Create(classes: TUClassList; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil); overload;
+    constructor Create(uclass: TUClass; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil); overload;
     destructor Destroy; override;
     procedure Execute; override;
   end;
@@ -154,30 +157,48 @@ begin
 end;
 
 // Create for a class list
-constructor TClassAnalyser.Create(classes: TUClassList; onlynew: boolean = false; myClassList: TObjectHash = nil);
+constructor TClassAnalyser.Create(classes: TUClassList; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil);
 begin
   self.classes := classes;
   Self.onlynew := onlynew;
   Self.FreeOnTerminate := true;
   ClassHash := myClassList;
   instate := false;
+  BaseDefinitions := myBaseDefs;
   inherited Create(true);
 end;
 
 // Create for a single class
-constructor TClassAnalyser.Create(uclass: TUClass; onlynew: boolean = false; myClassList: TObjectHash = nil);
+constructor TClassAnalyser.Create(uclass: TUClass; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil);
 begin
   self.classes := nil;
   self.uclass := uclass;
   Self.onlynew := onlynew;
   Self.FreeOnTerminate := true;
   ClassHash := myClassList;
+  BaseDefinitions := myBaseDefs;
   inherited Create(true);
 end;
 
 destructor TClassAnalyser.Destroy;
 begin
   inherited Destroy();
+end;
+
+procedure TClassAnalyser.SetParentDefs();
+var
+  uc: TUClass;
+begin
+  if (BaseDefinitions = nil) then exit;
+  uc := uclass;
+  while (uc.parent <> nil) do uc := uc.parent;
+  uc.defs.Parent := BaseDefinitions;
+end;
+
+function TClassAnalyser.GetLogFilename(): string;
+begin
+  if (incFilename = '') then exit;
+  result := ExtractFilePath(uclass.package.path)+incFilename;
 end;
 
 procedure TClassAnalyser.Execute;
@@ -304,6 +325,7 @@ begin
     uclass.delegates.Clear;
     uclass.states.Clear;
     uclass.defs.Clear;
+    SetParentDefs;
     AnalyseClass();
     if (not Self.Terminated) then begin
       uclass.consts.Sort;
@@ -909,19 +931,21 @@ begin
   macro := GetToken(args, ' ');
   macro := UpperCase(macro);
   if (macro = 'DEFINE') then begin
-    macro := GetToken(args, ' ');
-    uclass.defs.define(macro, args);
-    if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': define '+macro+' = '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+    if (macroIfCnt = 0) then begin
+      macro := GetToken(args, ' ');
+      uclass.defs.define(macro, args);
+      if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': define '+macro+' = '+args, ltInfo, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
+    end;
   end
   else if (macro = 'IF') then begin
     if (macroIfCnt > 0) then Inc(macroIfCnt)
     else begin
-      if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': eval: '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+      if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': eval: '+args, ltInfo, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
       try
         macroLastIf := uclass.defs.Eval(args);
       except
         on e:Exception do begin
-          InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" (defaulting to false): '+e.Message, ltError, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+          InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" (defaulting to false): '+e.Message, ltError, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
           macroLastIf := false;
         end;
       end;
@@ -935,11 +959,11 @@ begin
       end;
     end; // do eval
   end
-  else if (macro = 'IFDEF') then begin
+  else if ((macro = 'IFDEF') or (macro = 'IFNDEF')) then begin
     if (macroIfCnt > 0) then Inc(macroIfCnt)
     else begin
-      if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': if defined: '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
-      if (not uclass.defs.IsRealDefined(args)) then begin
+      if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': if defined: '+args, ltInfo, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
+      if ((macro = 'IFDEF') <> uclass.defs.IsRealDefined(args)) then begin
         if (DEBUG_MACRO_EVAL) then InternalLog(' = false');
         macroIfCnt := 1;
         while (macroIfCnt > 0) do begin
@@ -966,12 +990,12 @@ begin
     // the else part of something we want
     if ((macroIfCnt = 1) and not macroLastIf) then begin
       // but it doesn't change the macroIfCnt count (--++)
-      if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': eval: '+args, ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+      if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': eval: '+args, ltInfo, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
       try
         macroLastIf := uclass.defs.Eval(args);
       except
         on e:Exception do begin
-          InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" (defaulting to false): '+e.Message, ltError, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+          InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': evaluation error of "'+args+'" (defaulting to false): '+e.Message, ltError, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
           macroLastIf := false;
         end;
       end;
@@ -1004,28 +1028,50 @@ begin
   	// ignore, exec macro calls certain commandlets for importing sounds/textures/etc.
   end
   else if (macro = 'INCLUDE') then begin
-    if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Include file '+trim(args), ltInfo, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+    if (macroIfCnt <> 0) then exit;
+    if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Include file '+trim(args), ltInfo, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
     uclass.includes.Values[IntToStr(p.SourceLine-1)] := trim(args);
     pInclude(args);
   end
   else if ((macro = 'PRAGMA') or (macro = 'UCPP')) then begin
-    //TODO: 
+    if (macroIfCnt <> 0) then exit;
+    if (macro = 'PRAGMA') then begin
+      macro := GetToken(args, ' ');
+      if (not SameText(macro, 'UCPP')) then exit;
+    end;
+    macro := UpperCase(GetToken(args, ' '));
+    if (macro = 'INCLUDE') then begin
+      if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': UCPP Include file '+trim(args), ltInfo, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
+      uclass.includes.Values[IntToStr(p.SourceLine-1)] := trim(args);
+      pInclude(args, true);
+    end
+    else if (macro = 'ERROR') then begin
+      InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': UCPP Error: '+trim(args), ltError, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
+    end
+    else if (macro = 'WARNING') then begin
+      InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': UCPP Error: '+trim(args), ltWarn, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
+    end;
   end
   else begin
-    InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Unsupported macro '+macro, ltWarn, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+    if (macroIfCnt <> 0) then exit;
+    InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Unsupported macro '+macro, ltWarn, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
   end;
 end;
 
-procedure TClassAnalyser.pInclude(relfilename: string);
+procedure TClassAnalyser.pInclude(relfilename: string; classRelative: boolean = false);
 var
   fs: TFileStream;
   filename: string;
 begin
   guard('pInclude '+relfilename);
 
-  filename := iFindFile(ExpandFileName(ExtractFilePath(uclass.package.path)+relfilename));
+  if (classRelative) then
+    relfilename := CLASSDIR+PathDelim+relfilename;
+  //  filename := iFindFile(ExpandFileName(ExtractFilePath(uclass.FullFileName)+relfilename))
+  //else
+    filename := iFindFile(ExpandFileName(ExtractFilePath(uclass.package.path)+relfilename));
   if (not FileExists(filename)) then begin
-    InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Invalid include file: '+relfilename, ltError, CreateLogEntry(incFilename, p.SourceLine-1, 0, uclass));
+    InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Invalid include file: '+relfilename, ltError, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
     exit;
   end;
 
@@ -1107,6 +1153,7 @@ procedure TClassAnalyser.AnalyseClass;
 begin
   guard('AnalyseClass '+uclass.name);
   //bHadClass := false;
+  p.NextToken;
   while ((p.token <> toEOF) and (not Self.Terminated)) do begin
     // first check class
     // class <classname> extends [<package>].<classname> <modifiers>;
