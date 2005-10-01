@@ -71,7 +71,7 @@ object frm_Settings: Tfrm_Settings
     Top = 24
     Width = 432
     Height = 348
-    ActivePage = ts_HTMLHelp
+    ActivePage = ts_Defines
     Align = alCustom
     Anchors = [akLeft, akTop, akRight, akBottom]
     MultiLine = True
@@ -1671,6 +1671,115 @@ object frm_Settings: Tfrm_Settings
         CharCase = ecLowerCase
         TabOrder = 3
         OnKeyUp = ed_AddPrimKeyKeyUp
+      end
+    end
+    object ts_Defines: TTabSheet
+      Tag = 5
+      Caption = 'Defines'
+      ImageIndex = 14
+      TabVisible = False
+      DesignSize = (
+        424
+        338)
+      object lbl_DefDefines: TLabel
+        Left = 0
+        Top = 0
+        Width = 424
+        Height = 26
+        Align = alTop
+        Caption = 
+          'These definitions will always be defined during parsing of the s' +
+          'ource code. Use it to set certain conditional compiler flags.'
+        WordWrap = True
+      end
+      object lbl_DefNam: TLabel
+        Left = 0
+        Top = 32
+        Width = 28
+        Height = 13
+        Caption = 'Name'
+      end
+      object lbl_DefValue: TLabel
+        Left = 160
+        Top = 32
+        Width = 27
+        Height = 13
+        Caption = 'Value'
+      end
+      object lb_Defs: TListBox
+        Left = 0
+        Top = 72
+        Width = 393
+        Height = 266
+        Align = alCustom
+        ExtendedSelect = False
+        ItemHeight = 13
+        Sorted = True
+        TabOrder = 0
+        OnClick = lb_DefsClick
+      end
+      object ed_NewDefName: TEdit
+        Left = 0
+        Top = 48
+        Width = 153
+        Height = 21
+        CharCase = ecUpperCase
+        TabOrder = 1
+        OnKeyPress = ed_NewDefNameKeyPress
+      end
+      object ed_NewDefValue: TEdit
+        Left = 160
+        Top = 48
+        Width = 233
+        Height = 21
+        Anchors = [akLeft, akTop, akRight]
+        TabOrder = 2
+      end
+      object ed_RemoveDef: TBitBtn
+        Left = 397
+        Top = 72
+        Width = 27
+        Height = 25
+        Hint = 'Remove selected definition'
+        Anchors = [akRight, akBottom]
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 3
+        OnClick = ed_RemoveDefClick
+        Glyph.Data = {
+          7E000000424D7E000000000000003E0000002800000010000000100000000100
+          010000000000400000000000000000000000020000000000000000000000FF00
+          FF00FFFF0000FFFF0000EFFD0000C7FF0000C3FB0000E3F70000F1E70000F8CF
+          0000FC1F0000FE3F0000FC1F0000F8CF0000E1E70000C3F30000C7FD0000FFFF
+          0000}
+      end
+      object btn_AddDef: TBitBtn
+        Left = 397
+        Top = 48
+        Width = 27
+        Height = 21
+        Anchors = [akRight, akBottom]
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 4
+        OnClick = btn_AddDefClick
+        Glyph.Data = {
+          F6000000424DF600000000000000760000002800000010000000100000000100
+          040000000000800000000000000000000000100000000000000000000000C0C0
+          C000FF00FF0080808000FFFFFF0000FFFF000000000000000000000000000000
+          0000000000000000000000000000000000000000000000000000222222222222
+          2222223333333333333320000000000000032045454545004503205454545401
+          0403204545454505100320545454540000034043545455454503355345354454
+          5403234353545545450333343454545454034535433330000002235353522222
+          2222352342352222222252235223222222222223422222222222}
       end
     end
   end

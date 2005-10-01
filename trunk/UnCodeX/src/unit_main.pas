@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.178 2005-10-01 09:53:07 elmuerte Exp $
+  $Id: unit_main.pas,v 1.179 2005-10-01 14:57:56 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -2284,6 +2284,9 @@ begin
     ud_InlineSearchTimeout.Position := config.Layout.InlineSearchTimeout;
     ed_gpdf.text := config.Comments.Packages;
     ed_ExtCmtFile.Text := config.Comments.Declarations;
+    { Defines }
+    for i := 0 to config.BaseDefinitions.Count-1 do
+      lb_Defs.Items.Add(config.BaseDefinitions.Entry[i]);
     if (ShowModal = mrOk) then begin
       xguard('ShowModal = mrOk');
       { HTML output }
@@ -2329,6 +2332,10 @@ begin
       config.Comments.Packages := ed_gpdf.Text;
       config.Comments.Declarations := ed_ExtCmtFile.Text;
       SetExtCommentFile(config.Comments.Declarations);
+      { Defines }
+      config.BaseDefinitions.Clear;
+      for i := 0 to lb_Defs.Items.Count-1 do
+        config.BaseDefinitions.AddEntry(lb_Defs.Items[i]);
       { Source paths }
       config.SourcePaths.Clear;
       config.SourcePaths.AddStrings(lb_Paths.Items);
