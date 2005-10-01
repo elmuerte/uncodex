@@ -6,7 +6,7 @@
   Purpose:
     Run dialog for the game\server
 
-  $Id: unit_rungame.pas,v 1.13 2005-04-06 10:10:53 elmuerte Exp $
+  $Id: unit_rungame.pas,v 1.14 2005-10-01 09:53:09 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -539,6 +539,7 @@ begin
     if (MessageDlg('A preset with this name already exists.'+#13+#10+'Do you want to overwrite it?', mtConfirmation, [mbYes, mbNo], 0) = mrNo) then exit;
   end;
   SavePreSet(sectionname, ExtractFilePath(ParamStr(0))+'\runpresets.ini');
+  frm_UnCodeX.RefreshRunPresets;
 end;
 
 procedure Tfrm_Run.cb_PreSetsChange(Sender: TObject);
@@ -569,6 +570,7 @@ begin
   finally
     ini.Free;
   end;
+  frm_UnCodeX.RefreshRunPresets;
 end;
 
 procedure Tfrm_Run.btn_DefaultClick(Sender: TObject);

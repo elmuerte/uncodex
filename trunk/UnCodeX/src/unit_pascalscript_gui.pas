@@ -6,7 +6,7 @@
   Purpose:
     Additional GUI only PascalScript routines
 
-  $Id: unit_pascalscript_gui.pas,v 1.16 2005-04-19 07:49:05 elmuerte Exp $
+  $Id: unit_pascalscript_gui.pas,v 1.17 2005-10-01 09:53:09 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -37,6 +37,7 @@ uses
 
   procedure RegisterPSGui(ps: TPSScript);
   procedure LinkPSGui(ps: TPSScript);
+  function acRunEx(profile: string; autorun: boolean): boolean;
 
 implementation
 
