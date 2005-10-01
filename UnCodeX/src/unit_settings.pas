@@ -6,7 +6,7 @@
   Purpose:
     Program settings dialog
 
-  $Id: unit_settings.pas,v 1.53 2005-05-04 08:27:10 elmuerte Exp $
+  $Id: unit_settings.pas,v 1.54 2005-10-01 14:57:56 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -215,6 +215,15 @@ type
     cb_CreateSource: TComboBox;
     lbl_HighlightColor: TLabel;
     cb_HighlightColor: TColorBox;
+    ts_Defines: TTabSheet;
+    lbl_DefDefines: TLabel;
+    lb_Defs: TListBox;
+    ed_NewDefName: TEdit;
+    ed_NewDefValue: TEdit;
+    lbl_DefNam: TLabel;
+    lbl_DefValue: TLabel;
+    ed_RemoveDef: TBitBtn;
+    btn_AddDef: TBitBtn;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -298,6 +307,10 @@ type
     procedure mi_Resultfilename1Click(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure cb_HighlightColorChange(Sender: TObject);
+    procedure ed_NewDefNameKeyPress(Sender: TObject; var Key: Char);
+    procedure ed_RemoveDefClick(Sender: TObject);
+    procedure btn_AddDefClick(Sender: TObject);
+    procedure lb_DefsClick(Sender: TObject);
   private
   public
     TagChanged: boolean;
@@ -997,6 +1010,38 @@ procedure Tfrm_Settings.cb_HighlightColorChange(Sender: TObject);
 begin
   re_Preview.HighlightColor := cb_HighlightColor.Selected;
   re_Preview.Invalidate;
+end;
+
+procedure Tfrm_Settings.ed_NewDefNameKeyPress(Sender: TObject;
+  var Key: Char);
+begin
+  if (Key in [#95, #127]) then exit;
+  if (Key in [#97..#122]) then exit;
+  if (Key in [#65..#90]) then exit;
+  if (Key in [#48..#57]) then exit;
+  if (Key in [#0..#31]) then exit;
+  Key := #0;
+end;
+
+procedure Tfrm_Settings.ed_RemoveDefClick(Sender: TObject);
+begin
+  lb_Defs.DeleteSelected;
+end;
+
+procedure Tfrm_Settings.btn_AddDefClick(Sender: TObject);
+begin
+  if (ed_NewDefName.Text = '') then exit;
+  lb_Defs.Items.Values[ed_NewDefName.Text] := '';
+  lb_Defs.Items.Add(ed_NewDefName.Text+'='+ed_NewDefValue.Text);
+  ed_NewDefName.Text := '';
+  ed_NewDefValue.Text := '';
+end;
+
+procedure Tfrm_Settings.lb_DefsClick(Sender: TObject);
+begin
+  if (lb_Defs.ItemIndex = -1) then exit;
+  ed_NewDefName.Text := lb_Defs.Items.Names[lb_Defs.ItemIndex];
+  ed_NewDefValue.Text := lb_Defs.Items.Values[ed_NewDefName.Text];
 end;
 
 end.

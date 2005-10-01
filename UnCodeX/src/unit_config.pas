@@ -6,7 +6,7 @@
   Purpose:
     Contains the configuration of UnCodeX
 
-  $Id: unit_config.pas,v 1.15 2005-09-24 11:19:35 elmuerte Exp $
+  $Id: unit_config.pas,v 1.16 2005-10-01 14:57:56 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -415,6 +415,7 @@ end;
 procedure TUCXConfig.InternalSaveToIni;
 var
   i: integer;
+  sl: TStringList;
 begin
   ini.WriteInteger('Configuration', 'Version', CURRENT_CONFIG_VERSION);
 
@@ -425,6 +426,17 @@ begin
   end;
   ini.WriteStringArray('Packages', 'IgnorePackage', IgnorePackages);
   ini.WriteStringArray('Sources', 'Path', SourcePaths);
+
+  sl := TStringList.Create;
+  try
+    for i := 0 to BaseDefinitions.Count-1 do begin
+      sl.Add(BaseDefinitions.Entry[i])
+    end;
+    ini.WriteSectionRaw('Defines', sl);
+  finally
+    sl.Free;
+  end;
+
   with HTMLOutput do begin
     ini.WriteString('HTMLOutput', 'OutputDir', OutputDir);
     ini.WriteString('HTMLOutput', 'TemplateDir', TemplateDir);
