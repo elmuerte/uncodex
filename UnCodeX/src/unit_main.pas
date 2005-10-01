@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.177 2005-09-24 11:19:35 elmuerte Exp $
+  $Id: unit_main.pas,v 1.178 2005-10-01 09:53:07 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -302,6 +302,7 @@ type
     N3: TMenuItem;
     ac_GoToReplication: TAction;
     ac_GoToDefaultproperties: TAction;
+    mi_RunPresets: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -466,6 +467,7 @@ type
     procedure miPascalScriptsClick(sender: TObject);
     procedure CallCustomOutputModule(module: string; selectedclass: TUClass = nil; issingle: boolean = false);
     function ExecutePascalScript(filename: string): boolean;
+    procedure RunPreset(sender: TObject);
     // inline search
     procedure InlineSearchNext(skipcurrent: boolean = false);
     procedure InlineSearchPrevious(skipcurrent: boolean = false);
@@ -497,6 +499,7 @@ type
     procedure ExecuteProgram(exe: string; params: TStringList = nil; prio: integer = -1; show: integer = SW_SHOW);
     procedure OpenSourceLine(filename: string; line, caret: integer; uclass: TUClass);
     procedure OpenSourceInline(filename: string; line, caret: integer; uclass: TUClass = nil; nohighlight: boolean = false);
+    procedure RefreshRunPresets;
     // logging
     procedure StatusReport(msg: string; progress: byte = 255);
     procedure Log(msg: string; mt: TLogType = ltInfo; obj: TObject = nil);
@@ -519,7 +522,7 @@ uses unit_settings, unit_analyse, unit_htmlout,
   unit_tags, unit_outputdefs, unit_rtfhilight, unit_utils, unit_license,
   unit_splash, unit_ucxdocktree, unit_ucops, unit_pkgprops, unit_defprops,
   unit_rungame, unit_pascalscript, unit_pascalscript_gui, unit_pseditor,
-  unit_ucxthread;
+  unit_ucxthread, unit_ucxinifiles;
 
 const
   PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
@@ -1394,6 +1397,46 @@ end;
 
 { Custom output modules -- END }
 
+procedure Tfrm_UnCodeX.RefreshRunPresets;
+var
+  i: integer;
+  ini: TUCXIniFile;
+  sl: TStringList;
+  mi: TMenuItem;
+begin
+  xguard('RefreshRunPresets');
+  mi_RunPresets.Clear;
+  ini := TUCXIniFile.Create(ExtractFilePath(ParamStr(0))+'runpresets.ini');
+  sl := TStringList.Create;
+  try
+    ini.ReadSections(sl);
+    sl.Sort;
+    for i := 0 to sl.count-1 do begin
+      if (sl[i] = 'Default Run') then continue;
+      mi := TMenuItem.Create(mi_RunPresets);
+      mi.Caption := sl[i];
+      mi.Hint := 'Run preset: '+sl[i];
+      mi.OnClick := RunPreset;
+      mi_RunPresets.Add(mi);
+    end;
+  finally
+    ini.Free;
+    sl.Free;
+  end;
+  mi_RunPresets.Visible := mi_RunPresets.Count > 0;
+  xunguard;
+end;
+
+procedure Tfrm_UnCodeX.RunPreset(sender: TObject);
+var
+  pn: string;
+begin
+  pn := TMenuItem(Sender).Caption;
+  if (not acRunEx(pn, true)) then begin
+    Log('Unable to run preset "'+pn+'"', ltError);
+  end;
+end;
+
 { Inline search }
 
 procedure Tfrm_UnCodeX.InlineSearchNext(skipcurrent: boolean = false);
@@ -1934,6 +1977,7 @@ begin
     if (config.HotKeys.IndexOfName(TAction(al_Main.Actions[i]).Caption) > -1) then
       TAction(al_Main.Actions[i]).ShortCut := TextToShortCut(config.HotKeys.Values[TAction(al_Main.Actions[i]).Caption]);
   end;
+  RefreshRunPresets;
   xunguard;
 end;
 

@@ -617,6 +617,11 @@ object frm_UnCodeX: Tfrm_UnCodeX
       object mi_Run: TMenuItem
         Action = ac_Run
       end
+      object mi_RunPresets: TMenuItem
+        AutoHotkeys = maManual
+        Caption = 'Presets'
+        Visible = False
+      end
     end
     object mi_Output: TMenuItem
       Caption = 'Plug-ins'
