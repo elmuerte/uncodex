@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript package scanner, search for UnrealScript classes
 
-  $Id: unit_packages.pas,v 1.51 2005-09-24 11:19:35 elmuerte Exp $
+  $Id: unit_packages.pas,v 1.52 2005-10-02 09:18:08 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -650,13 +650,18 @@ begin
     for i := 0 to packagelist.Count-1 do begin
       if (Terminated) then exit;
       status('Scanning package '+packagelist[i].name+' for new classes', (i+1)*100 div packagelist.Count);
-      
-      GetFiles(packagelist[i].path+PathDelim+SOURCECARD, faAnyFile and not faDirectory, sl);
+
+      FindFiles(Packagelist[i].path, '', SOURCECARD, faAnyFile and not faDirectory, sl);
+      {$IFDEF UCPP_SUPPORT}
+      FindFiles(Packagelist[i].path, '', PPSOURCECARD, faAnyFile and not faDirectory, sl, true);
+      FilterSourceFiles(sl);
+      {$ENDIF}
+
       for j := 0 to sl.Count-1 do begin
-        if (packagelist[i].classes.Find(ExtractBaseName(sl[j])) = nil) then begin
-          uclass := nil;
+        uclass := packagelist[i].classes.Find(ExtractBaseName(sl[j]));
+        if (uclass = nil) then begin
           try
-            uclass := GetUClassName(sl[j]);
+            uclass := GetUClassName(Packagelist[i].path+PATHDELIM+sl[j]);
           except
             on E: Exception do InternalLog('Parser: error: '+E.Message, ltError);
           end;
@@ -693,7 +698,15 @@ begin
             else ClassHash.Items[LowerCase(uclass.name)] := uclass;
           end;
           InternalLog('New class found: '+uclass.FullName, ltInfo, CreateLogEntry(uclass));
+        end
+        {$IFDEF UCPP_SUPPORT}
+        else if (not SameText(uclass.filename, ExtractFileName(sl[j]))) then begin
+          uclass.filename := ExtractFileName(sl[j]);
+          uclass.filetime := 0;
+          InternalLog(sl[j]);
+          InternalLog('New file found for an existing class: '+uclass.FullName, ltInfo, CreateLogEntry(uclass));
         end;
+        {$ENDIF}
       end;
     end;
     if (newclasses.Count > 0) then begin

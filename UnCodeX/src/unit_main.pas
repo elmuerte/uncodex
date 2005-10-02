@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.179 2005-10-01 14:57:56 elmuerte Exp $
+  $Id: unit_main.pas,v 1.180 2005-10-02 09:18:07 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -303,6 +303,9 @@ type
     ac_GoToReplication: TAction;
     ac_GoToDefaultproperties: TAction;
     mi_RunPresets: TMenuItem;
+    mi_Bookmarks: TMenuItem;
+    mi_ManageBookmarks: TMenuItem;
+    mi_NB1: TMenuItem;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -3128,7 +3131,7 @@ var
   tr: TEXTRANGE;
   tmp: array[0..256] of char;
   tmpc: TUClass;
-  tmps: string;
+  tmps, tmp2: string;
 begin
   pt := Point(X, Y);
   curpos := re_SourceSnoop.Perform(EM_CHARFROMPOS, 0, Integer(@pt));
@@ -3152,13 +3155,28 @@ begin
       tmp[256] := #0;
       re_SourceSnoop.Perform(EM_GETLINE, re_SourceSnoop.Perform(EM_LINEFROMCHAR, curpos, 0), integer(@tmp));
       tmps := trim(copy(tmp, 1, 255));
-      GetToken(tmps, ' ');
-      tmps := GetToken(tmps, ' ', true);
+      GetToken(tmps, [' ', #9]); // #include
+      tmps := GetToken(tmps, [' ', #9], true);
       re_SourceSnoop.Hint := 'Open include file: '+tmps;
       re_SourceSnoop.ShowHint := true;
       re_SourceSnoop.Cursor := crHandPoint;
       Application.ActivateHint(Mouse.CursorPos);
       exit;
+    end
+    else if (((LowerCase(tmp) = '#pragma') or (LowerCase(tmp) = '#ucpp')) and (not (ssCtrl in Shift))) then begin
+      tmp[256] := #0;
+      re_SourceSnoop.Perform(EM_GETLINE, re_SourceSnoop.Perform(EM_LINEFROMCHAR, curpos, 0), integer(@tmp));
+      tmps := trim(copy(tmp, 1, 255));
+      tmp2 := GetToken(tmps, [' ', #9]);
+      if (SameText(tmp2, '#pragma')) then tmp2 := GetToken(tmps, [' ', #9]);
+      if (SameText(GetToken(tmps, [' ', #9]), 'include')) then begin
+        tmps := GetToken(tmps, [' ', #9], true);
+        re_SourceSnoop.Hint := 'Open include file: '+tmps;
+        re_SourceSnoop.ShowHint := true;
+        re_SourceSnoop.Cursor := crHandPoint;
+        Application.ActivateHint(Mouse.CursorPos);
+        exit;
+      end;
     end
     else begin
       if (GUIVars.SelectedUClass <> nil) then re_SourceSnoop.Hint := re_SourceSnoop.filename
@@ -3198,7 +3216,7 @@ var
   tr: TEXTRANGE;
   tmp: array[0..256] of char;
   tmp2: array[0..255] of char;
-  tmps: string;
+  tmps, tmps2: string;
   i, realline: integer;
 begin
   if (Button = mbRight) then begin
@@ -3218,11 +3236,26 @@ begin
         re_SourceSnoop.Perform(EM_GETLINE, realline, integer(@tmp));
         tmps := trim(copy(tmp, 1, 255));
         if (re_SourceSnoop.uclass <> nil) then AddBrowserHistory(re_SourceSnoop.uclass, re_SourceSnoop.filename, realline+1, tmps);
-        GetToken(tmps, ' ');
-        tmps := GetToken(tmps, ' ', true); // to make sure everything after it is gone
+        GetToken(tmps, [' ', #9]);
+        tmps := GetToken(tmps, [' ', #9], true); // to make sure everything after it is gone
         tmps := iFindFile(ExpandFileName(re_SourceSnoop.uclass.package.PackageDir+tmps));
         OpenSourceInline(tmps, 0, 0, re_SourceSnoop.uclass, true);
         exit;
+      end
+      else if (((LowerCase(tmp) = '#pragma') or (LowerCase(tmp) = '#ucpp')) and (not (ssCtrl in Shift))) then begin
+        realline := re_SourceSnoop.Perform(EM_LINEFROMCHAR, curpos, 0);
+        tmp[256] := #0;
+        re_SourceSnoop.Perform(EM_GETLINE, realline, integer(@tmp));
+        tmps := trim(copy(tmp, 1, 255));
+        tmps2 := GetToken(tmps, [' ', #9]);
+        if (SameText(tmps2, '#pragma')) then tmps2 := GetToken(tmps, [' ', #9]);
+        if (SameText(GetToken(tmps, [' ', #9]), 'include')) then begin
+          tmps := GetToken(tmps, [' ', #9], true);
+          re_SourceSnoop.Hint := 'Open include file: '+tmps;
+          tmps := iFindFile(ExpandFileName(re_SourceSnoop.uclass.package.path+pathdelim+tmps));
+          OpenSourceInline(tmps, 0, 0, re_SourceSnoop.uclass, true);
+          exit;
+        end;
       end;
       if (tmp <> '') then begin
         realline := re_SourceSnoop.Perform(EM_LINEFROMCHAR, curpos, 0);

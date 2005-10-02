@@ -1632,6 +1632,7 @@ object frm_Settings: Tfrm_Settings
         Height = 298
         Hint = 'Press delete to remove the selected keyword'
         Anchors = [akLeft, akTop, akRight, akBottom]
+        BevelOuter = bvNone
         ItemHeight = 13
         Sorted = True
         TabOrder = 0
@@ -1645,6 +1646,7 @@ object frm_Settings: Tfrm_Settings
         Height = 298
         Hint = 'Press delete to remove the selected keyword'
         Anchors = [akLeft, akTop, akBottom]
+        BevelOuter = bvNone
         ItemHeight = 13
         Sorted = True
         TabOrder = 1
@@ -1658,6 +1660,8 @@ object frm_Settings: Tfrm_Settings
         Height = 21
         Hint = 'Press enter to add this keyword'
         Anchors = [akLeft, akTop, akRight]
+        BevelKind = bkSoft
+        BorderStyle = bsNone
         CharCase = ecLowerCase
         TabOrder = 2
         OnKeyUp = ed_AddSecKeyKeyUp
@@ -1668,6 +1672,8 @@ object frm_Settings: Tfrm_Settings
         Width = 209
         Height = 21
         Hint = 'Press enter to add this keyword'
+        BevelKind = bkSoft
+        BorderStyle = bsNone
         CharCase = ecLowerCase
         TabOrder = 3
         OnKeyUp = ed_AddPrimKeyKeyUp
@@ -1675,7 +1681,9 @@ object frm_Settings: Tfrm_Settings
     end
     object ts_Defines: TTabSheet
       Tag = 5
-      Caption = 'Defines'
+      HelpType = htKeyword
+      HelpKeyword = 'macrodefinitions'
+      Caption = 'Macro definitions'
       ImageIndex = 14
       TabVisible = False
       DesignSize = (
@@ -1712,6 +1720,8 @@ object frm_Settings: Tfrm_Settings
         Width = 393
         Height = 266
         Align = alCustom
+        BevelKind = bkSoft
+        BorderStyle = bsNone
         ExtendedSelect = False
         ItemHeight = 13
         Sorted = True
@@ -1723,6 +1733,8 @@ object frm_Settings: Tfrm_Settings
         Top = 48
         Width = 153
         Height = 21
+        BevelKind = bkSoft
+        BorderStyle = bsNone
         CharCase = ecUpperCase
         TabOrder = 1
         OnKeyPress = ed_NewDefNameKeyPress
@@ -1733,6 +1745,8 @@ object frm_Settings: Tfrm_Settings
         Width = 233
         Height = 21
         Anchors = [akLeft, akTop, akRight]
+        BevelKind = bkSoft
+        BorderStyle = bsNone
         TabOrder = 2
       end
       object ed_RemoveDef: TBitBtn
@@ -1762,6 +1776,7 @@ object frm_Settings: Tfrm_Settings
         Top = 48
         Width = 27
         Height = 21
+        Hint = 'Add\overwrite this definition'
         Anchors = [akRight, akBottom]
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText

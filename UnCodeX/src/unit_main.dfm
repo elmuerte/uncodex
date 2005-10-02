@@ -584,6 +584,16 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Hint = 'Past viewed lines'
       Visible = False
     end
+    object mi_Bookmarks: TMenuItem
+      Caption = 'Bookmarks'
+      Visible = False
+      object mi_ManageBookmarks: TMenuItem
+        Caption = 'Manage bookmarks'
+      end
+      object mi_NB1: TMenuItem
+        Caption = '-'
+      end
+    end
     object mi_HTMLoutput: TMenuItem
       Caption = 'HTML Output'
       object mi_Createindexfiles: TMenuItem
@@ -604,7 +614,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
       end
     end
     object mi_GameServer: TMenuItem
-      Caption = 'Game Server'
+      Caption = 'Launch Game'
       object mi_Startserver: TMenuItem
         Action = ac_RunServer
       end
