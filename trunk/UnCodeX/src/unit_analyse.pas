@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.77 2005-09-24 11:19:35 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.78 2005-10-02 09:18:07 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -145,15 +145,22 @@ end;
 // removes leading # and comments from a macro line
 function TrimMacro(input: string): string;
 var
-  i: integer;
+  i, j: integer;
 begin
   if (Length(input) < 1) then exit;
   if (input[1] = '#') then Delete(input, 1, 1);
+
+  repeat
+    i := pos('/*', input);
+    if (i > 0) then begin
+      j := pos('*/', input);
+      if (j = 0) then j := MaxInt;
+      Delete(input, i, j+2-i);
+  end;
+  until (i = 0);
   i := pos('//', input);
   if (i > 0) then Delete(input, i, Length(input));
-  i := pos('/*', input);
-  if (i > 0) then Delete(input, i, Length(input));
-  result := trim(input);
+  result := input;
 end;
 
 // Create for a class list
@@ -927,12 +934,12 @@ procedure TClassAnalyser.pMacro(Sender: TUCParser);
 var
   macro, args: string;
 begin
-  args := TrimMacro(Sender.TokenString);
-  macro := GetToken(args, ' ');
+  args := trim(TrimMacro(Sender.TokenString));
+  macro := GetToken(args, [' ', #9]);
   macro := UpperCase(macro);
   if (macro = 'DEFINE') then begin
     if (macroIfCnt = 0) then begin
-      macro := GetToken(args, ' ');
+      macro := GetToken(args, [' ', #9]);
       uclass.defs.define(macro, args);
       if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': define '+macro+' = '+args, ltInfo, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
     end;
@@ -1036,10 +1043,10 @@ begin
   else if ((macro = 'PRAGMA') or (macro = 'UCPP')) then begin
     if (macroIfCnt <> 0) then exit;
     if (macro = 'PRAGMA') then begin
-      macro := GetToken(args, ' ');
+      macro := GetToken(args, [' ', #9]);
       if (not SameText(macro, 'UCPP')) then exit;
     end;
-    macro := UpperCase(GetToken(args, ' '));
+    macro := UpperCase(GetToken(args, [' ', #9]));
     if (macro = 'INCLUDE') then begin
       if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': UCPP Include file '+trim(args), ltInfo, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
       uclass.includes.Values[IntToStr(p.SourceLine-1)] := trim(args);

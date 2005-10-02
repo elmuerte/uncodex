@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.159 2005-09-15 09:34:35 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.160 2005-10-02 09:18:07 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -35,10 +35,17 @@ unit unit_definitions;
 interface
 
 uses
-  Hashes, unit_uclasses, Classes
+  {$IFDEF MSWINDOWS}
+  Windows,
+  {$ENDIF}
+  Hashes, unit_uclasses, Classes, SysUtils
   {$IFDEF WITH_OWN_ZLIB}
   , gzio
   {$ENDIF};
+
+const
+  APPTITLE        = 'UnCodeX';
+  APPVERSION      = '232';
 
 type
   TLogType = (ltInfo, ltWarn, ltError, ltSearch);
@@ -92,7 +99,10 @@ type
 
   // repeat a string
   function StrRepeat(line: string; count: integer): string;
-  function GetToken(var input: string; delim: char; nocut: boolean = false): string;
+
+  function GetToken(var input: string; delim: char; nocut: boolean = false): string; overload;
+  function GetToken(var input: string; delim: TSysCharSet; nocut: boolean = false): string; overload;
+
   function iFindFile(filename: string): string;
   function iFindDir(dirname: string; var output: string): boolean;
   function ResolveFilename(uclass: TUClass; udecl: TUDeclaration): string; overload;
@@ -118,8 +128,6 @@ type
   function IsA(obj: pointer; cls: TClass): boolean; overload;
 
 const
-  APPTITLE        = 'UnCodeX';
-  APPVERSION      = '231';
   {$IFDEF DEBUG_BUILD}
   DEBUGBUILD      = true;
   DEBUGBUILD_STR  = 'Debug Build';
@@ -202,10 +210,7 @@ uses
 {$IFDEF FPC}
    unit_fpc_compat,
 {$ENDIF}
-{$IFDEF MSWINDOWS}
-  Windows,
-{$ENDIF}
-  SysUtils, unit_UCXIniFiles;
+  unit_UCXIniFiles;
 
 var
   sl: TStringList;
@@ -283,13 +288,18 @@ begin
 end;
 
 function GetToken(var input: string; delim: char; nocut: boolean = false): string;
+begin
+  result := GetToken(input, [delim], nocut);
+end;
+
+function GetToken(var input: string; delim: TSysCharSet; nocut: boolean = false): string;
 var
   i,j: integer;
 begin
   i := 1;
-  while ((i <= length(input)) and (input[i] = delim)) do Inc(i);
+  while ((i <= length(input)) and (input[i] in delim)) do Inc(i);
   j := i;
-  while ((j <= length(input)) and (input[j] <> delim)) do Inc(j);
+  while ((j <= length(input)) and (not (input[j] in delim))) do Inc(j);
   result := copy(input, i, j-i);
   if (not nocut) then begin
     delete(input, 1, j);
