@@ -6,7 +6,7 @@
   Purpose:
     Contains the configuration of UnCodeX
 
-  $Id: unit_config.pas,v 1.16 2005-10-01 14:57:56 elmuerte Exp $
+  $Id: unit_config.pas,v 1.17 2005-10-03 09:17:47 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -35,7 +35,7 @@ interface
 
 uses
   {$IFDEF TUCXGUIConfig}
-  Graphics, Controls, unit_searchform,
+  Graphics, Controls, unit_searchform, Contnrs,
   {$ENDIF}
   unit_htmlout, Classes, SysUtils, unit_ucxinifiles, unit_uclasses,
   unit_definitionlist;
@@ -119,6 +119,32 @@ type
     Style:                TFontStyles;
   end;
 
+  TBookmarkEntryType = (betLinenumber=0, betFieldname=1);
+
+  TBookmarkEntry = class(TObject)
+    EntryType:            TBookmarkEntryType;
+    Entry:                string;
+    Comment:              string;
+  end;
+
+  TBookmarkEntryList = class(TObjectList)
+  end;
+
+  TBookmark = class(TObject)
+  protected
+    fName: string;
+  public
+    Entries: TBookmarkEntryList;
+    constructor Create(inname: string);
+    destructor Destroy; override;
+    property Name: string read fname;
+    procedure AddEntry(encoded: string); overload;
+    procedure AddEntry(intype: TBookmarkEntryType; inentry: string; incomment: string = ''); overload;
+  end;
+
+  TBookmarkList = class(TObjectList)
+  end;
+
   TUCXGUIConfig = class(TUCXConfig)
   protected
     procedure UpgradeConfig; override;
@@ -126,8 +152,10 @@ type
     procedure InternalSaveToIni; override;
     procedure LoadComponentSettings(ident: string; cs: TComponentSettings);
     procedure LoadSourcePreviewFont(ident: string; var target: TSourcePreviewFont);
+    procedure LoadBookmarks;
     procedure SaveComponentSettings(ident: string; cs: TComponentSettings);
     procedure SaveSourcePreviewFont(ident: string; var target: TSourcePreviewFont);
+    procedure SaveBookmarks;
   public
     StateFile:            string;
     NewClassTemplate:     string;
@@ -215,6 +243,7 @@ type
       OpenClass:          string;
     end;
     SearchConfig:         TSearchConfig;
+    Bookmarks:            TBookmarkList;
   public
     constructor Create(filename: string);
     destructor Destroy; override;
@@ -683,6 +712,7 @@ begin
   SearchConfig.history := TStringList.Create;
   SearchConfig.ftshistory := TStringList.Create;
   StateFile := ChangeFileExt(ExtractFilename(ConfigFile), '.ucx');
+  Bookmarks := TBookmarkList.Create;
   NewClassTemplate := ExtractFilePath(ParamStr(0))+TEMPLATEPATH+PathDelim+'NewClass.uc';
 end;
 
@@ -699,6 +729,7 @@ begin
   FreeAndNil(DockState.data.Left);
   FreeAndNil(DockState.data.Right);
   FreeAndNil(HotKeys);
+  FreeAndNil(Bookmarks);
 end;
 
 procedure TUCXGUIConfig.InternalLoadFromIni;
@@ -797,6 +828,7 @@ begin
   StateFile := ini.ReadString('GUI.General', 'StateFile', StateFile);
   if (ExtractFilePath(StateFile) = '') then StateFile := ExtractFilePath(ini.filename)+StateFile;
   NewClassTemplate := ini.ReadString('GUI.General', 'NewClassTemplate', NewClassTemplate);
+  LoadBookmarks;
 end;
 
 procedure TUCXGUIConfig.LoadComponentSettings(ident: string; cs: TComponentSettings);
@@ -817,6 +849,33 @@ begin
   with target do begin
     Color := ini.ReadInteger('GUI.SourcePreview', ident+'.Color', Color);
     Style := StringToFontStyles(ini.ReadString('GUI.SourcePreview', ident+'.Style', FontStylesToString(Style)));
+  end;
+end;
+
+procedure TUCXGUIConfig.LoadBookmarks;
+var
+  sl, sl2: TStringlist;
+  i, j: integer;
+  bm: TBookmark;
+begin
+  sl := TStringList.Create;
+  try
+    ini.ReadStringArray('Bookmarks', 'Mark', sl);
+    for i := 0 to sl.count-1 do begin
+      bm := TBookmark.Create(sl[i]);
+      sl2 := TStringList.Create;
+      try
+        ini.ReadStringArray('Bookmarks', 'Entry.'+sl[i], sl2);
+        for j := 0 to sl2.Count-1 do begin
+          bm.AddEntry(sl2[j]);
+        end;
+      finally
+        sl2.Free;
+      end;
+      Bookmarks.Add(bm);
+    end;
+  finally
+    sl.Free;
   end;
 end;
 
@@ -910,6 +969,7 @@ begin
   if (SameText(ExtractFilePath(tmp), ExtractFilePath(ini.FileName))) then tmp := ExtractFileName(tmp);
   ini.WriteString('GUI.General', 'StateFile', tmp);
   ini.WriteString('GUI.General', 'NewClassTemplate', NewClassTemplate);
+  SaveBookmarks;
 end;
 
 procedure TUCXGUIConfig.SaveComponentSettings(ident: string; cs: TComponentSettings);
@@ -930,6 +990,36 @@ begin
   with target do begin
     ini.WriteInteger('GUI.SourcePreview', ident+'.Color', Color);
     ini.WriteString('GUI.SourcePreview', ident+'.Style', FontStylesToString(Style));
+  end;
+end;
+
+procedure TUCXGUIConfig.SaveBookmarks;
+var
+  sl, sl2: TStringList;
+  i, j: integer;
+  bm: TBookmark;
+  bme: TBookmarkentry;
+begin
+  sl := TStringList.Create;
+  try
+    for i := 0 to Bookmarks.count-1 do begin
+      bm := TBookmark(Bookmarks[i]);
+      sl.Add(bm.name);
+      sl2 := TStringList.Create;
+      try
+        for j := 0 to bm.Entries.Count-1 do begin
+          bme := TBookmarkentry(bm.Entries[j]);
+          sl2.Add(inttostr(ord(bme.EntryType))+';'+bme.Entry+';'+bme.Comment);
+        end;
+        ini.WriteStringArray('Bookmarks', 'Entry.'+bm.name, sl2);
+      finally
+        sl2.Free;
+      end;
+      Bookmarks.Add(bm);
+    end;
+    ini.WriteStringArray('Bookmarks', 'Mark', sl);
+  finally
+    sl.Free;
   end;
 end;
 
@@ -1070,6 +1160,46 @@ begin
     Color := TStoreControl(source).Color;
   except
   end;
+end;
+
+constructor TBookmark.Create(inname: string);
+begin
+  fname := inname;
+  Entries := TBookmarkEntryList.Create(true);
+end;
+
+destructor TBookmark.Destroy;
+begin
+  Entries.Free;
+  inherited Destroy;
+end;
+
+procedure TBookmark.AddEntry(encoded: string);
+var
+  it: TBookmarkEntryType;
+  ie: string;
+  i: integer;
+begin
+  i := Pos(';', encoded);
+  it := TBookmarkEntryType(StrToIntDef(Copy(encoded, 1, i-1), 0));
+  Delete(encoded, 1, i);
+  i := Pos(';', encoded);
+  if (i = 0) then i := length(encoded);
+  ie := Copy(encoded, 1, i-1);
+  Delete(encoded, 1, i);
+  AddEntry(it, ie, encoded);
+end;
+
+procedure TBookmark.AddEntry(intype: TBookmarkEntryType; inentry: string; incomment: string = '');
+var
+  bme: TBookmarkEntry;
+begin
+  //TODO: find previous and override
+  bme := TBookmarkEntry.Create;
+  bme.EntryType := intype;
+  bme.Entry := inentry;
+  bme.Comment := incomment;
+  Entries.Add(bme);
 end;
 
 {$ENDIF}

@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.180 2005-10-02 09:18:07 elmuerte Exp $
+  $Id: unit_main.pas,v 1.181 2005-10-03 09:17:47 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -306,6 +306,7 @@ type
     mi_Bookmarks: TMenuItem;
     mi_ManageBookmarks: TMenuItem;
     mi_NB1: TMenuItem;
+    ac_ManageBookmarks: TAction;
     procedure tmr_StatusTextTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure mi_AnalyseclassClick(Sender: TObject);
@@ -427,6 +428,7 @@ type
       Rect: TRect; State: TOwnerDrawState);
     procedure ac_GoToReplicationExecute(Sender: TObject);
     procedure ac_GoToDefaultpropertiesExecute(Sender: TObject);
+    procedure ac_ManageBookmarksExecute(Sender: TObject);
   protected
     // AppBar vars
     OldStyleEx: Cardinal;
@@ -525,7 +527,7 @@ uses unit_settings, unit_analyse, unit_htmlout,
   unit_tags, unit_outputdefs, unit_rtfhilight, unit_utils, unit_license,
   unit_splash, unit_ucxdocktree, unit_ucops, unit_pkgprops, unit_defprops,
   unit_rungame, unit_pascalscript, unit_pascalscript_gui, unit_pseditor,
-  unit_ucxthread, unit_ucxinifiles;
+  unit_ucxthread, unit_ucxinifiles, unit_bookmarks;
 
 const
   PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
@@ -3793,6 +3795,13 @@ end;
 destructor TUCXGUIVars.Destroy;
 begin
   FreeAndNil(CmdStack);
+end;
+
+procedure Tfrm_UnCodeX.ac_ManageBookmarksExecute(Sender: TObject);
+begin
+  with Tfrm_Bookmarks.Create(self) do begin
+    ShowModal;
+  end;
 end;
 
 initialization

@@ -586,9 +586,8 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
     object mi_Bookmarks: TMenuItem
       Caption = 'Bookmarks'
-      Visible = False
       object mi_ManageBookmarks: TMenuItem
-        Caption = 'Manage bookmarks'
+        Action = ac_ManageBookmarks
       end
       object mi_NB1: TMenuItem
         Caption = '-'
@@ -1167,6 +1166,11 @@ object frm_UnCodeX: Tfrm_UnCodeX
       Enabled = False
       Hint = 'Go to the defaultproperties block'
       OnExecute = ac_GoToDefaultpropertiesExecute
+    end
+    object ac_ManageBookmarks: TAction
+      Category = 'Program'
+      Caption = 'Manage Bookmarks'
+      OnExecute = ac_ManageBookmarksExecute
     end
   end
   object il_Small: TImageList

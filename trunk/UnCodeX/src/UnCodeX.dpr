@@ -6,7 +6,7 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.73 2005-09-24 11:19:35 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.74 2005-10-03 09:17:47 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -34,9 +34,7 @@ program UnCodeX;
 
 uses
   FastShareMem in 'FastShareMem.pas',
-  {$IFDEF DETECT_MEM_LEAK}
   MemCheck in 'MemCheck.pas',
-  {$endif}
   Windows,
   Messages,
   SysUtils,
@@ -88,7 +86,8 @@ uses
   unit_ucxinifiles in 'unit_ucxinifiles.pas',
   unit_ucxthread in 'unit_ucxthread.pas',
   unit_defpropsframe in 'unit_defpropsframe.pas' {fr_DefPropsBrowser: TFrame},
-  unit_definitionlist in 'unit_definitionlist.pas';
+  unit_definitionlist in 'unit_definitionlist.pas',
+  unit_bookmarks in 'unit_bookmarks.pas' {frm_Bookmarks};
 
 {$R *.res}
 
