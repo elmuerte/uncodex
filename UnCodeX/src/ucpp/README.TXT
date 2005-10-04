@@ -32,6 +32,17 @@ Added:
   "#pragma ucpp warning on" will turn it back on. The same works for
   error reporting. Note that it should be just "on" or "off" anything
   else will be seen as the warning\error message
+- #include directives will now be processed. The #include line will be
+  replaced with the content of the file (just like it's done by the
+  unrealscript compiler). However, this will grant you the power of
+  preprocessing the include file. This can be turned off by setting
+  supportInclude=0 in the ini file.
+  It's not adviced to use #include because it can be confusing to find
+  the correct linenumber.
+- Properly evaluate function like macro arguments allowing correct
+  stringification behavior (e.g. like described here:
+  http://developer.apple.com/documentation/DeveloperTools/gcc-4.0.0/cpp/Stringification.html
+  )
 
 Changes since version 1.3
 

@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.28 2005-09-05 08:01:33 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.29 2005-10-04 09:42:59 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -41,6 +41,7 @@ type
 
   procedure PreProcessFile(filename: string);
   procedure PreProcessIncludeFile(filename: string; const global: boolean = false);
+  procedure ProcessIncludeIncludeFile(filename: string; target: TSourceParser);
   procedure PreProcessDirectory(dir: string);
   procedure PreProcessPipe(filename: string = '');
   procedure LoadConfiguration();
@@ -276,7 +277,7 @@ begin
   else if (SameText(cmd, 'define') and supportDefine) then begin
     if (macroIfCnt = 0) then begin
       CommentMacro;  // don't strip comment, everything is included
-      cmd := GetToken(args, [' ', #9]);
+      cmd := GetToken(args, [' ', #9]); //TODO: allow whitespace within braces
       try
         CurDefs.define(cmd, args);
       except
@@ -302,17 +303,17 @@ begin
   end
   // this isn't usefull, because the unrealengine will include the file AS IS
   // so it won't be able to compile it because of unknown compiler directives
-  {else if (SameText(cmd, '#include') and supportInclude) then begin
+  else if (SameText(cmd, 'include') and supportInclude) then begin
     StripComment;
     if (macroIfCnt = 0) then begin
       args := trim(args);
       args := ExpandFileName(ExtractFilePath(ExcludeTrailingPathDelimiter(ExtractFilePath(filestack[0])))+args); // expand the filename
-      PreProcessIncludeFile(args);
+      ProcessIncludeIncludeFile(args, p);
     end;
-    CommentMacro;
+    //CommentMacro;
+    p.SkipToken(true);
     exit;
-  end}
-
+  end
 
   // do this last
   else if (SameText(cmd, 'ucpp') or SameText(cmd, 'pragma')) then begin
@@ -693,6 +694,7 @@ begin
   CurDefs := TDefinitionList.Create(BaseDefs);
   CurDefs.OnParseDefinition := ParseDef;
   CurDefs.OnExternalDefine := _ExternalDefine;
+  CurDefs.OnExpandArgument := _reparseFuncDef;
   CurDefs.define('CLASS_'+ChangeFileExt(ExtractFileName(filename), ''), '');
   pucfile := filename;
   ucfile := ChangeFileExt(filename, '.uc');
@@ -748,6 +750,48 @@ begin
   end;
 end;
 
+// will be called by #include <filename>, everything in that file will be included int eh output file
+procedure ProcessIncludeIncludeFile(filename: string; target: TSourceParser);
+var
+  fsin: TFileStream;
+  result: TStringStream;
+  p: TSourceParser;
+  idx: integer;
+begin
+  if (includeStack.IndexOf(filename) > -1) then begin
+    WarningMessage('Recursive include, "'+filename+'" was already included, include file stack: "'+includeStack.CommaText+'"');
+    target.OutputString('//UCPP processing warning: recursive include, "'+filename+'" was already included.');
+    exit;
+  end;
+  try
+    fsin := TFileStream.Create(filename, fmOpenRead	or fmShareDenyWrite);
+  except
+    ErrorMessage('Could not open file "'+filename+'" for reading.');
+    target.OutputString('//UCPP processing error: Could not open file "'+filename+'" for reading.');
+    exit;
+  end;
+  result := TStringStream.Create('');
+  idx := includeStack.Add(filename);
+  Inc(stackDepth);
+  try
+    filestack.Insert(0, filename);
+    p := TSourceParser.Create(fsin, result);
+    p.ProcessMacro := _ppMacro;
+    p.MacroCallBack := true;
+    if (verbosity > 0) then Writeln(StrRepeat('>', stackDepth)+' Processing include file "'+filename+'"');
+    internalPP(p);
+    target.OutputString(result.DataString);
+  finally;
+    filestack.Delete(0);
+    FreeAndNil(fsin);
+    FreeAndNil(result);
+    if (verbosity > 0) then Writeln(StrRepeat('<', stackDepth)+' Finished processing include file "'+filename+'"');
+    Dec(stackDepth);
+    includeStack.Delete(idx);
+  end;
+end;
+
+
 procedure PreProcessDirectory(dir: string);
 var
   sr: TSearchRec;
@@ -773,6 +817,7 @@ begin
   CurDefs := TDefinitionList.Create(BaseDefs);
   CurDefs.OnParseDefinition := ParseDef;
   CurDefs.OnExternalDefine := _ExternalDefine;
+  CurDefs.OnExpandArgument := _reparseFuncDef;
   if (filename <> '') then
     CurDefs.define('CLASS_'+ChangeFileExt(ExtractFileName(filename), ''), '');
   pucfile := filename;
@@ -870,6 +915,7 @@ end;
 initialization
   BaseDefs := TDefinitionList.Create(nil);
   BaseDefs.OnParseDefinition := ParseDef;
+  BaseDefs.OnExpandArgument := _reparseFuncDef;
   if (not FindCmdLineSwitch('undef', ['-'], false)) then begin
     BaseDefs.define('UCPP_VERSION', UCPP_VERSION);
     BaseDefs.define('UCPP_HOMEPAGE', '"'+UCPP_HOMEPAGE+'"');
