@@ -1,7 +1,7 @@
 FILE_INCLUDED
 
 #ifndef FILE_INCLUDED
-	#include Classes/include.inc
+#	include Classes/include.inc
 #endif
 
 FILE_INCLUDED
