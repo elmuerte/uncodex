@@ -6,7 +6,7 @@
   Purpose:
     Various utility functions
 
-  $Id: unit_pputils.pas,v 1.9 2005-09-05 08:01:33 elmuerte Exp $
+  $Id: unit_pputils.pas,v 1.10 2005-10-20 11:45:36 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -55,13 +55,11 @@ var
   ErrorCount: integer = 0;
   WarnCount: integer = 0;
   debug_mode: boolean = false;
-  reportError: boolean = true;
-  reportWarning: boolean = true;
 
 implementation
 
 uses
-  Windows;
+  Windows, unit_preprocessor;
 
 function GetToken(var input: string; delim: TSysCharSet; nocut: boolean = false): string;
 var
@@ -79,7 +77,7 @@ end;
 
 procedure ErrorMessage(msg: string);
 begin
-  if (reportError) then begin
+  if (Config.reportError) then begin
     Writeln(ErrOutput, 'Error: '+msg);
     Inc(ErrorCount);
   end;
@@ -87,7 +85,7 @@ end;
 
 procedure WarningMessage(msg: string);
 begin
-  if (reportWarning) then begin
+  if (Config.reportWarning) then begin
     Writeln(ErrOutput, 'Warning: '+msg);
     Inc(WarnCount);
   end;
