@@ -5,7 +5,7 @@
               |______/   \______  / |____|     |____| UCPP
                                 \/                    v1.5
 
-                       Thursday, August 18, 2005
+                       Thursday, October 20, 2005
                       Michiel "El Muerte" Hendriks
                       <elmuerte@drunksnipers.com>
 ------------------------------------------------------------------------
@@ -32,17 +32,28 @@ Added:
   "#pragma ucpp warning on" will turn it back on. The same works for
   error reporting. Note that it should be just "on" or "off" anything
   else will be seen as the warning\error message
-- #include directives will now be processed. The #include line will be
+- #include directives can now be processed. The #include line will be
   replaced with the content of the file (just like it's done by the
-  unrealscript compiler). However, this will grant you the power of
-  preprocessing the include file. This can be turned off by setting
-  supportInclude=0 in the ini file.
+  unrealscript compiler). This will grant you the power of 
+  preprocessing the include file. By default it is turned off.
+  This can be turned on by setting supportInclude=1 in the ini file.
   It's not adviced to use #include because it can be confusing to find
   the correct linenumber.
 - Properly evaluate function like macro arguments allowing correct
   stringification behavior (e.g. like described here:
   http://developer.apple.com/documentation/DeveloperTools/gcc-4.0.0/cpp/Stringification.html
   )
+- Added new config variables to the [Options] section: 
+  supportPreDefine : same as the -undef commandline argument
+  stripCode : same as the -strip commandline argument
+- "#pragma ucpp config variable value" this will allow you to force
+  a bool configuration setting from the [Options] section. These are:
+  supportIf, supportDefine, supportPreDefine, supportInclude, stripCode
+  Value can be: true, false, 0, 1 or empty to reset to the default 
+  value. The settings last for this file only, included files using
+  ucpp include (not UE #include) will not be affected by these 
+  settings.
+- Added filename and location for unexpected EOF errors.
 
 Changes since version 1.3
 

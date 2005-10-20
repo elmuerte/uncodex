@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.29 2005-10-04 09:42:59 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.30 2005-10-20 11:45:36 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -53,6 +53,17 @@ type
   procedure internalPP(p: TSourceParser);
   function _ExternalDefine(token: string; var output: string): boolean;
 
+type  
+  TConfigRecord = record
+    reportError       : boolean;
+    reportWarning     : boolean;
+    supportIf         : boolean;
+    supportDefine     : boolean;
+    supportPreDefine  : boolean;
+    supportInclude    : boolean;
+    stripCode         : boolean;
+  end;  
+
 resourcestring
   UCPP_VERSION        = '105';
   UCPP_VERSION_PRINT  = '1.5';
@@ -69,24 +80,23 @@ var
   cfgStripMessage: string = UCPP_STRIP_MSG;
   cfgNoticeMessage: string = UCPP_NOTICE_MSG;
   BaseDefs: TDefinitionList;
-  supportIf: boolean = true;
-  supportDefine: boolean = true;
-  supportPreDefine: boolean = true;
-  supportInclude: boolean = true;
-  stripCode: boolean = false;
   includeFiles: TStringList;
   verbosity: integer = 1;
   importEnvironment: boolean = false;
   pipeMode: boolean = false;
   pipeModeOutOnly: boolean = false;
 
+var
+  ConfigStack: array of TConfigRecord;
+  Config: TConfigRecord;
+
 implementation
 
 uses unit_pputils, unit_ucxinifiles;
 
 resourcestring
-  END_OF_FILE_EXCEPTION_IF = 'Unexpected end of file. Missing #endif.';
-  END_OF_FILE_EXCEPTION = 'Unexpected end of file.';
+  END_OF_FILE_EXCEPTION_IF = '%s(%d) : Unexpected end of file. Missing #endif.';
+  END_OF_FILE_EXCEPTION = '%s(%d) : Unexpected end of file.';
 
 var
   ucfile, pucfile: string;
@@ -113,16 +123,17 @@ procedure _ppMacro(p: TSourceParser);
 var
   orig: string;
   cmd, args, rep: string;
+  startline: integer;
 
   procedure CommentMacro();
   begin
-    if (stripCode) then rep := cfgStripMessage+NL
+    if (Config.stripCode) then rep := cfgStripMessage+NL
     else rep := UCPP_COMMENT+orig+NL;
     p.OutputString(rep);
-    p.SkipToken(not stripCode);
+    p.SkipToken(not Config.stripCode);
     if (hadNewLine and (macroIfCnt > 0)) then begin
       if (not processedNewLine) then begin
-        if (stripCode) then p.OutputString(cfgStripMessage+NL)
+        if (Config.stripCode) then p.OutputString(cfgStripMessage+NL)
         else p.OutputString(UCPP_COMMENT);
         processedNewLine := true;
       end;
@@ -149,18 +160,21 @@ var
 
   procedure macroIfCntLoop;
   begin
+    startline := p.SourceLine;
     while (macroIfCnt > 0) do begin
-      if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION_IF);
+      if (p.Token = toEOF) then begin
+        raise EEOF.CreateFmt(END_OF_FILE_EXCEPTION_IF, [filestack[0], startline-1]);
+      end;
       if (hadNewLine and not processedNewLine) then begin
-        if (stripCode) then p.OutputString(cfgStripMessage+NL)
+        if (Config.stripCode) then p.OutputString(cfgStripMessage+NL)
         else p.OutputString(UCPP_COMMENT);
         hadNewLine := false;
         processedNewLine := true;
       end;
-      if (not stripCode) then p.CopyTokenToOutput;
+      if (not Config.stripCode) then p.CopyTokenToOutput;
       hadNewLine := (p.Token = toEOL) or (p.token = toComment);
       processedNewLine := false;
-      p.SkipToken(not stripCode);
+      p.SkipToken(not Config.stripCode);
     end;
   end;
 
@@ -172,7 +186,7 @@ begin
   args := TrimLeft(args); // strip all WS until the first word
   cmd := GetToken(args, [' ', #9]);
   DebugMessage('Macro "'+cmd+'" @ '+IntToStr(p.SourceLine-1));
-  if (SameText(cmd, 'if') and supportIf) then begin
+  if (SameText(cmd, 'if') and Config.supportIf) then begin
     StripComment;
     if (macroIfCnt > 0) then begin
       CommentMacro;
@@ -197,7 +211,7 @@ begin
     end; // do eval
     exit;
   end
-  else if ((SameText(cmd, 'ifdef') or (SameText(cmd, 'ifndef'))) and supportIf) then begin
+  else if ((SameText(cmd, 'ifdef') or (SameText(cmd, 'ifndef'))) and Config.supportIf) then begin
     StripComment;
     if (macroIfCnt > 0) then begin
       Inc(macroIfCnt);
@@ -218,7 +232,7 @@ begin
     end;
     exit;
   end
-  else if (SameText(cmd, 'elif') and supportIf) then begin
+  else if (SameText(cmd, 'elif') and Config.supportIf) then begin
     // the else part of something we want
     if ((macroIfCnt = 1) and not macroLastIf) then begin
       macroIfCnt := 0;
@@ -251,7 +265,7 @@ begin
     // else we don't care
     exit;
   end
-  else if (SameText(cmd, 'else') and supportIf) then begin
+  else if (SameText(cmd, 'else') and Config.supportIf) then begin
     // the else part of something we want
     if ((macroIfCnt = 1) and not macroLastIf) then begin
       Dec(macroIfCnt);
@@ -267,14 +281,14 @@ begin
     // else we don't care
     exit;
   end
-  else if (SameText(cmd, 'endif') and supportIf) then begin
+  else if (SameText(cmd, 'endif') and Config.supportIf) then begin
     if (macroIfCnt > 0) then begin
       Dec(macroIfCnt);
     end;
     CommentMacro;
     exit;
   end
-  else if (SameText(cmd, 'define') and supportDefine) then begin
+  else if (SameText(cmd, 'define') and Config.supportDefine) then begin
     if (macroIfCnt = 0) then begin
       CommentMacro;  // don't strip comment, everything is included
       cmd := GetToken(args, [' ', #9]); //TODO: allow whitespace within braces
@@ -291,7 +305,7 @@ begin
     else CommentMacro;  // don't strip comment, everything is included
     exit;
   end
-  else if (SameText(cmd, 'undef') and supportDefine) then begin
+  else if (SameText(cmd, 'undef') and Config.supportDefine) then begin
     CommentMacro;
     StripComment;
     if (macroIfCnt = 0) then begin
@@ -303,7 +317,7 @@ begin
   end
   // this isn't usefull, because the unrealengine will include the file AS IS
   // so it won't be able to compile it because of unknown compiler directives
-  else if (SameText(cmd, 'include') and supportInclude) then begin
+  else if (SameText(cmd, 'include') and Config.supportInclude) then begin
     StripComment;
     if (macroIfCnt = 0) then begin
       args := trim(args);
@@ -354,14 +368,14 @@ begin
     end
     else if (SameText(cmd, 'error')) then begin
       if (SameText(args, 'on') or SameText(args, 'off')) then begin
-        reportError := SameText(args, 'on');
+        Config.reportError := SameText(args, 'on');
         DebugMessage('Error reporting turned '+args);
       end
       else ErrorMessage(Format('%s(%d) : %s', [filestack[0] , p.SourceLine-1, args]));
     end
     else if (SameText(cmd, 'warning')) then begin
       if (SameText(args, 'on') or SameText(args, 'off')) then begin
-        reportWarning := SameText(args, 'on');
+        Config.reportWarning := SameText(args, 'on');
         DebugMessage('Warning reporting turned '+args);
       end
       else WarningMessage(Format('%s(%d) : %s', [filestack[0] , p.SourceLine-1, args]));
@@ -370,6 +384,35 @@ begin
       StripComment;
       ucfile := ExpandFileName(ExtractFilePath(pucfile)+trim(args));
       renameUcFile := true;
+    end
+    else if (SameText(cmd, 'config')) then begin
+      cmd := GetToken(args, [' ', #9]);
+      args := trim(args);
+      if (SameText(cmd, 'supportIf')) then begin
+        if (args = '') then Config.supportIf := ConfigStack[0].supportIf
+        else Config.supportIf := StrToBoolDef(args, false);
+        DebugMessage('config:  supportIf = '+BoolToStr(Config.supportIf, true));
+      end
+      else if (SameText(cmd, 'supportDefine')) then begin
+        if (args = '') then Config.supportDefine := ConfigStack[0].supportDefine
+        else Config.supportDefine := StrToBoolDef(args, false);
+        DebugMessage('config:  supportDefine = '+BoolToStr(Config.supportDefine, true));
+      end
+      else if (SameText(cmd, 'supportPreDefine')) then begin
+        if (args = '') then Config.supportPreDefine := ConfigStack[0].supportPreDefine
+        else Config.supportPreDefine := StrToBoolDef(args, false);
+        DebugMessage('config:  supportPreDefine = '+BoolToStr(Config.supportPreDefine, true));
+      end
+      else if (SameText(cmd, 'supportInclude')) then begin
+        if (args = '') then Config.supportInclude := ConfigStack[0].supportInclude
+        else Config.supportInclude := StrToBoolDef(args, false);
+        DebugMessage('config:  supportIf = '+BoolToStr(Config.supportInclude, true));
+      end
+      else if (SameText(cmd, 'stripCode')) then begin
+        if (args = '') then Config.stripCode := ConfigStack[0].stripCode
+        else Config.stripCode := StrToBoolDef(args, false);
+        DebugMessage('config:  supportIf = '+BoolToStr(Config.stripCode, true));
+      end
     end;
 
     // unknown ucpp macro
@@ -378,7 +421,7 @@ begin
   end;
   // not one of our macros
   if (macroIfCnt > 0) then begin
-    if (stripCode) then rep := cfgStripMessage+NL
+    if (Config.stripCode) then rep := cfgStripMessage+NL
     else rep := UCPP_COMMENT+orig+NL;
     p.OutputString(rep);
   end
@@ -435,6 +478,14 @@ begin
     output := '"'+FormatDateTime('tt', now())+'"';
     result := true;
   end
+  else if (SameText(token, 'UCPP_VERSION')) then begin
+    output := UCPP_VERSION;
+    result := true;
+  end
+  else if (SameText(token, 'UCPP_HOMEPAGE')) then begin
+    output := '"'+UCPP_HOMEPAGE+'"';
+    result := true;
+  end
 end;
 
 procedure _ppIdentifier(p: TSourceParser);
@@ -470,7 +521,7 @@ begin
   SetLength(args, 0);
   if (UpperCase(tstr) = tstr) then begin
     // first check internal consts
-    if (supportPreDefine) then begin
+    if (Config.supportPreDefine) then begin
       hasrepl := _ExternalDefine(tstr, repl);
     end;
     // check declaration list
@@ -482,7 +533,7 @@ begin
         p.GetCopyData(true);
         p.SkipToken(false);
         while (p.Token <> ')') do begin
-          if (p.Token = toEOF) then raise EEOF.Create(END_OF_FILE_EXCEPTION);
+          if (p.Token = toEOF) then raise EEOF.CreateFmt(END_OF_FILE_EXCEPTION, [filestack[0]]);
           if (p.Token = ',') then begin
             SetLength(args, High(args)+2);
             repl := p.GetCopyData(true);
@@ -688,9 +739,10 @@ begin
     ErrorMessage('Could not open file "'+filename+'" for reading.');
     exit;
   end;
-  // reset reporting
-  reportError := true;
-  reportWarning := true;
+  setlength(ConfigStack, High(ConfigStack)+2);// High() == 0; cnt+2
+  ConfigStack[High(ConfigStack)] := Config;
+  Config := ConfigStack[0]; // set to defaults
+
   CurDefs := TDefinitionList.Create(BaseDefs);
   CurDefs.OnParseDefinition := ParseDef;
   CurDefs.OnExternalDefine := _ExternalDefine;
@@ -731,6 +783,8 @@ begin
     end;
   finally;
     filestack.Delete(0);
+    Config := ConfigStack[High(ConfigStack)]; // restore
+    setlength(ConfigStack, High(ConfigStack)+1); // delete last
     FreeandNil(globalP);
     FreeAndNil(fsout);
     FreeAndNil(fsin);
@@ -750,7 +804,7 @@ begin
   end;
 end;
 
-// will be called by #include <filename>, everything in that file will be included int eh output file
+// will be called by #include <filename>, everything in that file will be included int the output file
 procedure ProcessIncludeIncludeFile(filename: string; target: TSourceParser);
 var
   fsin: TFileStream;
@@ -814,6 +868,7 @@ var
   i: integer;
   origucfile: string;
 begin
+  Config := ConfigStack[0]; // set to defaults
   CurDefs := TDefinitionList.Create(BaseDefs);
   CurDefs.OnParseDefinition := ParseDef;
   CurDefs.OnExternalDefine := _ExternalDefine;
@@ -855,7 +910,7 @@ begin
     try
       internalPP(globalP);
     except
-      on e:Exception do ErrorMessage(e.Message+' The resulting file will mostlikely be broken.');
+      on e:Exception do ErrorMessage(filename+'(0): '+e.Message+' The resulting file will mostlikely be broken.');
     end;
   finally;
     filestack.Delete(0);
@@ -895,9 +950,11 @@ begin
   ini := TUCXIniFile.Create(cfgFile);
   sl := TStringList.Create;
   try
-    supportIf := ini.ReadBool('Options', 'supportIf', supportIf);
-    supportDefine := ini.ReadBool('Options', 'supportDefine', supportDefine);
-    supportInclude := ini.ReadBool('Options', 'supportInclude', supportInclude);
+    ConfigStack[0].supportIf := ini.ReadBool('Options', 'supportIf', ConfigStack[0].supportIf);
+    ConfigStack[0].supportDefine := ini.ReadBool('Options', 'supportDefine', ConfigStack[0].supportDefine);
+    ConfigStack[0].supportPreDefine := ini.ReadBool('Options', 'supportPreDefine', ConfigStack[0].supportPreDefine);
+    ConfigStack[0].supportInclude := ini.ReadBool('Options', 'supportInclude', ConfigStack[0].supportInclude);
+    ConfigStack[0].stripCode := ini.ReadBool('Options', 'stripCode', ConfigStack[0].stripCode);
     cfgStripMessage := ini.ReadString('Options', 'stripMessage', cfgStripMessage);
     cfgNoticeMessage := ini.ReadString('Options', 'noticeMessage', cfgNoticeMessage);
     ini.ReadSection('Defines', sl);
@@ -913,14 +970,18 @@ begin
 end;
 
 initialization
+  SetLength(ConfigStack, 1);
+  ConfigStack[0].reportError := true;
+  ConfigStack[0].reportWarning := true;
+  ConfigStack[0].supportIf := true;
+  ConfigStack[0].supportDefine := true;
+  ConfigStack[0].supportPreDefine := true;
+  ConfigStack[0].supportInclude := false;
+  ConfigStack[0].stripCode := false;
+
   BaseDefs := TDefinitionList.Create(nil);
   BaseDefs.OnParseDefinition := ParseDef;
   BaseDefs.OnExpandArgument := _reparseFuncDef;
-  if (not FindCmdLineSwitch('undef', ['-'], false)) then begin
-    BaseDefs.define('UCPP_VERSION', UCPP_VERSION);
-    BaseDefs.define('UCPP_HOMEPAGE', '"'+UCPP_HOMEPAGE+'"');
-  end
-  else supportPreDefine := false;
   reparseStack := TStringList.Create;
   includeFiles := TStringList.Create;
   includeStack := TStringList.Create;

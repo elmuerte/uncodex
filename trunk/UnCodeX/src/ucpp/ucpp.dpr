@@ -6,7 +6,7 @@
   Purpose:
     UC PreProcessor
 
-  $Id: ucpp.dpr,v 1.21 2005-08-18 16:42:46 elmuerte Exp $
+  $Id: ucpp.dpr,v 1.22 2005-10-20 11:45:36 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -152,7 +152,8 @@ begin
   if (FindCmdLineSwitch('env', ['-'], false)) then begin
     importEnvironment := true;
   end;
-  stripCode := FindCmdLineSwitch('strip', ['-'], false);
+  ConfigStack[0].stripCode := FindCmdLineSwitch('strip', ['-'], ConfigStack[0].stripCode);
+  ConfigStack[0].supportPreDefine := not FindCmdLineSwitch('undef', ['-'], not ConfigStack[0].supportPreDefine);
   usePackages := FindCmdLineSwitch('P', ['-'], false);
   if (usePackages) then if (verbosity > 0) then writeln('Info: Package mode enabled');
   
