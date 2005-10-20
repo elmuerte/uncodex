@@ -1,0 +1,25 @@
+#ifdef DEBUG
+    #define TEST(a) LOG(a)
+#else
+    #define TEST(a) .
+#endif
+
+TEST(bla bla)
+
+#ifdef DEBUG
+    #define TEST2(a) LOG(a)
+	// this is a comment
+	// this is a comment
+#else
+    #define TEST2(a) .
+#endif
+
+
+#if 0
+    #define TEST3(a) LOG(a)
+	// this is a comment
+	// this is a comment
+#else
+    #define TEST3(a) .
+#endif
+
