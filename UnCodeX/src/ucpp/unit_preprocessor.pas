@@ -6,7 +6,7 @@
   Purpose:
     Main code for the preprocessor
 
-  $Id: unit_preprocessor.pas,v 1.30 2005-10-20 11:45:36 elmuerte Exp $
+  $Id: unit_preprocessor.pas,v 1.31 2005-10-27 10:55:48 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -65,8 +65,8 @@ type
   end;  
 
 resourcestring
-  UCPP_VERSION        = '105';
-  UCPP_VERSION_PRINT  = '1.5';
+  UCPP_VERSION        = '106';
+  UCPP_VERSION_PRINT  = '1.6';
   UCPP_HOMEPAGE       = 'http://wiki.beyondunreal.com/wiki/UCPP';
   UCPP_COPYRIGHT      = 'Copyright (C) 2005 Michiel Hendriks';
   UCPP_STRIP_MSG      = '// UCPP: code stripped';
@@ -163,6 +163,8 @@ var
     startline := p.SourceLine;
     while (macroIfCnt > 0) do begin
       if (p.Token = toEOF) then begin
+        macroLastIf := false;
+        macroIfCnt := 0;
         raise EEOF.CreateFmt(END_OF_FILE_EXCEPTION_IF, [filestack[0], startline-1]);
       end;
       if (hadNewLine and not processedNewLine) then begin
@@ -200,6 +202,7 @@ begin
         on e:Exception do begin
           WarningMessage(Format('%s(%d) : evaluation error of "%s"  (defaulting to false): %s', [filestack[0], p.SourceLine-1, args, e.Message]));
           macroLastIf := false;
+          macroIfCnt := 0;
         end;
       end;
       if (not macroLastIf) then begin
@@ -243,6 +246,7 @@ begin
         on e:Exception do begin
           WarningMessage(Format('%s(%d) : evaluation error of "%s"  (defaulting to false): %s', [filestack[0], p.SourceLine-1, args, e.Message]));
           macroLastIf := false;
+          macroIfCnt := 0;
         end;
       end;
       if (not macroLastIf) then begin
@@ -779,7 +783,11 @@ begin
     try
       internalPP(globalP);
     except
-      on e:Exception do ErrorMessage(e.Message+' The resulting file will mostlikely be broken.');
+      on e:Exception do begin
+        macroLastIf := false; // just in case
+        macroIfCnt := 0; // just in case
+        ErrorMessage(e.Message+' The resulting file will mostlikely be broken.');
+      end;
     end;
   finally;
     filestack.Delete(0);
@@ -910,7 +918,11 @@ begin
     try
       internalPP(globalP);
     except
-      on e:Exception do ErrorMessage(filename+'(0): '+e.Message+' The resulting file will mostlikely be broken.');
+      on e:Exception do begin
+        macroLastIf := false; // just in case
+        macroIfCnt := 0; // just in case
+        ErrorMessage(e.Message+' The resulting file will mostlikely be broken.');
+      end;
     end;
   finally;
     filestack.Delete(0);
