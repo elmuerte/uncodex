@@ -32,6 +32,7 @@ object frm_Bookmarks: Tfrm_Bookmarks
     Width = 354
     Height = 271
     Align = alCustom
+    Anchors = [akLeft, akTop, akRight, akBottom]
     Caption = 'Bookmark'
     TabOrder = 1
     DesignSize = (
@@ -95,7 +96,9 @@ object frm_Bookmarks: Tfrm_Bookmarks
       Height = 17
       Anchors = [akLeft, akTop, akRight]
       Caption = 'Line number'
+      Checked = True
       TabOrder = 1
+      TabStop = True
     end
     object rb_Fieldentry: TRadioButton
       Left = 8
@@ -104,6 +107,7 @@ object frm_Bookmarks: Tfrm_Bookmarks
       Height = 17
       Anchors = [akLeft, akTop, akRight]
       Caption = 'Field entry'
+      Enabled = False
       TabOrder = 2
     end
     object ed_LineNumber: TEdit
@@ -113,7 +117,7 @@ object frm_Bookmarks: Tfrm_Bookmarks
       Height = 21
       Anchors = [akLeft, akTop, akRight]
       TabOrder = 3
-      Text = '0'
+      Text = '1'
       OnChange = ed_LineNumberChange
     end
     object ud_LineNumber: TUpDown
@@ -148,6 +152,7 @@ object frm_Bookmarks: Tfrm_Bookmarks
       Style = csExDropDownList
       StyleEx = [csExNoSizeLimit]
       Anchors = [akLeft, akTop, akRight]
+      Enabled = False
       ItemHeight = 16
       TabOrder = 6
       OnChange = cb_FieldnameExChange
@@ -155,35 +160,37 @@ object frm_Bookmarks: Tfrm_Bookmarks
       DropDownCount = 8
     end
   end
-  object BitBtn1: TBitBtn
+  object btn_Add: TBitBtn
     Left = 232
     Top = 0
     Width = 75
     Height = 25
-    Caption = 'BitBtn1'
+    Caption = 'Add'
+    Enabled = False
     TabOrder = 2
   end
-  object BitBtn2: TBitBtn
+  object btn_Delete: TBitBtn
     Left = 312
     Top = 0
     Width = 75
     Height = 25
-    Caption = 'BitBtn2'
+    Caption = 'Delete'
     TabOrder = 3
   end
-  object BitBtn3: TBitBtn
+  object btn_New: TBitBtn
     Left = 392
     Top = 0
     Width = 75
     Height = 25
-    Caption = 'BitBtn3'
+    Caption = 'New'
     TabOrder = 4
+    OnClick = btn_NewClick
   end
   object il_Types: TImageList
     Left = 72
     Top = 248
     Bitmap = {
-      494C010109000E00040010001000FFFFFFFFFF00FFFFFFFFFFFFFFFF424D3600
+      494C010109000E00040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000004000000001002000000000000040
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -715,6 +722,7 @@ object frm_Bookmarks: Tfrm_Bookmarks
       FF3FF780F83FED87F81FE380E00F8001E00F80008003E507C00780010001C007
       C003800180038001C00380838003C007C00381C70001C197C003860380038001
       C0039C038003CC07E003FC030001EC07F00FFC0380038001F83FFC03E00FEC17
-      FCFFFC07F83FEDB7FFFFFC07FEFFFFFF}
+      FCFFFC07F83FEDB7FFFFFC07FEFFFFFF00000000000000000000000000000000
+      000000000000}
   end
 end
