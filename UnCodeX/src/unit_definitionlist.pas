@@ -6,7 +6,7 @@
   Purpose:
     Keeps track of macro definitions and stuff like that
 
-  $Id: unit_definitionlist.pas,v 1.14 2005-09-24 11:19:35 elmuerte Exp $
+  $Id: unit_definitionlist.pas,v 1.15 2005-10-27 10:57:45 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -83,6 +83,7 @@ type
 
   TOnParseDefinition = procedure(def: TDefinitionEntry);
   TOnExternalDefine = function(token: string; var output: string): boolean;
+  TOnExpandArgument = function(input: string): string;
 
   TDefinitionList = class(TObject)
   protected
@@ -90,7 +91,8 @@ type
     defines:  TStringList;
     curToken: string;
     FOnParseDefinition: TOnParseDefinition;
-    FOnExternalDefine: TOnExternalDefine; 
+    FOnExternalDefine: TOnExternalDefine;
+    FOnExpandArgument: TOnExpandArgument; 
     procedure _nextToken(var line: string);
     procedure _requireToken(token: string; var line: string; getnext: boolean = true);
     function _expr(var line: string): integer;
@@ -116,6 +118,7 @@ type
     function undefine(name: string): boolean;
     procedure Clear;
     procedure ParseDefinition(def: TDefinitionEntry);
+    function ExpandArgument(input: string): string;
     constructor Create(parent: TDefinitionList);
     destructor Destroy; override;
     procedure AddEntry(entry: string);
@@ -124,6 +127,7 @@ type
     property Entry[Index: Integer]: string read GetEntry;
     property OnParseDefinition: TOnParseDefinition read FOnParseDefinition write FOnParseDefinition;
     property OnExternalDefine: TOnExternalDefine read FOnExternalDefine write FOnExternalDefine;
+    property OnExpandArgument: TOnExpandArgument read FOnExpandArgument write FOnExpandArgument;
   end;
 
 resourcestring
@@ -221,7 +225,25 @@ begin
       argentry := StringReplace(argentry, '\', '\\', [rfReplaceAll]);
       argentry := StringReplace(argentry, '"', '\"', [rfReplaceAll]);
       argentry := '"'+argentry+'"';
+    end
+    else argentry := owner.ExpandArgument(argentry);
+    {if (argreps[i].action = aaConcat) then begin
+      // string concat hack, check left concat
+      if ((Copy(argentry, Length(argentry)-1, 1) = '"') and (Copy(result, argreps[i].offset+1+argreps[i].len, 1) = '"')) then begin
+        Delete(argentry, Length(argentry)-1, 1);
+        Delete(result, argreps[i].offset+1+argreps[i].len, 1);
+      end;
+    end
+    else
+    if (i < High(argreps)) then begin
+    if (argreps[i+1].action = aaConcat) then begin
+      // string concat hack, check right concat
+      if ((Copy(argentry, 1, 1) = '"') and (Copy(result, argreps[i+1].offset, 1) = '"')) then begin
+        Delete(argentry, 1, 1);
+        Delete(result, argreps[i+1].offset, 1);
+      end;
     end;
+    end;}
     result := Copy(result, 1, argreps[i].offset)+argentry+Copy(result, argreps[i].offset+1+argreps[i].len, MaxInt);
   end;
 end;
@@ -348,6 +370,12 @@ procedure TDefinitionList.ParseDefinition(def: TDefinitionEntry);
 begin
   if (Assigned(fOnParseDefinition)) then fOnParseDefinition(def)
   else raise ENoDefinitionParser.Create(ENO_DEFINITION_PARSER);
+end;
+
+function TDefinitionList.ExpandArgument(input: string): string;
+begin
+  if (Assigned(fOnExpandArgument)) then result := fOnExpandArgument(input)
+  else result := input;
 end;
 
 { evaluator -- BEGIN }

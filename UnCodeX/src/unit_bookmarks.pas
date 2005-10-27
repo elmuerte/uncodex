@@ -21,14 +21,15 @@ type
     lbl_Location: TLabel;
     cb_FieldnameEx: TComboBoxEx;
     il_Types: TImageList;
-    BitBtn1: TBitBtn;
-    BitBtn2: TBitBtn;
-    BitBtn3: TBitBtn;
+    btn_Add: TBitBtn;
+    btn_Delete: TBitBtn;
+    btn_New: TBitBtn;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormCreate(Sender: TObject);
     procedure cb_ClassChange(Sender: TObject);
     procedure ed_LineNumberChange(Sender: TObject);
     procedure cb_FieldnameExChange(Sender: TObject);
+    procedure btn_NewClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -65,12 +66,15 @@ var
   i: integer;
   it: TComboExItem;
 begin
+  btn_Add.Enabled := cb_Class.Text <> '';
   if (cb_Class.ItemIndex = -1) then begin
     rb_Fieldentry.Enabled := False;
+    cb_FieldnameEx.Enabled := False;
     rb_Linenumber.Checked := true;
     exit;
   end;
   rb_Fieldentry.Enabled := True;
+  cb_FieldnameEx.Enabled := True;
   uclass := TUClass(cb_Class.Items.Objects[cb_Class.ItemIndex]);
   cb_FieldnameEx.Clear;
   for i := 0 to uclass.consts.count-1 do begin
@@ -110,6 +114,7 @@ begin
     it.ImageIndex := 8;
   end;
   cb_FieldnameEx.ItemsEx.Sort;
+  rb_Fieldentry.Enabled := cb_FieldnameEx.ItemsEx.Count > 0;
 end;
 
 procedure Tfrm_Bookmarks.ed_LineNumberChange(Sender: TObject);
@@ -120,6 +125,14 @@ end;
 procedure Tfrm_Bookmarks.cb_FieldnameExChange(Sender: TObject);
 begin
   if (cb_FieldnameEx.ItemIndex <> -1) then rb_Fieldentry.Checked := true;
+end;
+
+procedure Tfrm_Bookmarks.btn_NewClick(Sender: TObject);
+begin
+  cb_Class.ItemIndex := -1;
+  cb_Class.OnChange(Sender);
+  ed_LineNumber.Text := '1';
+  mm_Comment.Lines.Clear;
 end;
 
 end.
