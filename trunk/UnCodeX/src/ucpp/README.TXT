@@ -3,9 +3,9 @@
               |    |   //    \  \/  |     ___/ |     ___/
               |    |  / \     \____ |    |     |    |
               |______/   \______  / |____|     |____| UCPP
-                                \/                    v1.5
+                                \/                    v1.6
 
-                       Thursday, October 20, 2005
+                       Thursday, October 27, 2005
                       Michiel "El Muerte" Hendriks
                       <elmuerte@drunksnipers.com>
 ------------------------------------------------------------------------
@@ -21,9 +21,15 @@ directives found in most C\C++ compilers are supported.
 
 More information and documentation about this tool can be found on the
 UnrealWiki:
-	http://wiki.beyondunreal.com/wiki/UCPP
+        http://wiki.beyondunreal.com/wiki/UCPP
 
 ------------------------------------------------------------------------
+
+Changes since version 1.5
+
+Fixed:
+- Fixed an bug when further processing of conditional directives would
+  break when an unterminated conditional directive was encountered.
 
 Changes since version 1.4
 
@@ -39,10 +45,6 @@ Added:
   This can be turned on by setting supportInclude=1 in the ini file.
   It's not adviced to use #include because it can be confusing to find
   the correct linenumber.
-- Properly evaluate function like macro arguments allowing correct
-  stringification behavior (e.g. like described here:
-  http://developer.apple.com/documentation/DeveloperTools/gcc-4.0.0/cpp/Stringification.html
-  )
 - Added new config variables to the [Options] section: 
   supportPreDefine : same as the -undef commandline argument
   stripCode : same as the -strip commandline argument
@@ -53,6 +55,12 @@ Added:
   value. The settings last for this file only, included files using
   ucpp include (not UE #include) will not be affected by these 
   settings.
+
+Changed:
+- Properly evaluate function like macro arguments allowing correct
+  stringification behavior (e.g. like described here:
+  http://developer.apple.com/documentation/DeveloperTools/gcc-4.0.0/cpp/Stringification.html
+  )
 - Added filename and location for unexpected EOF errors.
 
 Changes since version 1.3
@@ -69,7 +77,7 @@ Changed:
 - "#pragma ucpp" does the same as "#ucpp", but using "#pragma ucpp" is 
   safer because of better code portability in case of other 
   preprocessors.
-- block comments are not correctly stripped
+- block comments are now correctly stripped
 	#if 1 /**/ && /**/ 0 // results in false
   but becareful, block comments covering multiple lines should not 
   start on a directive line
