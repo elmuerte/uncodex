@@ -7,7 +7,7 @@
     Parser for UnrealScript, used for analysing the unrealscript source.
     Based on TParser by Borland.
 
-  $Id: unit_parser.pas,v 1.31 2005-09-24 11:19:35 elmuerte Exp $
+  $Id: unit_parser.pas,v 1.32 2005-11-24 16:05:30 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -145,8 +145,9 @@ var
   P, PX: PChar;
   isComment: boolean;
   CommentString: string;
-  comminit: integer; // so strip of the first /**
   commentdepth: integer;
+label
+  NextCommentLine;
 begin
   SkipBlanks;
   P := FSourcePtr;
@@ -240,7 +241,28 @@ begin
         Inc(P);
         if (P^ = '/') then begin // comment
           Inc(P);
+          isComment := false;
+          if (P^ in ['/', '!']) then begin
+            Inc(P);
+            // also documentation: /// bla or //! bla
+            isComment := P^ in [' ', #9];
+            if (isComment) then begin
+              GetCopyData(true); // empty buffer
+              CopyInitComment := false; // tripple slash documentation
+            end;
+          end;
+        NextCommentLine: // somewhat dirty hack
           while not (P^ in [#10, toEOF]) do Inc(P);
+          if (isComment and (P^ <> toEOF)) then begin
+            PX := P;
+            Inc(P); // the #10
+            while (P^ in [' ', #9]) do Inc(P); // find the beginning of the line
+            if ((StrLComp(P, '///', 3) = 0) or (StrLComp(P, '//!', 3) = 0)) then begin
+              Inc(FSourceLine); // next line
+              goto NextCommentLine;
+            end
+            else P := PX; // nothing new
+          end;
           if (P^ = toEOF) then begin
             Result := toEOF;
           end
@@ -251,15 +273,14 @@ begin
             Inc(P);
             Inc(FSourceLine); // next line
             Result := toComment;
-            if (CopyInitComment) then begin
+            if (CopyInitComment or isComment) then begin
               SetString(CommentString, FTokenPtr, P - FTokenPtr);
               FCopyStream.WriteString(CommentString);
             end;
           end;
         end
         else if (P^ = '*') then begin // block comment
-          isComment := (P+1)^ = '*';
-          comminit := 3;
+          isComment := (P+1)^ in ['*', '!'];
           commentdepth := 1;
           if (isComment) then begin
             GetCopyData(true); // empty buffer
@@ -270,9 +291,8 @@ begin
             if ((P^ = #0) or (P^ = #0)) then begin
               FSourcePtr := P;
               if (isComment) then begin
-                SetString(CommentString, FTokenPtr + comminit, FSourcePtr - FTokenPtr - comminit);
+                SetString(CommentString, FTokenPtr, FSourcePtr - FTokenPtr);
                 FCopyStream.WriteString(CommentString);
-                comminit := 0;
               end;
               ReadBuffer;
               if FSourcePtr^ = #0 then raise Exception.Create('Unterminated block comment');
@@ -284,14 +304,11 @@ begin
             if ((P^ ='*') and ((P+1)^ ='/' )) then Dec(commentdepth);
           end
           until ((P^ ='*') and ((P+1)^ ='/' ) and (commentdepth <= 0));
+          Inc(P, 2);
           if (isComment) then begin
-            while ((FTokenPtr + comminit)^ = '*') do Inc(comminit);
-            PX := P;
-            while (PX^ = '*') do Dec(PX);
-            SetString(CommentString, FTokenPtr + comminit, PX - FTokenPtr - comminit); // 3 to strip /**
+            SetString(CommentString, FTokenPtr, P - FTokenPtr);
             FCopyStream.WriteString(CommentString);
           end;
-          Inc(P, 2);
           Result := toComment;
         end
         else begin
