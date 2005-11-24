@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.78 2005-10-02 09:18:07 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.79 2005-11-24 16:05:30 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -30,6 +30,7 @@
 unit unit_analyse;
 
 {$I defines.inc}
+{$DEFINE UE3_SUPPORT}
 
 interface
 
@@ -571,6 +572,11 @@ begin
         break;
       end;
       // variable description
+      {$IFDEF UE3_SUPPORT}
+      if (p.Token = '{') then begin
+        pCurlyBrackets();
+      end;
+      {$ENDIF}
       if (p.Token = toString) then begin
         if (result.comment <> '') then begin
           InternalLog(uclass.FullName+' '+Result.name+': ignoring variable description', ltInfo, CreateLogEntry(ResolveFilename(uclass, Result), p.SourceLine , 0, uclass));
@@ -686,6 +692,12 @@ begin
     result.name := p.TokenString;
     result.srcline := p.SourceLine;
     result.definedIn := incFilename;
+    {$IFDEF UE3_SUPPORT}
+    // ignore native type hint
+    if (p.Token = '{') then begin
+      pCurlyBrackets();
+    end;
+    {$ENDIF}
     while (p.Token <> '{') do begin
       if (p.Token = toEOF) then begin
         raise EOFException.CreateFmt(EOFExceptionFmt, ['pStruct', uclass.name, p.SourceLine, result.modifiers]);
@@ -730,7 +742,20 @@ begin
         p.NextToken;
         pCurlyBrackets();
         continue;
-      end;
+      end
+      {$IFDEF UE3_SUPPORT}
+      else if (p.TokenSymbolIs('structcpptext')) then begin
+        p.NextToken;
+        pCurlyBrackets();
+        continue;
+      end
+      else if (p.TokenSymbolIs('structdefaultproperties')) then begin
+        p.NextToken;
+        pCurlyBrackets();
+        continue;
+      end
+      {$ENDIF}
+      ;
       p.NextToken;
     end;
     p.NextToken; // = {
@@ -1118,8 +1143,10 @@ begin
       raise EOFException.CreateFmt(EOFExceptionFmt, ['pReplication', uclass.name, p.SourceLine, '']);
     end;
     expr := p.TokenString; // (un)reliable
-    p.NextToken;
-    expr := expr + ' '+p.TokenString+ ' '; // if
+    if (p.TokenSymbolIs('reliable') or p.TokenSymbolIs('unreliable')) then begin
+      p.NextToken;
+      expr := expr + ' '+p.TokenString+ ' '; // if
+    end;
     //p.NextToken;
     //expr := expr + pBrackets(); //TODO: not very nice, doesn't include spaces
 
@@ -1216,7 +1243,15 @@ begin
       p.NextToken;
       continue;
     end;}
-    
+
+    {$IFDEF UE3_SUPPORT}
+    if (p.Token = '`') then begin // UE3 preprocessor
+      if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine)+': UE3 preprocessor macro (unsupported)', ltInfo, CreateLogEntry(GetLogFilename(), p.SourceLine, 0, uclass));
+      while (not (p.Token in [#10, toEOF])) do p.NextToken;
+      p.NextToken;
+      continue;
+    end;
+    {$ENDIF}
     if (p.TokenSymbolIs(KEYWORD_var)) then begin
       p.NextToken;
       pVar();
