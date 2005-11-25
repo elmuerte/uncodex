@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Class property inpector frame
 
-  $Id: unit_props.pas,v 1.36 2005-05-27 13:45:07 elmuerte Exp $
+  $Id: unit_props.pas,v 1.37 2005-11-25 10:20:32 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -109,7 +109,8 @@ uses
   {$IFDEF VSADDIN}
   unit_ucxdotnetcore,
   {$ENDIF}
-  unit_analyse, unit_definitions, unit_utils, unit_ucxinifiles;
+  unit_analyse, unit_definitions, unit_utils, unit_ucxinifiles,
+  unit_comment2doc;
 
 {$R *.dfm}
 
@@ -469,7 +470,7 @@ begin
   InfoTip := '<div style="padding-left: 20px; text-indent: -18px; margin-left: -2px"><code>'+TUDeclaration(Item.SubItems.Objects[0]).HTMLdeclaration+'</code></div>';
   if (Item.SubItems[4] <> '') then InfoTip :=
     InfoTip+'<div style="background-color: ButtonFace; padding: 2px; margin-top: 5px; margin-left: -2px">'+
-    StringReplace(Item.SubItems[4], #9, ' ', [rfReplaceAll])+'</div>';
+    StringReplace(convertComment(Item.SubItems[4]), #9, ' ', [rfReplaceAll])+'</div>';
   if (Item.SubItems[5] <> '') then InfoTip :=
     InfoTip + '<div style="padding-left: 20px; text-indent: -18px; margin-left: -2px; background-color: '+halfColor+';"><em>Replication:</em><br /><code>'+Item.SubItems[5]+'</code></div>';
 end;
