@@ -6,7 +6,7 @@
   Purpose:
     Main code for the commandline utility
 
-  $Id: unit_ucxcumain.pas,v 1.25 2005-04-23 20:24:58 elmuerte Exp $
+  $Id: unit_ucxcumain.pas,v 1.26 2005-12-17 11:53:35 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -253,7 +253,7 @@ begin
   end;
 
   PhaseLabel := format(StatusFormat, [2, 'Analyzing classes']);
-  ActiveThread := TClassAnalyser.Create(config.ClassList);
+  ActiveThread := TClassAnalyser.Create(config.ClassList, false, nil, config.BaseDefinitions);
   try
     ActiveThread.FreeOnTerminate := false;
     ActiveThread.StatusProc := StatusReport;
