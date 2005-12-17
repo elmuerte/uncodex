@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.79 2005-11-24 16:05:30 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.80 2005-12-17 11:53:35 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -1074,7 +1074,7 @@ begin
     macro := UpperCase(GetToken(args, [' ', #9]));
     if (macro = 'INCLUDE') then begin
       if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': UCPP Include file '+trim(args), ltInfo, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
-      uclass.includes.Values[IntToStr(p.SourceLine-1)] := trim(args);
+      //uclass.includes.Values[IntToStr(p.SourceLine-1)] := trim(args);
       pInclude(args, true);
     end
     else if (macro = 'ERROR') then begin
