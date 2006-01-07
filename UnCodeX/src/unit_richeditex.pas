@@ -6,11 +6,11 @@
   Purpose:
     TRichEdit control that uses version 2
 
-  $Id: unit_richeditex.pas,v 1.29 2005-04-26 19:53:22 elmuerte Exp $
+  $Id: unit_richeditex.pas,v 1.30 2006-01-07 09:41:26 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
-  Copyright (C) 2003, 2004  Michiel Hendriks
+  Copyright (C) 2003-2006  Michiel Hendriks
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,8 @@
 unit unit_richeditex;
 
 {$I defines.inc}
+
+{$DEFINE HIGHLIGHT_TOKEN 1}
 
 interface
 
@@ -293,6 +295,7 @@ begin
     FillRect(Rect(0, 0, FGutterWidth-10, lh));
     while (offset < lines.Count-1) and (r.Top < Height) do begin
       Perform(EM_POSFROMCHAR, Integer(@pt2), Perform(EM_LINEINDEX, offset+1, 0));
+      {$IFNDEF HIGHLIGHT_TOKEN}
       if (IsHighlighted(offset)) then begin
         bmp.Canvas.FillRect(Rect(0, 0, ClientWidth, pt2.Y-pt.Y));
         bmp.Height := pt2.Y-pt.Y;
@@ -319,11 +322,28 @@ begin
         {R2 := Rect(FGutterWidth, pt.Y, ClientWidth, pt2.Y-pt.Y);
         InvalidateRect(Handle, @R2, false);}
       end;
+      {$ENDIF}
       r := Rect(0, pt.y, FGutterWidth-10, pt2.y);
       l := format('%10d', [offset+1]);
       DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_RIGHT or DT_SINGLELINE);
       DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_RIGHT or DT_SINGLELINE or DT_CALCRECT);
       FillRect(Rect(0, r.Bottom, FGutterWidth-10, pt2.Y+1));
+
+      {$IFDEF HIGHLIGHT_TOKEN}
+      if (IsHighlighted(offset)) then begin
+        Font.Name := 'Marlett';
+        Font.Size := 12;
+        Font.Color := fhighlightcolor;
+        l := '4';
+        SetBkMode(Handle, TRANSPARENT);
+        r.Left := FGutterWidth-15;
+        DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_SINGLELINE);
+        SetBkMode(Handle, OPAQUE);
+        Font.Name := 'Courier New';
+        Font.Size := 8;
+        Font.Color := clWindowText;
+      end;
+      {$ENDIF}
 
       Inc(offset);
       pt := pt2;
