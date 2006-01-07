@@ -6,12 +6,12 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.181 2005-10-03 09:17:47 elmuerte Exp $
+  $Id: unit_main.pas,v 1.182 2006-01-07 09:41:23 elmuerte Exp $
 *******************************************************************************}
 
 {
   UnCodeX - UnrealScript source browser & documenter
-  Copyright (C) 2003-2005  Michiel Hendriks
+  Copyright (C) 2003-2006  Michiel Hendriks
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -2460,7 +2460,7 @@ begin
   if (runningthread <> nil) then begin
     ac_Abort.Enabled := false;
     runningthread.Terminate;
-    Log('Aborted', ltError);
+    Log('Abort triggered', ltError);
   end;
 end;
 
@@ -2815,6 +2815,7 @@ begin
   OpenSourceInline(entry.filename, entry.line-1, entry.pos, TUClass(entry.obj));
   for i := 0 to lb_Log.Items.Count-1 do begin
     e2 := TLogEntry(lb_Log.Items.Objects[i]);
+    if (e2 = nil) then break; // during search
     if ((e2.filename = entry.filename) and (e2.line > 0)) then re_SourceSnoop.HighlightLine(e2.line-1, false);
   end;
   re_SourceSnoop.Invalidate;
