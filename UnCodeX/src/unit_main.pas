@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.182 2006-01-07 09:41:23 elmuerte Exp $
+  $Id: unit_main.pas,v 1.183 2006-01-13 21:10:58 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -2809,9 +2809,9 @@ begin
   if (lb_Log.Items.Objects[lb_Log.ItemIndex] = nil) then exit;
   if (not IsA(lb_Log.Items.Objects[lb_Log.ItemIndex], TLogEntry)) then exit;
 
-  xguard('Tfrm_UnCodeX.lb_LogClick');
   entry := TLogEntry(lb_Log.Items.Objects[lb_Log.ItemIndex]);
   if (entry.filename = '') then exit; // no file; don't bother
+  xguard('Tfrm_UnCodeX.lb_LogClick');
   OpenSourceInline(entry.filename, entry.line-1, entry.pos, TUClass(entry.obj));
   for i := 0 to lb_Log.Items.Count-1 do begin
     e2 := TLogEntry(lb_Log.Items.Objects[i]);

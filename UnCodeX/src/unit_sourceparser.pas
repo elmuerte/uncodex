@@ -7,7 +7,7 @@
     UnrealScript parser. Used for syntax highlighting, not for analysing.
     Bases on the TParser by Borland.
 
-  $Id: unit_sourceparser.pas,v 1.29 2005-06-23 08:45:43 elmuerte Exp $
+  $Id: unit_sourceparser.pas,v 1.30 2006-01-13 21:10:59 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -109,13 +109,16 @@ type
   end;
 
 const
-  toComment     = Char(6);
-  toName      = Char(7);
-  toMacro     = Char(8);
-  toEOL       = Char(10);
+  toComment       = Char(6);
+  toName          = Char(7);
+  toMacro         = Char(8);
+  toEOL           = Char(10);
   toMCommentBegin = Char(11);
   toMCommentEnd   = Char(12);
-  toMComment    = Char(14);
+  toMComment      = Char(14);
+  {$IFDEF UE3_SUPPORT}
+  toUE3PP         = '`';
+  {$ENDIF}
 
 implementation
 
@@ -345,6 +348,33 @@ begin
             end;
           end;
         end;
+      {$IFDEF UE3_SUPPORT}
+      '`':
+        begin
+          if (not DoMacro) then begin
+            Result := P^;
+            Inc(P);
+            Inc(FLinePos);
+          end
+          else begin
+            while not (P^ in [#13, #10, toEOF]) do begin
+              Inc(P);
+              Inc(FLinePos);
+            end;
+            if (P^ = toEOF) then begin
+              //Result := toEOF;
+              Result := toUE3PP;
+            end
+            else begin
+              EatNewLine;
+              Inc(P);
+              Inc(FSourceLine); // next line
+              FLinePos := 0;
+              Result := toUE3PP;
+            end;
+          end;
+        end;
+      {$ENDIF}
       '/':
         begin
           Inc(P);

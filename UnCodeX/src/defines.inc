@@ -6,8 +6,11 @@
     Purpose:
         Global macro file, to be included by means of ($I defines.inc)
 
-    $Id: defines.inc,v 1.16 2005-09-15 09:34:35 elmuerte Exp $
+    $Id: defines.inc,v 1.17 2006-01-13 21:10:58 elmuerte Exp $
 *******************************************************************************}
+
+{$DEFINE UE3_SUPPORT} // support for UnrealEngine3
+
 
 {$IFDEF VER140} // delphi 6
   {$DEFINE IS_DELPHI}

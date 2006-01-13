@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.86 2005-06-11 07:45:35 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.87 2006-01-13 21:10:58 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -192,7 +192,7 @@ uses
 {$IFDEF HTMLOUT_PASCALSCRIPT}
   , uPSComponent_Default, IFSI_unit_uclasses, unit_pascalscript_ex, unit_pascalscript
 {$ENDIF}
-  ;
+  , unit_comment2doc;
 
 var
   currentClass: TUClass;
@@ -2905,7 +2905,7 @@ begin
         replacement := '<span class="source_name">'+p.TokenString+'</span>';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
-      else if (p.Token = toMacro) then begin
+      else if ((p.Token = toMacro) or (p.Token = toUE3PP)) then begin
         replacement := p.TokenString;
         replacement := StringReplace(replacement, '<', '&lt;', [rfReplaceAll]);
         replacement := StringReplace(replacement, '>', '&gt;', [rfReplaceAll]);
@@ -3009,6 +3009,7 @@ begin
     exit;
   end;
   guard('CommentPreprocessor');
+  input := convertComment(input);
   i := Pos('http://', LowerCase(input));
   while (i > 0) do begin
     // copy up to link

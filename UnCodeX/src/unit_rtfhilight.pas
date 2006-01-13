@@ -6,7 +6,7 @@
   Purpose:
     Creates a syntax highlighted RTF file from an UnrealScript file
 
-  $Id: unit_rtfhilight.pas,v 1.27 2005-06-11 07:45:35 elmuerte Exp $
+  $Id: unit_rtfhilight.pas,v 1.28 2006-01-13 21:10:59 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -185,7 +185,7 @@ begin
         replacement := rfName+p.TokenString+'}';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
-      else if (p.Token = toMacro) then begin
+      else if ((p.Token = toMacro) or (p.Token = toUE3PP)) then begin
         replacement := p.TokenString;
         replacement := StringReplace(replacement, '\', '\\', [rfReplaceAll]);
         replacement := StringReplace(replacement, '{', '\{', [rfReplaceAll]);
