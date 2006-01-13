@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.160 2005-10-02 09:18:07 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.161 2006-01-13 21:10:58 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -715,7 +715,13 @@ initialization
 finalization
   FreeAndNil(Keywords1);
   FreeAndNil(Keywords2);
-  assert((xGuardStack.Count = 0), 'GuardStack is not empty');
+  //assert((xGuardStack.Count = 0), 'GuardStack is not empty');
+  {$IFDEF DEBUG_BUILD}
+  if (xGuardStack.Count > 0) then begin
+    xGuardStack.SaveToFile('c:\uncodex_guardstack.log');
+    //MessageBox(0, pchar(xGuardStack.Text), 'GuardStack not empty', MB_OK or MB_ICONSTOP);
+  end;
+  {$ENDIF}
   FreeAndNil(xGuardStack);
   FreeAndNil(ExtComments);
 end.

@@ -51,7 +51,7 @@ Conditionals=DEBUG_BUILD
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
-RunParams=-debug
+RunParams=-config ue3.ini -debug
 HostApplication=
 Launcher=
 UseLauncher=0
