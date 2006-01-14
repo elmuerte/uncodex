@@ -6,7 +6,7 @@
   Purpose:
     TRichEdit control that uses version 2
 
-  $Id: unit_richeditex.pas,v 1.30 2006-01-07 09:41:26 elmuerte Exp $
+  $Id: unit_richeditex.pas,v 1.31 2006-01-14 21:26:09 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -255,7 +255,7 @@ end;
 
 procedure TRichEditEx.WMPaint( var Msg : TWMPaint );
 var
-  offset, lh: integer;
+  offset, lh, i, x: integer;
   r: TRect;
   pt, pt2: TPoint;
   l: string;
@@ -377,6 +377,27 @@ begin
     end;
     bmp.Free;
     bmp2.Free;
+
+    {$IFDEF HIGHLIGHT_TOKEN}
+    if (Length(HighlightLines) > 0) then begin
+      x := GetSystemMetrics(SM_CXHSCROLL);
+      lh := round((ClientHeight-x*2) / Lines.Count);
+      if (lh < 5) then lh := 5;
+      r.top := 0;
+      r.Bottom := ClientHeight;
+      r.Left := ClientWidth-2;
+      r.Right := ClientWidth;
+      Brush.Color := clWindow;
+      FillRect(r);
+      for i := 0 to Length(HighlightLines)-1 do begin
+        Brush.Color := fhighlightcolor;
+        offset := round((ClientHeight-2*x) / Lines.Count * HighlightLines[i]);
+        r.Top := offset+x;
+        r.Bottom := r.Top+lh;
+        FillRect(r);
+      end;
+    end;
+    {$ENDIF}
   end;
 end;
 

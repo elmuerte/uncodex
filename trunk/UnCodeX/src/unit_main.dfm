@@ -586,6 +586,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
     object mi_Bookmarks: TMenuItem
       Caption = 'Bookmarks'
+      Visible = False
       object mi_ManageBookmarks: TMenuItem
         Action = ac_ManageBookmarks
       end

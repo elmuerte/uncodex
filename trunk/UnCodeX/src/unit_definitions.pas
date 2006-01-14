@@ -6,12 +6,12 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.161 2006-01-13 21:10:58 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.162 2006-01-14 21:26:09 elmuerte Exp $
 *******************************************************************************}
 
 {
   UnCodeX - UnrealScript source browser & documenter
-  Copyright (C) 2003-2005  Michiel Hendriks
+  Copyright (C) 2003-2006  Michiel Hendriks
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -45,7 +45,7 @@ uses
 
 const
   APPTITLE        = 'UnCodeX';
-  APPVERSION      = '232';
+  APPVERSION      = '233';
 
 type
   TLogType = (ltInfo, ltWarn, ltError, ltSearch);

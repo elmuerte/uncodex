@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Copy paste window
- $Id: unit_wiki.pas,v 1.9 2004-06-19 13:04:26 elmuerte Exp $
+ $Id: unit_wiki.pas,v 1.10 2006-01-14 21:26:09 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -52,6 +52,8 @@ var
 
 implementation
 
+uses unit_comment2doc;
+
 {$R *.dfm}
 
 function StringShift(var input: string; delim: string = ','): string;
@@ -70,7 +72,8 @@ var
 	sl: TStringList;
 	i: integer;
 begin
-  if (fixnl) then result := StringReplace(comment, #13#10, '\\'+#13#10, [rfReplaceAll])
+  comment := convertComment(comment, dfAuto, dfWookee);
+  if (fixnl) then result := StringReplace(trim(comment), #13#10, '\\'+#13#10, [rfReplaceAll])
   else result := comment;
   result := StringReplace(result, #9, ' ', [rfReplaceAll]);
   
@@ -89,10 +92,11 @@ end;
 procedure Tfrm_Wikifier.Wikify(uclass: TUClass);
 var
   tmp: string;
-  i, j: integer;
+  i, j, evtcnt: integer;
   pclass: TUClass;
   hist: TStringList;
 begin
+  evtcnt := 0;
   hist := TStringList.Create;
   try
     Caption := Caption+' - '+uclass.name;
@@ -176,7 +180,7 @@ begin
         for i := 0 to uclass.delegates.Count-1 do begin
           if (uclass.delegates[i].ftype = uftDelegate) then begin
             if (hist.IndexOf(LowerCase(uclass.delegates[i].name)) = -1) then begin
-              Add('; '+uclass.functions[i].return+' '+uclass.delegates[i].name+'('+uclass.delegates[i].params+' ): '+FixComments(trim(uclass.delegates[i].comment)));
+              Add('; '+uclass.functions[i].return+' '+uclass.delegates[i].name+'('+StringReplace(uclass.delegates[i].params, #13#10, ' ', [rfReplaceAll])+' ): '+FixComments(trim(uclass.delegates[i].comment)));
               hist.Add(LowerCase(uclass.delegates[i].name));
             end;
           end;
@@ -190,21 +194,22 @@ begin
         for i := 0 to uclass.functions.Count-1 do begin
           if (uclass.functions[i].ftype = uftFunction) then begin
             if (hist.IndexOf(LowerCase(uclass.functions[i].name)) = -1) then begin
-              Add('; '+uclass.functions[i].return+' '+uclass.functions[i].name+'('+uclass.functions[i].params+' ): '+FixComments(trim(uclass.functions[i].comment)));
+              Add('; '+uclass.functions[i].return+' '+uclass.functions[i].name+'('+StringReplace(uclass.functions[i].params, #13#10, ' ', [rfReplaceAll])+' ): '+FixComments(trim(uclass.functions[i].comment)));
               hist.Add(LowerCase(uclass.functions[i].name));
             end;
-          end;
+          end
+          else if (uclass.functions[i].ftype = uftEvent) then Inc(evtcnt);
         end;
       end;
       { events }
-      if (uclass.functions.Count > 0) then begin
+      if (evtcnt > 0) then begin
         Add('');
         Add('== Events');
         hist.Clear;
         for i := 0 to uclass.functions.Count-1 do begin
           if (uclass.functions[i].ftype = uftEvent) then begin
             if (hist.IndexOf(LowerCase(uclass.functions[i].name)) = -1) then begin
-              Add('; '+uclass.functions[i].return+' '+uclass.functions[i].name+'('+uclass.functions[i].params+' ): '+FixComments(trim(uclass.functions[i].comment)));
+              Add('; '+uclass.functions[i].return+' '+uclass.functions[i].name+'('+StringReplace(uclass.functions[i].params, #13#10, ' ', [rfReplaceAll])+' ): '+FixComments(trim(uclass.functions[i].comment)));
               hist.Add(LowerCase(uclass.functions[i].name));
             end;
           end;

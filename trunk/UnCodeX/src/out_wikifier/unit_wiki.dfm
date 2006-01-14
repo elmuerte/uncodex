@@ -3,7 +3,7 @@ object frm_Wikifier: Tfrm_Wikifier
   Top = 178
   Width = 601
   Height = 500
-  Caption = 'UnCodeX Class Wikifier (v107)'
+  Caption = 'UnCodeX Class Wikifier (v108)'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

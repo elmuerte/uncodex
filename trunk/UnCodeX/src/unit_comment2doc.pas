@@ -6,7 +6,7 @@
   Purpose:
     Convert comments to documentation
 
-  $Id: unit_comment2doc.pas,v 1.1 2006-01-13 21:10:59 elmuerte Exp $
+  $Id: unit_comment2doc.pas,v 1.2 2006-01-14 21:26:09 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -35,7 +35,7 @@ unit unit_comment2doc;
 interface
 
 type
-  TDocFormat = (dfAuto, dfASIS, dfDefacto, dfHTML);
+  TDocFormat = (dfAuto, dfASIS, dfDefacto, dfHTML, dfWookee);
 
   function convertComment(input: string; inFormat: TDocFormat = dfAuto; outFormat: TDocFormat = dfHTML): string;
 
@@ -55,7 +55,7 @@ begin
     result := dfDefacto;
     exit;
   end;
-  if (Pos('@<br', input)>0) then begin
+  if (Pos('<br', input)>0) then begin
     result := dfHTML;
     exit;
   end;
