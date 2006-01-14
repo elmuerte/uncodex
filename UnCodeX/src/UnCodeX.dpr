@@ -6,12 +6,12 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.76 2006-01-13 21:10:58 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.77 2006-01-14 21:26:09 elmuerte Exp $
 *******************************************************************************}
 
 {
   UnCodeX - UnrealScript source browser & documenter
-  Copyright (C) 2003-2005  Michiel Hendriks
+  Copyright (C) 2003-2006  Michiel Hendriks
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -34,7 +34,9 @@ program UnCodeX;
 
 uses
   FastShareMem in 'FastShareMem.pas',
+  {$IFDEF DETECT_MEM_LEAK}
   MemCheck in 'MemCheck.pas',
+  {$ENDIF}
   Windows,
   Messages,
   SysUtils,

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Converts the UScript class info to UnrealWiki format
- $Id: out_wikifier.dpr,v 1.7 2004-07-30 11:18:51 elmuerte Exp $
+ $Id: out_wikifier.dpr,v 1.8 2006-01-14 21:26:09 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter
@@ -32,7 +32,8 @@ uses
   Classes,
   unit_uclasses in '..\unit_uclasses.pas',
   unit_outputdefs in '..\unit_outputdefs.pas',
-  unit_wiki in 'unit_wiki.pas' {frm_Wikifier};
+  unit_wiki in 'unit_wiki.pas' {frm_Wikifier},
+  unit_comment2doc in '..\unit_comment2doc.pas';
 
 {$R *.res}
 
