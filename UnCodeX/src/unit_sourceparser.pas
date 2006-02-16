@@ -7,7 +7,7 @@
     UnrealScript parser. Used for syntax highlighting, not for analysing.
     Bases on the TParser by Borland.
 
-  $Id: unit_sourceparser.pas,v 1.30 2006-01-13 21:10:59 elmuerte Exp $
+  $Id: unit_sourceparser.pas,v 1.31 2006-02-16 22:04:31 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -360,6 +360,12 @@ begin
             while not (P^ in [#13, #10, toEOF]) do begin
               Inc(P);
               Inc(FLinePos);
+              if (((P-1)^ = '\') and (P^ in [#13, #10])) then begin
+                EatNewLine;
+                Inc(P);
+                Inc(FSourceLine); // next line
+                FLinePos := 0;
+              end;
             end;
             if (P^ = toEOF) then begin
               //Result := toEOF;
