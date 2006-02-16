@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.81 2006-01-13 21:10:58 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.82 2006-02-16 22:04:31 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -1244,7 +1244,7 @@ begin
     end;}
 
     {$IFDEF UE3_SUPPORT}
-    if (p.Token = '`') then begin // UE3 preprocessor
+    if (p.Token = toUE3PP) then begin // UE3 preprocessor
       if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': UE3 preprocessor macro (unsupported)', ltInfo, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
       p.NextToken;
       continue;

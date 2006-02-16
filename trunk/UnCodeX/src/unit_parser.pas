@@ -7,7 +7,7 @@
     Parser for UnrealScript, used for analysing the unrealscript source.
     Based on TParser by Borland.
 
-  $Id: unit_parser.pas,v 1.33 2006-01-13 21:10:59 elmuerte Exp $
+  $Id: unit_parser.pas,v 1.34 2006-02-16 22:04:31 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -241,7 +241,14 @@ begin
     {$IFDEF UE3_SUPPORT}
     '`': // UE3 preprocessor
       begin
-        while not (P^ in [#10, toEOF]) do Inc(P);
+        while not (P^ in [#10, toEOF]) do begin
+          Inc(P);
+          if (((P-1)^ = '\') and (P^ in [#13, #10])) then begin
+            Inc(P);
+            if ((P^ = #10) and ((P-1)^ = #13)) then Inc(P);
+            Inc(FSourceLine); // next line
+          end;
+        end;
         if (P^ = toEOF) then begin
           Result := toUE3PP;
         end

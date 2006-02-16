@@ -6,7 +6,7 @@
   Purpose:
     Creates a syntax highlighted RTF file from an UnrealScript file
 
-  $Id: unit_rtfhilight.pas,v 1.28 2006-01-13 21:10:59 elmuerte Exp $
+  $Id: unit_rtfhilight.pas,v 1.29 2006-02-16 22:04:31 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -185,12 +185,21 @@ begin
         replacement := rfName+p.TokenString+'}';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
-      else if ((p.Token = toMacro) or (p.Token = toUE3PP)) then begin
+      else if (p.Token = toMacro) then begin
         replacement := p.TokenString;
         replacement := StringReplace(replacement, '\', '\\', [rfReplaceAll]);
         replacement := StringReplace(replacement, '{', '\{', [rfReplaceAll]);
         replacement := StringReplace(replacement, '}', '\}', [rfReplaceAll]);
         replacement := rfMacro+replacement+'}\par ';
+        p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
+      end
+      else if (p.Token = toUE3PP) then begin
+        replacement := p.TokenString;
+        replacement := StringReplace(replacement, '\', '\\', [rfReplaceAll]);
+        replacement := StringReplace(replacement, '{', '\{', [rfReplaceAll]);
+        replacement := StringReplace(replacement, '}', '\}', [rfReplaceAll]);
+        replacement := StringReplace(replacement, #10, '\par ', [rfReplaceAll]);
+        replacement := rfMacro+replacement+'} ';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toSymbol) then begin
