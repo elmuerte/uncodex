@@ -6,7 +6,7 @@
   Purpose:
     Loading\saving of the class and package tree views
 
-  $Id: unit_treestate.pas,v 1.38 2005-06-16 10:10:02 elmuerte Exp $
+  $Id: unit_treestate.pas,v 1.39 2006-02-26 11:07:33 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -462,10 +462,14 @@ begin
       if (uclass.InterfaceType = itTribesV) then begin
         if (InterfaceNode = nil) then begin
           InterfaceNode := FClassTree.Items.AddChild(nil, 'Interfaces');
+          ANode := InterfaceNode;
         end;
-        ANode := FClassTree.Items.AddChildObject(InterfaceNode, uclass.name, uclass)
+        //ANode := FClassTree.Items.AddChildObject(InterfaceNode, uclass.name, uclass)
       end
-      else if ANode = nil then // root
+      else if (uclass.parentname = '') then begin // Core.Object
+        ANode := nil;
+      end;
+      {else} if ANode = nil then // root
         ANode := FClassTree.Items.AddChildObject(nil, uclass.name, uclass)
       else if ANode.Level = ALevel then begin // same level
         uclass.parent := puclass.parent;
