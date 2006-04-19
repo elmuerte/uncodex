@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.82 2006-02-16 22:04:31 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.83 2006-04-19 13:14:36 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -470,6 +470,9 @@ begin
     result.srcline := p.SourceLine;
     result.definedIn := incFilename;
     p.NextToken; // =
+    if (p.Token <> '=') then begin
+      InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': expected "=" got "'+p.tokenString+'"', ltError, CreateLogEntry(GetLogFilename(), p.SourceLine, 0, uclass));
+    end;
     p.GetCopyData();
     p.FullCopy := true;
     p.FCIgnoreComments := true;
@@ -664,7 +667,8 @@ begin
       result.options := result.options+p.TokenString;
       p.NextToken;
     end;
-    p.NextToken; // = ;
+    p.NextToken; // = '}'
+    if (p.Token = ';') then p.NextToken; // = ';'
     if (result.comment = '') then begin
       result.comment := GetSecondaryComment(uclass.FullName+'.'+result.name);
       result.CommentType := ctExtern;
@@ -876,6 +880,10 @@ begin
     p.FullCopy := false;
     p.FCIgnoreComments := false;
     p.NextToken; // )
+    if (p.tokenString = 'const') then begin // UE3 native const functions
+      p.NextToken;
+      result.modifiers := result.modifiers + ' const';
+    end;
     if (p.Token <> ';') then pCurlyBrackets()
     else p.NextToken; // = } or ;
     result.state := currentState;
@@ -1215,6 +1223,7 @@ begin
         uclass.modifiers := uclass.modifiers+p.TokenString+' ';
         p.NextToken;
       end;
+      p.NextToken; // ';'
       continue;
     end;
 
@@ -1235,6 +1244,7 @@ begin
         uclass.modifiers := uclass.modifiers+p.TokenString+' ';
         p.NextToken;
       end;
+      p.NextToken; // ';'
       continue;
     end;
 
@@ -1316,6 +1326,7 @@ begin
       pFunc();
       continue;
     end;
+    InternalLog('Discarding token: '+p.TokenString, ltWarn, CreateLogEntry(GetLogFilename(), p.SourceLine, 0, uclass));
     p.NextToken; // we should not even get here
   end;
   unguard;
