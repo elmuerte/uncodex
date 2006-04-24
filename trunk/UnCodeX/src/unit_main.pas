@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.183 2006-01-13 21:10:58 elmuerte Exp $
+  $Id: unit_main.pas,v 1.184 2006-04-24 12:47:31 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -654,14 +654,14 @@ var
   i: integer;
 begin
   if (GUIVars.SearchConfig.isFindFirst and (lb_Log.Items.Count > 0)) then begin
-    lb_Log.ItemIndex := 0;
-    GUIVars.SelectedUClass := TUClass(lb_Log.Items.Objects[0]);
-    for i := 0 to GUIVars.SearchConfig.searchtree.Items.Count do begin
+    GUIVars.SelectedUClass := TUClass(TLogEntry(lb_Log.Items.Objects[0]).obj);
+    for i := 0 to GUIVars.SearchConfig.searchtree.Items.Count-1 do begin
       if (GUIVars.SearchConfig.searchtree.Items[i].Data = GUIVars.SelectedUClass) then begin
         GUIVars.SearchConfig.searchtree.Select(GUIVars.SearchConfig.searchtree.Items[i]);
         break;
       end;
     end;
+    lb_Log.ItemIndex := 0;
     lb_LogClick(Sender);
   end;
   ThreadTerminate(Sender);
@@ -2518,7 +2518,7 @@ begin
   if (GUIVars.SelectedUClass <> nil) then begin
     for i := 0 to lb_Log.Items.Count-1 do begin
       if (lb_Log.Items.Objects[i] <> nil) then begin
-        if (TObject(lb_Log.Items.Objects[i]) = GUIVars.SelectedUClass) then begin
+        if (TLogEntry(lb_Log.Items.Objects[i]).obj = GUIVars.SelectedUClass) then begin
           lb_Log.ItemIndex := i;
           lb_Log.OnDblClick(Sender);
           exit;
