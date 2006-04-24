@@ -6,7 +6,7 @@
   Purpose:
     Contains the configuration of UnCodeX
 
-  $Id: unit_config.pas,v 1.17 2005-10-03 09:17:47 elmuerte Exp $
+  $Id: unit_config.pas,v 1.18 2006-04-24 14:12:18 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -886,6 +886,10 @@ begin
   inherited InternalSaveToIni;
   with Startup do begin
     ini.WriteBool('GUI.Startup', 'AnalyseModified', AnalyseModified);
+  end;
+  with Plugins do begin
+    ini.WriteBool('GUI.Plugins', 'LoadDLLs', LoadDLLs);
+    ini.WriteString('GUI.Plugins', 'PascalScriptPath', PascalScriptPath);
   end;
   with Layout do begin
     ini.WriteBool('GUI.Layout', 'Option.StayOnTop', StayOnTop);
