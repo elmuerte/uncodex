@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<title>UnCodeX - Pascal Script - TUFunction</title>
+	<link href="../images/default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="../images/UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">TUFunction</div>
+</div>
+
+<div class="content">
+<h1>TUFunctionList</h1>
+<pre>
+  TUFunctionList = class(TUDeclarationList)
+  public
+    property Items[Index: Integer]: TUFunction read GetItem write SetItem; default;
+  published
+    procedure Sort;
+    function Find(name: string; state: string = ''): TUFunction;
+  end;
+</pre>
+
+<h1>TUFunction</h1>
+<pre>
+  TUFunction = class(TUDeclaration)
+  protected
+    Fftype:      TUFunctionType;
+    Freturn:     string;
+    Fmodifiers:  string;
+    Fparams:     string;
+    Fstate:      TUState;
+    Fargs:       TUPropertyList; // parsed argument list (CURRENTLY NOT USED)
+    Flocals:     TUPropertyList; // local variable delcrations (CURRENTLY NOT USED)
+  public
+    constructor Create;
+    destructor Destroy; override;
+  published
+    property ftype: TUFunctionType read Fftype write Fftype;
+    property return: string read Freturn write Freturn;
+    property modifiers: string read Fmodifiers write Fmodifiers;
+    property params: string read Fparams write Fparams;
+    property state: TUState read Fstate write Fstate;
+    property args: TUPropertyList read Fargs write Fargs;
+    property locals: TUPropertyList read Flocals write Flocals;
+    function declaration: string; override;
+  end;
+</pre>
+
+</div>
+</div>
+</body>
+</html>

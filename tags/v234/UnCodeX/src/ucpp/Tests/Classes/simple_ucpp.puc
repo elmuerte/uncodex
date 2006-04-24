@@ -1,0 +1,9 @@
+#ucpp notice
+#ucpp notice bogus text
+#ucpp version
+
+UCPP_HOMEPAGE
+UCPP_VERSION
+
+#ucpp error This is an user error message
+#ucpp warning this is an user warning message
