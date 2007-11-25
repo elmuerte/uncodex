@@ -7,7 +7,7 @@
     Parser for UnrealScript, used for analysing the unrealscript source.
     Based on TParser by Borland.
 
-  $Id: unit_parser.pas,v 1.34 2006-02-16 22:04:31 elmuerte Exp $
+  $Id: unit_parser.pas,v 1.35 2007-11-25 13:35:28 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -69,6 +69,7 @@ type
     destructor Destroy; override;
     function NextToken: Char;
     function SkipToken: Char;
+    function SkipTo(char: Char): boolean;
     function SourcePos: Longint;
     function TokenString: string;
     function TokenSymbolIs(const S: string): Boolean;
@@ -141,6 +142,44 @@ begin
   FullCopy := false;
   result := NextToken;
   FullCopy := pfc;
+end;
+
+function TUCParser.SkipTo(char: Char): boolean;
+var
+  SkipedBlanks: string;
+  FirstBlank: PChar;
+begin
+  result := false;
+  FirstBlank := FSourcePtr;
+  while True do begin
+    case FSourcePtr^ of
+      #0:
+        begin
+          if (FullCopy) then begin
+            SetString(SkipedBlanks, FirstBlank, FSourcePtr - FirstBlank);
+            FCopyStream.WriteString(SkipedBlanks);
+          end;
+          ReadBuffer;
+          if FSourcePtr^ = #0 then Exit;
+          FirstBlank := FSourcePtr;
+          Continue;
+        end;
+      #10:
+        Inc(FSourceLine);
+      else begin
+        if (FSourcePtr^ = char) then begin
+          Inc(FSourcePtr);
+          result := true;
+          break;              
+        end;
+      end;
+    end;
+    Inc(FSourcePtr);
+  end;
+  if (FullCopy) then begin
+    SetString(SkipedBlanks, FirstBlank, FSourcePtr - FirstBlank);
+    FCopyStream.WriteString(SkipedBlanks);
+  end;
 end;
 
 function TUCParser.NextTokenTmp: Char;

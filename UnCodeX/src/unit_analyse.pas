@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.83 2006-04-19 13:14:36 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.84 2007-11-25 13:35:27 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -68,7 +68,7 @@ type
     function pState(modifiers: string): TUState;
     function pBrackets(exclude: boolean = false; bLeaveLast: boolean = false): string;
     function pSquareBrackets: string;
-    function pAngleBrackets: string;
+    function pAngleBrackets(checkUE3desc: boolean = false): string;
     function pCurlyBrackets(ignoreFirst: boolean = false): string;
     procedure ExecuteList;
     function ExecuteSingle: integer;
@@ -407,7 +407,7 @@ begin
 end;
 
 // Process <...>
-function TClassAnalyser.pAngleBrackets: string;
+function TClassAnalyser.pAngleBrackets(checkUE3desc: boolean = false): string;
 var
   bcount: integer;
 begin
@@ -418,14 +418,25 @@ begin
     Inc(bcount);
     result := p.TokenString;
     p.NextToken;
-    while ((bcount > 0) and (p.Token <> toEOF)) do begin
-      result := result+p.TokenString;
-      case (p.Token) of
-        '<': Inc(bcount);
-        '>': Dec(bcount);
-      end;
+    {$IFDEF UE3_SUPPORT}
+    if (checkUE3desc and ((p.TokenString = 'DisplayName') or (p.TokenString = 'ToolTip'))) then begin
+      result := '';
+      p.SkipTo('>');
       p.NextToken;
+    end
+    else begin
+    {$ENDIF}
+      while ((bcount > 0) and (p.Token <> toEOF)) do begin
+        result := result+p.TokenString;
+        case (p.Token) of
+          '<': Inc(bcount);
+          '>': Dec(bcount);
+        end;
+        p.NextToken;
+      end;
+    {$IFDEF UE3_SUPPORT}
     end;
+    {$ENDIF}
   end;
   if (p.Token = toEOF) then result := '';
   unguard;
@@ -537,7 +548,7 @@ begin
         last := last+'.'+p.TokenString;
         p.NextToken;
       end;
-      last := last+pAngleBrackets;
+      last := last+pAngleBrackets(true);
       last := last+pSquareBrackets;
       while (p.Token = ',') do begin
         p.NextToken;
@@ -871,15 +882,16 @@ begin
     p.FullCopy := true;
     p.FCIgnoreComments := true;
     p.GetCopyData;
-    p.NextToken; // (
-    while (p.Token <> ')') do p.NextToken;
+    //p.NextToken; // (
+    //while (p.Token <> ')') do p.NextToken;
+    pBrackets();
     result.params := p.GetCopyData;
-    result.params := Copy(result.params, 1, Length(result.params)-1);
+    result.params := Copy(result.params, 1, Length(result.params)-2);
     //Delete(result.params, Length(result.params), 1);
     result.params := trim(result.params);
     p.FullCopy := false;
     p.FCIgnoreComments := false;
-    p.NextToken; // )
+    //p.NextToken; // )
     if (p.tokenString = 'const') then begin // UE3 native const functions
       p.NextToken;
       result.modifiers := result.modifiers + ' const';
@@ -1349,6 +1361,7 @@ initialization
   FunctionModifiers.Add('static');
   FunctionModifiers.Add('exec');
   FunctionModifiers.Add('simulated');
+  FunctionModifiers.Add('virtual');
 finalization
   FunctionModifiers.Free;
 end.
