@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.162 2006-01-14 21:26:09 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.163 2007-11-25 13:35:28 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -45,7 +45,7 @@ uses
 
 const
   APPTITLE        = 'UnCodeX';
-  APPVERSION      = '233';
+  APPVERSION      = '235';
 
 type
   TLogType = (ltInfo, ltWarn, ltError, ltSearch);
