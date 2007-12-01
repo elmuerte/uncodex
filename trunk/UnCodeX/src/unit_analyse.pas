@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.84 2007-11-25 13:35:27 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.85 2007-12-01 17:23:31 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -1362,6 +1362,7 @@ initialization
   FunctionModifiers.Add('exec');
   FunctionModifiers.Add('simulated');
   FunctionModifiers.Add('virtual');
+  FunctionModifiers.Add('coerce');
 finalization
   FunctionModifiers.Free;
 end.
