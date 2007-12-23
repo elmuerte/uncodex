@@ -7,7 +7,7 @@
     UnrealScript parser. Used for syntax highlighting, not for analysing.
     Bases on the TParser by Borland.
 
-  $Id: unit_sourceparser.pas,v 1.31 2006-02-16 22:04:31 elmuerte Exp $
+  $Id: unit_sourceparser.pas,v 1.32 2007-12-23 09:11:09 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -145,6 +145,11 @@ begin
   FullCopy := false;
   FCopyStream := TStringStream.Create('');
   //SkipToken(True);
+  ReadBuffer;
+  // skip UTF8 "BOF"
+  if ((FSourcePtr^ = #$EF) and ((FSourcePtr+1)^ = #$BB) and ((FSourcePtr+2)^ = #$BF)) then begin
+    FSourcePtr := FSourcePtr+3;
+  end;
 end;
 
 destructor TSourceParser.Destroy;
