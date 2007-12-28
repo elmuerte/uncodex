@@ -66,7 +66,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=0
 Release=3
-Build=13
+Build=14
 Debug=0
 PreRelease=0
 Special=0
@@ -77,7 +77,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=
 FileDescription=DOT file creator
-FileVersion=1.0.3.13
+FileVersion=1.0.3.14
 InternalName=out_graphviz
 LegalCopyright=© 2003 Michiel 'El Muerte' Hendriks
 LegalTrademarks=
@@ -86,19 +86,22 @@ ProductName=UnCodeX
 ProductVersion=1.0.0.0
 Comments=http://wiki.beyondunreal.com/wiki/UnCodeX
 [HistoryLists\hlConditionals]
-Count=1
+Count=2
 Item0=DEBUG_BUILD
+Item1=FULLGUI
 [HistoryLists\hlUnitAliases]
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=6
-Item0=$(DELPHI)\Lib\Debug;..\;paszlib
-Item1=paszlib
-Item2=$(DELPHI)\Lib\Debug;..\;D:\dev\UnCodeX\src\paszlib
-Item3=$(DELPHI)\Lib\Debug;..\;..\paszlib
-Item4=..\;..\paszlib
-Item5=VCL
+Count=8
+Item0=$(DELPHI)\Lib\Debug;..\;..\src\paszlib
+Item1=$(DELPHI)\Lib\Debug;..\;..\paszlib
+Item2=paszlib
+Item3=$(DELPHI)\Lib\Debug;paszlib
+Item4=$(DELPHI)\Lib\Debug;..\;paszlib
+Item5=$(DELPHI)\Lib\Debug;..\;D:\dev\UnCodeX\src\paszlib
+Item6=..\;..\paszlib
+Item7=VCL
 [HistoryLists\hlUnitOutputDirectory]
 Count=2
 Item0=..\DCU
