@@ -66,7 +66,7 @@ AutoIncBuild=1
 MajorVer=1
 MinorVer=0
 Release=0
-Build=4
+Build=5
 Debug=0
 PreRelease=0
 Special=0
@@ -77,7 +77,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=
 FileDescription=UnrealWiki class opener
-FileVersion=1.0.0.4
+FileVersion=1.0.0.5
 InternalName=out_unrealwiki
 LegalCopyright=© 2004 Michiel "El Muerte" Hendriks
 LegalTrademarks=
@@ -93,14 +93,15 @@ Item1=FULLGUI
 Count=1
 Item0=WinTypes=Windows;WinProcs=Windows;DbiTypes=BDE;DbiProcs=BDE;DbiErrs=BDE;
 [HistoryLists\hlSearchPath]
-Count=7
-Item0=paszlib
-Item1=$(DELPHI)\Lib\Debug;paszlib
-Item2=$(DELPHI)\Lib\Debug;..\;paszlib
-Item3=$(DELPHI)\Lib\Debug;..\;D:\dev\UnCodeX\src\paszlib
-Item4=$(DELPHI)\Lib\Debug;..\;..\paszlib
-Item5=..\;..\paszlib
-Item6=VCL
+Count=8
+Item0=$(DELPHI)\Lib\Debug;..\;..\src\paszlib
+Item1=$(DELPHI)\Lib\Debug;..\;..\paszlib
+Item2=paszlib
+Item3=$(DELPHI)\Lib\Debug;paszlib
+Item4=$(DELPHI)\Lib\Debug;..\;paszlib
+Item5=$(DELPHI)\Lib\Debug;..\;D:\dev\UnCodeX\src\paszlib
+Item6=..\;..\paszlib
+Item7=VCL
 [HistoryLists\hlUnitOutputDirectory]
 Count=2
 Item0=..\DCU

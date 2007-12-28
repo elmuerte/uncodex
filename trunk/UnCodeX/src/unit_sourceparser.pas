@@ -7,7 +7,7 @@
     UnrealScript parser. Used for syntax highlighting, not for analysing.
     Bases on the TParser by Borland.
 
-  $Id: unit_sourceparser.pas,v 1.32 2007-12-23 09:11:09 elmuerte Exp $
+  $Id: unit_sourceparser.pas,v 1.33 2007-12-28 16:47:56 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -362,26 +362,38 @@ begin
             Inc(FLinePos);
           end
           else begin
-            while not (P^ in [#13, #10, toEOF]) do begin
-              Inc(P);
-              Inc(FLinePos);
-              if (((P-1)^ = '\') and (P^ in [#13, #10])) then begin
+            Inc(P);
+            if (P^ = '{') then begin
+              while not (P^ in ['}', toEOF]) do begin
+                Inc(P);
+              end;
+              if (P^ <> toEOF) then begin
+                Inc(P);
+              end;
+              Result := toUE3PP;
+            end
+            else begin
+              while not (P^ in [#13, #10, toEOF]) do begin
+                Inc(P);
+                Inc(FLinePos);
+                if (((P-1)^ = '\') and (P^ in [#13, #10])) then begin
+                  EatNewLine;
+                  Inc(P);
+                  Inc(FSourceLine); // next line
+                  FLinePos := 0;
+                end;
+              end;
+              if (P^ = toEOF) then begin
+                //Result := toEOF;
+                Result := toUE3PP;
+              end
+              else begin
                 EatNewLine;
                 Inc(P);
                 Inc(FSourceLine); // next line
                 FLinePos := 0;
+                Result := toUE3PP;
               end;
-            end;
-            if (P^ = toEOF) then begin
-              //Result := toEOF;
-              Result := toUE3PP;
-            end
-            else begin
-              EatNewLine;
-              Inc(P);
-              Inc(FSourceLine); // next line
-              FLinePos := 0;
-              Result := toUE3PP;
             end;
           end;
         end;
