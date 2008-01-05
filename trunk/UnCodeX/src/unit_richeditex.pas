@@ -6,7 +6,7 @@
   Purpose:
     TRichEdit control that uses version 2
 
-  $Id: unit_richeditex.pas,v 1.31 2006-01-14 21:26:09 elmuerte Exp $
+  $Id: unit_richeditex.pas,v 1.32 2008-01-05 11:06:18 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -181,7 +181,7 @@ procedure TRichEditEx.UpdateWindowRect;
 var
   R: TRect;
 begin
-  R := RECT( FGutterWidth+5, 0, Self.Width, Self.Height);
+  R := RECT( FGutterWidth+5, 0, Self.Width-GetSystemMetrics(SM_CXVSCROLL)-7, Self.Height);
   Perform(EM_SETRECT, 0, Integer(@R));
 end;
 
