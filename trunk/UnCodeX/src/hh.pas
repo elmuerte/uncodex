@@ -2,33 +2,38 @@
 {                                                       }
 {       HTML Help API Interface Unit                    }
 {                                                       }
-{       Copyright (c) 1999 The Helpware Group           }
+{       Copyright (c) 1999-2009 The Helpware Group      }
 {                                                       }
 {*******************************************************}
-
+                 
 {
 ========================================================
   hh.pas
-  Version: 1.6
+  Version: 1.10
   HTML Help API Unit
 
   htmlhelp.h ported to The Helpware Group
-  Copyright (c) 1999 The Helpware Group
+  Copyright (c) 1999-2009 The Helpware Group
   Email: support@helpware.net
   Web: http://www.helpware.net
-  Platform: Delphi 2, 3, 4, 5, ...
+  Platform: Delphi 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ...
 
   Notes:
     htmlhelp.h is distributed with HH Workshop.
     A free download from
-    http://msdn.microsoft.com/library/tools/htmlhelp/chm/HH1Start.htm
+    http://msdn.microsoft.com/library/en-us/htmlhelp/html/vsconhh1start.asp
 
     The name hh.pas was used instead of htmlhelp.pas
     to avoid a name clash with API function htmlhelp()
 
   Changes Notes: See hh_doc.txt
+    Download: http://helpware.net/delphi/delphikit.zip
+    from Kit Home Page: http://helpware.net/delphi/
+
 ========================================================
 }
+
+  
 
 unit hh;
 
@@ -37,6 +42,7 @@ interface
 uses
   Windows,   //This line will not compile under Delphi 1 -- D1 is not supported
   SysUtils,
+    dialogs,
   Registry;
 
 { >> Create conditional symbols.
@@ -57,7 +63,11 @@ uses
   {$UNDEF D4PLUS}
 {$ENDIF}
 
-
+{$IFDEF CONDITIONALEXPRESSIONS}    //valid for Delphi 6+
+  {$IF CompilerVersion >= 20}      //Delphi 2009 + is now UNICODE..
+    {$DEFINE DELPHI_UNICODE}       //There is UNICODE define in Delphi but it may be redefined by some coders (UNICODE is common name)
+  {$IFEND}
+{$ENDIF}
 
 var
   //0 if hhctrl.ocx could not be loaded
@@ -84,8 +94,13 @@ var                            //functions are invalid if HHCtrlHandle = 0
   HtmlHelpW: function(hwndCaller: HWND; pszFile: PWideChar;
     uCommand: UInt; dwData: DWORD): HWND; stdcall;
 
-  HtmlHelp: function(hwndCaller: HWND; pszFile: PChar;
+{$IFDEF DELPHI_UNICODE} //Delphi 2009 +
+  HtmlHelp: function(hwndCaller: HWND; pszFile: PWideChar;
     uCommand: UInt; dwData: DWORD): HWND; stdcall;
+{$ELSE}
+  HtmlHelp: function(hwndCaller: HWND; pszFile: PAnsiChar;
+    uCommand: UInt; dwData: DWORD): HWND; stdcall;
+{$ENDIF}
 
 
   { Use the following for GetProcAddress to load from hhctrl.ocx }
@@ -127,6 +142,7 @@ const
   HH_SET_EXCLUSIVE_FILTER = $0019;  // set exclusive filtering method for untyped topics to be excluded from display
   HH_INITIALIZE           = $001C;  // Initializes the help system.
   HH_UNINITIALIZE         = $001D;  // Uninitializes the help system.
+  HH_SAFE_DISPLAY_TOPIC   = $0020;  // Safe Call works with IE6 window.ShowHelp() - See Q811630
   HH_PRETRANSLATEMESSAGE  = $00fd;  // Pumps messages. (NULL, NULL, MSG*).
   HH_SET_GLOBAL_PROPERTY  = $00fc;  // Set a global property. (NULL, NULL, HH_GPROP)
 
@@ -253,25 +269,11 @@ const
 
 
 type
-  {*** Used by command HH_GET_LAST_ERROR
-   NOTE: Not part of the htmlhelp.h but documented in HH Workshop help
-         You must call SysFreeString(xx.description) to free BSTR
-  }
-  tagHH_LAST_ERROR = packed record
-    cbStruct:      Integer;     // sizeof this structure
-    hr:            Integer;     // Specifies the last error code.
-    description:   PWideChar;   // (BSTR) Specifies a Unicode string containing a description of the error.
-  end;
-  HH_LAST_ERROR = tagHH_LAST_ERROR;
-  THHLastError = tagHH_LAST_ERROR;
-
-
-type
   {*** Notify event info for HHN_NAVCOMPLETE, HHN_WINDOW_CREATE }
   PHHNNotify = ^THHNNotify;
   tagHHN_NOTIFY = packed record
     hdr:    TNMHdr;
-    pszUrl: PChar;              //PCSTR: Multi-byte, null-terminated string
+    pszUrl: PAnsiChar;              //PCSTR: Multi-byte, null-terminated string
   end;
   HHN_NOTIFY = tagHHN_NOTIFY;
   THHNNotify = tagHHN_NOTIFY;
@@ -297,11 +299,11 @@ type
   tagHH_AKLINK = packed record
     cbStruct:      integer;     // sizeof this structure
     fReserved:     BOOL;        // must be FALSE (really!)
-    pszKeywords:   PChar;       // semi-colon separated keywords
-    pszUrl:        PChar;       // URL to jump to if no keywords found (may be NULL)
-    pszMsgText:    PChar;       // Message text to display in MessageBox if pszUrl is NULL and no keyword match
-    pszMsgTitle:   PChar;       // Message text to display in MessageBox if pszUrl is NULL and no keyword match
-    pszWindow:     PChar;       // Window to display URL in
+    pszKeywords:   PAnsiChar;       // semi-colon separated keywords
+    pszUrl:        PAnsiChar;       // URL to jump to if no keywords found (may be NULL)
+    pszMsgText:    PAnsiChar;       // Message text to display in MessageBox if pszUrl is NULL and no keyword match
+    pszMsgTitle:   PAnsiChar;       // Message text to display in MessageBox if pszUrl is NULL and no keyword match
+    pszWindow:     PAnsiChar;       // Window to display URL in
     fIndexOnFail:  BOOL;        // Displays index if keyword lookup fails.
   end;
   HH_AKLINK = tagHH_AKLINK;
@@ -411,11 +413,11 @@ type
   tagHH_WINTYPE = packed record             //tagHH_WINTYPE, HH_WINTYPE, *PHH_WINTYPE;
     cbStruct:          Integer;      // IN: size of this structure including all Information Types
     fUniCodeStrings:   BOOL;         // IN/OUT: TRUE if all strings are in UNICODE
-    pszType:           PChar;        // IN/OUT: Name of a type of window
+    pszType:           PAnsiChar;    // IN/OUT: Name of a type of window
     fsValidMembers:    DWORD;        // IN: Bit flag of valid members (HHWIN_PARAM_)
     fsWinProperties:   DWORD;        // IN/OUT: Properties/attributes of the window (HHWIN_)
 
-    pszCaption:        PChar;        // IN/OUT: Window title
+    pszCaption:        PAnsiChar;    // IN/OUT: Window title
     dwStyles:          DWORD;        // IN/OUT: Window styles
     dwExStyles:        DWORD;        // IN/OUT: Extended Window styles
     rcWindowPos:       TRect;        // IN: Starting position, OUT: current position
@@ -434,10 +436,10 @@ type
     iNavWidth:         Integer;      // IN/OUT: width of navigation window
     rcHTML:            TRect;        // OUT: HTML window coordinates
 
-    pszToc:            PChar;        // IN: Location of the table of contents file
-    pszIndex:          PChar;        // IN: Location of the index file
-    pszFile:           PChar;        // IN: Default location of the html file
-    pszHome:           PChar;        // IN/OUT: html file to display when Home button is clicked
+    pszToc:            PAnsiChar;    // IN: Location of the table of contents file
+    pszIndex:          PAnsiChar;    // IN: Location of the index file
+    pszFile:           PAnsiChar;    // IN: Default location of the html file
+    pszHome:           PAnsiChar;    // IN/OUT: html file to display when Home button is clicked
     fsToolBarFlags:    DWORD;        // IN: flags controling the appearance of the toolbar (HHWIN_BUTTON_)
     fNotExpanded:      BOOL;         // IN: TRUE/FALSE to contract or expand, OUT: current state
     curNavType:        Integer;      // IN/OUT: UI to display in the navigational pane
@@ -445,14 +447,14 @@ type
     idNotify:          Integer;      // IN: ID to use for WM_NOTIFY messages
     tabOrder: packed array[0..HH_MAX_TABS] of Byte;  // IN/OUT: tab order: Contents, Index, Search, History, Favorites, Reserved 1-5, Custom tabs
     cHistory:          Integer;       // IN/OUT: number of history items to keep (default is 30)
-    pszJump1:          PChar;         // Text for HHWIN_BUTTON_JUMP1
-    pszJump2:          PChar;         // Text for HHWIN_BUTTON_JUMP2
-    pszUrlJump1:       PChar;         // URL for HHWIN_BUTTON_JUMP1
-    pszUrlJump2:       PChar;         // URL for HHWIN_BUTTON_JUMP2
+    pszJump1:          PAnsiChar;     // Text for HHWIN_BUTTON_JUMP1
+    pszJump2:          PAnsiChar;     // Text for HHWIN_BUTTON_JUMP2
+    pszUrlJump1:       PAnsiChar;     // URL for HHWIN_BUTTON_JUMP1
+    pszUrlJump2:       PAnsiChar;     // URL for HHWIN_BUTTON_JUMP2
     rcMinSize:         TRect;         // Minimum size for window (ignored in version 1)
 
     cbInfoTypes:       Integer;       // size of paInfoTypes;
-    pszCustomTabs:     PChar;         // multiple zero-terminated strings
+    pszCustomTabs:     PAnsiChar;         // multiple zero-terminated strings
   end;
   HH_WINTYPE = tagHH_WINTYPE;
   THHWinType = tagHH_WINTYPE;
@@ -491,7 +493,7 @@ type
   PHHNTrack = ^THHNTrack;
   tagHHNTRACK = packed record                  //tagHHNTRACK, HHNTRACK;
     hdr:               TNMHdr;
-    pszCurUrl:         PChar;                  // Multi-byte, null-terminated string  
+    pszCurUrl:         PAnsiChar;              // Multi-byte, null-terminated string
     idAction:          Integer;                // HHACT_ value
     phhWinType:        PHHWinType;             // Current window type structure
   end;
@@ -499,7 +501,7 @@ type
   THHNTrack = tagHHNTRACK;
 
 
-///////////////////////////////////////////////////////////////////////////////
+//========================
 //
 // Global Control Properties.
 //
@@ -515,7 +517,7 @@ type
   HH_GPROPID = tagHH_GPROPID;
   THHGPropID = HH_GPROPID;
 
-///////////////////////////////////////////////////////////////////////////////
+//========================
 //
 // Global Property structure
 //
@@ -529,6 +531,44 @@ type
   HH_GLOBAL_PROPERTY = tagHH_GLOBAL_PROPERTY;
   THHGlobalProperty = tagHH_GLOBAL_PROPERTY;
 
+//========================
+//
+// Hherror.h --- HTML Help API errors
+// Published: http://support.microsoft.com/default.aspx?scid=kb;en-us;297768
+
+{ Translated from HHERROR.H }
+
+type
+
+  { HH_LAST_ERROR Command Related structures and constants
+    Used by command HH_GET_LAST_ERROR
+    You must call SysFreeString(xx.description) to free BSTR
+  }
+  tagHH_LAST_ERROR = packed record
+    cbStruct:      Integer;     // sizeof this structure
+    hr:            HRESULT;     // Specifies the last error code.
+    description:   PWideChar;   // (BSTR) Specifies a Unicode string containing a description of the error.
+  end;
+  HH_LAST_ERROR = tagHH_LAST_ERROR;
+  THHLastError = tagHH_LAST_ERROR;
+
+
+// Error codes
+// MAKE_HRESULT(sev,fac,code) \HRESULT) (((unsigned long)(sev)<<31) | ((unsigned long)(fac)<<16) | ((unsigned long)(code))) )
+const
+  HH_E_FILENOTFOUND: HResult = HResult(SEVERITY_ERROR shl 31) or (FACILITY_ITF shl 16) or $0201; // %1 could not be found.
+  HH_E_TOPICDOESNOTEXIST: HResult = HResult(SEVERITY_ERROR shl 31) or (FACILITY_ITF shl 16) or $0202; // The requested topic does not exist.
+  HH_E_INVALIDHELPFILE: HResult = HResult(SEVERITY_ERROR shl 31) or (FACILITY_ITF shl 16) or $0203; // %1 is not a valid help file.
+  HH_E_NOCONTEXTIDS: HResult = HResult(SEVERITY_ERROR shl 31) or (FACILITY_ITF shl 16) or $020A; // Help file does not contain context ids.
+  HH_E_CONTEXTIDDOESNTEXIT: HResult = HResult(SEVERITY_ERROR shl 31) or (FACILITY_ITF shl 16) or $020B; // The context id does not exist.
+
+  // 0x0300 - 0x03FF reserved for keywords
+  HH_E_KEYWORD_NOT_FOUND: HResult = HResult(SEVERITY_ERROR shl 31) or (FACILITY_ITF shl 16) or $0300; // no hits found.
+  HH_E_KEYWORD_IS_PLACEHOLDER: HResult = HResult(SEVERITY_ERROR shl 31) or (FACILITY_ITF shl 16) or $0301; // keyword is a placeholder or a "runaway" see also.
+  HH_E_KEYWORD_NOT_IN_SUBSET: HResult = HResult(SEVERITY_ERROR shl 31) or (FACILITY_ITF shl 16) or $0302; // no hits found because of subset exclusion.
+  HH_E_KEYWORD_NOT_IN_INFOTYPE: HResult = HResult(SEVERITY_ERROR shl 31) or (FACILITY_ITF shl 16) or $0303; // no hits found because of infotype exclusion.
+  HH_E_KEYWORD_EXCLUDED: HResult = HResult(SEVERITY_ERROR shl 31) or (FACILITY_ITF shl 16) or $0304; // no hits found because of infotype and subset exclusion.
+  HH_E_KEYWORD_NOT_SUPPORTED: HResult = HResult(SEVERITY_ERROR shl 31) or (FACILITY_ITF shl 16) or $0305; // no hits found because of keywords not being supported in this mode.
 
 
 implementation
@@ -544,8 +584,28 @@ begin
     SetLength(result, length(result)-1);
 end;
 
+{Return Windows Dir - with no trailing slash}
+function GetWinDir: String;
+var path: array[0..260] of Char;
+begin
+  GetWindowsDirectory(path, SizeOf(path));
+  result := path;
+  if result[length(result)] = '\' then
+    SetLength(result, length(result)-1);
+end;
 
 const hhPathRegKey = 'CLSID\{adb880a6-d8ff-11cf-9377-00aa003b7a11}\InprocServer32';
+
+
+{ %SYSTEMROOT%\System32\hhctrl.ocx --> C:\Windows\System32\hhctrl.ocx
+  %ProgramFiles% --> c:\Program Files
+  thanks George Tylutki - 100% Cotton Software - csoft@epix.net }
+function ExpandEnvStr(const s: string): string;
+var P: array[0..4096] of char;
+begin
+  ExpandEnvironmentStrings(PChar(s), P, SizeOf(P));
+  Result := P;
+end;
 
 { Returns full path to hhctrl.ocx.
   Returns empty string if file or registry entry not found.
@@ -562,21 +622,23 @@ function GetPathToHHCtrlOCX: string;
 var Reg: TRegistry;
 {$ENDIF}
 begin
-{$IFDEF D4PLUS} // -- Delphi >=4 ------------
   result := '';  //default return
+{$IFDEF D4PLUS} // -- Delphi >=4 ------------
   Reg := TRegistry.Create;
   Reg.RootKey := HKEY_CLASSES_ROOT;
   if Reg.OpenKeyReadOnly(hhPathRegKey) then  //safer call under NT
   begin
     result := Reg.ReadString('');  //default value
     Reg.CloseKey;
+
+    result := ExpandEnvStr(result);   // %SystemRoot%  --> Windows dir
     if (result <> '') and (not FileExists(result)) then  //final check - file must exist
       result := '';
   end;
   Reg.Free;
-{$ELSE}         // -- Delphi <4 ------------
-  Result := GetWinSysDir + '\hhctrl.ocx';
 {$ENDIF}
+  if result = '' then
+    result := GetWinSysDir + '\' + hhctrlLib;
 end;
 
 
@@ -587,16 +649,26 @@ var OcxPath: string;
 begin
   if HHCtrlHandle = 0 then
   begin
-    OcxPath := GetPathToHHCtrlOCX;
-    if (OcxPath <> '') and FileExists(OcxPath) then
+    // v1.9 -- Normally 'hhctrl.ocx' is in the Windows search path
+    HHCtrlHandle := LoadLibrary(hhctrlLib);
+
+    //Not found? Unlikely! Try looking it up in the registry
+    if (HHCtrlHandle = 0) then
     begin
-      HHCtrlHandle := LoadLibrary(PChar(OcxPath));
-      if HHCtrlHandle <> 0 then
-      begin
-        @HtmlHelpA := GetProcAddress(HHCtrlHandle, 'HtmlHelpA');
-        @HtmlHelpW := GetProcAddress(HHCtrlHandle, 'HtmlHelpW');
-        @HtmlHelp := GetProcAddress(HHCtrlHandle, 'HtmlHelpA');
-      end;
+      OcxPath := GetPathToHHCtrlOCX;
+      if (OcxPath <> '') and FileExists(OcxPath) then
+        HHCtrlHandle := LoadLibrary(PChar(OcxPath));
+    end;
+
+    if HHCtrlHandle <> 0 then
+    begin
+      @HtmlHelpA := GetProcAddress(HHCtrlHandle, 'HtmlHelpA');
+      @HtmlHelpW := GetProcAddress(HHCtrlHandle, 'HtmlHelpW');
+{$IFDEF DELPHI_UNICODE}
+      @HtmlHelp := GetProcAddress(HHCtrlHandle, 'HtmlHelpW');
+{$ELSE}
+      @HtmlHelp := GetProcAddress(HHCtrlHandle, 'HtmlHelpA');
+{$ENDIF}
     end;
   end;
 end;
@@ -619,6 +691,9 @@ initialization
 finalization
   UnloadHtmlHelp;
 end.
+
+
+
 
 
 
