@@ -6,7 +6,7 @@
   Purpose:
     Contains the configuration of UnCodeX
 
-  $Id: unit_config.pas,v 1.18 2006-04-24 14:12:18 elmuerte Exp $
+  $Id: unit_config.pas,v 1.19 2010-05-15 15:04:13 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -282,7 +282,7 @@ begin
   HTMLOutput.PackageList := PackageList;
   HTMLOutput.ClassList := ClassList;
    
-  HTMLOutput.OutputDir := ExtractFilePath(ParamStr(0))+'UnCodeX-Output';
+  HTMLOutput.OutputDir := GetDataDirectory+'HTML';
   HTMLOutput.TemplateDir := ExtractFilePath(ParamStr(0))+TEMPLATEPATH+PATHDELIM+DEFTEMPLATE;
   HTMLOutput.CreateSource := tbMaybe;
   HTMLOutput.TabsToSpaces := 0;
@@ -291,10 +291,10 @@ begin
   HTMLOutput.DefaultTitle := '';
   HTMLOutput.GZCompress := tbMaybe;
   HTMLHelp.Compiler := '';
-  HTMLHelp.OutputFile := ExtractFilePath(ParamStr(0))+'UnCodeX-UnrealScript.chm';
+  HTMLHelp.OutputFile := GetDataDirectory+'UnCodeX-UnrealScript.chm';
   HTMLHelp.Title := '';
-  Comments.Packages := ExtractFilePath(ParamStr(0))+DefaultPDF;
-  Comments.Declarations := ExtractFilePath(ParamStr(0))+DefaultECF;
+  Comments.Packages := GetDataDirectory+DefaultPDF;
+  Comments.Declarations := GetDataDirectory+DefaultECF;
 end;
 
 destructor TUCXConfig.Destroy;

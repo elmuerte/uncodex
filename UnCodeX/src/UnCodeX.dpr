@@ -6,7 +6,7 @@
   Purpose:
     Program unit for the GUI
 
-  $Id: UnCodeX.dpr,v 1.77 2006-01-14 21:26:09 elmuerte Exp $
+  $Id: UnCodeX.dpr,v 1.78 2010-05-15 15:04:13 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -34,9 +34,7 @@ program UnCodeX;
 
 uses
   FastShareMem in 'FastShareMem.pas',
-  {$IFDEF DETECT_MEM_LEAK}
   MemCheck in 'MemCheck.pas',
-  {$ENDIF}
   Windows,
   Messages,
   SysUtils,
@@ -187,7 +185,7 @@ begin
     else if (LowerCase(ParamStr(j)) = '-config') then begin
       Inc(j);
       ConfigFile := ParamStr(j);
-      if (ExtractFilePath(ConfigFile) = '') then ConfigFile := ExtractFilePath(ParamStr(0))+ConfigFile;
+      if (ExtractFilePath(ConfigFile) = '') then ConfigFile := GetDataDirectory+ConfigFile;
     end
     else if (LowerCase(ParamStr(j)) = '-handle') then begin
       Inc(j);
@@ -241,9 +239,9 @@ begin
     Application.Initialize;
     Application.Title := 'Loading UnCodeX ...';
     Application.CreateForm(Tfrm_UnCodeX, frm_UnCodeX);
-    Application.CreateForm(Tfrm_About, frm_About);
-    Application.CreateForm(Tfrm_License, frm_License);
-    if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
+  Application.CreateForm(Tfrm_About, frm_About);
+  Application.CreateForm(Tfrm_License, frm_License);
+  if (not Application.ShowMainForm) then frm_UnCodeX.OnShow(nil);
     Application.Run;
   end
   else if (frm_Splash <> nil) then frm_Splash.Close;
