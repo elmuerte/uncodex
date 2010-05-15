@@ -7,7 +7,7 @@
     UnrealScript parser. Used for syntax highlighting, not for analysing.
     Bases on the TParser by Borland.
 
-  $Id: unit_sourceparser.pas,v 1.33 2007-12-28 16:47:56 elmuerte Exp $
+  $Id: unit_sourceparser.pas,v 1.33 2007/12/28 16:47:56 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter

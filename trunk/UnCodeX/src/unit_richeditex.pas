@@ -6,7 +6,7 @@
   Purpose:
     TRichEdit control that uses version 2
 
-  $Id: unit_richeditex.pas,v 1.32 2008-01-05 11:06:18 elmuerte Exp $
+  $Id: unit_richeditex.pas,v 1.32 2008/01/05 11:06:18 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter

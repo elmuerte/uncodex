@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Class property inpector frame
 
-  $Id: unit_props.pas,v 1.37 2005-11-25 10:20:32 elmuerte Exp $
+  $Id: unit_props.pas,v 1.37 2005/11/25 10:20:32 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter

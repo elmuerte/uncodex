@@ -6,7 +6,7 @@
   Purpose:
     Base class for all threads used in uncodex, used for more thread safety
 
-  $Id: unit_ucxthread.pas,v 1.3 2005-04-23 20:24:44 elmuerte Exp $
+  $Id: unit_ucxthread.pas,v 1.3 2005/04/23 20:24:44 elmuerte Exp $
 *******************************************************************************}
 
 {

@@ -6,7 +6,7 @@
   Purpose:
     About UnCodeX dialog
 
-  $Id: unit_about.pas,v 1.21 2004-12-19 12:34:56 elmuerte Exp $
+  $Id: unit_about.pas,v 1.21 2004/12/19 12:34:56 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter

@@ -6,7 +6,7 @@
   Purpose:
     Contains the configuration of UnCodeX
 
-  $Id: unit_config.pas,v 1.19 2010-05-15 15:04:13 elmuerte Exp $
+  $Id: unit_config.pas,v 1.19 2010/05/15 15:04:13 elmuerte Exp $
 *******************************************************************************}
 
 {

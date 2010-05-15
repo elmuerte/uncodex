@@ -6,7 +6,7 @@
   Purpose:
     Creates an MS HTML Help project and compiles it.
 
-  $Id: unit_mshtmlhelp.pas,v 1.21 2005-04-23 20:24:27 elmuerte Exp $
+  $Id: unit_mshtmlhelp.pas,v 1.21 2005/04/23 20:24:27 elmuerte Exp $
 *******************************************************************************}
 
 {

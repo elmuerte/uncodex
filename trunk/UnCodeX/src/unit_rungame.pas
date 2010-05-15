@@ -6,7 +6,7 @@
   Purpose:
     Run dialog for the game\server
 
-  $Id: unit_rungame.pas,v 1.15 2010-05-15 15:10:59 elmuerte Exp $
+  $Id: unit_rungame.pas,v 1.15 2010/05/15 15:10:59 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter

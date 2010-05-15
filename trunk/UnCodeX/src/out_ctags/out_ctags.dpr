@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   CTAGS file creation library
- $Id: out_ctags.dpr,v 1.5 2004-07-30 11:18:51 elmuerte Exp $
+ $Id: out_ctags.dpr,v 1.5 2004/07/30 11:18:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter

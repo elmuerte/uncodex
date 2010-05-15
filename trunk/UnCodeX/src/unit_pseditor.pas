@@ -6,7 +6,7 @@
   Purpose:
     PascalScript editor window
 
-  $Id: unit_pseditor.pas,v 1.14 2005-04-05 07:58:08 elmuerte Exp $
+  $Id: unit_pseditor.pas,v 1.14 2005/04/05 07:58:08 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Copy paste window
- $Id: unit_wiki.pas,v 1.10 2006-01-14 21:26:09 elmuerte Exp $
+ $Id: unit_wiki.pas,v 1.10 2006/01/14 21:26:09 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter

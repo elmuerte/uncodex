@@ -7,7 +7,7 @@
     Defines additional PascalScript objects and functions. (Generation is
     automated)
 
-  $Id: unit_pascalscript_ex.pas,v 1.17 2005-04-30 07:45:02 elmuerte Exp $
+  $Id: unit_pascalscript_ex.pas,v 1.17 2005/04/30 07:45:02 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter

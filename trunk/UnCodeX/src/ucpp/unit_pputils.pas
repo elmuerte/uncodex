@@ -6,7 +6,7 @@
   Purpose:
     Various utility functions
 
-  $Id: unit_pputils.pas,v 1.10 2005-10-20 11:45:36 elmuerte Exp $
+  $Id: unit_pputils.pas,v 1.10 2005/10/20 11:45:36 elmuerte Exp $
 *******************************************************************************}
 
 {

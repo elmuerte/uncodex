@@ -6,7 +6,7 @@
   Purpose:
     Replacement docktree
 
-  $Id: unit_ucxdocktree.pas,v 1.12 2004-12-24 11:05:10 elmuerte Exp $
+  $Id: unit_ucxdocktree.pas,v 1.12 2004/12/24 11:05:10 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter

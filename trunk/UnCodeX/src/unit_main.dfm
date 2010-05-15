@@ -31,7 +31,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Top = 34
     Width = 4
     Height = 532
-    Cursor = crHSplit
     AutoSnap = False
     Visible = False
   end
@@ -60,7 +59,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Top = 34
     Width = 4
     Height = 532
-    Cursor = crHSplit
     Align = alRight
     AutoSnap = False
     Visible = False
@@ -115,7 +113,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
       item
         Width = 23
       end>
-    SimplePanel = False
     SizeGrip = False
   end
   object pb_Scan: TProgressBar
@@ -124,8 +121,6 @@ object frm_UnCodeX: Tfrm_UnCodeX
     Width = 669
     Height = 8
     Align = alBottom
-    Min = 0
-    Max = 100
     TabOrder = 4
   end
   object tb_Tools: TToolBar

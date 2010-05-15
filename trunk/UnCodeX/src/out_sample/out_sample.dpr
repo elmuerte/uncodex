@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003 Michiel 'El Muerte' Hendriks
  Purpose:   Custom output sample
- $Id: out_sample.dpr,v 1.6 2004-07-30 11:18:51 elmuerte Exp $
+ $Id: out_sample.dpr,v 1.6 2004/07/30 11:18:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 
 library out_sample;

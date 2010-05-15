@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class rename dialog
 
-  $Id: unit_renameclass.pas,v 1.8 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_renameclass.pas,v 1.8 2004/12/08 09:25:39 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
