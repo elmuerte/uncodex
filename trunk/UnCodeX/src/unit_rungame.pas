@@ -6,7 +6,7 @@
   Purpose:
     Run dialog for the game\server
 
-  $Id: unit_rungame.pas,v 1.14 2005-10-01 09:53:09 elmuerte Exp $
+  $Id: unit_rungame.pas,v 1.15 2010-05-15 15:10:59 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -262,6 +262,9 @@ begin
   if (cb_LOG.Checked and (tmp <> '')) then arg2 := arg2+' -LOG='+tmp;
   tmp := trim(ed_MOD.Text);
   if (cb_MOD.Checked and (tmp <> '')) then arg2 := arg2+' -MOD='+tmp;
+
+  tmp := trim(mm_AddSwitches.Lines.Text);
+  if (length(tmp) > 0) then arg := arg+' '+tmp;
 
   ed_Args.Text := ed_Format.Text; //fixme
   ed_Args.Text := StringReplace(ed_Args.Text, '%url%', arg, [rfReplaceAll, rfIgnoreCase]);
