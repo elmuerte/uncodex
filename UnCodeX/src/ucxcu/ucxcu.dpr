@@ -6,7 +6,7 @@
   Purpose:
     UnCodeX Commandline Utility Client
 
-  $Id: ucxcu.dpr,v 1.22 2005-04-18 15:48:56 elmuerte Exp $
+  $Id: ucxcu.dpr,v 1.22 2005/04/18 15:48:56 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter

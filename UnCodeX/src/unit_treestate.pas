@@ -6,7 +6,7 @@
   Purpose:
     Loading\saving of the class and package tree views
 
-  $Id: unit_treestate.pas,v 1.39 2006-02-26 11:07:33 elmuerte Exp $
+  $Id: unit_treestate.pas,v 1.39 2006/02/26 11:07:33 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter

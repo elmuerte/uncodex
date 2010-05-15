@@ -6,7 +6,7 @@
   Purpose:
     Search dialog
 
-  $Id: unit_searchform.pas,v 1.15 2005-04-06 10:10:53 elmuerte Exp $
+  $Id: unit_searchform.pas,v 1.15 2005/04/06 10:10:53 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter

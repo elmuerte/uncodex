@@ -7,7 +7,7 @@
     Parser for UnrealScript, used for analysing the unrealscript source.
     Based on TParser by Borland.
 
-  $Id: unit_parser.pas,v 1.37 2007-12-28 16:47:56 elmuerte Exp $
+  $Id: unit_parser.pas,v 1.37 2007/12/28 16:47:56 elmuerte Exp $
 *******************************************************************************}
 
 {

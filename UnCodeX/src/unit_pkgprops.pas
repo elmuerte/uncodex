@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript Package properties viewer\editor
 
-  $Id: unit_pkgprops.pas,v 1.14 2005-05-27 13:45:07 elmuerte Exp $
+  $Id: unit_pkgprops.pas,v 1.14 2005/05/27 13:45:07 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter

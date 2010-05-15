@@ -6,7 +6,7 @@
   Purpose:
     I\O Pipe for capturing commandline applications
 
-  $Id: unit_clpipe.pas,v 1.11 2004-12-08 09:25:37 elmuerte Exp $
+  $Id: unit_clpipe.pas,v 1.11 2004/12/08 09:25:37 elmuerte Exp $
 *******************************************************************************}
 {
    UnCodeX - UnrealScript source browser & documenter

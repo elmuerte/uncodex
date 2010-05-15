@@ -4,7 +4,7 @@
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   setup dialog + actual file creation
  						http://ctags.sourceforge.net/FORMAT
- $Id: unit_ctags.pas,v 1.6 2004-07-30 11:18:51 elmuerte Exp $
+ $Id: unit_ctags.pas,v 1.6 2004/07/30 11:18:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter

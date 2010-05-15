@@ -6,7 +6,7 @@
   Purpose:
     FreePascalCompile compatibility unit
 
-  $Id: unit_fpc_compat.pas,v 1.9 2005-04-07 06:29:00 elmuerte Exp $
+  $Id: unit_fpc_compat.pas,v 1.9 2005/04/07 06:29:00 elmuerte Exp $
 *******************************************************************************}
 
 {

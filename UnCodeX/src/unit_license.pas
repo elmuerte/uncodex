@@ -6,7 +6,7 @@
   Purpose:
     Display LICENSE.TXT
 
-  $Id: unit_license.pas,v 1.8 2004-12-08 09:25:38 elmuerte Exp $
+  $Id: unit_license.pas,v 1.8 2004/12/08 09:25:38 elmuerte Exp $
 *******************************************************************************}
 
 {

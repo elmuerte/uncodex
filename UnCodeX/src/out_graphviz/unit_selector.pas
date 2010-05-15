@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   GUI
- $Id: unit_selector.pas,v 1.10 2004-07-30 11:18:51 elmuerte Exp $
+ $Id: unit_selector.pas,v 1.10 2004/07/30 11:18:51 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter

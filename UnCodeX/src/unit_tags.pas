@@ -6,7 +6,7 @@
   Purpose:
     Class properties window
 
-  $Id: unit_tags.pas,v 1.25 2005-04-07 08:29:11 elmuerte Exp $
+  $Id: unit_tags.pas,v 1.25 2005/04/07 08:29:11 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter

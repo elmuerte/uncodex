@@ -6,7 +6,7 @@
   Purpose:
     Utility functions that have a GUI dependency
 
-  $Id: unit_utils.pas,v 1.21 2005-05-13 10:20:19 elmuerte Exp $
+  $Id: unit_utils.pas,v 1.21 2005/05/13 10:20:19 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter

@@ -3,7 +3,7 @@
  Author:    elmuerte
  Copyright: 2003, 2004 Michiel 'El Muerte' Hendriks
  Purpose:   Finds and opens the UnrealWiki page for the selected class
- $Id: out_unrealwiki.dpr,v 1.4 2005-09-08 12:09:09 elmuerte Exp $
+ $Id: out_unrealwiki.dpr,v 1.4 2005/09/08 12:09:09 elmuerte Exp $
 -----------------------------------------------------------------------------}
 {
     UnCodeX - UnrealScript source browser & documenter

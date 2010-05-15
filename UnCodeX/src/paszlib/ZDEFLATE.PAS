@@ -54,7 +54,7 @@ Unit zDeflate;
        Fiala,E.R., and Greene,D.H.
           Data Compression with Finite Windows, Comm.ACM, 32,4 (1989) 490-595}
 
-{ $Id: ZDEFLATE.PAS,v 1.2 2005-04-18 15:48:56 elmuerte Exp $ }
+{ $Id: ZDEFLATE.PAS,v 1.2 2005/04/18 15:48:56 elmuerte Exp $ }
 
 interface
 

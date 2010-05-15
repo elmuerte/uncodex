@@ -6,7 +6,7 @@
   Purpose:
     Convert comments to documentation
 
-  $Id: unit_comment2doc.pas,v 1.2 2006-01-14 21:26:09 elmuerte Exp $
+  $Id: unit_comment2doc.pas,v 1.2 2006/01/14 21:26:09 elmuerte Exp $
 *******************************************************************************}
 
 {

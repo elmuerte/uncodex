@@ -12,7 +12,7 @@
     - configurable delayed file update
 	- a few bug fixes that have been contributed back to the FPC community
 
-  $Id: unit_ucxinifiles.pas,v 1.7 2005-05-14 13:27:33 elmuerte Exp $
+  $Id: unit_ucxinifiles.pas,v 1.7 2005/05/14 13:27:33 elmuerte Exp $
 *******************************************************************************}
 
 {

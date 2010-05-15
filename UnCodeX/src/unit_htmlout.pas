@@ -6,7 +6,7 @@
   Purpose:
     HTML documentation generator.
 
-  $Id: unit_htmlout.pas,v 1.87 2006-01-13 21:10:58 elmuerte Exp $
+  $Id: unit_htmlout.pas,v 1.87 2006/01/13 21:10:58 elmuerte Exp $
 *******************************************************************************}
 
 {

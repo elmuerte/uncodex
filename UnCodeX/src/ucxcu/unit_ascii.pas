@@ -6,7 +6,7 @@
   Purpose:
     General commandline routines
 
-  $Id: unit_ascii.pas,v 1.22 2005-12-17 11:53:35 elmuerte Exp $
+  $Id: unit_ascii.pas,v 1.22 2005/12/17 11:53:35 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter

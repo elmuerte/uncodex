@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript package scanner, search for UnrealScript classes
 
-  $Id: unit_packages.pas,v 1.53 2007-01-07 14:02:50 elmuerte Exp $
+  $Id: unit_packages.pas,v 1.53 2007/01/07 14:02:50 elmuerte Exp $
 *******************************************************************************}
 
 {

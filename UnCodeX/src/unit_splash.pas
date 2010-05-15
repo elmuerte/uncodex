@@ -6,7 +6,7 @@
   Purpose:
     Splash screen when application start takes a while.
 
-  $Id: unit_splash.pas,v 1.8 2004-12-08 09:25:39 elmuerte Exp $
+  $Id: unit_splash.pas,v 1.8 2004/12/08 09:25:39 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
