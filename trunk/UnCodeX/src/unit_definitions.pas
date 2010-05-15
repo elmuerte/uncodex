@@ -6,7 +6,7 @@
   Purpose:
     General definitions and independed utility functions
 
-  $Id: unit_definitions.pas,v 1.165 2007-12-28 16:47:56 elmuerte Exp $
+  $Id: unit_definitions.pas,v 1.166 2010-05-15 15:04:13 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -36,7 +36,7 @@ interface
 
 uses
   {$IFDEF MSWINDOWS}
-  Windows,
+  Windows, shlobj,
   {$ENDIF}
   Hashes, unit_uclasses, Classes, SysUtils
   {$IFDEF WITH_OWN_ZLIB}
@@ -45,7 +45,7 @@ uses
 
 const
   APPTITLE        = 'UnCodeX';
-  APPVERSION      = '237';
+  APPVERSION      = '238';
 
 type
   TLogType = (ltInfo, ltWarn, ltError, ltSearch);
@@ -102,6 +102,8 @@ type
 
   function GetToken(var input: string; delim: char; nocut: boolean = false): string; overload;
   function GetToken(var input: string; delim: TSysCharSet; nocut: boolean = false): string; overload;
+
+  function GetDataDirectory: string;
 
   function iFindFile(filename: string): string;
   function iFindDir(dirname: string; var output: string): boolean;
@@ -306,6 +308,26 @@ begin
   end;
 end;
 
+function GetDataDirectory: string;
+{$IFDEF MSWINDOWS}
+var
+  path: array[0..Max_Path] of Char;
+begin
+  if (ShGetSpecialFolderPath(0, path, CSIDL_Personal, False)) then begin
+    result := path + '\UnCodeX\';
+  end
+  else begin
+    result := ExtractFilePath(ParamStr(0));
+  end;
+{$ENDIF}
+{$IFDEF UNIX}
+begin
+  result := ExpandTilde('~/.uncodex/');
+
+{$ENDIF}
+  ForceDirectories(result);
+end;
+
 function iFindFile(filename: string): string;
 {$IFDEF MSWINDOWS}
 begin
@@ -445,12 +467,12 @@ procedure ReloadKeywords;
 var
   i: integer;
 begin
-  if (FileExists(ExtractFilePath(ParamStr(0))+KEYWORDFILE1)) then begin
+  if (FileExists(GetDataDirectory+KEYWORDFILE1)) then begin
     kwl1 := true;
     Keywords1.Clear;
     sl := TStringList.Create;
     try
-      sl.LoadFromFile(ExtractFilePath(ParamStr(0))+KEYWORDFILE1);
+      sl.LoadFromFile(GetDataDirectory+KEYWORDFILE1);
       for i := 0 to sl.Count-1 do begin
         if (sl[i] <> '') then Keywords1.Items[LowerCase(sl[i])] := '-';
       end;
@@ -458,12 +480,12 @@ begin
       sl.Free;
     end;
   end;
-  if (FileExists(ExtractFilePath(ParamStr(0))+KEYWORDFILE2)) then begin
+  if (FileExists(GetDataDirectory+KEYWORDFILE2)) then begin
     kwl2 := true;
     Keywords2.Clear;
     sl := TStringList.Create;
     try
-      sl.LoadFromFile(ExtractFilePath(ParamStr(0))+KEYWORDFILE2);
+      sl.LoadFromFile(GetDataDirectory+KEYWORDFILE2);
       for i := 0 to sl.Count-1 do begin
         if (sl[i] <> '') then Keywords2.Items[LowerCase(sl[i])] := '-';
       end;
@@ -650,7 +672,7 @@ initialization
       while (Keywords1.Next) do begin
         if (Keywords1.CurrentKey <> '') then sl.Add(Keywords1.CurrentKey)
       end;
-      sl.SaveToFile(ExtractFilePath(ParamStr(0))+KEYWORDFILE1);
+      sl.SaveToFile(GetDataDirectory+KEYWORDFILE1);
     finally
       sl.Free;
     end;
@@ -704,7 +726,7 @@ initialization
       while (Keywords2.Next) do begin
         if (Keywords2.CurrentKey <> '') then sl.Add(Keywords2.CurrentKey)
       end;
-      sl.SaveToFile(ExtractFilePath(ParamStr(0))+KEYWORDFILE2);
+      sl.SaveToFile(GetDataDirectory+KEYWORDFILE2);
     finally
       sl.Free;
     end;

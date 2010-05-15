@@ -6,7 +6,7 @@
   Purpose:
     Main window for the GUI
 
-  $Id: unit_main.pas,v 1.185 2006-04-24 14:20:14 elmuerte Exp $
+  $Id: unit_main.pas,v 1.186 2010-05-15 15:04:13 elmuerte Exp $
 *******************************************************************************}
 
 {
@@ -40,7 +40,8 @@ uses
   unit_uclasses, ShellApi, AppEvnts, ImgList, ActnList, StrUtils,
   Clipbrd, hh, hh_funcs, ToolWin, richedit, unit_richeditex, unit_searchform,
   Buttons, DdeMan, unit_props, uPSComponent, uPSComponent_Default,
-  uPSI_unit_uclasses, unit_pascalscript_ex, unit_definitions, unit_config;
+  uPSI_unit_uclasses, unit_pascalscript_ex, unit_definitions, unit_config,
+  uPSI_miscclasses;
 
 const
   // custom window messages
@@ -2081,7 +2082,7 @@ begin
   hh_Help := THookHelpSystem.Create(ExtractFilePath(ParamStr(0))+'UnCodeX-help.chm', '', htHHAPI);
   BaseCaption := APPTITLE;
   if (ConfigFile = '') then begin
-    ConfigFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ini';
+    ConfigFile := GetDataDirectory+'UnCodeX.ini';
     Config := TUCXGUIConfig.Create(ConfigFile);
   end
   else begin
@@ -2097,7 +2098,7 @@ begin
   InitialStartup := not FileExists(ConfigFile);
   OutputModules := TStringList.Create;
   LoadSettings;
-  if (config.StateFile = '') then config.StateFile := ExtractFilePath(ParamStr(0))+'UnCodeX.ucx';
+  if (config.StateFile = '') then config.StateFile := GetDataDirectory+'UnCodeX.ucx';
   if (config.Plugins.LoadDLLs) then begin
     LoadOutputModules;
     LoadPascalScripts;

@@ -6,7 +6,7 @@
   Purpose:
     UnrealScript class analyser
 
-  $Id: unit_analyse.pas,v 1.85 2007-12-01 17:23:31 elmuerte Exp $
+  $Id: unit_analyse.pas,v 1.86 2010-05-15 15:04:13 elmuerte Exp $
 *******************************************************************************}
 {
   UnCodeX - UnrealScript source browser & documenter
@@ -759,8 +759,10 @@ begin
       end
       {$IFDEF UE3_SUPPORT}
       else if (p.TokenSymbolIs('structcpptext')) then begin
+        p.MacroCallBack := false;
         p.NextToken;
         pCurlyBrackets();
+        p.MacroCallBack := true;
         continue;
       end
       else if (p.TokenSymbolIs('structdefaultproperties')) then begin
