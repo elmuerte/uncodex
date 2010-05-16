@@ -1365,6 +1365,12 @@ initialization
   FunctionModifiers.Add('simulated');
   FunctionModifiers.Add('virtual');
   FunctionModifiers.Add('coerce');
+  FunctionModifiers.Add('client');
+  FunctionModifiers.Add('server');
+  FunctionModifiers.Add('reliable');
+ 	FunctionModifiers.Add('demorecording');
+	FunctionModifiers.Add('unreliable');
+	FunctionModifiers.Add('noexport');
 finalization
   FunctionModifiers.Free;
 end.
