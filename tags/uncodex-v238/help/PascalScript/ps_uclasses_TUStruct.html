@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<title>UnCodeX - Pascal Script - TUStruct</title>
+	<link href="../images/default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="../images/UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">TUStruct</div>
+</div>
+
+<div class="content">
+<h1>TUStructList</h1>
+<pre>
+  TUStructList = class(TUDeclarationList)
+  protected
+    function GetItem(Index: Integer): TUStruct;
+    procedure SetItem(Index: Integer; AObject: TUStruct);
+  public
+    property Items[Index: Integer]: TUStruct read GetItem write SetItem; default;
+  published
+    procedure Sort;
+    function Find(name: string): TUStruct;
+  end;
+</pre>
+
+<h1>TUStruct</h1>
+<pre>
+  TUStruct = class(TUDeclaration)
+  protected
+    Fparent:     string;
+    Fmodifiers:  string;
+    Fproperties: TUPropertyList;
+  public
+    constructor Create;
+    destructor Destroy; override;
+  published
+    property parent: string read Fparent write Fparent;
+    property modifiers: string read Fmodifiers write Fmodifiers;
+    property properties: TUPropertyList read Fproperties write Fproperties;
+    function declaration: string; override;
+  end;
+</pre>
+
+</div>
+</div>
+</body>
+</html>

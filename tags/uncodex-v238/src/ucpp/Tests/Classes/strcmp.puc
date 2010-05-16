@@ -1,0 +1,24 @@
+#define TEST1 "this is a test"
+#define TEST2 "this is a test"
+
+#if strcmp(TEST1, TEST2) == 0
+	true
+#endif
+
+#define TEST3 "This Is A Test"
+
+#if stricmp(TEST1, TEST3) == 0
+	true
+#endif
+
+#if strcmp(TEST1, TEST3) == 0
+	false
+#endif
+
+#if strcmp(TEST1, "this is a test") == 0
+	true
+#endif
+
+#if stricmp(OS, "windows_nt") == 0
+	compiled on windows_nt
+#endif
