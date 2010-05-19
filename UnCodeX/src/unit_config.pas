@@ -73,6 +73,7 @@ type
       Packages:           string;
       Declarations:       string;
     end;
+    FunctionModifiers:    TStringList;
   public
     constructor Create(filename: string);
     destructor Destroy; override;
@@ -295,6 +296,11 @@ begin
   HTMLHelp.Title := '';
   Comments.Packages := GetDataDirectory+DefaultPDF;
   Comments.Declarations := GetDataDirectory+DefaultECF;
+
+  FunctionModifiers := TStringList.Create;
+  {$IFNDEF FPC}
+  FunctionModifiers.CaseSensitive := false;
+  {$ENDIF}
 end;
 
 destructor TUCXConfig.Destroy;
@@ -308,6 +314,7 @@ begin
   FreeAndNil(PackageList);
   FreeAndNil(ClassList);
   FreeAndNil(BaseDefinitions);
+  FreeAndNil(FunctionModifiers);
 end;
 
 function TriBoolToString(bool: TTriBool): string;
@@ -439,6 +446,8 @@ begin
     Packages := ini.ReadString('ExternalComments', 'Packages', Packages);
     Declarations := ini.ReadString('ExternalComments', 'Declarations', Declarations)
   end;
+
+  ini.ReadStringArray('Parser', 'FunctionModifiers', FunctionModifiers);
 end;
 
 procedure TUCXConfig.InternalSaveToIni;
@@ -485,6 +494,8 @@ begin
     ini.WriteString('ExternalComments', 'Packages', Packages);
     ini.WriteString('ExternalComments', 'Declarations', Declarations)
   end;
+
+  ini.WriteStringArray('Parser', 'FunctionModifiers', FunctionModifiers);
 end;
 
 procedure TUCXConfig.UpgradeConfig;

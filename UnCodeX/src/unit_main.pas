@@ -2118,7 +2118,7 @@ begin
       if (ThreadCreate) then begin
         ClearLog;
         LastAnalyseTime := Now;
-        runningthread := TClassAnalyser.Create(TUClass(Selected.Data),false,nil, config.BaseDefinitions);
+        runningthread := TClassAnalyser.Create(TUClass(Selected.Data),false,nil, config.BaseDefinitions, config.FunctionModifiers);
         runningthread.OnTerminate := ThreadTerminate;
         TUCXThread(runningthread).StatusMethod := statusReport;
         TUCXThread(runningthread).LogMethod := Log;
@@ -2209,7 +2209,7 @@ begin
     if (fr_Props.Visible) then fr_Props.LoadClass;
 
     runningthread := TClassAnalyser.Create(config.ClassList, false,
-                      unit_rtfhilight.ClassesHash, config.BaseDefinitions);
+                      unit_rtfhilight.ClassesHash, config.BaseDefinitions, config.FunctionModifiers);
     runningthread.OnTerminate := ThreadTerminate;
     TUCXThread(runningthread).StatusMethod := statusReport;
     TUCXThread(runningthread).LogMethod := Log;
@@ -3023,7 +3023,7 @@ begin
   if (ThreadCreate) then begin
     ClearLog;
     LastAnalyseTime := Now;
-    runningthread := TClassAnalyser.Create(config.ClassList, true, unit_rtfhilight.ClassesHash, config.BaseDefinitions);
+    runningthread := TClassAnalyser.Create(config.ClassList, true, unit_rtfhilight.ClassesHash, config.BaseDefinitions, config.FunctionModifiers);
     runningthread.OnTerminate := ThreadTerminate;
     TUCXThread(runningthread).StatusMethod := statusReport;
     TUCXThread(runningthread).LogMethod := Log;
