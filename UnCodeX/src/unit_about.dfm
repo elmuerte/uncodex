@@ -103,9 +103,9 @@ object frm_About: Tfrm_About
   object lbl_Author2: TLabel
     Left = 80
     Top = 64
-    Width = 159
+    Width = 153
     Height = 13
-    Caption = 'Michiel '#39'El Muerte'#39' Hendriks'
+    Caption = 'Michiel '#39'elmuerte'#39' Hendriks'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -11
@@ -152,8 +152,8 @@ object frm_About: Tfrm_About
     BevelKind = bkSoft
     BorderStyle = bsNone
     Lines.Strings = (
-      'UnCodeX '#169' Copyright 2003-2006 '
-      'Michiel '#39'El Muerte'#39' Hendriks'
+      'UnCodeX '#169' Copyright 2003-2010 '
+      'Michiel '#39'elmuerte'#39' Hendriks'
       ''
       'All rights belong to their respectfull owners.'
       'The license can be found in "Help->License"'
