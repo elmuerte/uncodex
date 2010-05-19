@@ -56,6 +56,7 @@ type
     includeFiles: TStringList;
     incFilename: string;
     BaseDefinitions: TDefinitionList;
+    FunctionModifiers: TStringList;
     function GetLogFilename(): string;
     procedure SetParentDefs();
     procedure AnalyseClass();
@@ -77,8 +78,8 @@ type
     procedure pInclude(relfilename: string; classRelative: boolean = false);
     procedure pReplication;
   public
-    constructor Create(classes: TUClassList; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil); overload;
-    constructor Create(uclass: TUClass; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil); overload;
+    constructor Create(classes: TUClassList; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil; myFuncMods: TStrings = nil); overload;
+    constructor Create(uclass: TUClass; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil; myFuncMods: TStrings = nil); overload;
     destructor Destroy; override;
     procedure Execute; override;
   end;
@@ -131,7 +132,7 @@ const
   OPERATOR_NAMES: set of char = ['+', '-', '!', '<', '>', '=', '~', '*', '|', '^', '&'];
 
 var
-  FunctionModifiers: TStringList;
+  DefFunctionModifiers: TStringList;
   DEBUG_MACRO_EVAL: boolean = false;
 
 // unquote an unrealscript string
@@ -164,7 +165,7 @@ begin
 end;
 
 // Create for a class list
-constructor TClassAnalyser.Create(classes: TUClassList; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil);
+constructor TClassAnalyser.Create(classes: TUClassList; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil; myFuncMods: TStrings = nil);
 begin
   self.classes := classes;
   Self.onlynew := onlynew;
@@ -172,11 +173,23 @@ begin
   ClassHash := myClassList;
   instate := false;
   BaseDefinitions := myBaseDefs;
+  FunctionModifiers := TStringList.Create;
+  {$IFNDEF FPC}
+  FunctionModifiers.CaseSensitive := false;
+  {$ENDIF}
+  FunctionModifiers.AddStrings(DefFunctionModifiers);
+  if ((myFuncMods <> nil) and (myFuncMods.Count > 0)) then begin
+    FunctionModifiers.Clear;
+    FunctionModifiers.AddStrings(myFuncMods);
+  end
+  else if (myFuncMods <> nil) then begin
+    myFuncMods.AddStrings(DefFunctionModifiers);
+  end;
   inherited Create(true);
 end;
 
 // Create for a single class
-constructor TClassAnalyser.Create(uclass: TUClass; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil);
+constructor TClassAnalyser.Create(uclass: TUClass; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil; myFuncMods: TStrings = nil);
 begin
   self.classes := nil;
   self.uclass := uclass;
@@ -184,6 +197,18 @@ begin
   Self.FreeOnTerminate := true;
   ClassHash := myClassList;
   BaseDefinitions := myBaseDefs;
+  FunctionModifiers := TStringList.Create;
+  {$IFNDEF FPC}
+  FunctionModifiers.CaseSensitive := false;
+  {$ENDIF}
+  FunctionModifiers.AddStrings(DefFunctionModifiers);
+  if ((myFuncMods <> nil) and (myFuncMods.Count > 0)) then begin
+    FunctionModifiers.Clear;
+    FunctionModifiers.AddStrings(myFuncMods);
+  end
+  else if (myFuncMods <> nil) then begin
+    myFuncMods.AddStrings(DefFunctionModifiers);
+  end;
   inherited Create(true);
 end;
 
@@ -1347,30 +1372,30 @@ begin
 end;
 
 initialization
-  FunctionModifiers := TStringList.Create;
+  DefFunctionModifiers := TStringList.Create;
   {$IFNDEF FPC}
-  FunctionModifiers.CaseSensitive := false;
+  DefFunctionModifiers.CaseSensitive := false;
   {$ENDIF}
-  FunctionModifiers.Add('native');
-  FunctionModifiers.Add('intrinsic');
-  FunctionModifiers.Add('final');
-  FunctionModifiers.Add('private');
-  FunctionModifiers.Add('protected');
-  FunctionModifiers.Add('public');
-  FunctionModifiers.Add('latent');
-  FunctionModifiers.Add('iterator');
-  FunctionModifiers.Add('singular');
-  FunctionModifiers.Add('static');
-  FunctionModifiers.Add('exec');
-  FunctionModifiers.Add('simulated');
-  FunctionModifiers.Add('virtual');
-  FunctionModifiers.Add('coerce');
-  FunctionModifiers.Add('client');
-  FunctionModifiers.Add('server');
-  FunctionModifiers.Add('reliable');
- 	FunctionModifiers.Add('demorecording');
-	FunctionModifiers.Add('unreliable');
-	FunctionModifiers.Add('noexport');
+  DefFunctionModifiers.Add('native');
+  DefFunctionModifiers.Add('intrinsic');
+  DefFunctionModifiers.Add('final');
+  DefFunctionModifiers.Add('private');
+  DefFunctionModifiers.Add('protected');
+  DefFunctionModifiers.Add('public');
+  DefFunctionModifiers.Add('latent');
+  DefFunctionModifiers.Add('iterator');
+  DefFunctionModifiers.Add('singular');
+  DefFunctionModifiers.Add('static');
+  DefFunctionModifiers.Add('exec');
+  DefFunctionModifiers.Add('simulated');
+  DefFunctionModifiers.Add('virtual');
+  DefFunctionModifiers.Add('coerce');
+  DefFunctionModifiers.Add('client');
+  DefFunctionModifiers.Add('server');
+  DefFunctionModifiers.Add('reliable');
+ 	DefFunctionModifiers.Add('demorecording');
+	DefFunctionModifiers.Add('unreliable');
+	DefFunctionModifiers.Add('noexport');
 finalization
-  FunctionModifiers.Free;
+  DefFunctionModifiers.Free;
 end.

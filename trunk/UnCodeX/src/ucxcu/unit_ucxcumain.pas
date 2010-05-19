@@ -253,7 +253,7 @@ begin
   end;
 
   PhaseLabel := format(StatusFormat, [2, 'Analyzing classes']);
-  ActiveThread := TClassAnalyser.Create(config.ClassList, false, nil, config.BaseDefinitions);
+  ActiveThread := TClassAnalyser.Create(config.ClassList, false, nil, config.BaseDefinitions, config.FunctionModifiers);
   try
     ActiveThread.FreeOnTerminate := false;
     ActiveThread.StatusProc := StatusReport;
