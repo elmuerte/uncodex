@@ -1,8 +1,8 @@
 [Setup]
 AppName=UnCodeX
-AppVerName=UnCodeX version 232
+AppVerName=UnCodeX version 238
 AppVersion=232
-AppPublisher=Michiel 'El Muerte' Hendriks
+AppPublisher=Michiel 'elmuerte' Hendriks
 AppPublisherURL=http://sourceforge.net/projects/uncodex/
 AppSupportURL=http://sourceforge.net/tracker/?group_id=120421
 AppUpdatesURL=http://sourceforge.net/project/showfiles.php?group_id=120421&package_id=131207
@@ -15,12 +15,12 @@ SolidCompression=true
 OutputBaseFilename=UnCodeX-setup
 WizardImageFile=InstallLarge2.bmp
 WizardSmallImageFile=InstallSmall2.bmp
-AppCopyright=Copyright 2003-2005 Michiel Hendriks
+AppCopyright=Copyright 2003-2010 Michiel Hendriks
 ShowLanguageDialog=no
 UninstallDisplayIcon={app}\UnCodeX.exe
 UninstallDisplayName=UnCodeX
 AppID={{FDD6ED8B-DB77-43BC-B0B2-608A1F27AABC}}
-VersionInfoVersion=2.1.4.232
+VersionInfoVersion=2.2.0.238
 InternalCompressLevel=ultra
 MinVersion=4.0.950,4.0.1381
 ShowTasksTreeLines=true
@@ -104,4 +104,4 @@ Type: files; Name: {app}\keywords1.list
 Type: files; Name: {app}\keywords2.list
 
 [Messages]
-BeveledLabel=UnCodeX by Michiel 'El Muerte' Hendriks
+BeveledLabel=UnCodeX by Michiel 'elmuerte' Hendriks

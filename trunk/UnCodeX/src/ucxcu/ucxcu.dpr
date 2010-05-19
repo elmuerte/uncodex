@@ -28,7 +28,10 @@
 }
 program ucxcu;
 
-{$IFDEF VER140} // is delphi
+{$IFDEF VER140} // is delphi 6
+  {$APPTYPE CONSOLE}
+{$ENDIF}
+{$IFDEF VER150} // is delphi 7
   {$APPTYPE CONSOLE}
 {$ENDIF}
 
