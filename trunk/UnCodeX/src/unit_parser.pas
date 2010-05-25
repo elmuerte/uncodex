@@ -58,6 +58,9 @@ type
     FToken: Char;
     CopyInitComment: boolean;
     FProcessMacro: TProcessMacro;
+    {$IFDEF UE3_SUPPORT}
+    FProcessUE3Macro: TProcessMacro;
+    {$ENDIF}
     procedure ReadBuffer;
     procedure SkipBlanks;
     function NextTokenTmp: Char;
@@ -77,6 +80,9 @@ type
     property SourceLine: Integer read FSourceLine;
     property Token: Char read FToken;
     property ProcessMacro: TProcessMacro write FProcessMacro;
+    {$IFDEF UE3_SUPPORT}
+    property ProcessUE3Macro: TProcessMacro write FProcessUE3Macro;
+    {$ENDIF}
   end;
 
 const
@@ -136,6 +142,13 @@ begin
       // macro processed, get the real next token, unless the token already changed
       if (FToken = toMacro) then result := toComment;
     end;
+    {$IFDEF UE3_SUPPORT}
+    if (result = toUE3PP) then begin
+      if (assigned(FProcessUE3Macro) and MacroCallBack) then FProcessUE3Macro(self);
+      // macro processed, get the real next token, unless the token already changed
+      if (FToken = toUE3PP) then result := toComment;
+    end;
+    {$ENDIF}
   until ((result <> toComment) or (result = toEOF));
 end;
 
@@ -296,22 +309,10 @@ begin
           Result := toUE3PP;
         end
         else begin
-          while not (P^ in [#10, toEOF]) do begin
+          while (P^ in ['a'..'z', 'A'..'Z', '0'..'9', '_']) do begin
             Inc(P);
-            if (((P-1)^ = '\') and (P^ in [#13, #10])) then begin
-              Inc(P);
-              if ((P^ = #10) and ((P-1)^ = #13)) then Inc(P);
-              Inc(FSourceLine); // next line
-            end;
           end;
-          if (P^ = toEOF) then begin
-            Result := toUE3PP;
-          end
-          else begin
-            Inc(P);
-            Inc(FSourceLine); // next line
-            Result := toUE3PP;
-          end;
+          Result := toUE3PP;
         end;
       end;
     {$ENDIF}
