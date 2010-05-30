@@ -88,7 +88,8 @@ uses
   unit_defpropsframe in 'unit_defpropsframe.pas' {fr_DefPropsBrowser: TFrame},
   unit_definitionlist in 'unit_definitionlist.pas',
   unit_bookmarks in 'unit_bookmarks.pas' {frm_Bookmarks},
-  unit_comment2doc in 'unit_comment2doc.pas';
+  unit_comment2doc in 'unit_comment2doc.pas',
+  unit_ue3preproc in 'unit_ue3preproc.pas';
 
 {$R *.res}
 
