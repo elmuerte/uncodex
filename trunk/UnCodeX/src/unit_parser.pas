@@ -122,7 +122,7 @@ begin
   FCopyStream.Free;
   if FBuffer <> nil then
   begin
-    FStream.Seek(Longint(FTokenPtr) - Longint(FBufPtr), 1);
+    //FStream.Seek(Longint(FTokenPtr) - Longint(FBufPtr), 1);
     FreeMem(FBuffer, ParseBufSize);
   end;
 end;

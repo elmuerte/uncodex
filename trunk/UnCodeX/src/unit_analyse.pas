@@ -35,7 +35,8 @@ interface
 
 uses
   SysUtils, Classes, DateUtils, unit_uclasses, unit_parser, unit_outputdefs,
-  unit_definitions, Hashes, Contnrs, unit_ucxthread, unit_definitionlist;
+  unit_definitions, Hashes, Contnrs, unit_ucxthread, unit_definitionlist
+  {$IFDEF UE3_SUPPORT}, unit_ue3preproc{$ENDIF};
 
 type
   TClassAnalyser = class(TUCXThread)
@@ -340,7 +341,11 @@ begin
   includeParsers := TObjectList.Create(false);
   includeFiles := TStringList.Create;
   fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
+  {$IFDEF UE3_SUPPORT}
+  p := TUCParser.Create(TUE3PreProcessor.create(fs));
+  {$ELSE}
   p := TUCParser.Create(fs);
+  {$ENDIF}
   macroLastIf := false;
   try
     p.ProcessMacro := pMacro;
