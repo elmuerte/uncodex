@@ -51,9 +51,7 @@ type
     p: TUCParser;
     ClassHash: TObjectHash;
     macroIfCnt: integer;
-    macroUe3IfCnt: integer;
     macroLastIf: boolean;
-    macroUe3LastIf: boolean;
     includeParsers: TObjectList;
     includeFiles: TStringList;
     incFilename: string;
@@ -77,9 +75,6 @@ type
     function ExecuteSingle: integer;
     function GetSecondaryComment(ref :string): string;
     procedure pMacro(Sender: TUCParser);
-    {$IFDEF UE3_SUPPORT}
-    procedure pUE3Macro(Sender: TUCParser);
-    {$ENDIF}
     procedure pInclude(relfilename: string; classRelative: boolean = false);
     procedure pReplication;
   public
@@ -349,9 +344,6 @@ begin
   macroLastIf := false;
   try
     p.ProcessMacro := pMacro;
-    {$IFDEF UE3_SUPPORT}
-    p.ProcessUE3Macro := pUE3Macro;
-    {$ENDIF}
     uclass.defaultproperties.data := '';
     uclass.defaultproperties.srcline := 0;
     uclass.replication.srcline := 0;
@@ -1143,105 +1135,6 @@ begin
     InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Unsupported macro '+macro, ltWarn, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
   end;
 end;
-
-{$IFDEF UE3_SUPPORT}
-procedure TClassAnalyser.pUE3Macro(Sender: TUCParser);
-var
-  macro, val: string;
-begin
-  macro := trim(TrimMacro(Sender.TokenString));
-  if (macro = '`if') then begin
-    if (macroUe3IfCnt > 0) then Inc(macroUe3IfCnt)
-    else begin
-      sender.NextToken; // (
-      val := '';
-      while (sender.Token <> ')') do begin
-        val := val+sender.NextToken;
-      end;
-      sender.NextToken; // )
-      macroUe3LastIf := trim(val) <> '';
-      if (not macroUe3LastIf) then begin
-        macroUe3IfCnt := 1;
-        while (macroUe3IfCnt > 0) do begin
-          if (p.Token = toEOF) then raise EOFException.CreateFmt(EOFExceptionFmt, ['pUE3Macro `if', uclass.name, p.SourceLine, '']);
-          p.SkipToken;
-        end;
-      end;
-    end; 
-  end
-  else if (macro = '`else') then begin
-    // the else part of something we want
-    if ((macroUe3IfCnt = 1) and not macroUe3LastIf) then Dec(macroIfCnt)
-    // last IF was true, so ignore
-    else if (macroUe3LastIf) then begin
-      macroUe3IfCnt := 1;
-      while (macroUe3IfCnt > 0) do begin
-        if (p.Token = toEOF) then raise EOFException.CreateFmt(EOFExceptionFmt, ['pUE3Macro `else', uclass.name, p.SourceLine, '']);
-        p.SkipToken;
-      end;
-    end;
-    // else we don't care
-  end
-  else if (macro = '`endif') then begin
-    if (macroUe3IfCnt > 0) then begin
-      Dec(macroUe3IfCnt);
-    end;
-  end
-  else if (macro = '`define') then begin
-    if (macroUe3IfCnt <> 0) then exit;
-    val := sender.NextToken; // name
-    if (sender.NextToken = '(') then begin
-      // TODO, args
-    end;
-    // TODO value
-    // ...
-  end
-  else if (macro = '`isdefined') then begin
-    if (macroUe3IfCnt <> 0) then exit;
-    sender.NextToken; // (
-    val := '';
-    while (sender.Token <> ')') do begin
-      val := val+sender.NextToken;
-    end;
-    sender.NextToken; // )
-    // TODO
-  end
-  else if (macro = '`notdefined') then begin
-    if (macroUe3IfCnt <> 0) then exit;
-    sender.NextToken; // (
-    val := '';
-    while (sender.Token <> ')') do begin
-      val := val+sender.NextToken;
-    end;
-    sender.NextToken; // )
-    // TODO
-  end
-  else if (macro = '`undefine') then begin
-    if (macroUe3IfCnt <> 0) then exit;
-    sender.NextToken; // (
-    val := '';
-    while (sender.Token <> ')') do begin
-      val := val+sender.NextToken;
-    end;
-    sender.NextToken; // )
-    // TODO
-  end
-  else if (macro = '`include') then begin
-    if (macroUe3IfCnt <> 0) then exit;
-    sender.NextToken; // (
-    val := '';
-    while (sender.Token <> ')') do begin
-      val := val+sender.NextToken;
-    end;
-    sender.NextToken; // )
-    uclass.includes.Values[IntToStr(p.SourceLine-1)] := trim(val);
-    pInclude(val);
-  end
-  else begin
-    InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Unsupported macro '+macro, ltWarn, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
-  end;
-end;
-{$ENDIF}
 
 procedure TClassAnalyser.pInclude(relfilename: string; classRelative: boolean = false);
 var
