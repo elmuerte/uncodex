@@ -691,7 +691,7 @@ begin
   SourcePreview.FontSize := 9;
   SourcePreview.FontColor := clBlack;
   SourcePreview.TabSize := 4;
-  SourcePreview.HighLightColor := $0080FFFF;
+  SourcePreview.HighLightColor := clFuchsia;
   SourcePreview.Keyword1.Color := $00000000;
   SourcePreview.Keyword1.Style := [fsBold];
   SourcePreview.Keyword2.Color := $00555555;
