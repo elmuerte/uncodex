@@ -93,10 +93,7 @@ object fr_Properties: Tfr_Properties
       Width = 15
       Height = 21
       Associate = ed_InheritanceLevel
-      Min = 0
-      Position = 0
       TabOrder = 1
-      Wrap = False
     end
   end
   object btn_ShowBar: TBitBtn

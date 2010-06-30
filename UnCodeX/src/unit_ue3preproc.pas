@@ -35,6 +35,9 @@ uses
   Classes;
 
 type
+  TStringArray = array of string;
+  TCharSet = set of char;
+
   TUE3PreProcessor = class(TStream)
   protected
     FStream: TStream;
@@ -49,8 +52,15 @@ type
     FSourceEnd: PChar;
     FSourceLine: Integer;
     FSaveChar: Char;
+    P: PChar; // current "pointer"
 
     CommentDepth: integer;
+    procedure Flush;
+    function MacroName: String;
+    function ConsumeTokensTill(const tokens: TCharSet): string;
+    procedure GetArgs(out result: TStringArray);
+    function ProcMacro(): string;
+
     procedure InternalRead;
     procedure ReadBuffer;
   public
@@ -61,6 +71,9 @@ type
   end;
 
 implementation
+
+uses
+  SysUtils, unit_definitions;
 
 const
   ParseBufSize = $1000;
@@ -109,22 +122,155 @@ begin
   result := FStream.Write(Buffer, Count);
 end;
 
+function TUE3PreProcessor.MacroName: String;
+var
+  Start: PChar;
+  wrapped: boolean;
+begin
+  wrapped := false;
+  if (P^ = '{') then begin
+    Inc(P);
+    wrapped := true;
+  end;
+  Start := P;
+  while (P^ in ['0'..'9', 'a'..'z', 'A'..'Z', '_', '#', #0]) do begin
+    Inc(P);
+  end;
+  SetString(result, Start, P-Start);
+  if (wrapped) then begin
+    if (not (P^ = '}')) then begin
+      // TODO: include line?
+      raise Exception.Create('Unterminated macro, missing }');
+    end;
+    Inc(P);
+  end;
+end;
+
+function TUE3PreProcessor.ConsumeTokensTill(const tokens: TCharSet): string;
+var
+  StartP: PChar;
+  res: String;
+begin
+  StartP := P;
+  while (not (P^ in tokens)) do begin
+    if ((P = FSourceEnd) or (P^ = #0)) then begin
+      // end of buffer?
+    end;
+    if (P^ = CALL_MACRO_CHAR) then begin
+      SetString(res, StartP, P-StartP);
+      result := result+res;
+      Inc(P);
+      result := result+ProcMacro();
+      StartP := P;
+    end
+    else begin
+      Inc(P);
+    end;
+  end;
+  if (P <> StartP) then begin
+    SetString(res, StartP, P-StartP);
+    result := result+res;
+  end;
+end;
+
+procedure TUE3PreProcessor.GetArgs(out result: TStringArray);
+var
+  start: PChar;
+  arg: string;
+  idx: integer;
+begin
+  if (P^ <> '(') then begin
+    // no args
+    exit;
+  end;
+  Inc(P);
+  idx := 0;
+  while (not (P^ in [')', #0])) do begin
+    arg := ConsumeTokensTill([',', ')']);
+    SetLength(result, idx+1);
+    result[idx] := arg;
+    Inc(idx);
+  end;
+  if (P^ <> #0) then begin
+    raise Exception.Create('Missing )');
+  end;
+  Inc(P);
+end;
+
+function TUE3PreProcessor.ProcMacro(): string;
+var
+  macro: string;
+  args: TStringArray;
+begin
+  macro := MacroName;
+  Log('Found macro: '+macro, ltInfo);
+  if (macro = 'if') then begin
+    if (not (P^ = '(')) then begin
+      raise Exception.Create('Missing ( for `if macro');
+    end;
+    GetArgs(args);
+    if (Length(args) <> 1) then begin
+      raise Exception.Create('`if expects 1 argument');
+    end;
+    // TODO
+  end
+  else if (macro = 'else') then begin
+
+  end
+  else if (macro = 'endif') then begin
+
+  end
+  else if (macro = 'include') then begin
+
+  end
+  else if (macro = 'define') then begin
+
+  end
+  else if (macro = 'isdefined') then begin
+    if (not (P^ = '(')) then begin
+      raise Exception.Create('Missing ( for `isdefined macro');
+    end;
+    GetArgs(args);
+    if (Length(args) <> 1) then begin
+      raise Exception.Create('`isdefined expects 1 argument');
+    end;
+    // TODO
+    // result := '1' or ''
+  end
+  else if (macro = 'notdefined') then begin
+    if (not (P^ = '(')) then begin
+      raise Exception.Create('Missing ( for `notdefined macro');
+    end;
+    GetArgs(args);
+    if (Length(args) <> 1) then begin
+      raise Exception.Create('`notdefined expects 1 argument');
+    end;
+    // TODO
+    // result := '1' or ''
+  end
+  else if (macro = 'undefine') then begin
+
+  end
+  else begin
+    // look up a definition
+  end;
+end;
+
+// Flush the current data to the data stream
+procedure TUE3PreProcessor.Flush;
+var
+  s: string;
+begin
+  // TODO optimize so that it doesn't copy another time
+  // directly writing from the button goes wrong for some reason
+  SetString(s, FSourcePtr, P-FSourcePtr);
+  FData.WriteBuffer(PChar(s)^, Length(s));
+  FSourcePtr := P;
+end;
+
 procedure TUE3PreProcessor.InternalRead;
 var
-  P: PChar;
-
-  // Flush the current data to the data stream
-  procedure Flush;
-  var
-    s: string;
-  begin
-    // TODO optimize so that it doesn't copy another time
-    // directly writing from the button goes wrong for some reason
-    SetString(s, FSourcePtr, P-FSourcePtr);
-    FData.WriteBuffer(PChar(s)^, Length(s));
-    FSourcePtr := P;
-  end;
-
+  macroRes: string;
 begin
   //FData.Seek(0, 0); // reset position
   FData.Clear;
@@ -144,7 +290,9 @@ begin
           end;
           Flush;
           Inc(P);
-          // TODO: process the macro
+          macroRes := ProcMacro();
+          FData.WriteBuffer(PChar(macroRes)^, Length(macroRes));
+          FSourcePtr := P;
         end;
       '/':
         begin
