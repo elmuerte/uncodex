@@ -325,7 +325,7 @@ begin
                   UPackage.path := tmp;
                   UPackage.priority := PackagePriority.IndexOf(LowerCase(UPackage.name));
                   if (UPackage.priority = -1) then begin
-                    InternalLog('Scanner: Unprioritised package: '+sr.Name, ltWarn);
+                    //InternalLog('Scanner: Unprioritised package: '+sr.Name, ltWarn);
                     UPackage.priority := PackagePriority.Count;
                     PackagePriority.Add(LowerCase(sr.Name));
                   end

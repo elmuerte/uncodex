@@ -3485,7 +3485,7 @@ procedure Tfrm_UnCodeX.mi_PackageNameDrawItem(Sender: TObject;
 var
   capt: string;
 begin
-  ACanvas.Brush.Color := clGradientInactiveCaption;
+  ACanvas.Brush.Color := clInactiveCaption;
   ACanvas.FillRect(ARect);
   ACanvas.Font.Style := [fsBold];
   ACanvas.Font.Color := clInactiveCaptionText;
