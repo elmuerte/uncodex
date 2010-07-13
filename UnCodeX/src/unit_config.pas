@@ -79,6 +79,7 @@ type
     destructor Destroy; override;
     procedure LoadFromIni;
     procedure SaveToIni(filename: string = '');
+    property Filename: String read ConfigFile;
   end;
 
   {$IFDEF VSADDIN}
@@ -375,6 +376,7 @@ end;
 procedure TUCXConfig.SaveToIni(filename: string = '');
 begin
   if (filename = '') then filename := ConfigFile;
+  if (FileIsReadOnly(filename)) then exit;
   ini := TUCXIniFile.Create(filename);
   ini.DelayedUpdate := true;
   try
