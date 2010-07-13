@@ -32,18 +32,32 @@ unit unit_ue3preproc;
 interface
 
 uses
-  Classes;
+  Classes, SysUtils;
 
 type
   TStringArray = array of string;
   TCharSet = set of char;
+
+  UE3PPException = class(Exception)
+  protected
+    FLineNumber: Integer;
+    FLinePos: Integer;
+    BaseException: Exception;
+  public
+    constructor Create(LineNo: Integer; LinePos: Integer; const Cause: Exception);
+    property LineNumber: Integer read FLineNumber;
+    property LinePos: Integer read FLinePos;
+    property CausedBy: Exception read BaseException;
+  end;
 
   TUE3PreProcessor = class(TStream)
   protected
     FStream: TStream;
     FEOF: boolean;
     FData: TMemoryStream;
-    
+
+    currentLine: Integer;
+    linePos: Integer;
     FOrigin: Longint;
     FBuffer: PChar;
     FBufPtr: PChar;
@@ -55,6 +69,7 @@ type
     P: PChar; // current "pointer"
 
     CommentDepth: integer;
+    procedure IncP;
     procedure Flush;
     function MacroName: String;
     function ConsumeTokensTill(const tokens: TCharSet): string;
@@ -73,7 +88,7 @@ type
 implementation
 
 uses
-  SysUtils, unit_definitions;
+  unit_definitions;
 
 const
   ParseBufSize = $1000;
@@ -81,6 +96,14 @@ const
   BEGIN_MACRO_BLOCK_CHAR = '{';
   END_MACRO_BLOCK_CHAR = '}';
   MACRO_PARAMCOUNT_CHAR = '#';
+
+constructor UE3PPException.Create(LineNo: Integer; LinePos: Integer; const Cause: Exception);
+begin
+  inherited CreateFmt('Preprocessor error on #%d,%d: %s', [LineNo, LinePos, Cause.Message]);
+  FLineNumber := LineNo;
+  FLinePos := LinePos;
+  BaseException := Cause;
+end;
 
 constructor TUE3PreProcessor.Create(Stream: TStream);
 begin
@@ -96,12 +119,14 @@ begin
   FSourcePtr := FBuffer;
   FSourceEnd := FBuffer;
 
+  currentLine := 1;
+  linePos := 0;
   CommentDepth := 0;
   
   InternalRead;
 end;
 
-destructor TUE3PreProcessor.Destroy; 
+destructor TUE3PreProcessor.Destroy;
 begin
   FStream := nil;
   inherited;
@@ -111,7 +136,11 @@ function TUE3PreProcessor.Read(var Buffer; Count: Longint): Longint;
 begin
   result := 0;
   if (FEOF) then exit;
-  if (FData.Position = FData.Size) then InternalRead;
+  try
+    if (FData.Position = FData.Size) then InternalRead;
+  except
+    on E: Exception do raise UE3PPException.Create(currentLine, linePos, e);
+  end;
   if (FEOF) then exit;
   result := FData.Read(buffer, Count);
 end;
@@ -122,6 +151,19 @@ begin
   result := FStream.Write(Buffer, Count);
 end;
 
+procedure TUE3PreProcessor.IncP;
+begin
+  // increase the current pointer, but also check for newlines
+  Inc(P);
+  if (P^ = #10) then begin
+    Inc(currentLine);
+    linePos := 0;
+  end
+  else if (not (P^ in [#0, #13])) then begin
+    Inc(linePos);
+  end;
+end;
+
 function TUE3PreProcessor.MacroName: String;
 var
   Start: PChar;
@@ -129,12 +171,12 @@ var
 begin
   wrapped := false;
   if (P^ = '{') then begin
-    Inc(P);
+    IncP;
     wrapped := true;
   end;
   Start := P;
   while (P^ in ['0'..'9', 'a'..'z', 'A'..'Z', '_', '#', #0]) do begin
-    Inc(P);
+    IncP;
   end;
   SetString(result, Start, P-Start);
   if (wrapped) then begin
@@ -142,7 +184,7 @@ begin
       // TODO: include line?
       raise Exception.Create('Unterminated macro, missing }');
     end;
-    Inc(P);
+    IncP;
   end;
 end;
 
@@ -159,12 +201,12 @@ begin
     if (P^ = CALL_MACRO_CHAR) then begin
       SetString(res, StartP, P-StartP);
       result := result+res;
-      Inc(P);
+      IncP;
       result := result+ProcMacro();
       StartP := P;
     end
     else begin
-      Inc(P);
+      IncP;
     end;
   end;
   if (P <> StartP) then begin
@@ -183,7 +225,7 @@ begin
     // no args
     exit;
   end;
-  Inc(P);
+  IncP;
   idx := 0;
   while (not (P^ in [')', #0])) do begin
     arg := ConsumeTokensTill([',', ')']);
@@ -191,10 +233,10 @@ begin
     result[idx] := arg;
     Inc(idx);
   end;
-  if (P^ <> #0) then begin
+  if (P^ <> ')') then begin
     raise Exception.Create('Missing )');
   end;
-  Inc(P);
+  IncP;
 end;
 
 function TUE3PreProcessor.ProcMacro(): string;
@@ -203,7 +245,7 @@ var
   args: TStringArray;
 begin
   macro := MacroName;
-  Log('Found macro: '+macro, ltInfo);
+  Log('Found macro: '+macro, ltInfo);     // TODO remove
   if (macro = 'if') then begin
     if (not (P^ = '(')) then begin
       raise Exception.Create('Missing ( for `if macro');
@@ -249,7 +291,14 @@ begin
     // result := '1' or ''
   end
   else if (macro = 'undefine') then begin
-
+    if (not (P^ = '(')) then begin
+      raise Exception.Create('Missing ( for `undefine macro');
+    end;
+    GetArgs(args);
+    if (Length(args) <> 1) then begin
+      raise Exception.Create('`undefine expects 1 argument');
+    end;
+    // TODO
   end
   else begin
     // look up a definition
@@ -285,42 +334,42 @@ begin
         begin
           if (CommentDepth > 0) then begin
             // ignore macros in comments
-            Inc(P);
+            IncP;
             continue;
           end;
           Flush;
-          Inc(P);
+          IncP;
           macroRes := ProcMacro();
           FData.WriteBuffer(PChar(macroRes)^, Length(macroRes));
           FSourcePtr := P;
         end;
       '/':
         begin
-          Inc(P);
+          IncP;
           if (P^ = '/') then begin
             // single line comment
             while (not (P^ in [#10, #0])) do begin
               if (P = FSourceEnd) then break;
-              Inc(P);
+              IncP;
             end;
           end
           else if (P^ = '*') then begin
             // start of block comment
-            Inc(P);
+            IncP;
             Inc(CommentDepth);
           end;
         end;
       '*':
         begin
-          Inc(P);
+          IncP;
           if (P^ = '/') then begin
             // end of block comment
-            Inc(P);
+            IncP;
             Dec(CommentDepth);
           end;
         end;
     else
-      Inc(P);
+      IncP;
     end;
   end;
   Flush;
