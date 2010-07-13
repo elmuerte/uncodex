@@ -1778,7 +1778,12 @@ begin
     config.HotKeys.Values[TAction(al_Main.Actions[i]).Caption] := tmp;
   end;
 
-  config.SaveToIni();
+  if (FileIsReadOnly(config.Filename)) then begin
+    MessageDlg('Unable to save settings. '+#10#13+config.Filename+' is read-only.', mtError, [mbOK], 0);
+  end
+  else begin
+    config.SaveToIni();
+  end;
   xunguard;
 end;
 
@@ -1858,7 +1863,12 @@ begin
   if (mi_Right.Checked) then config.ApplicationBar.Location := abRight
   else if (mi_Left.Checked) then config.ApplicationBar.Location := abLeft;
 
-  config.SaveToIni();
+  if (FileIsReadOnly(config.Filename)) then begin
+    MessageDlg('Unable to save settings. '+#10#13+config.Filename+' is read-only.', mtError, [mbOK], 0);
+  end
+  else begin
+    config.SaveToIni();
+  end;
   xunguard;
 end;
 

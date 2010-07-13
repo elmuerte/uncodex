@@ -821,7 +821,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
     object ac_Settings: TAction
       Category = 'Program'
-      Caption = 'Settings'
+      Caption = 'Settings...'
       Hint = 'Settings|Adjust program preferences'
       ImageIndex = 14
       ShortCut = 16467
@@ -838,7 +838,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
     object ac_FindClass: TAction
       Category = 'Find'
-      Caption = 'Find Class'
+      Caption = 'Find Class...'
       Hint = 'Find class|Find a class in the selected tree'
       ImageIndex = 4
       ShortCut = 16454
@@ -875,7 +875,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
     object ac_About: TAction
       Category = 'Program'
-      Caption = 'About ...'
+      Caption = 'About...'
       ImageIndex = 20
       OnExecute = ac_AboutExecute
     end
@@ -919,7 +919,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
     object ac_FullTextSearch: TAction
       Category = 'Find'
-      Caption = 'Full Text Search'
+      Caption = 'Full Text Search...'
       Hint = 'Full Text Search|Search all class files'
       ImageIndex = 6
       ShortCut = 16468
@@ -927,7 +927,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
     object ac_Tags: TAction
       Category = 'Class Tree'
-      Caption = 'Show properties'
+      Caption = 'Show properties...'
       ImageIndex = 11
       ShortCut = 32781
       OnExecute = ac_TagsExecute
@@ -1049,7 +1049,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
     object ac_SaveToRTF: TAction
       Category = 'Source Snoop'
-      Caption = 'Save to RTF'
+      Caption = 'Save to RTF...'
       Hint = 'Save to RTF|Save syntax hilighted code to a Rich Text File'
       OnExecute = ac_SaveToRTFExecute
     end
@@ -1060,7 +1060,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
     object ac_License: TAction
       Category = 'Program'
-      Caption = 'License'
+      Caption = 'License...'
       OnExecute = ac_LicenseExecute
     end
     object ac_RebuildAnalyse: TAction
@@ -1092,35 +1092,35 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
     object ac_CreateSubClass: TAction
       Category = 'Class Tree'
-      Caption = 'Create subclass'
+      Caption = 'Create subclass...'
       ImageIndex = 29
       OnExecute = ac_CreateSubClassExecute
     end
     object ac_DeleteClass: TAction
       Category = 'Class Tree'
-      Caption = 'Delete class'
+      Caption = 'Delete class...'
       ImageIndex = 30
       OnExecute = ac_DeleteClassExecute
     end
     object ac_MoveClass: TAction
       Category = 'Class Tree'
-      Caption = 'Move class'
+      Caption = 'Move class...'
       OnExecute = ac_MoveClassExecute
     end
     object ac_RenameClass: TAction
       Category = 'Class Tree'
-      Caption = 'Rename class'
+      Caption = 'Rename class...'
       OnExecute = ac_RenameClassExecute
     end
     object ac_PackageProps: TAction
       Category = 'Class Tree'
-      Caption = 'Package Properties'
+      Caption = 'Package Properties...'
       ImageIndex = 27
       OnExecute = ac_PackagePropsExecute
     end
     object ac_DefProps: TAction
       Category = 'Class Tree'
-      Caption = 'Defaultproperties'
+      Caption = 'Defaultproperties...'
       Hint = 'Show this class'#39' defaultproperties values'
       OnExecute = ac_DefPropsExecute
     end
@@ -1133,7 +1133,7 @@ object frm_UnCodeX: Tfrm_UnCodeX
     end
     object ac_PSEditor: TAction
       Category = 'Program'
-      Caption = 'PascalScript editor'
+      Caption = 'PascalScript editor...'
       ImageIndex = 31
       ShortCut = 16464
       OnExecute = ac_PSEditorExecute
