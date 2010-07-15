@@ -342,7 +342,7 @@ begin
   includeFiles := TStringList.Create;
   fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
   {$IFDEF UE3_SUPPORT}
-  p := TUCParser.Create(TUE3PreProcessor.create(fs));
+  p := TUCParser.Create(TUE3PreProcessor.create(fs, filename));
   {$ELSE}
   p := TUCParser.Create(fs);
   {$ENDIF}
@@ -1009,6 +1009,7 @@ var PADMEM: string =  #$54#$68#$69#$73#$20#$69#$73#$20#$70#$61#$72#$74#$20#$6F#$
 procedure TClassAnalyser.pMacro(Sender: TUCParser);
 var
   macro, args: string;
+  i, j: integer;
 begin
   args := trim(TrimMacro(Sender.TokenString));
   macro := GetToken(args, [' ', #9]);
@@ -1135,6 +1136,17 @@ begin
       InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': UCPP Error: '+trim(args), ltWarn, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
     end;
   end
+  {$IFDEF UE3_SUPPORT}
+  else if (macro = 'LINENUMBER') then begin
+    macro := GetToken(args, [' ', #9]);
+    i := StrToIntDef(macro, -1);
+    macro := GetToken(args, [' ', #9]);
+    j := StrToIntDef(macro, -1);
+    p.SourceLine := i;
+    incFilename := trim(args);
+    InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': linenumber', ltWarn, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
+  end
+  {$endif}
   else begin
     if (macroIfCnt <> 0) then exit;
     InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Unsupported macro '+macro, ltWarn, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));

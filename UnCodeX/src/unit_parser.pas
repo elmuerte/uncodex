@@ -74,7 +74,7 @@ type
     function TokenString: string;
     function TokenSymbolIs(const S: string): Boolean;
     function GetCopyData(flush: boolean = true): string;
-    property SourceLine: Integer read FSourceLine;
+    property SourceLine: Integer read FSourceLine write FSourceLine;
     property Token: Char read FToken;
     property ProcessMacro: TProcessMacro write FProcessMacro;
   end;
