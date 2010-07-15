@@ -53,11 +53,15 @@ type
   TUE3PreProcessor = class(TStream)
   protected
     FStream: TStream;
+    filename: String;
     FEOF: boolean;
     FData: TMemoryStream;
 
     currentLine: Integer;
     linePos: Integer;
+    macroIfCnt: Integer;
+    macroLastIf: boolean;
+
     FOrigin: Longint;
     FBuffer: PChar;
     FBufPtr: PChar;
@@ -74,12 +78,13 @@ type
     function MacroName: String;
     function ConsumeTokensTill(const tokens: TCharSet): string;
     procedure GetArgs(out result: TStringArray);
+    function SkipIf: string;
     function ProcMacro(): string;
 
     procedure InternalRead;
     procedure ReadBuffer;
   public
-    constructor Create(Stream: TStream);
+    constructor Create(Stream: TStream; StreamName: String);
     destructor Destroy; override;
     function Read(var Buffer; Count: Longint): Longint; override;
     function Write(const Buffer; Count: Longint): Longint; override;
@@ -105,9 +110,10 @@ begin
   BaseException := Cause;
 end;
 
-constructor TUE3PreProcessor.Create(Stream: TStream);
+constructor TUE3PreProcessor.Create(Stream: TStream; StreamName: String);
 begin
   FEOF := false;
+  filename := StreamName;
   FStream := Stream;
   FData := TMemoryStream.Create;
   FData.SetSize(ParseBufSize);
@@ -196,7 +202,7 @@ begin
   StartP := P;
   while (not (P^ in tokens)) do begin
     if ((P = FSourceEnd) or (P^ = #0)) then begin
-      // end of buffer?
+      // TODO end of buffer?
     end;
     if (P^ = CALL_MACRO_CHAR) then begin
       SetString(res, StartP, P-StartP);
@@ -239,10 +245,31 @@ begin
   IncP;
 end;
 
+function TUE3PreProcessor.SkipIf: string;
+var
+  lineStart: Integer;
+begin
+  lineStart := currentLine;
+  while (macroIfCnt > 0) do begin
+    if ((P = FSourceEnd) or (P^ = #0)) then begin
+      // TODO end of buffer?
+    end;
+    if (P^ = CALL_MACRO_CHAR) then begin
+      IncP;
+      ProcMacro();
+    end
+    else begin
+      IncP;
+    end;
+  end;
+  // TODO emit newlines ?
+end;
+
 function TUE3PreProcessor.ProcMacro(): string;
 var
-  macro: string;
+  macro, body, tmp: string;
   args: TStringArray;
+  startP: PChar;
 begin
   macro := MacroName;
   Log('Found macro: '+macro, ltInfo);     // TODO remove
@@ -254,19 +281,72 @@ begin
     if (Length(args) <> 1) then begin
       raise Exception.Create('`if expects 1 argument');
     end;
-    // TODO
+    if (macroIfCnt > 0) then Inc(macroIfCnt)
+    else begin
+      macroLastIf := (Length(Trim(args[0])) > 0);
+      if (not macroLastIf) then begin
+        Log('`if argument was empty, ignoring body', ltInfo);
+        macroIfCnt := 1;
+        SkipIf;
+      end;
+    end;
   end
   else if (macro = 'else') then begin
-
+    if ((macroIfCnt = 1) and not macroLastIf) then Dec(macroIfCnt)
+    else if (macroLastIf) then begin
+          // last IF was true, so ignore
+      macroIfCnt := 1;
+      SkipIf;
+    end;
   end
   else if (macro = 'endif') then begin
-
+    if (macroIfCnt > 0) then begin
+      Dec(macroIfCnt);
+    end;
   end
   else if (macro = 'include') then begin
-
+    if (not (P^ = '(')) then begin
+      raise Exception.Create('Missing ( for `include macro');
+    end;
+    GetArgs(args);
+    if (Length(args) <> 1) then begin
+      raise Exception.Create('`include expects 1 argument');
+    end;
+    if (macroIfCnt > 0) then exit; // should be ignored
+    // TODO
+    // result := '1' or ''
   end
   else if (macro = 'define') then begin
-
+    while (P^ in [#9, #32]) do begin
+      IncP;
+    end;
+    macro := MacroName;
+    if (Length(macro) = 0) then begin
+      raise Exception.Create('`define requires name');
+    end;
+    if (P^ = '(') then begin
+      GetArgs(args);
+    end;
+    startP := P;
+    body := '';
+    while (not (P^ in [#0, #10])) do begin
+      IncP;
+      if (P^ = #10) then begin
+        if ((P-1)^ = '\') then begin
+          Inc(P);
+          if (P^ = #0) then begin
+            // TODO read more buffer?
+          end;
+        end;
+      end;
+    end;
+    if (P <> StartP) then begin
+      SetString(tmp, StartP, P-StartP);
+      body := body+tmp;
+    end;
+    if (macroIfCnt > 0) then exit; // should be ignored
+    Log('define: '+macro, ltInfo);
+    Log('  body: '+trim(body), ltInfo);
   end
   else if (macro = 'isdefined') then begin
     if (not (P^ = '(')) then begin
@@ -276,6 +356,7 @@ begin
     if (Length(args) <> 1) then begin
       raise Exception.Create('`isdefined expects 1 argument');
     end;
+    if (macroIfCnt > 0) then exit; // should be ignored
     // TODO
     // result := '1' or ''
   end
@@ -287,6 +368,7 @@ begin
     if (Length(args) <> 1) then begin
       raise Exception.Create('`notdefined expects 1 argument');
     end;
+    if (macroIfCnt > 0) then exit; // should be ignored
     // TODO
     // result := '1' or ''
   end
@@ -298,10 +380,14 @@ begin
     if (Length(args) <> 1) then begin
       raise Exception.Create('`undefine expects 1 argument');
     end;
+    if (macroIfCnt > 0) then exit; // should be ignored
     // TODO
   end
   else begin
-    // look up a definition
+    if (P^ = '(') then begin
+      GetArgs(args);
+    end;
+    // TODO look up a definition
   end;
 end;
 
@@ -338,10 +424,15 @@ begin
             continue;
           end;
           Flush;
+          // emit correct line number macro
+          macroRes := #10#13+'#linenumber '+IntToStr(currentLine)+' '+IntToStr(linePos)+' '+filename+#10#13;
           IncP;
           macroRes := ProcMacro();
           FData.WriteBuffer(PChar(macroRes)^, Length(macroRes));
           FSourcePtr := P;
+          // emit correct line number macro
+          macroRes := #10#13+'#linenumber '+IntToStr(currentLine)+' '+IntToStr(linePos)+' '+filename+#10#13;
+          FData.WriteBuffer(PChar(macroRes)^, Length(macroRes));
         end;
       '/':
         begin
