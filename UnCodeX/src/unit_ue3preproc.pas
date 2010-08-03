@@ -181,10 +181,14 @@ begin
     wrapped := true;
   end;
   Start := P;
-  while (P^ in ['0'..'9', 'a'..'z', 'A'..'Z', '_', '#', #0]) do begin
+  while (P^ in ['0'..'9', 'a'..'z', 'A'..'Z', '_', '#']) do begin
     IncP;
   end;
   SetString(result, Start, P-Start);
+  // skip whitespace
+  while (P^ in [' ', #9]) do begin
+    IncP;
+  end;
   if (wrapped) then begin
     if (not (P^ = '}')) then begin
       // TODO: include line?
@@ -203,6 +207,10 @@ begin
   while (not (P^ in tokens)) do begin
     if ((P = FSourceEnd) or (P^ = #0)) then begin
       // TODO end of buffer?
+      Log('end of buffer @ ConsumeTokensTill', ltInfo);
+      FSourcePtr := P;
+      ReadBuffer;
+      P := FSourcePtr;
     end;
     if (P^ = CALL_MACRO_CHAR) then begin
       SetString(res, StartP, P-StartP);
@@ -238,6 +246,9 @@ begin
     SetLength(result, idx+1);
     result[idx] := arg;
     Inc(idx);
+    if (P^ = ',') then begin
+      IncP;
+    end;
   end;
   if (P^ <> ')') then begin
     raise Exception.Create('Missing )');
@@ -253,6 +264,10 @@ begin
   while (macroIfCnt > 0) do begin
     if ((P = FSourceEnd) or (P^ = #0)) then begin
       // TODO end of buffer?
+      Log('end of buffer @ skipif', ltInfo);
+      FSourcePtr := P;
+      ReadBuffer;
+      P := FSourcePtr;
     end;
     if (P^ = CALL_MACRO_CHAR) then begin
       IncP;
@@ -271,6 +286,7 @@ var
   args: TStringArray;
   startP: PChar;
 begin
+  result := '';
   macro := MacroName;
   Log('Found macro: '+macro, ltInfo);     // TODO remove
   if (macro = 'if') then begin
@@ -387,6 +403,7 @@ begin
     if (P^ = '(') then begin
       GetArgs(args);
     end;
+    if (macroIfCnt > 0) then exit; // should be ignored
     // TODO look up a definition
   end;
 end;
@@ -426,6 +443,7 @@ begin
           Flush;
           // emit correct line number macro
           macroRes := #10#13+'#linenumber '+IntToStr(currentLine)+' '+IntToStr(linePos)+' '+filename+#10#13;
+          FData.WriteBuffer(PChar(macroRes)^, Length(macroRes));
           IncP;
           macroRes := ProcMacro();
           FData.WriteBuffer(PChar(macroRes)^, Length(macroRes));
