@@ -312,6 +312,9 @@ function TClassAnalyser.ExecuteSingle: integer;
 var
   filename: string;
   currenttime: Integer;
+  {$IFDEF UE3_SUPPORT}
+  pps: TUE3PreProcessor;
+  {$ENDIF}
 begin
   guard('ExecuteSingle '+uclass.name);
   Result := RES_SUCCESS;
@@ -342,7 +345,8 @@ begin
   includeFiles := TStringList.Create;
   fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
   {$IFDEF UE3_SUPPORT}
-  p := TUCParser.Create(TUE3PreProcessor.create(fs, filename));
+  pps := TUE3PreProcessor.create(fs, filename, nil);
+  p := TUCParser.Create(pps);
   {$ELSE}
   p := TUCParser.Create(fs);
   {$ENDIF}
@@ -375,6 +379,9 @@ begin
     end;
   finally
     FreeAndNil(p);
+    {$IFDEF UE3_SUPPORT}
+    pps.Free;
+    {$ENDIF}
     fs.Free;
     includeParsers.Free;
     includeFiles.Free;

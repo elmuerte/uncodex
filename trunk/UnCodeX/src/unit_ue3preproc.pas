@@ -50,6 +50,8 @@ type
     property CausedBy: Exception read BaseException;
   end;
 
+  TUE3DefinitionList = class;
+
   TUE3PreProcessor = class(TStream)
   protected
     FStream: TStream;
@@ -72,11 +74,13 @@ type
     FSaveChar: Char;
     P: PChar; // current "pointer"
 
+    defines: TUE3DefinitionList;
+
     CommentDepth: integer;
     procedure IncP;
     procedure Flush;
     function MacroName: String;
-    function ConsumeTokensTill(const tokens: TCharSet): string;
+    function ConsumeTokensTill(const tokens: TCharSet; doProcMacro: boolean): string;
     procedure GetArgs(out result: TStringArray);
     function SkipIf: string;
     function ProcMacro(): string;
@@ -84,10 +88,51 @@ type
     procedure InternalRead;
     procedure ReadBuffer;
   public
-    constructor Create(Stream: TStream; StreamName: String);
+    constructor Create(Stream: TStream; StreamName: String; parentDefines: TUE3DefinitionList);
     destructor Destroy; override;
     function Read(var Buffer; Count: Longint): Longint; override;
     function Write(const Buffer; Count: Longint): Longint; override;
+  end;
+
+  TUE3Definition = class(TObject)
+  protected
+    fname: string;
+    fvalue: string;
+    fargnames: array of string;
+    fowner: TUE3DefinitionList;
+    fisfunction: boolean;
+    ffilename: string;
+    flineno: integer;
+    flinepos: integer;
+  public
+    constructor Create(_name: string; _value: string; _args: array of string; _owner: TUE3DefinitionList);
+    destructor Destroy; override;
+    function Eval(args: array of string): string;
+    property Name: string read fname;
+    property Value: string read fvalue;
+    property Owner: TUE3DefinitionList read fowner;
+    property IsFunction: boolean read fisfunction;
+    property Filename: string read ffilename write ffilename;
+    property LineNo: integer read flineno write flineno;
+    property LinePos: integer read flinepos write flinepos;
+  end;
+
+  TUE3DefinitionList = class(TObject)
+  protected
+    fparent: TUE3DefinitionList;
+    defines: TStringList;
+    counters: TStringList;
+  public
+    constructor Create(parent: TUE3DefinitionList);
+    destructor Destroy; override;
+    function IsDefined(name: string): boolean;
+    function GetDefine(name: string): string;
+    function EvalDefine(name: string; args: array of string): string;
+    procedure Define(name: string; args: array of string; value: string; filename: string; lineno: integer; linepos: integer);
+    procedure UnDefine(name: string);
+    function GetCounter(name: string): integer;
+    function SetCounter(name: string; value: integer): integer;
+    property Parent: TUE3DefinitionList read fparent write fparent;
   end;
 
 implementation
@@ -110,7 +155,7 @@ begin
   BaseException := Cause;
 end;
 
-constructor TUE3PreProcessor.Create(Stream: TStream; StreamName: String);
+constructor TUE3PreProcessor.Create(Stream: TStream; StreamName: String; parentDefines: TUE3DefinitionList);
 begin
   FEOF := false;
   filename := StreamName;
@@ -128,6 +173,8 @@ begin
   currentLine := 1;
   linePos := 0;
   CommentDepth := 0;
+
+  defines := TUE3DefinitionList.Create(parentDefines);
   
   InternalRead;
 end;
@@ -198,7 +245,7 @@ begin
   end;
 end;
 
-function TUE3PreProcessor.ConsumeTokensTill(const tokens: TCharSet): string;
+function TUE3PreProcessor.ConsumeTokensTill(const tokens: TCharSet; doProcMacro: boolean): string;
 var
   StartP: PChar;
   res: String;
@@ -212,7 +259,7 @@ begin
       ReadBuffer;
       P := FSourcePtr;
     end;
-    if (P^ = CALL_MACRO_CHAR) then begin
+    if (doProcMacro and (P^ = CALL_MACRO_CHAR)) then begin
       SetString(res, StartP, P-StartP);
       result := result+res;
       IncP;
@@ -242,7 +289,7 @@ begin
   IncP;
   idx := 0;
   while (not (P^ in [')', #0])) do begin
-    arg := ConsumeTokensTill([',', ')']);
+    arg := ConsumeTokensTill([',', ')'], true);
     SetLength(result, idx+1);
     result[idx] := arg;
     Inc(idx);
@@ -282,12 +329,26 @@ end;
 
 function TUE3PreProcessor.ProcMacro(): string;
 var
-  macro, body, tmp: string;
+  macro, macroOrig, body, tmp: string;
   args: TStringArray;
   startP: PChar;
+  tmpLineNo, tmpLinePos: integer;
+
+  function DoSkipMacro(): boolean;
+  begin
+    result := false;
+    if (macroIfCnt > 0) then begin
+      result := true;
+      if ((P^ = '(') and (macro <> 'define')) then begin
+        GetArgs(args);
+      end;
+    end;
+  end;
+
 begin
   result := '';
-  macro := MacroName;
+  macroOrig := MacroName;
+  macro := LowerCase(macroOrig);
   Log('Found macro: '+macro, ltInfo);     // TODO remove
   if (macro = 'if') then begin
     if (not (P^ = '(')) then begin
@@ -300,6 +361,25 @@ begin
     if (macroIfCnt > 0) then Inc(macroIfCnt)
     else begin
       macroLastIf := (Length(Trim(args[0])) > 0);
+      if (not macroLastIf) then begin
+        Log('`if argument was empty, ignoring body', ltInfo);
+        macroIfCnt := 1;
+        SkipIf;
+      end;
+    end;
+  end
+  else if (macro = 'ifcondition') then begin
+    if (not (P^ = '(')) then begin
+      raise Exception.Create('Missing ( for `ifcondition macro');
+    end;
+    GetArgs(args);
+    if (Length(args) <> 1) then begin
+      raise Exception.Create('`if expects 1 argument');
+    end;
+    if (macroIfCnt > 0) then Inc(macroIfCnt)
+    else begin
+      macroLastIf := (Length(Trim(args[0])) > 0);
+      // FIXME: evaluate
       if (not macroLastIf) then begin
         Log('`if argument was empty, ignoring body', ltInfo);
         macroIfCnt := 1;
@@ -345,14 +425,17 @@ begin
     end;
     startP := P;
     body := '';
+    tmpLineNo := currentLine;
+    tmpLinePos := linePos;
     while (not (P^ in [#0, #10])) do begin
       IncP;
       if (P^ = #10) then begin
+        // enscaped newline
         if ((P-1)^ = '\') then begin
           Inc(P);
-          if (P^ = #0) then begin
-            // TODO read more buffer?
-          end;
+        end;
+        if (P^ = #0) then begin
+          // TODO read more buffer?
         end;
       end;
     end;
@@ -360,11 +443,13 @@ begin
       SetString(tmp, StartP, P-StartP);
       body := body+tmp;
     end;
-    if (macroIfCnt > 0) then exit; // should be ignored
-    Log('define: '+macro, ltInfo);
+    if (DoSkipMacro()) then exit;
+    Log('define: '+macro, ltInfo); // TODO: remove
     Log('  body: '+trim(body), ltInfo);
+    defines.Define(macro, args, TrimRight(body), filename, tmpLineNo, tmpLinePos);
   end
   else if (macro = 'isdefined') then begin
+    if (DoSkipMacro()) then exit;
     if (not (P^ = '(')) then begin
       raise Exception.Create('Missing ( for `isdefined macro');
     end;
@@ -372,11 +457,15 @@ begin
     if (Length(args) <> 1) then begin
       raise Exception.Create('`isdefined expects 1 argument');
     end;
-    if (macroIfCnt > 0) then exit; // should be ignored
-    // TODO
-    // result := '1' or ''
+    if (defines.IsDefined(Trim(args[0]))) then begin
+      result := '1';
+    end
+    else begin
+      result := '';
+    end;
   end
   else if (macro = 'notdefined') then begin
+    if (DoSkipMacro()) then exit;
     if (not (P^ = '(')) then begin
       raise Exception.Create('Missing ( for `notdefined macro');
     end;
@@ -384,11 +473,15 @@ begin
     if (Length(args) <> 1) then begin
       raise Exception.Create('`notdefined expects 1 argument');
     end;
-    if (macroIfCnt > 0) then exit; // should be ignored
-    // TODO
-    // result := '1' or ''
+    if (defines.IsDefined(Trim(args[0]))) then begin
+      result := '';
+    end
+    else begin
+      result := '1';
+    end;
   end
   else if (macro = 'undefine') then begin
+    if (DoSkipMacro()) then exit;
     if (not (P^ = '(')) then begin
       raise Exception.Create('Missing ( for `undefine macro');
     end;
@@ -396,15 +489,54 @@ begin
     if (Length(args) <> 1) then begin
       raise Exception.Create('`undefine expects 1 argument');
     end;
-    if (macroIfCnt > 0) then exit; // should be ignored
+    defines.UnDefine(Trim(args[0]));
+  end
+  else if ((macro = 'counter') or (macro = 'getcounter')) then begin
+    if (DoSkipMacro()) then exit;
+    if (not (P^ = '(')) then begin
+      raise Exception.Create('Missing ( for `'+macro+' macro');
+    end;
+    GetArgs(args);
+    if (Length(args) <> 1) then begin
+      raise Exception.Create('`'+macro+' expects 1 argument');
+    end;
+    // TODO
+    // result := counter value
+  end
+  else if (macro = 'setcounter') then begin
+    if (DoSkipMacro()) then exit;
+    if (not (P^ = '(')) then begin
+      raise Exception.Create('Missing ( for `setcounter macro');
+    end;
+    GetArgs(args);
+    if (Length(args) <> 2) then begin
+      raise Exception.Create('`setcounter expects 2 argument');
+    end;
     // TODO
   end
+  else if (macro = 'engineversion') then begin
+    if (DoSkipMacro()) then exit;
+  end
+  else if (macroOrig = '__LINE__') then begin
+    if (DoSkipMacro()) then exit;
+    result := IntToStr(currentLine);
+  end
+  else if (macroOrig = '__FILE__') then begin
+    if (DoSkipMacro()) then exit;
+    result := filename;
+  end
   else begin
+    if (DoSkipMacro()) then exit;
     if (P^ = '(') then begin
       GetArgs(args);
     end;
-    if (macroIfCnt > 0) then exit; // should be ignored
-    // TODO look up a definition
+    if (defines.IsDefined(macro)) then begin
+      result := defines.EvalDefine(macro, args);
+    end
+    else begin
+      Log('No such macro defined: `'+macro, ltError);
+      result := '/* No such macro defined: `'+macro+' */';
+    end;
   end;
 end;
 
@@ -503,6 +635,132 @@ begin
   end;
   FSaveChar := FSourceEnd[0];
   FSourceEnd[0] := #0;
+end;
+
+{ TUE3Definition }
+constructor TUE3Definition.Create(_name: string; _value: string; _args: array of string; _owner: TUE3DefinitionList);
+begin
+  inherited Create();
+  fname := _name;
+  fvalue := _value;
+  //fargnames := _args;
+  fisfunction := Length(fargnames) > 0;
+  fowner := _owner;
+end;
+
+destructor TUE3Definition.Destroy;
+begin
+  inherited;
+end;
+
+function TUE3Definition.Eval(args: array of string): string;
+var
+  stream: TStringStream;
+begin
+  stream := TStringStream.Create('');
+  try
+    stream.WriteString(#10#13+'#linenumber '+IntToStr(LineNo)+' '+IntToStr(LinePos)+' '+Filename+#10#13);
+    if (IsFunction) then begin
+      Log('function definition evaluation not supported yet', ltError);
+    end
+    else begin
+      stream.WriteString(value);
+    end;
+    result := stream.DataString;
+  finally
+    stream.Free;
+  end;
+end;
+
+
+{ TUE3DefinitionList }
+constructor TUE3DefinitionList.Create(parent: TUE3DefinitionList);
+begin
+  inherited Create();
+  fparent := parent;
+  defines := TStringList.Create;
+  counters := TStringList.Create;
+end;
+
+destructor TUE3DefinitionList.Destroy;
+begin
+  FreeAndNil(defines);
+  FreeAndNil(counters);
+  inherited;
+end;
+
+function TUE3DefinitionList.IsDefined(name: string): boolean;
+begin
+  result := defines.IndexOf(LowerCase(name)) <> -1;
+  if ((not result) and (fparent <> nil)) then begin
+    result := fparent.IsDefined(name);
+  end;
+end;
+
+function TUE3DefinitionList.GetDefine(name: string): string;
+var
+  idx: integer;
+  entry: TUE3Definition;
+begin
+  idx := defines.IndexOf(LowerCase(name));
+  result := '';
+  if (idx <> -1) then begin
+    entry := TUE3Definition(defines.Objects[idx]);
+    result := entry.value;
+  end
+  else if (fparent <> nil) then begin
+    result := fparent.GetDefine(name);
+  end;
+end;
+
+procedure TUE3DefinitionList.Define(name: string; args: array of string; value: string; filename: string; lineno: integer; linepos: integer);
+var
+  entry: TUE3Definition;
+begin
+  entry := TUE3Definition.Create(name, value, args, self);
+  entry.Filename := filename;
+  entry.LineNo := lineno;
+  entry.LinePos := linepos;
+  defines.AddObject(LowerCase(name), entry);
+end;
+
+procedure TUE3DefinitionList.UnDefine(name: string);
+var
+  idx: integer;
+begin
+  idx := defines.IndexOf(LowerCase(name));
+  if (idx <> -1) then begin
+    defines.Delete(idx);
+  end
+  else if (fparent <> nil) then begin
+    //fparent.UnDefine(name);
+  end;
+end;
+
+function TUE3DefinitionList.EvalDefine(name: string; args: array of string): string;
+var
+  idx: integer;
+  entry: TUE3Definition;
+begin
+  idx := defines.IndexOf(LowerCase(name));
+  result := '';
+  if (idx <> -1) then begin
+    entry := TUE3Definition(defines.Objects[idx]);
+    result := entry.Eval(args);
+  end
+  else if (fparent <> nil) then begin
+    result := fparent.EvalDefine(name, args);
+  end;
+end;
+
+function TUE3DefinitionList.GetCounter(name: string): integer;
+begin
+  // TODO
+end;
+
+function TUE3DefinitionList.SetCounter(name: string; value: integer): integer;
+begin
+  // TODO
 end;
 
 end.

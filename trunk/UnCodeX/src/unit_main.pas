@@ -528,7 +528,8 @@ uses unit_settings, unit_analyse, unit_htmlout,
   unit_tags, unit_outputdefs, unit_rtfhilight, unit_utils, unit_license,
   unit_splash, unit_ucxdocktree, unit_ucops, unit_pkgprops, unit_defprops,
   unit_rungame, unit_pascalscript, unit_pascalscript_gui, unit_pseditor,
-  unit_ucxthread, unit_ucxinifiles, unit_bookmarks;
+  unit_ucxthread, unit_ucxinifiles, unit_bookmarks {$IFDEF UE3_SUPPORT},
+  unit_ue3preproc{$ENDIF};
 
 const
   PROCPRIO: array[0..3] of Cardinal = (IDLE_PRIORITY_CLASS, NORMAL_PRIORITY_CLASS,
@@ -1672,6 +1673,9 @@ function Tfrm_UnCodeX.SourceSnoopOpenClass(filename: string; uclass: TUClass): b
 var
   ms: TMemoryStream;
   fs: TFileStream;
+  {$IFDEF UE3_SUPPORT}
+  pps: TUE3PreProcessor;
+  {$ENDIF}
 begin
   result := true;
   re_SourceSnoop.ClearHighlights;
@@ -1693,7 +1697,19 @@ begin
   fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
   ms := TMemoryStream.Create;
   try
+    {$IFDEF UE3_SUPPORT}
+    // TODO: depends on secret config item?
+    if (false) then begin
+      pps := TUE3PreProcessor.create(fs, filename, nil);
+      RTFHilightUScript(pps, ms, uclass);
+    end
+    else begin
+      pps := nil;
+      RTFHilightUScript(fs, ms, uclass);
+    end;
+    {$ELSE}
     RTFHilightUScript(fs, ms, uclass);
+    {$ENDIF}
     ac_GoToReplication.Enabled := uclass.replication.srcline > 0;
     ac_GoToDefaultproperties.Enabled := uclass.defaultproperties.srcline > 0;
     re_SourceSnoop.Lines.Clear;
@@ -1702,6 +1718,9 @@ begin
     ms.Position := 0;
     re_SourceSnoop.Lines.LoadFromStream(ms);
   finally
+    {$IFDEF UE3_SUPPORT}
+    if (pps <> nil) then pps.Free;
+    {$ENDIF}
     ms.Free;
     fs.Free;
   end;
