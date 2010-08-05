@@ -1699,8 +1699,8 @@ begin
   try
     {$IFDEF UE3_SUPPORT}
     // TODO: depends on secret config item?
-    if (false) then begin
-      pps := TUE3PreProcessor.create(fs, filename, nil);
+    if (true) then begin
+      pps := TUE3PreProcessor.create(fs, uclass.package.path, uclass.filename, nil);
       RTFHilightUScript(pps, ms, uclass);
     end
     else begin

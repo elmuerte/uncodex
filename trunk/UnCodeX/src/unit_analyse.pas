@@ -96,7 +96,7 @@ implementation
 
 {$IFDEF USE_TREEVIEW}
 uses
-  ComCtrls;
+  ComCtrls, Math;
 {$ENDIF}
 
 const
@@ -314,6 +314,7 @@ var
   currenttime: Integer;
   {$IFDEF UE3_SUPPORT}
   pps: TUE3PreProcessor;
+  ppdefs: TUE3DefinitionList;
   {$ENDIF}
 begin
   guard('ExecuteSingle '+uclass.name);
@@ -345,7 +346,14 @@ begin
   includeFiles := TStringList.Create;
   fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
   {$IFDEF UE3_SUPPORT}
-  pps := TUE3PreProcessor.create(fs, filename, nil);
+  ppdefs := TUE3DefinitionList.Create(nil); // TODO: link defaults
+  ppdefs.Define('ClassName', [], uclass.Name, '_internal_', 0, 0);
+  ppdefs.Define('PackageName', [], uclass.package.Name, '_internal_', 0, 0);
+  pps := TUE3PreProcessor.create(fs, uclass.package.path, uclass.filename, ppdefs);
+  if (FileExists(uclass.package.path+PATHDELIM+'..'+PATHDELIM+'Globals.uci')) then begin
+    // TODO: should also process globals from 'parent' packages (earlier in the list)
+    pps.IncludeFile('Globals.uci');
+  end;
   p := TUCParser.Create(pps);
   {$ELSE}
   p := TUCParser.Create(fs);
@@ -1151,7 +1159,8 @@ begin
     j := StrToIntDef(macro, -1);
     p.SourceLine := i;
     incFilename := trim(args);
-    InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': linenumber', ltWarn, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
+    if (CompareText(incFilename, uclass.filename) = 0) then incFilename := '';
+    InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': linenumber= '+incFilename+'('+IntToStr(i)+','+IntToStr(j)+')', ltWarn, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
   end
   {$endif}
   else begin
