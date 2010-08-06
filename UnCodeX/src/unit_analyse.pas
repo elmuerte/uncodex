@@ -346,14 +346,13 @@ begin
   includeFiles := TStringList.Create;
   fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
   {$IFDEF UE3_SUPPORT}
-  ppdefs := TUE3DefinitionList.Create(nil); // TODO: link defaults
+  ppdefs := TUE3DefinitionList.Create(nil); // TODO load predef
   ppdefs.Define('ClassName', [], uclass.Name, '_internal_', 0, 0);
   ppdefs.Define('PackageName', [], uclass.package.Name, '_internal_', 0, 0);
+  ppdefs.Define('date', [], FormatDateTime('yyyy/mm/dd', now()), '_internal_', 0, 0);
+  ppdefs.Define('time', [], FormatDateTime('hh:nn:ss', now()), '_internal_', 0, 0);
   pps := TUE3PreProcessor.create(fs, uclass.package.path, uclass.filename, ppdefs);
-  if (FileExists(uclass.package.path+PATHDELIM+'..'+PATHDELIM+'Globals.uci')) then begin
-    // TODO: should also process globals from 'parent' packages (earlier in the list)
-    pps.IncludeFile('Globals.uci');
-  end;
+  //TODO loadPackageGlobalDefs(ppdefs, pps, uclass.package);
   p := TUCParser.Create(pps);
   {$ELSE}
   p := TUCParser.Create(fs);
