@@ -740,7 +740,7 @@ finalization
   //assert((xGuardStack.Count = 0), 'GuardStack is not empty');
   {$IFDEF DEBUG_BUILD}
   if (xGuardStack.Count > 0) then begin
-    xGuardStack.SaveToFile('c:\uncodex_guardstack.log');
+    xGuardStack.SaveToFile(GetDataDirectory()+'\UnCodeX\uncodex_guardstack.log');
     //MessageBox(0, pchar(xGuardStack.Text), 'GuardStack not empty', MB_OK or MB_ICONSTOP);
   end;
   {$ENDIF}

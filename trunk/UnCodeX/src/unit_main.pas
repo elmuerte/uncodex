@@ -1675,6 +1675,7 @@ var
   fs: TFileStream;
   {$IFDEF UE3_SUPPORT}
   pps: TUE3PreProcessor;
+  def: TUE3DefinitionList;
   {$ENDIF}
 begin
   result := true;
@@ -1700,18 +1701,31 @@ begin
     {$IFDEF UE3_SUPPORT}
     // TODO: depends on secret config item?
     if (true) then begin
-      pps := TUE3PreProcessor.create(fs, uclass.package.path, uclass.filename, nil);
+      def := TUE3DefinitionList.Create(nil);
+      if (uclass <> nil) then begin
+        pps := TUE3PreProcessor.create(fs, uclass.package.path, uclass.filename, def);
+      end
+      else begin
+        pps := TUE3PreProcessor.create(fs, ExtractFileDir(filename), ExtractFileName(filename), def);
+      end;
       RTFHilightUScript(pps, ms, uclass);
     end
     else begin
       pps := nil;
+      def := nil;
       RTFHilightUScript(fs, ms, uclass);
     end;
     {$ELSE}
     RTFHilightUScript(fs, ms, uclass);
     {$ENDIF}
-    ac_GoToReplication.Enabled := uclass.replication.srcline > 0;
-    ac_GoToDefaultproperties.Enabled := uclass.defaultproperties.srcline > 0;
+    if (uclass <> nil) then begin
+      ac_GoToReplication.Enabled := uclass.replication.srcline > 0;
+      ac_GoToDefaultproperties.Enabled := uclass.defaultproperties.srcline > 0;
+    end
+    else begin
+      ac_GoToReplication.Enabled := false;
+      ac_GoToDefaultproperties.Enabled := false;
+    end;
     re_SourceSnoop.Lines.Clear;
     re_SourceSnoop.WordWrap := false;
     re_SourceSnoop.ScrollBars := ssBoth;
@@ -1720,6 +1734,7 @@ begin
   finally
     {$IFDEF UE3_SUPPORT}
     if (pps <> nil) then pps.Free;
+    if (def <> nil) then def.Free;
     {$ENDIF}
     ms.Free;
     fs.Free;

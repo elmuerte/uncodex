@@ -56,6 +56,8 @@ type
 
   TUE3PreProcessor = class(TStream)
   protected
+    finit: boolean;
+    
     FStream: TStream;
     filename: String;
     basepath: String;
@@ -94,12 +96,12 @@ type
     procedure InternalRead;
     procedure ReadBuffer;
   public
-    constructor Create(Stream: TStream; _basepath: String; _filename: String; parentDefines: TUE3DefinitionList); overload;
-    constructor Create(Stream: TStream; _basepath: String; _filename: String; parentDefines: TUE3DefinitionList; _doLineNo: boolean); overload;
+    constructor Create(Stream: TStream; _basepath: String; _filename: String; usedefines: TUE3DefinitionList); overload;
+    constructor Create(Stream: TStream; _basepath: String; _filename: String; usedefines: TUE3DefinitionList; _doLineNo: boolean); overload;
     destructor Destroy; override;
     function Read(var Buffer; Count: Longint): Longint; override;
     function Write(const Buffer; Count: Longint): Longint; override;
-    procedure IncludeFile(const filename: string);
+    function IncludeFile(const incfile: string; silent: boolean = false): string;
   end;
 
   TUE3Definition = class(TObject)
@@ -129,6 +131,7 @@ type
   protected
     fparent: TUE3DefinitionList;
     defines: TStringList;
+    fwriteToParent: boolean;
     counters: TStringList;
     procedure InitDefines;
   public
@@ -142,6 +145,7 @@ type
     function GetCounter(name: string): integer;
     function SetCounter(name: string; value: integer): integer;
     property Parent: TUE3DefinitionList read fparent write fparent;
+    property WriteToParent: boolean read fwriteToParent write fwriteToParent;
   end;
 
 const
@@ -168,12 +172,12 @@ begin
   BaseException := Cause;
 end;
 
-constructor TUE3PreProcessor.Create(Stream: TStream; _basepath: String; _filename: String; parentDefines: TUE3DefinitionList);
+constructor TUE3PreProcessor.Create(Stream: TStream; _basepath: String; _filename: String; usedefines: TUE3DefinitionList);
 begin
-  Create(stream,_basepath,_filename,parentDefines, true)
+  Create(stream,_basepath,_filename,usedefines, true)
 end;
 
-constructor TUE3PreProcessor.Create(Stream: TStream; _basepath: String; _filename: String; parentDefines: TUE3DefinitionList; _doLineNo: boolean);
+constructor TUE3PreProcessor.Create(Stream: TStream; _basepath: String; _filename: String; usedefines: TUE3DefinitionList; _doLineNo: boolean);
 begin
   doLineNo := _doLineNo;
   FEOF := false;
@@ -194,19 +198,24 @@ begin
   linePos := 0;
   CommentDepth := 0;
 
-  defines := TUE3DefinitionList.Create(parentDefines);
+  defines := usedefines;
   
-  InternalRead;
+  finit := true;
 end;
 
 destructor TUE3PreProcessor.Destroy;
 begin
   FStream := nil;
+  FreeMem(FBuffer, ParseBufSize);
   inherited;
 end;
 
 function TUE3PreProcessor.Read(var Buffer; Count: Longint): Longint;
 begin
+  if (finit) then begin
+    finit := false;
+    InternalRead;
+  end;
   result := 0;
   if (FEOF) then exit;
   try
@@ -273,8 +282,6 @@ begin
   StartP := P;
   while (not (P^ in tokens)) do begin
     if ((P = FSourceEnd) or (P^ = #0)) then begin
-      // TODO end of buffer?
-      Log('end of buffer @ ConsumeTokensTill', ltInfo);
       FSourcePtr := P;
       ReadBuffer;
       P := FSourcePtr;
@@ -330,8 +337,6 @@ begin
   lineStart := currentLine;
   while (macroIfCnt > 0) do begin
     if ((P = FSourceEnd) or (P^ = #0)) then begin
-      // TODO end of buffer?
-      Log('end of buffer @ skipif', ltInfo);
       FSourcePtr := P;
       ReadBuffer;
       P := FSourcePtr;
@@ -344,7 +349,6 @@ begin
       IncP;
     end;
   end;
-  // TODO emit newlines ?
 end;
 
 function TUE3PreProcessor.ProcMacro(): string;
@@ -369,7 +373,7 @@ begin
   result := '';
   macroOrig := MacroName;
   macro := LowerCase(macroOrig);
-  Log('Found macro: '+macro, ltInfo);     // TODO remove
+  Log('Found macro: '+macro, ltInfo, CreateLogEntry(basepath+pathdelim+filename, currentLine, linePos));     // TODO remove
   if (macro = 'if') then begin
     if (not (P^ = '(')) then begin
       raise Exception.Create('Missing ( for `if macro');
@@ -388,6 +392,7 @@ begin
       end;
     end;
   end
+  {$IFDEF UE3PP_ifcondition}
   else if (macro = 'ifcondition') then begin
     if (not (P^ = '(')) then begin
       raise Exception.Create('Missing ( for `ifcondition macro');
@@ -407,6 +412,7 @@ begin
       end;
     end;
   end
+  {$ENDIF}
   else if (macro = 'else') then begin
     if ((macroIfCnt = 1) and not macroLastIf) then Dec(macroIfCnt)
     else if (macroLastIf) then begin
@@ -429,8 +435,7 @@ begin
       raise Exception.Create('`include expects 1 argument');
     end;
     if (macroIfCnt > 0) then exit; // should be ignored
-    // TODO
-    // result := '1' or ''
+    result := IncludeFile(args[0]);
   end
   else if (macro = 'define') then begin
     while (P^ in [#9, #32]) do begin
@@ -464,8 +469,6 @@ begin
       body := body+tmp;
     end;
     if (DoSkipMacro()) then exit;
-    Log('define: '+macro, ltInfo); // TODO: remove
-    Log('  body: '+trim(body), ltInfo);
     defines.Define(macro, args, TrimRight(body), filename, tmpLineNo, tmpLinePos);
   end
   else if (macro = 'isdefined') then begin
@@ -543,7 +546,7 @@ begin
   end
   else if (macroOrig = '__FILE__') then begin
     if (DoSkipMacro()) then exit;
-    result := filename;
+    result := basepath + PathDelim + filename;
   end
   else begin
     if (DoSkipMacro()) then exit;
@@ -554,7 +557,7 @@ begin
       result := defines.EvalDefine(macro, args);
     end
     else begin
-      Log('No such macro defined: `'+macro+' (might be defined in globals.uci; check package priority)', ltError);
+      Log('No such macro defined: `'+macro+' (might be defined in globals.uci; check package priority)', ltError, CreateLogEntry(basepath + PathDelim + filename, currentLine, linePos));
       result := '/* No such macro defined: `'+macro+' */';
     end;
   end;
@@ -665,8 +668,54 @@ begin
 end;
 
 // Filename = relative form basepath+'..'
-procedure TUE3PreProcessor.IncludeFile(const filename: string);
+function TUE3PreProcessor.IncludeFile(const incfile: string; silent: boolean = false): string;
+var
+  stream: TStringStream;
+  instream: TFileStream;
+  realFn: string;
+  relativeFn: string;
+  pp: TUE3PreProcessor;
+  buffer: PChar;
+  i: integer;
 begin
+  result := '';
+  relativeFn := '..'+PathDelim+incfile;
+  realFn := basepath+PathDelim+relativeFn;
+  if (not FileExists(realFn)) then begin
+    realFn := basepath+PathDelim+incfile;
+    relativeFn := incfile;
+  end;
+  if (not FileExists(realFn)) then begin
+    if (not silent) then begin
+      Log('Include file not found: '+incfile, ltError, CreateLogEntry(basepath+pathdelim+filename, currentLine, linePos));
+    end;
+    result := '/* incldue file not found: '+incfile+' */';
+    exit;
+  end;
+
+  stream := TStringStream.Create('');
+  try
+    GetMem(buffer, ParseBufSize);
+    instream := TFileStream.Create(realFn, fmOpenRead);
+    pp := TUE3PreProcessor.Create(instream, basepath, relativeFn, defines);
+    try
+      stream.WriteString('#10#13'+'#linenumber 0 0 '+relativeFn+'#10#13');
+      i := pp.Read(buffer^, ParseBufSize);
+      while (i > 0) do begin
+        SetString(relativeFn, buffer, i);
+        stream.WriteString(relativeFn);
+        i := pp.Read(buffer^, ParseBufSize);
+      end;
+      stream.WriteString('#10#13'+'#linenumber '+IntToStr(currentLine)+' '+IntToStr(linePos)+' '+filename+'#10#13');
+      result := stream.DataString;
+    finally
+      FreeMem(buffer, ParseBufSize);
+      instream.Free;
+      pp.Free;
+    end;
+  finally
+    stream.Free;
+  end;
 end;
 
 { TUE3Definition }
@@ -705,6 +754,7 @@ begin
         if (i >= Length(args)) then val := '' else val := args[i];
         defs.Define(fargnames[i], [], val, '', -1, -1);
       end;
+      defs.WriteToParent := true;
       instream := TStringStream.Create(value);
       pp := TUE3PreProcessor.Create(instream, '', filename, defs, false); // no #linenumber
       GetMem(buffer, ParseBufSize);
@@ -821,6 +871,10 @@ procedure TUE3DefinitionList.Define(name: string; args: array of string; value: 
 var
   entry: TUE3Definition;
 begin
+  if (WriteToParent and (fparent <> nil)) then begin
+    fparent.Define(name, args, value, filename, lineno, linepos);
+    exit;
+  end;
   entry := TUE3Definition.Create(name, value, args, self);
   entry.Filename := filename;
   entry.LineNo := lineno;
@@ -832,12 +886,13 @@ procedure TUE3DefinitionList.UnDefine(name: string);
 var
   idx: integer;
 begin
+  if (WriteToParent and (fparent <> nil)) then begin
+    fparent.UnDefine(name);
+    exit;
+  end;
   idx := defines.IndexOf(LowerCase(name));
   if (idx <> -1) then begin
     defines.Delete(idx);
-  end
-  else if (fparent <> nil) then begin
-    //fparent.UnDefine(name);
   end;
 end;
 
