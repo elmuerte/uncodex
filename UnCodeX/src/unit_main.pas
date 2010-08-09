@@ -1063,10 +1063,11 @@ begin
     if (not SourceSnoopOpenClass(filename, uclass)) then exit;
 
     if (line < 0) then exit;
+    FillChar(tmp2,255,#0); 
     tmp2[0] := #255;
     n := line;
     re_SourceSnoop.Perform(EM_GETLINE, n, integer(@tmp2));
-    tmp := copy(tmp2, 1, 255);
+    tmp := StrPas(tmp2);
     AddBrowserHistory(uclass, filename, line+1, tmp);
     //re_SourceSnoop.Perform(EM_LINESCROLL, 0, -1*re_SourceSnoop.Lines.Count);
     //re_SourceSnoop.Perform(EM_LINESCROLL, 0, line);
