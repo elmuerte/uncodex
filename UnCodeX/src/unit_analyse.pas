@@ -45,6 +45,7 @@ type
     instate: boolean;
     currentState: TUState;
     classes: TUClassList;
+    packages: TUPackageList;
     uclass: TUClass;
     OverWriteUstruct: TUstruct; // if set enums and vars will be added to this
     UseOverWriteStruct: boolean;
@@ -58,6 +59,9 @@ type
     incFilename: string;
     BaseDefinitions: TDefinitionList;
     FunctionModifiers: TStringList;
+    {$IFDEF UE3_SUPPORT}
+    packageGlobals: TObjectHash;
+    {$ENDIF}
     function GetLogFilename(): string;
     procedure SetParentDefs();
     procedure AnalyseClass();
@@ -78,9 +82,12 @@ type
     procedure pMacro(Sender: TUCParser);
     procedure pInclude(relfilename: string; classRelative: boolean = false);
     procedure pReplication;
+    {$IFDEF UE3_SUPPORT}
+    function getUE3DefinitionList(package :TUPackage): TUE3DefinitionList;
+    {$ENDIF}
   public
-    constructor Create(classes: TUClassList; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil; myFuncMods: TStrings = nil); overload;
-    constructor Create(uclass: TUClass; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil; myFuncMods: TStrings = nil); overload;
+    constructor Create(classes: TUClassList; upackages: TUPackageList; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil; myFuncMods: TStrings = nil); overload;
+    constructor Create(uclass: TUClass; upackages: TUPackageList; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil; myFuncMods: TStrings = nil); overload;
     destructor Destroy; override;
     procedure Execute; override;
   end;
@@ -166,9 +173,12 @@ begin
 end;
 
 // Create for a class list
-constructor TClassAnalyser.Create(classes: TUClassList; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil; myFuncMods: TStrings = nil);
+constructor TClassAnalyser.Create(classes: TUClassList; upackages: TUPackageList; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil; myFuncMods: TStrings = nil);
 begin
   self.classes := classes;
+  packages := TUPackageList.Create(false);
+  packages.Assign(upackages);
+  packages.Sort;
   Self.onlynew := onlynew;
   Self.FreeOnTerminate := true;
   ClassHash := myClassList;
@@ -186,13 +196,19 @@ begin
   else if (myFuncMods <> nil) then begin
     myFuncMods.AddStrings(DefFunctionModifiers);
   end;
+  {$IFDEF UE3_SUPPORT}
+  packageGlobals := TObjectHash.Create(true);
+  {$ENDIF}
   inherited Create(true);
 end;
 
 // Create for a single class
-constructor TClassAnalyser.Create(uclass: TUClass; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil; myFuncMods: TStrings = nil);
+constructor TClassAnalyser.Create(uclass: TUClass; upackages: TUPackageList; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil; myFuncMods: TStrings = nil);
 begin
   self.classes := nil;
+  packages := TUPackageList.Create(false);
+  packages.Assign(upackages);
+  packages.Sort;
   self.uclass := uclass;
   Self.onlynew := onlynew;
   Self.FreeOnTerminate := true;
@@ -210,11 +226,18 @@ begin
   else if (myFuncMods <> nil) then begin
     myFuncMods.AddStrings(DefFunctionModifiers);
   end;
+  {$IFDEF UE3_SUPPORT}
+  packageGlobals := TObjectHash.Create(true);
+  {$ENDIF}
   inherited Create(true);
 end;
 
 destructor TClassAnalyser.Destroy;
 begin
+  FunctionModifiers.Free;
+  {$IFDEF UE3_SUPPORT}
+  packageGlobals.Free;
+  {$ENDIF}
   inherited Destroy();
 end;
 
@@ -346,7 +369,7 @@ begin
   includeFiles := TStringList.Create;
   fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
   {$IFDEF UE3_SUPPORT}
-  ppdefs := TUE3DefinitionList.Create(nil); // TODO load predef
+  ppdefs := TUE3DefinitionList.Create(getUE3DefinitionList(uclass.package)); // TODO load predef
   ppdefs.Define('ClassName', [], uclass.Name, '_internal_', 0, 0);
   ppdefs.Define('PackageName', [], uclass.package.Name, '_internal_', 0, 0);
   ppdefs.Define('date', [], FormatDateTime('yyyy/mm/dd', now()), '_internal_', 0, 0);
@@ -395,6 +418,41 @@ begin
   end;
   unguard;
 end;
+
+{$IFDEF UE3_SUPPORT}
+function TClassAnalyser.getUE3DefinitionList(package: TUPackage): TUE3DefinitionList;
+var
+  idx: integer;
+  fn: string;
+  stream: TStringStream;
+  pps: TUE3PreProcessor;
+begin
+  result := nil; // TODO: default?
+  if (packageGlobals.Exists(package.Name)) then begin
+    result := TUE3DefinitionList(packageGlobals.Items[package.Name]);
+  end
+  else begin
+    idx := packages.IndexOf(package);
+    if (idx > 0) then begin
+      result := getUE3DefinitionList(packages.Items[idx-1]);
+    end;
+    result := TUE3DefinitionList.Create(result);
+    fn := package.path+PathDelim+'..'+PathDelim+'Globals.uci';
+    if (FileExists(fn)) then begin
+      Log('Loading '+fn);
+      stream := TStringStream.Create('');
+      pps := TUE3PreProcessor.create(stream, package.path, '', result);
+      try
+        pps.IncludeFile('..'+PathDelim+'Globals.uci', true);
+      finally
+        stream.Free;
+        pps.Free;
+      end;
+    end;
+    packageGlobals.Items[package.Name] := result;
+  end;
+end;
+{$ENDIF}
 
 // second secondary comment
 // ref= package.class.member
@@ -1159,7 +1217,7 @@ begin
     p.SourceLine := i;
     incFilename := trim(args);
     if (CompareText(incFilename, uclass.filename) = 0) then incFilename := '';
-    InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': linenumber= '+incFilename+'('+IntToStr(i)+','+IntToStr(j)+')', ltWarn, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
+    //InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': linenumber= '+incFilename+'('+IntToStr(i)+','+IntToStr(j)+')', ltWarn, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
   end
   {$endif}
   else begin
