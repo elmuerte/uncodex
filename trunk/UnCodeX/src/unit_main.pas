@@ -1701,7 +1701,7 @@ begin
   try
     {$IFDEF UE3_SUPPORT}
     // TODO: depends on secret config item?
-    if (true) then begin
+    if (false) then begin
       def := TUE3DefinitionList.Create(nil);
       if (uclass <> nil) then begin
         pps := TUE3PreProcessor.create(fs, uclass.package.path, uclass.filename, def);
@@ -2163,7 +2163,7 @@ begin
       if (ThreadCreate) then begin
         ClearLog;
         LastAnalyseTime := Now;
-        runningthread := TClassAnalyser.Create(TUClass(Selected.Data),false,nil, config.BaseDefinitions, config.FunctionModifiers);
+        runningthread := TClassAnalyser.Create(TUClass(Selected.Data), config.PackageList, false, nil, config.BaseDefinitions, config.FunctionModifiers);
         runningthread.OnTerminate := ThreadTerminate;
         TUCXThread(runningthread).StatusMethod := statusReport;
         TUCXThread(runningthread).LogMethod := Log;
@@ -2253,7 +2253,7 @@ begin
     fr_Props.uclass := nil;
     if (fr_Props.Visible) then fr_Props.LoadClass;
 
-    runningthread := TClassAnalyser.Create(config.ClassList, false,
+    runningthread := TClassAnalyser.Create(config.ClassList, config.PackageList, false,
                       unit_rtfhilight.ClassesHash, config.BaseDefinitions, config.FunctionModifiers);
     runningthread.OnTerminate := ThreadTerminate;
     TUCXThread(runningthread).StatusMethod := statusReport;
@@ -3068,7 +3068,7 @@ begin
   if (ThreadCreate) then begin
     ClearLog;
     LastAnalyseTime := Now;
-    runningthread := TClassAnalyser.Create(config.ClassList, true, unit_rtfhilight.ClassesHash, config.BaseDefinitions, config.FunctionModifiers);
+    runningthread := TClassAnalyser.Create(config.ClassList, config.PackageList, true, unit_rtfhilight.ClassesHash, config.BaseDefinitions, config.FunctionModifiers);
     runningthread.OnTerminate := ThreadTerminate;
     TUCXThread(runningthread).StatusMethod := statusReport;
     TUCXThread(runningthread).LogMethod := Log;

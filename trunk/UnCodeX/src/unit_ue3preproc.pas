@@ -280,11 +280,16 @@ var
   res: String;
 begin
   StartP := P;
+  result := '';
   while (not (P^ in tokens)) do begin
     if ((P = FSourceEnd) or (P^ = #0)) then begin
       FSourcePtr := P;
       ReadBuffer;
       P := FSourcePtr;
+    end;
+    if (P^ = '\') then begin
+      IncP;
+      if (P^ = CALL_MACRO_CHAR) then IncP;
     end;
     if (doProcMacro and (P^ = CALL_MACRO_CHAR)) then begin
       SetString(res, StartP, P-StartP);
@@ -341,6 +346,10 @@ begin
       ReadBuffer;
       P := FSourcePtr;
     end;
+    if (P^ = '\') then begin
+      IncP;
+      if (P^ = CALL_MACRO_CHAR) then IncP;
+    end;
     if (P^ = CALL_MACRO_CHAR) then begin
       IncP;
       ProcMacro();
@@ -373,7 +382,7 @@ begin
   result := '';
   macroOrig := MacroName;
   macro := LowerCase(macroOrig);
-  Log('Found macro: '+macro, ltInfo, CreateLogEntry(basepath+pathdelim+filename, currentLine, linePos));     // TODO remove
+  //Log('Found macro: '+macro, ltInfo, CreateLogEntry(basepath+pathdelim+filename, currentLine, linePos));     // TODO remove
   if (macro = 'if') then begin
     if (not (P^ = '(')) then begin
       raise Exception.Create('Missing ( for `if macro');
@@ -386,7 +395,7 @@ begin
     else begin
       macroLastIf := (Length(Trim(args[0])) > 0);
       if (not macroLastIf) then begin
-        Log('`if argument was empty, ignoring body', ltInfo);
+        //Log('`if argument was empty, ignoring body', ltInfo, CreateLogEntry(basepath+pathdelim+filename, currentLine, linePos));
         macroIfCnt := 1;
         SkipIf;
       end;
@@ -599,6 +608,11 @@ begin
   P := FSourcePtr;
   while (P <> FSourceEnd) do begin
     case P^ of
+      '\':
+        begin
+          IncP;
+          if (P^ = CALL_MACRO_CHAR) then IncP;
+        end;
       CALL_MACRO_CHAR:
         begin
           if (CommentDepth > 0) then begin
@@ -699,14 +713,14 @@ begin
     instream := TFileStream.Create(realFn, fmOpenRead);
     pp := TUE3PreProcessor.Create(instream, basepath, relativeFn, defines);
     try
-      stream.WriteString('#10#13'+'#linenumber 0 0 '+relativeFn+'#10#13');
+      stream.WriteString(#10#13+'#linenumber 0 0 '+relativeFn+#10#13);
       i := pp.Read(buffer^, ParseBufSize);
       while (i > 0) do begin
         SetString(relativeFn, buffer, i);
         stream.WriteString(relativeFn);
         i := pp.Read(buffer^, ParseBufSize);
       end;
-      stream.WriteString('#10#13'+'#linenumber '+IntToStr(currentLine)+' '+IntToStr(linePos)+' '+filename+'#10#13');
+      stream.WriteString(#10#13+'#linenumber '+IntToStr(currentLine)+' '+IntToStr(linePos)+' '+filename+#10#13);
       result := stream.DataString;
     finally
       FreeMem(buffer, ParseBufSize);
