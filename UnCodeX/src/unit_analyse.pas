@@ -864,6 +864,7 @@ begin
         p.MacroCallBack := false;
         p.NextToken;
         pCurlyBrackets();
+        if (p.Token = ';') then p.NextToken;
         p.MacroCallBack := true;
         continue;
       end
@@ -1431,6 +1432,7 @@ begin
       p.MacroCallBack := false;
       p.NextToken;
       pCurlyBrackets();
+      if (p.Token = ';') then p.NextToken;
       p.MacroCallBack := true;
       continue;
     end;

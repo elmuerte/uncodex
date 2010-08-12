@@ -693,18 +693,29 @@ var
   i: integer;
 begin
   result := '';
-  relativeFn := '..'+PathDelim+incfile;
-  realFn := basepath+PathDelim+relativeFn;
+  // try Development\Package\<incfile>
+  relativeFn := incfile;
+  realFn := basepath+PathDelim+'..'+PathDelim+incfile;
   if (not FileExists(realFn)) then begin
+    // try Development\Package\Classes\<incfile>
     realFn := basepath+PathDelim+incfile;
-    relativeFn := incfile;
+    relativeFn := CLASSDIR+PathDelim+incfile;
+  end;
+  if (not FileExists(realFn)) then begin
+    // try Development\<incfile>
+    relativeFn := '..'+PathDelim+incfile;
+    realFn := basepath+PathDelim+'..'+PathDelim+'..'+PathDelim+incfile;;
   end;
   if (not FileExists(realFn)) then begin
     if (not silent) then begin
       Log('Include file not found: '+incfile, ltError, CreateLogEntry(basepath+pathdelim+filename, currentLine, linePos));
     end;
-    result := '/* incldue file not found: '+incfile+' */';
+    result := '/* include file not found: '+incfile+' */';
     exit;
+  end;
+
+  if (not silent) then begin
+    Log('Processing include file: '+relativeFn, ltInfo, CreateLogEntry(basepath+pathdelim+filename, currentLine, linePos));
   end;
 
   stream := TStringStream.Create('');
