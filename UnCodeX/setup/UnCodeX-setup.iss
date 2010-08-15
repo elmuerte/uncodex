@@ -1,7 +1,7 @@
 [Setup]
 AppName=UnCodeX
 AppVerName=UnCodeX version 239
-AppVersion=232
+AppVersion=239
 AppPublisher=Michiel 'elmuerte' Hendriks
 AppPublisherURL=http://sourceforge.net/projects/uncodex/
 AppSupportURL=http://sourceforge.net/tracker/?group_id=120421
