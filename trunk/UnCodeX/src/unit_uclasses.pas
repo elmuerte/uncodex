@@ -781,6 +781,7 @@ begin
   Fdeps := TUClassList.Create(false);
   Fdefs := TDefinitionList.Create(nil);
   Fincludes := TStringList.Create;
+  Fincludes.Duplicates := dupIgnore;
   replication.expressions := TStringList.Create;
   replication.symbols := TStringList.Create;
   {$IFNDEF FPC}
