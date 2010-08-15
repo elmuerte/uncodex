@@ -1,0 +1,17 @@
+#define XSTR(s) STR(s)
+#define STR(s) #s
+#define FOO 4
+
+STR (FOO)
+// = "FOO"
+XSTR (FOO)
+// = "4"
+
+#define CON(a,b) a##b
+
+XSTR(CON(test, test))
+
+XSTR(CON(test, FOO))
+
+#define COMMAND(NAME)  { #NAME, NAME ## _command }
+COMMAND (help)

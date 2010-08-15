@@ -1,0 +1,59 @@
+#if 0
+
+// comment
+no comment
+
+// comment
+// comment
+no comment
+
+// comment
+
+// comment
+
+no comment
+
+#endif
+
+
+#if 0
+
+/* multiline comment */
+no comment
+
+/*
+	multiline comment
+*/
+no comment
+
+#endif
+
+#if 1 /* comment */ &&  0
+	false
+#endif
+
+#if 1 /* comment */ &&  1
+	true
+#endif
+
+#if 1 // something
+	true
+#endif
+
+#if 0 // something
+	false
+#endif
+
+#if 1 /* */ && /* */  0
+	false
+#endif
+
+#if 1 /* */ && /* */  1
+	true
+#endif
+
+#if 1 /*
+
+*/
+	true
+#endif

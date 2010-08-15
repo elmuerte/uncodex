@@ -1,0 +1,6 @@
+*.~dpr
+*.~pas
+ucpp.exe
+ucpp.ini
+TestFile.puc
+TestFile.uc

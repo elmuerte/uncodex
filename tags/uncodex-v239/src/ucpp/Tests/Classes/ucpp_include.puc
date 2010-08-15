@@ -1,0 +1,13 @@
+FILE_INCLUDED
+
+#ifndef FILE_INCLUDED
+	#ucpp include include.inc
+#endif
+
+FILE_INCLUDED
+
+#ifdef FILE_INCLUDED
+	true
+#endif
+
+FILE_INCLUDED

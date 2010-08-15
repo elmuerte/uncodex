@@ -1,0 +1,36 @@
+#define ONE 1
+#define ZERO 0
+
+#if ONE
+	"true"
+#endif
+
+#if ONE
+	"true"
+#else
+	"false"
+#endif
+
+#if ZERO
+	"false"
+#elif ONE
+	"true"
+#endif
+
+#if ZERO
+	"false"
+#elif ZERO
+	"false"
+#else
+	"true"
+#endif
+
+#if ZERO
+	"false"
+#elif ZERO
+	"false"
+#elif ONE
+	"true"
+#else
+	"false"
+#endif

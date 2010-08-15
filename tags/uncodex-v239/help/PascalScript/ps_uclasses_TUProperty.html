@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<title>UnCodeX - Pascal Script - TUProperty</title>
+	<link href="../images/default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="../images/UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">TUProperty</div>
+</div>
+
+<div class="content">
+<h1>TUPropertyList</h1>
+<pre>
+  TUPropertyList = class(TUDeclarationList)
+  public
+    property Items[Index: Integer]: TUProperty read GetItem write SetItem; default;
+  published
+    procedure Sort;
+    function Find(name: string): TUProperty;
+    function FindEx(name: string): TUProperty; // find on clean name
+    procedure SortOnTag;
+  end;
+</pre>
+
+<h1>TUProperty</h1>
+<pre>
+  TUProperty = class(TUDeclaration)
+  protected
+    Fptype:      string;
+    Fmodifiers:  string;
+    Ftag:        string;
+  published
+    property ptype: string read Fptype write Fptype;
+    property modifiers: string read Fmodifiers write Fmodifiers;
+    property tag: string read Ftag write Ftag;
+    function declaration: string; override;
+    function CleanName: string; // returns the name without static array
+    function GetDimension: integer; // get the array dimension, returns 0 if not an array
+  end;
+</pre>
+
+</div>
+</div>
+</body>
+</html>

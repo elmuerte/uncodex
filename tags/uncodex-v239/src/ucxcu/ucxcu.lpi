@@ -1,0 +1,178 @@
+<?xml version="1.0"?>
+<CONFIG>
+  <ProjectOptions>
+    <Version Value="5"/>
+    <General>
+      <MainUnit Value="0"/>
+      <ActiveEditorIndexAtStart Value="1"/>
+      <IconPath Value="./"/>
+      <TargetFileExt Value=".exe"/>
+      <Title Value="ucxcu"/>
+    </General>
+    <JumpHistory Count="13" HistoryIndex="12">
+      <Position1>
+        <Filename Value="D:\dev\UnCodeX\src\unit_htmlout.pas"/>
+        <Caret Line="308" Column="12" TopLine="288"/>
+      </Position1>
+      <Position2>
+        <Filename Value="D:\dev\UnCodeX\src\unit_htmlout.pas"/>
+        <Caret Line="312" Column="4" TopLine="292"/>
+      </Position2>
+      <Position3>
+        <Filename Value="D:\dev\UnCodeX\src\unit_htmlout.pas"/>
+        <Caret Line="344" Column="86" TopLine="324"/>
+      </Position3>
+      <Position4>
+        <Filename Value="D:\dev\UnCodeX\src\unit_htmlout.pas"/>
+        <Caret Line="312" Column="4" TopLine="292"/>
+      </Position4>
+      <Position5>
+        <Filename Value="D:\dev\UnCodeX\src\unit_htmlout.pas"/>
+        <Caret Line="668" Column="59" TopLine="648"/>
+      </Position5>
+      <Position6>
+        <Filename Value="D:\dev\UnCodeX\src\unit_htmlout.pas"/>
+        <Caret Line="2375" Column="35" TopLine="2355"/>
+      </Position6>
+      <Position7>
+        <Filename Value="D:\dev\UnCodeX\src\unit_htmlout.pas"/>
+        <Caret Line="2461" Column="7" TopLine="2037"/>
+      </Position7>
+      <Position8>
+        <Filename Value="D:\dev\UnCodeX\src\unit_htmlout.pas"/>
+        <Caret Line="312" Column="4" TopLine="292"/>
+      </Position8>
+      <Position9>
+        <Filename Value="D:\dev\UnCodeX\src\unit_fpc_compat.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position9>
+      <Position10>
+        <Filename Value="D:\dev\UnCodeX\src\unit_analyse.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position10>
+      <Position11>
+        <Filename Value="D:\dev\UnCodeX\src\unit_fpc_compat.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position11>
+      <Position12>
+        <Filename Value="D:\dev\UnCodeX\src\unit_fpc_compat.pas"/>
+        <Caret Line="39" Column="6" TopLine="17"/>
+      </Position12>
+      <Position13>
+        <Filename Value="D:\dev\UnCodeX\src\unit_fpc_compat.pas"/>
+        <Caret Line="1" Column="1" TopLine="1"/>
+      </Position13>
+    </JumpHistory>
+    <Units Count="8">
+      <Unit0>
+        <CursorPos X="19" Y="47"/>
+        <Filename Value="ucxcu.dpr"/>
+        <IsPartOfProject Value="True"/>
+        <TopLine Value="33"/>
+        <UsageCount Value="28"/>
+      </Unit0>
+      <Unit1>
+        <CursorPos X="26" Y="28"/>
+        <Filename Value="D:\dev\UnCodeX\src\unit_outputdefs.pas"/>
+        <TopLine Value="6"/>
+        <UnitName Value="unit_outputdefs"/>
+        <UsageCount Value="10"/>
+      </Unit1>
+      <Unit2>
+        <CursorPos X="20" Y="31"/>
+        <Filename Value="D:\dev\UnCodeX\src\unit_sourceparser.pas"/>
+        <TopLine Value="17"/>
+        <UnitName Value="unit_sourceparser"/>
+        <UsageCount Value="10"/>
+      </Unit2>
+      <Unit3>
+        <CursorPos X="11" Y="312"/>
+        <EditorIndex Value="0"/>
+        <Filename Value="D:\dev\UnCodeX\src\unit_htmlout.pas"/>
+        <Loaded Value="True"/>
+        <TopLine Value="303"/>
+        <UnitName Value="unit_htmlout"/>
+        <UsageCount Value="13"/>
+      </Unit3>
+      <Unit4>
+        <CursorPos X="1" Y="1"/>
+        <Filename Value="D:\dev\lazarus\fpcsrc\rtl\objpas\rtlconst.pp"/>
+        <TopLine Value="1"/>
+        <UnitName Value="rtlconst"/>
+        <UsageCount Value="10"/>
+      </Unit4>
+      <Unit5>
+        <CursorPos X="9" Y="49"/>
+        <EditorIndex Value="1"/>
+        <Filename Value="D:\dev\UnCodeX\src\unit_fpc_compat.pas"/>
+        <Loaded Value="True"/>
+        <TopLine Value="17"/>
+        <UnitName Value="unit_fpc_compat"/>
+        <UsageCount Value="10"/>
+      </Unit5>
+      <Unit6>
+        <CursorPos X="1" Y="1"/>
+        <EditorIndex Value="2"/>
+        <Filename Value="D:\dev\UnCodeX\src\unit_analyse.pas"/>
+        <Loaded Value="True"/>
+        <TopLine Value="1"/>
+        <UnitName Value="unit_analyse"/>
+        <UsageCount Value="10"/>
+      </Unit6>
+      <Unit7>
+        <CursorPos X="11" Y="320"/>
+        <EditorIndex Value="3"/>
+        <Filename Value="unit_ucxcumain.pas"/>
+        <Loaded Value="True"/>
+        <TopLine Value="300"/>
+        <UnitName Value="unit_ucxcumain"/>
+        <UsageCount Value="10"/>
+      </Unit7>
+    </Units>
+    <PublishOptions>
+      <Version Value="2"/>
+      <DestinationDirectory Value="$(TestDir)\publishedproject\"/>
+      <IgnoreBinaries Value="False"/>
+      <IncludeFileFilter Value="*.(pas|pp|inc|lfm|lpr|lrs|lpi|lpk|sh|xml)"/>
+      <ExcludeFileFilter Value="*.(bak|ppu|ppw|o|so);*~;backup"/>
+    </PublishOptions>
+    <RunParams>
+      <local>
+        <FormatVersion Value="1"/>
+        <LaunchingApplication PathPlusParams="\usr\X11R6\bin\xterm -T 'Lazarus Run Output' -e $(LazarusDir)\tools\runwait.sh $(TargetCmdLine)"/>
+      </local>
+    </RunParams>
+  </ProjectOptions>
+  <CompilerOptions>
+    <Version Value="2"/>
+    <PathDelim Value="\"/>
+    <SearchPaths>
+      <OtherUnitFiles Value="..\"/>
+      <UnitOutputDirectory Value="..\..\dcu\ucxcu\"/>
+    </SearchPaths>
+    <Parsing>
+      <SymantecChecking>
+        <CStyleOperator Value="False"/>
+        <CPPInline Value="False"/>
+        <DelphiCompat Value="True"/>
+      </SymantecChecking>
+    </Parsing>
+    <CodeGeneration>
+      <UnitStyle Value="0"/>
+      <Generate Value="Smaller"/>
+      <TargetProcessor Value="3"/>
+      <Optimizations>
+        <OptimizationLevel Value="2"/>
+      </Optimizations>
+    </CodeGeneration>
+    <Linking>
+      <Debugging>
+        <UseLineInfoUnit Value="False"/>
+        <StripSymbols Value="True"/>
+      </Debugging>
+    </Linking>
+    <Other>
+      <CompilerPath Value="$(CompPath)"/>
+    </Other>
+  </CompilerOptions>
+</CONFIG>
