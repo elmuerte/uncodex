@@ -50,6 +50,7 @@ type
     config: TSearchConfig;
     curpos1: integer;
     curclass: TUClass;
+    visitedFiles: TStringList;
     function SearchFile(uclass: TUClass): boolean;
     function GetNextClass(): TUClass;
   public
@@ -108,11 +109,14 @@ begin
   if (not sc.isFindFirst) then sc.Wrapped := false;
   inherited Create(true);
   FreeOnTerminate := true;
+  visitedFiles := TStringList.Create;
+  visitedFiles.Duplicates := dupIgnore;
 end;
 
 destructor TSearchThread.Destroy;
 begin
   SearchStack := nil;
+  visitedFiles.Free;
   re.Free;
   inherited;
 end;
@@ -258,7 +262,9 @@ var
 
   procedure SearchFile();
   begin
+    if (visitedFiles.IndexOf(filename) > -1) then exit;
     guard('SearchFile '+filename);
+    visitedFiles.Add(filename);
     fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
     try
       bufcnt := BUFFSIZE;
@@ -287,7 +293,7 @@ begin
   for i := 0 to uclass.includes.Count-1 do begin
     linecnt := 0;
     lineptr := 0;
-    filename := iFindFile(ExpandFileName(uclass.package.PackageDir+uclass.includes.Values[uclass.includes.Names[i]]));
+    filename := iFindFile(ExpandFileName(uclass.package.PackageDir+uclass.includes[i]));
     if (FileExists(filename)) then SearchFile(); // include file
   end;
 end;

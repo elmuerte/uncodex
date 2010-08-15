@@ -439,7 +439,8 @@ begin
     result := TUE3DefinitionList.Create(result);
     fn := package.path+PathDelim+'..'+PathDelim+'Globals.uci';
     if (FileExists(fn)) then begin
-      Log('Loading '+fn);
+      Log('Loading '+fn, ltInfo, CreateLogEntry(fn));
+      uclass.includes.Add('..'+PathDelim+package.Name+PathDelim+'Globals.uci');
       stream := TStringStream.Create('');
       pps := TUE3PreProcessor.create(stream, package.path, '', result);
       try
@@ -1187,7 +1188,7 @@ begin
   else if (macro = 'INCLUDE') then begin
     if (macroIfCnt <> 0) then exit;
     if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Include file '+trim(args), ltInfo, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
-    uclass.includes.Values[IntToStr(p.SourceLine-1)] := trim(args);
+    uclass.includes.Add(trim(args));
     pInclude(args);
   end
   else if ((macro = 'PRAGMA') or (macro = 'UCPP')) then begin
@@ -1199,7 +1200,7 @@ begin
     macro := UpperCase(GetToken(args, [' ', #9]));
     if (macro = 'INCLUDE') then begin
       if (DEBUG_MACRO_EVAL) then InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': UCPP Include file '+trim(args), ltInfo, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
-      //uclass.includes.Values[IntToStr(p.SourceLine-1)] := trim(args);
+      //uclass.includes.add(trim(args));
       pInclude(args, true);
     end
     else if (macro = 'ERROR') then begin
@@ -1218,6 +1219,9 @@ begin
     p.SourceLine := i;
     incFilename := trim(args);
     if (CompareText(incFilename, uclass.filename) = 0) then incFilename := '';
+    if (incFilename <> '') then begin
+      uclass.includes.Add(incFilename);
+    end;
     //InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': linenumber= '+incFilename+'('+IntToStr(i)+','+IntToStr(j)+')', ltWarn, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
   end
   {$endif}

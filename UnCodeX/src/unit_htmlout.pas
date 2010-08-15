@@ -2750,9 +2750,9 @@ begin
       target := CreateOutputStream(htmloutputdir+PATHDELIM+fname);
       currentFile := fname;
       for j := 0 to ClassList[i].includes.Count-1 do begin
-        tmp := IncludeFileLink(ClassList[i].includes.Values[ClassList[i].includes.Names[j]], ClassList[i].package);
+        tmp := IncludeFileLink(ClassList[i].includes[i], ClassList[i].package);
         if (ProcIncludeFiles.IndexOfName(tmp) > -1) then continue;
-        ProcIncludeFiles.AddObject(tmp+'='+ClassList[i].includes.Values[ClassList[i].includes.Names[j]], ClassList[i]);
+        ProcIncludeFiles.AddObject(tmp+'='+ClassList[i].includes[i], ClassList[i]);
       end;
       try
         template1.Position := 0;

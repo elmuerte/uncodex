@@ -1,6 +1,6 @@
 [Setup]
 AppName=UnCodeX
-AppVerName=UnCodeX version 238
+AppVerName=UnCodeX version 239
 AppVersion=232
 AppPublisher=Michiel 'elmuerte' Hendriks
 AppPublisherURL=http://sourceforge.net/projects/uncodex/
@@ -20,11 +20,11 @@ ShowLanguageDialog=no
 UninstallDisplayIcon={app}\UnCodeX.exe
 UninstallDisplayName=UnCodeX
 AppID={{FDD6ED8B-DB77-43BC-B0B2-608A1F27AABC}}
-VersionInfoVersion=2.2.0.238
+VersionInfoVersion=2.2.0.239
 InternalCompressLevel=ultra
 MinVersion=4.0.950,4.0.1381
 ShowTasksTreeLines=true
-VersionInfoCompany=Michiel "El Muerte" Hendriks
+VersionInfoCompany=Michiel "elmuerte" Hendriks
 VersionInfoDescription=UnCodeX Installer
 
 [Types]
