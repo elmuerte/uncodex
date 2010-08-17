@@ -478,7 +478,8 @@ begin
       body := body+tmp;
     end;
     if (DoSkipMacro()) then exit;
-    defines.Define(macro, args, TrimRight(body), filename, tmpLineNo, tmpLinePos);
+    //Log('`define '+macro, ltWarn, CreateLogEntry(basepath + PathDelim + filename, currentLine-1, linePos));
+    defines.Define(macro, args, TrimRight(body), basepath+pathdelim+filename, tmpLineNo, tmpLinePos);
   end
   else if (macro = 'isdefined') then begin
     if (DoSkipMacro()) then exit;
@@ -722,7 +723,7 @@ begin
   try
     GetMem(buffer, ParseBufSize);
     instream := TFileStream.Create(realFn, fmOpenRead);
-    pp := TUE3PreProcessor.Create(instream, basepath, relativeFn, defines);
+    pp := TUE3PreProcessor.Create(instream, ExtractFileDir(basepath), relativeFn, defines);
     try
       stream.WriteString(#10#13+'#linenumber 0 0 '+relativeFn+#10#13);
       i := pp.Read(buffer^, ParseBufSize);
@@ -752,7 +753,7 @@ begin
   fname := _name;
   fvalue := _value;
   SetLength(fargnames, Length(_args));
-  for i := Low(_args) to High(_args) do fargnames[i] := _args[i];
+  for i := Low(_args) to High(_args) do fargnames[i] := trim(_args[i]);
   fisfunction := Length(fargnames) > 0;
   fowner := _owner;
 end;
