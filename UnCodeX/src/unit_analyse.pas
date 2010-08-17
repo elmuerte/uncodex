@@ -444,7 +444,7 @@ begin
       stream := TStringStream.Create('');
       pps := TUE3PreProcessor.create(stream, package.path, '', result);
       try
-        pps.IncludeFile('..'+PathDelim+'Globals.uci', true);
+        pps.IncludeFile('Globals.uci', true);
       finally
         stream.Free;
         pps.Free;
