@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<title>UnCodeX - Pascal Script - Constants</title>
+	<link href="../images/default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="../images/UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">Constants</div>
+</div>
+
+<div class="content">
+<h1>Constants</h1>
+
+<table>
+<tr>
+	<th>type</th>
+	<th>description</th>
+</tr>
+<tr><td>UCLASSES_REV</td><td>Revision number of the uclasses file. This is mainly to check plug-in compatibility</td></tr>
+<tr><th colspan="2">Seek Origin indicates where to start a seek operation</th></tr>
+<tr><td>soFromBeginning</td><td>0<br />Seek from the beginning of the resource. The seek operation moves to a specified position (offset), which must be greater than or equal to zero.</td></tr>
+<tr><td>soFromCurrent</td><td>1<br />Seek from the current position in the resource. The seek operation moves to an offset from the current position (position + offset). The offset is positive to move forward, negative to move backward.</td></tr>
+<tr><td>soFromEnd</td><td>2<br />Seek from the end of the resource. The seek operation moves to an offset from the end of the resource, where the offset is expressed as a negative value because it is moving toward the beginning of the resource.</td></tr>
+<tr><th colspan="2">Tokens, usd by TParser</th></tr>
+<tr><td>toEOF</td><td>#0</td></tr>
+<tr><td>toSymbol</td><td>#1</td></tr>
+<tr><td>toString</td><td>#2</td></tr>
+<tr><td>toInteger</td><td>#3</td></tr>
+<tr><td>toFloat</td><td>#4</td></tr>
+<tr><th colspan="2">File modes, used by TFileStream</th></tr>
+<tr><td>fmCreate</td><td>$FFFF<br />If the file exists, open for write access, otherwise, create a new file. Unlike the other constants, which are declared in the SysUtils unit, this constant is declared in classes.pas.</td></tr>
+<tr><td>fmOpenRead</td><td>0<br />Open for read access only.</td></tr>
+<tr><td>fmOpenWrite</td><td>1<br />Open for write access only.</td></tr>
+<tr><td>fmOpenReadWrite</td><td>2<br />Open for read and write access.</td></tr>
+<tr><td>fmShareCompat</td><td>0<br />Compatible with the way FCBs are opened.</td></tr>
+<tr><td>fmShareExclusive</td><td>$10<br />Read and write access is denied.</td></tr>
+<tr><td>fmShareDenyWrite</td><td>$20<br />Write access is denied.</td></tr>
+<tr><td>fmShareDenyRead</td><td>$30<br />Read access is denied.</td></tr>
+<tr><td>fmShareDenyNone</td><td>$40<br />Allows full access for others.</td></tr>
+<tr><th colspan="2">Date and time constants</th></tr>
+<tr><td>SecsPerDay</td><td>86400</td></tr>
+<tr><td>MSecPerDay</td><td>86400000</td></tr>
+<tr><td>DateDelta</td><td>693594<br />DateDelta is number of days between January 1, 0001, and December 31, 1899. This value is useful for converting date-time values between TDateTime and TTimeStamp.</td></tr>
+<tr><th colspan="2">Variant types, returned by VarType()</th></tr>
+<tr><td>varEmpty</td><td>The variant is Unassigned.</td></tr>
+<tr><td>varNull</td><td>The variant is Null.</td></tr>
+<tr><td>varSmallInt</td><td>16-bit signed integer (type Smallint).</td></tr>
+<tr><td>varInteger</td><td>32-bit signed integer (type Integer).</td></tr>
+<tr><td>varSingle</td><td>Single-precision floating-point value (type Single).</td></tr>
+<tr><td>varDouble</td><td>Double-precision floating-point value (type Double).</td></tr>
+<tr><td>varCurrency</td><td>Currency floating-point value (type Currency).</td></tr>
+<tr><td>varDate</td><td>Date and time value (type TDateTime).</td></tr>
+<tr><td>varOleStr</td><td>Reference to a dynamically allocated UNICODE string.</td></tr>
+<tr><td>varDispatch</td><td>Reference to an Automation object (an IDispatch interface pointer).</td></tr>
+<tr><td>varError</td><td>Operating system error code.</td></tr>
+<tr><td>varBoolean</td><td>16-bit boolean (type WordBool).</td></tr>
+<tr><td>varVariant</td><td>A variant.</td></tr>
+<tr><td>varUnknown</td><td>Reference to an unknown OLE object (an IInterface or IUnknown interface pointer).</td></tr>
+<tr><td>varShortInt</td><td>8-bit signed integer (type ShortInt)</td></tr>
+<tr><td>varByte</td><td>A Byte</td></tr>
+<tr><td>varWord</td><td>unsigned 16-bit value (Word)</td></tr>
+<tr><td>varLongWord</td><td>unsigned 32-bit value (LongWord)</td></tr>
+<tr><td>varInt64</td><td>64-bit signed integer (Int64)</td></tr>
+<tr><td>varStrArg</td><td>COM-compatible string.</td></tr>
+<tr><td>varAny</td><td>A CORBA Any value.</td></tr>
+<tr><td>varString</td><td>Reference to a dynamically allocated string (not COM compatible).</td></tr>
+<tr><td>varTypeMask</td><td></td></tr>
+<tr><td>varArray</td><td></td></tr>
+<tr><td>varByRef</td><td></td></tr>
+</table>
+
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,15 @@
+FILE_INCLUDED
+
+#pragma ucpp config supportInclude true
+
+#ifndef FILE_INCLUDED
+#	include Classes/include.inc
+#endif
+
+FILE_INCLUDED
+
+#ifdef FILE_INCLUDED
+	true
+#endif
+
+FILE_INCLUDED

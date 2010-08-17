@@ -1,0 +1,26 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd">
+<html>
+<head>
+	<title>%default_title%</title>
+	<meta name="Generator" content="%UNCODEX% %VERSION%" />
+%include:stylesheet.inc%
+	<script type="text/javascript">
+	<!-- allows linking to a subpage via a hash code -->
+	function SetContent()
+	{
+		if (location.hash)
+		{
+			dest = location.hash.substr(1);
+			if (content) content.location = dest;
+		}
+	}
+	</script>
+</head>
+<frameset cols="200,*" onload="SetContent();">
+	<frameset rows="200,*">
+		<frame name="packages" src="%packages_list_link%" marginwidth="4" marginheight="4" />
+		<frame name="classes" src="%classes_list_link%" marginwidth="4" marginheight="4" />
+	</frameset>
+	<frame name="content" src="%overview_link%" />
+</frameset>
+</html>
