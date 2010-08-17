@@ -679,7 +679,18 @@ begin
   StatusReport('Saving state to '+config.StateFile+'.tmp');
   tmr_StatusText.OnTimer(nil);
   Application.ProcessMessages;
-  fs := TFileStream.Create(config.StateFile+'.tmp', fmCreate or fmShareExclusive);
+  ForceDirectories(ExtractFileDir(config.StateFile));
+
+  try
+    fs := TFileStream.Create(config.StateFile+'.tmp', fmCreate or fmShareExclusive);
+  except
+    on e:Exception do begin
+      Log('Unable to write file '+config.StateFile+'.tmp :'+e.Message, ltError);
+      xunguard;
+      exit;
+    end;
+  end;
+
   try
     try
       with (TUnCodeXState.Create(config.ClassList, tv_Classes, config.PackageList, tv_Packages)) do begin
@@ -693,7 +704,9 @@ begin
     DeleteFile(config.StateFile+'.tmp');
     raise;
   end;
-  MoveFileEx(PChar(config.StateFile+'.tmp'), PChar(config.StateFile), MOVEFILE_REPLACE_EXISTING);
+  if (not MoveFileEx(PChar(config.StateFile+'.tmp'), PChar(config.StateFile), MOVEFILE_REPLACE_EXISTING)) then begin
+    Log('Unable to save state file. Failed to replace: '+config.StateFile, ltError);
+  end;
   StatusReport('State saved');
   xunguard;
 end;
@@ -1813,11 +1826,16 @@ begin
     config.HotKeys.Values[TAction(al_Main.Actions[i]).Caption] := tmp;
   end;
 
-  if (FileIsReadOnly(config.Filename)) then begin
+  ForceDirectories(ExtractFileDir(config.Filename));
+  if (FileExists(config.Filename) and FileIsReadOnly(config.Filename)) then begin
     MessageDlg('Unable to save settings. '+#10#13+config.Filename+' is read-only.', mtError, [mbOK], 0);
   end
   else begin
-    config.SaveToIni();
+    try
+      config.SaveToIni();
+    except
+      on e:Exception do MessageDlg('Failed to save settings. '+#10#13+e.Message, mtError, [mbOK], 0);
+    end;
   end;
   xunguard;
 end;
@@ -1898,11 +1916,16 @@ begin
   if (mi_Right.Checked) then config.ApplicationBar.Location := abRight
   else if (mi_Left.Checked) then config.ApplicationBar.Location := abLeft;
 
-  if (FileIsReadOnly(config.Filename)) then begin
+  ForceDirectories(ExtractFileDir(config.Filename));
+  if (FileExists(config.Filename) and FileIsReadOnly(config.Filename)) then begin
     MessageDlg('Unable to save settings. '+#10#13+config.Filename+' is read-only.', mtError, [mbOK], 0);
   end
   else begin
-    config.SaveToIni();
+    try
+      config.SaveToIni();
+    except
+      on e:Exception do MessageDlg('Failed to save settings. '+#10#13+e.Message, mtError, [mbOK], 0);
+    end;
   end;
   xunguard;
 end;

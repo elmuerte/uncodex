@@ -376,7 +376,7 @@ end;
 procedure TUCXConfig.SaveToIni(filename: string = '');
 begin
   if (filename = '') then filename := ConfigFile;
-  if (FileIsReadOnly(filename)) then exit;
+  if (FileExists(filename) and FileIsReadOnly(filename)) then exit;
   ini := TUCXIniFile.Create(filename);
   ini.DelayedUpdate := true;
   try
