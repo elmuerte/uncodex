@@ -45,7 +45,7 @@ uses
 
 const
   APPTITLE        = 'UnCodeX';
-  APPVERSION      = '239';
+  APPVERSION      = '240';
 
 type
   TLogType = (ltInfo, ltWarn, ltError, ltSearch);

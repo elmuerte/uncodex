@@ -175,6 +175,8 @@ end;
 function TSourceParser.SkipToNextToken(CopyBlanks, DoCopy: Boolean): Char;
 var
   P, StartPos: PChar;
+  tmp: string;
+  cnt: integer;
   
   procedure EatNewLine;
   begin
@@ -373,14 +375,35 @@ begin
               Result := toUE3PP;
             end
             else begin
-              while not (P^ in [#13, #10, toEOF]) do begin
+              while (P^ in ['0'..'9', 'a'..'z', 'A'..'Z', '_']) do begin
                 Inc(P);
                 Inc(FLinePos);
-                if (((P-1)^ = '\') and (P^ in [#13, #10])) then begin
-                  EatNewLine;
+              end;
+              // eat arguments
+              if (P^ = '(') then begin
+                Inc(P);
+                Inc(FLinePos);
+                cnt := 1;
+                while (not (P^ in [#0, toEOF])) do begin
+                  if (P^ = '(') then Inc(cnt);
+                  if (P^ = ')') then Dec(cnt);
+                  if (cnt = 0) then break;
                   Inc(P);
-                  Inc(FSourceLine); // next line
-                  FLinePos := 0;
+                  Inc(FLinePos);
+                end;
+              end;
+              SetString(tmp, FTokenPtr, P-FTokenPtr);
+              // only scan til newline for `define
+              if (LowerCase(tmp) = '`define') then begin
+                while not (P^ in [#13, #10, toEOF]) do begin
+                  Inc(P);
+                  Inc(FLinePos);
+                  if (((P-1)^ = '\') and (P^ in [#13, #10])) then begin
+                    EatNewLine;
+                    Inc(P);
+                    Inc(FSourceLine); // next line
+                    FLinePos := 0;
+                  end;
                 end;
               end;
               if (P^ = toEOF) then begin

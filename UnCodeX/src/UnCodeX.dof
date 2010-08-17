@@ -115,7 +115,7 @@ AutoIncBuild=0
 MajorVer=2
 MinorVer=2
 Release=0
-Build=239
+Build=240
 Debug=0
 PreRelease=0
 Special=0
@@ -126,7 +126,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Michiel 'elmuerte' Hendriks
 FileDescription=
-FileVersion=2.2.0.239
+FileVersion=2.2.0.240
 InternalName=UnCodeX
 LegalCopyright=© 2003-2010 Michiel 'elmuerte' Hendriks
 LegalTrademarks=
