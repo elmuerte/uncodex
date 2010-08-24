@@ -32,7 +32,7 @@ unit unit_ue3preproc;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils, Contnrs;
 
 type
   TStringArray = array of string;
@@ -50,6 +50,19 @@ type
     property LinePos: Integer read FLinePos;
     property Filename: String read FFilename;
     property CausedBy: Exception read BaseException;
+  end;
+
+  TLineNumber = class(TObject)
+  public
+    Filename: String;
+    LineNumber: Integer;
+    LinePos: Integer;
+    constructor Create(_filename: String; _LineNo: Integer; _LinePos: Integer);
+  end;
+
+  TLineNumberQueue = class(TObjectQueue)
+  public
+    function Pop: TLineNumber;
   end;
 
   TUE3DefinitionList = class;
@@ -79,9 +92,9 @@ type
     FSaveChar: Char;
     P: PChar; // current "pointer"
 
-    doLineNo: boolean;
-
     defines: TUE3DefinitionList;
+
+    lineInfo: TLineNumberQueue;
 
     CommentDepth: integer;
     procedure IncP;
@@ -96,12 +109,12 @@ type
     procedure InternalRead;
     procedure ReadBuffer;
   public
-    constructor Create(Stream: TStream; _basepath: String; _filename: String; usedefines: TUE3DefinitionList); overload;
-    constructor Create(Stream: TStream; _basepath: String; _filename: String; usedefines: TUE3DefinitionList; _doLineNo: boolean); overload;
+    constructor Create(Stream: TStream; _basepath: String; _filename: String; usedefines: TUE3DefinitionList);
     destructor Destroy; override;
     function Read(var Buffer; Count: Longint): Longint; override;
     function Write(const Buffer; Count: Longint): Longint; override;
     function IncludeFile(const incfile: string; silent: boolean = false): string;
+    property LineNumbers: TLineNumberQueue read lineInfo write lineInfo;
   end;
 
   TUE3Definition = class(TObject)
@@ -150,6 +163,7 @@ type
 
 const
   INTERNAL_FILENAME = '__internal_defition__';
+  toLineNumber = #127; // used to identity line number markers
 
 implementation
 
@@ -163,6 +177,18 @@ const
   END_MACRO_BLOCK_CHAR = '}';
   MACRO_PARAMCOUNT_CHAR = '#';
 
+constructor TLineNumber.Create(_filename: String; _LineNo: Integer; _LinePos: Integer);
+begin
+  Filename := _filename;
+  LineNumber := _LineNo;
+  LinePos := _LinePos;
+end;
+
+function TLineNumberQueue.Pop: TLineNumber;
+begin
+  result := TLineNumber(inherited Pop);
+end;
+
 constructor UE3PPException.Create(filename: String; LineNo: Integer; LinePos: Integer; const Cause: Exception);
 begin
   inherited CreateFmt('Preprocessor error at %s(%d,%d): %s', [filename, LineNo, LinePos, Cause.Message]);
@@ -174,12 +200,6 @@ end;
 
 constructor TUE3PreProcessor.Create(Stream: TStream; _basepath: String; _filename: String; usedefines: TUE3DefinitionList);
 begin
-  Create(stream,_basepath,_filename,usedefines, true)
-end;
-
-constructor TUE3PreProcessor.Create(Stream: TStream; _basepath: String; _filename: String; usedefines: TUE3DefinitionList; _doLineNo: boolean);
-begin
-  doLineNo := _doLineNo;
   FEOF := false;
   filename := _filename;
   basepath := _basepath;
@@ -561,14 +581,14 @@ begin
   else begin
     if (DoSkipMacro()) then exit;
     if (P^ = '(') then begin
-      GetArgs(args);
+      GetArgs(args);      
     end;
     if (defines.IsDefined(macro)) then begin
       result := defines.EvalDefine(macro, args);
     end
     else begin
       Log('No such macro defined: `'+macro+' (might be defined in globals.uci; check package priority)', ltError, CreateLogEntry(basepath + PathDelim + filename, currentLine, linePos));
-      result := '/* No such macro defined: `'+macro+' */';
+      result := ''; // simply ignore it
     end;
   end;
 end;
@@ -590,9 +610,10 @@ var
   macroRes: string;
 begin
   // emit correct line number macro
-  if (doLineNo and (filename <> '')) then begin
-    macroRes := #10#13+'#linenumber '+IntToStr(currentLine)+' '+IntToStr(linePos)+' '+filename+#10#13;
+  if ((lineInfo <> nil) and (filename <> '')) then begin
+    macroRes := toLineNumber;
     FData.WriteBuffer(PChar(macroRes)^, Length(macroRes));
+    lineInfo.Push(TLineNumber.Create(filename, currentLine, linePos));
   end;
 end;
 
@@ -724,15 +745,22 @@ begin
     GetMem(buffer, ParseBufSize);
     instream := TFileStream.Create(realFn, fmOpenRead);
     pp := TUE3PreProcessor.Create(instream, ExtractFileDir(basepath), relativeFn, defines);
+    pp.LineNumbers := lineInfo;
     try
-      stream.WriteString(#10#13+'#linenumber 0 0 '+relativeFn+#10#13);
+      if (lineInfo <> nil) then begin
+        stream.WriteString(toLineNumber);
+        lineInfo.Push(TLineNumber.Create(relativeFn, 0, 0));
+      end;
       i := pp.Read(buffer^, ParseBufSize);
       while (i > 0) do begin
         SetString(relativeFn, buffer, i);
         stream.WriteString(relativeFn);
         i := pp.Read(buffer^, ParseBufSize);
       end;
-      stream.WriteString(#10#13+'#linenumber '+IntToStr(currentLine)+' '+IntToStr(linePos)+' '+filename+#10#13);
+      if (lineInfo <> nil) then begin
+        stream.WriteString(toLineNumber);
+        lineInfo.Push(TLineNumber.Create(filename, currentLine, linePos));
+      end;
       result := stream.DataString;
     finally
       FreeMem(buffer, ParseBufSize);
@@ -782,7 +810,7 @@ begin
       end;
       defs.WriteToParent := true;
       instream := TStringStream.Create(value);
-      pp := TUE3PreProcessor.Create(instream, '', filename, defs, false); // no #linenumber
+      pp := TUE3PreProcessor.Create(instream, '', filename, defs);
       GetMem(buffer, ParseBufSize);
       try
         i := pp.Read(buffer^, ParseBufSize);

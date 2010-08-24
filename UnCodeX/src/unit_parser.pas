@@ -35,7 +35,7 @@ unit unit_parser;
 interface
 
 uses
-  Classes, SysUtils;
+  Classes, SysUtils {$IFDEF UE3_SUPPORT}, unit_ue3preproc {$ENDIF};
 
 type
   TUCParser = class;
@@ -54,13 +54,20 @@ type
     FSourceEnd: PChar;
     FTokenPtr: PChar;
     FSourceLine: Integer;
+    FFilename: String;
     FSaveChar: Char;
     FToken: Char;
     CopyInitComment: boolean;
     FProcessMacro: TProcessMacro;
+    {$IFDEF UE3_SUPPORT}
+    lineInfo: TLineNumberQueue;
+    {$ENDIF}
     procedure ReadBuffer;
     procedure SkipBlanks;
     function NextTokenTmp: Char;
+    {$IFDEF UE3_SUPPORT}
+    procedure AdjustLineNo;
+    {$ENDIF}
   public
     FullCopy: boolean;
     FCIgnoreComments: boolean;
@@ -75,8 +82,12 @@ type
     function TokenSymbolIs(const S: string): Boolean;
     function GetCopyData(flush: boolean = true): string;
     property SourceLine: Integer read FSourceLine write FSourceLine;
+    property Filename: String read FFilename write FFilename;
     property Token: Char read FToken;
     property ProcessMacro: TProcessMacro write FProcessMacro;
+    {$IFDEF UE3_SUPPORT}
+    property LineNumbers: TLineNumberQueue read lineInfo write lineInfo;
+    {$ENDIF}
   end;
 
 const
@@ -149,6 +160,19 @@ begin
   FullCopy := pfc;
 end;
 
+{$IFDEF UE3_SUPPORT}
+procedure TUCParser.AdjustLineNo;
+var
+  lineno: TLineNumber;
+begin
+  if (lineInfo = nil) then exit;
+  lineno := lineInfo.Pop;
+  FSourceLine := lineno.LineNumber;
+  FFilename := lineno.Filename;
+  lineno.Free;
+end;
+{$ENDIF}
+
 function TUCParser.SkipTo(char: Char): boolean;
 var
   SkipedBlanks: string;
@@ -157,11 +181,20 @@ begin
   result := false;
   FirstBlank := FSourcePtr;
   while True do begin
+    {$IFDEF UE3_SUPPORT}
+    if ((FSourcePtr^ = toLineNumber) and (lineInfo <> nil)) then begin
+      AdjustLineNo;
+      Inc(FSourcePtr);
+    end;
+    {$ENDIF}
     case FSourcePtr^ of
       #0:
         begin
           if (FullCopy) then begin
             SetString(SkipedBlanks, FirstBlank, FSourcePtr - FirstBlank);
+            {$IFDEF UE3_SUPPORT}
+            SkipedBlanks := StringReplace(SkipedBlanks, toLineNumber, '', [rfReplaceAll]);
+            {$ENDIF}
             FCopyStream.WriteString(SkipedBlanks);
           end;
           ReadBuffer;
@@ -183,6 +216,9 @@ begin
   end;
   if (FullCopy) then begin
     SetString(SkipedBlanks, FirstBlank, FSourcePtr - FirstBlank);
+    {$IFDEF UE3_SUPPORT}
+    SkipedBlanks := StringReplace(SkipedBlanks, toLineNumber, '', [rfReplaceAll]);
+    {$ENDIF}
     FCopyStream.WriteString(SkipedBlanks);
   end;
 end;
@@ -193,6 +229,23 @@ var
   isComment: boolean;
   CommentString: string;
   commentdepth: integer;
+
+  procedure IncP;
+  {$IFDEF UE3_SUPPORT}
+  var
+    lineNo: TLineNumber;
+  {$ENDIF}
+  begin
+    Inc(P);
+    // TODO: detected and transform #10#13, #13#10, #13, #10 to -> #10 and inc line number
+    {$IFDEF UE3_SUPPORT}
+    if ((P^ = toLineNumber) and (lineInfo <> nil)) then begin
+      AdjustLineNo;
+      Inc(P);
+    end;
+    {$ENDIF}
+  end;
+
 label
   NextCommentLine;
 begin
@@ -203,44 +256,44 @@ begin
     { identifier }
     'A'..'Z', 'a'..'z', '_':
       begin
-        Inc(P);
+        IncP;
         // accept '.' in the middle: Package.Class or Class.Type
         // warning: this is only valid for declarations, not for actual code
         // TODO: move this to analyser
-        while P^ in ['A'..'Z', 'a'..'z', '0'..'9', '_', '.'] do Inc(P);
+        while P^ in ['A'..'Z', 'a'..'z', '0'..'9', '_', '.'] do IncP;
         Result := toSymbol;
       end;
     { string }
     '"':
       begin
-        Inc(P);
+        IncP;
         while true do begin
           case P^ of
             #0, #10, #13: Break;
-            '\':  Inc(P);
+            '\':  IncP;
             '"':  begin
-                    Inc(P);
+                    IncP;
                     Break;
                   end;
           end;
-          Inc(P);
+          IncP;
         end;
         Result := toString;
       end;
     { name }
     '''':
       begin
-        Inc(P);
+        IncP;
         while true do begin
           case P^ of
             #0, #10, #13: Break;
-            '\':  Inc(P);
+            '\':  IncP;
             '''': begin
-                    Inc(P);
+                    IncP;
                     Break;
                   end;
           end;
-          Inc(P);
+          IncP;
         end;
         Result := toName;
       end;
@@ -248,19 +301,19 @@ begin
     '-', '+', '0'..'9':
       begin
         Result := toInteger;
-        Inc(P);
+        IncP;
         if (((P-1)^ = '0') and (P^ in ['x', 'X'])) then begin
-          Inc(P); // hex notation
-          while P^ in ['0'..'9', 'a' .. 'f', 'A' .. 'F'] do Inc(P);
+          IncP; // hex notation
+          while P^ in ['0'..'9', 'a' .. 'f', 'A' .. 'F'] do IncP;
         end
         else begin
           while P^ in ['0'..'9'] do begin
-            Inc(P);
+            IncP;
           end;
           if (P^ = '.') then begin
-            Inc(P);
+            IncP;
             while P^ in ['0'..'9', 'f' ,'F'] do begin
-              Inc(P);
+              IncP;
               Result := toFloat;
             end;
           end;
@@ -272,12 +325,12 @@ begin
     { macro }
     '#':
       begin
-        while not (P^ in [#10, toEOF]) do Inc(P);
+        while not (P^ in [#10, toEOF]) do IncP;
         if (P^ = toEOF) then begin
           Result := toMacro;
         end
         else begin
-          Inc(P);
+          IncP;
           Inc(FSourceLine); // next line
           Result := toMacro;
         end;
@@ -285,22 +338,22 @@ begin
     {$IFDEF UE3_SUPPORT}
     '`': // UE3 preprocessor
       begin
-        Inc(P);
+        IncP;
         if (P^ = '{') then begin
           while not (P^ in ['}', toEOF]) do begin
-            Inc(P);
+            IncP;
           end;
           if (P^ <> toEOF) then begin
-            Inc(P);
+            IncP;
           end;
           Result := toUE3PP;
         end
         else begin
           while not (P^ in [#10, toEOF]) do begin
-            Inc(P);
+            IncP;
             if (((P-1)^ = '\') and (P^ in [#13, #10])) then begin
-              Inc(P);
-              if ((P^ = #10) and ((P-1)^ = #13)) then Inc(P);
+              IncP;
+              if ((P^ = #10) and ((P-1)^ = #13)) then IncP;
               Inc(FSourceLine); // next line
             end;
           end;
@@ -308,7 +361,7 @@ begin
             Result := toUE3PP;
           end
           else begin
-            Inc(P);
+            IncP;
             Inc(FSourceLine); // next line
             Result := toUE3PP;
           end;
@@ -318,12 +371,12 @@ begin
     { possible comment }
     '/':
       begin
-        Inc(P);
+        IncP;
         if (P^ = '/') then begin // comment
-          Inc(P);
+          IncP;
           isComment := false;
           if (P^ in ['/', '!']) then begin
-            Inc(P);
+            IncP;
             // also documentation: /// bla or //! bla
             isComment := P^ in [' ', #9];
             if (isComment) then begin
@@ -332,11 +385,11 @@ begin
             end;
           end;
         NextCommentLine: // somewhat dirty hack
-          while not (P^ in [#10, toEOF]) do Inc(P);
+          while not (P^ in [#10, toEOF]) do IncP;
           if (isComment and (P^ <> toEOF)) then begin
             PX := P;
-            Inc(P); // the #10
-            while (P^ in [' ', #9]) do Inc(P); // find the beginning of the line
+            IncP; // the #10
+            while (P^ in [' ', #9]) do IncP; // find the beginning of the line
             if ((StrLComp(P, '///', 3) = 0) or (StrLComp(P, '//!', 3) = 0)) then begin
               Inc(FSourceLine); // next line
               goto NextCommentLine;
@@ -350,11 +403,14 @@ begin
             if (FCIgnoreComments and FullCopy) then begin
               FCopyStream.WriteString(#10); // or else this would be cut
             end;
-            Inc(P);
+            IncP;
             Inc(FSourceLine); // next line
             Result := toComment;
             if (CopyInitComment or isComment) then begin
               SetString(CommentString, FTokenPtr, P - FTokenPtr);
+              {$IFDEF UE3_SUPPORT}
+              CommentString := StringReplace(CommentString, toLineNumber, '', [rfReplaceAll]);
+              {$ENDIF}
               FCopyStream.WriteString(CommentString);
             end;
           end;
@@ -367,11 +423,14 @@ begin
             CopyInitComment := false; // /** */ is better than //
           end;
           repeat begin
-            Inc(P);
+            IncP;
             if ((P^ = #0) or (P^ = #0)) then begin
               FSourcePtr := P;
               if (isComment) then begin
                 SetString(CommentString, FTokenPtr, FSourcePtr - FTokenPtr);
+                {$IFDEF UE3_SUPPORT}
+                CommentString := StringReplace(CommentString, toLineNumber, '', [rfReplaceAll]);
+                {$ENDIF}
                 FCopyStream.WriteString(CommentString);
               end;
               ReadBuffer;
@@ -387,23 +446,32 @@ begin
           Inc(P, 2);
           if (isComment) then begin
             SetString(CommentString, FTokenPtr, P - FTokenPtr);
+            {$IFDEF UE3_SUPPORT}
+            CommentString := StringReplace(CommentString, toLineNumber, '', [rfReplaceAll]);
+            {$ENDIF}
             FCopyStream.WriteString(CommentString);
           end;
           Result := toComment;
         end
         else begin
           Result := P^;
-          if Result <> toEOF then Inc(P);
+          if Result <> toEOF then IncP;
         end;
       end;
   else
     Result := P^;
-    if Result <> toEOF then Inc(P);
+    if Result <> toEOF then IncP;
   end;
   FSourcePtr := P;
   FToken := Result;
   if (FullCopy) then begin
-    if ((not FCIgnoreComments) or ((Result <> toComment) and (Result <> toMacro))) then FCopyStream.WriteString(TokenString);
+    if ((not FCIgnoreComments) or ((Result <> toComment) and (Result <> toMacro))) then begin
+      {$IFDEF UE3_SUPPORT}
+      FCopyStream.WriteString(StringReplace(TokenString, toLineNumber, '', [rfReplaceAll]));
+      {$ELSE}
+      FCopyStream.WriteString(TokenString);
+      {$ENDIF}
+    end;
   end;
 end;
 
@@ -434,11 +502,20 @@ var
 begin
   FirstBlank := FSourcePtr;
   while True do begin
+    {$IFDEF UE3_SUPPORT}
+    if ((FSourcePtr^ = toLineNumber) and (lineInfo <> nil)) then begin
+      AdjustLineNo;
+      Inc(FSourcePtr);
+    end;
+    {$ENDIF}
     case FSourcePtr^ of
       #0:
         begin
           if (FullCopy) then begin
             SetString(SkipedBlanks, FirstBlank, FSourcePtr - FirstBlank);
+            {$IFDEF UE3_SUPPORT}
+            SkipedBlanks := StringReplace(SkipedBlanks, toLineNumber, '', [rfReplaceAll]);
+            {$ENDIF}
             FCopyStream.WriteString(SkipedBlanks);
           end;
           ReadBuffer;
@@ -455,6 +532,9 @@ begin
   end;
   if (FullCopy) then begin
     SetString(SkipedBlanks, FirstBlank, FSourcePtr - FirstBlank);
+    {$IFDEF UE3_SUPPORT}
+    SkipedBlanks := StringReplace(SkipedBlanks, toLineNumber, '', [rfReplaceAll]);
+    {$ENDIF}
     FCopyStream.WriteString(SkipedBlanks);
   end;
 end;
