@@ -56,9 +56,9 @@ type
     macroLastIf: boolean;
     includeParsers: TObjectList;
     includeFiles: TStringList;
-    incFilename: string;
     BaseDefinitions: TDefinitionList;
     FunctionModifiers: TStringList;
+    incFilename: String;
     {$IFDEF UE3_SUPPORT}
     packageGlobals: TObjectHash;
     {$ENDIF}
@@ -82,6 +82,7 @@ type
     procedure pMacro(Sender: TUCParser);
     procedure pInclude(relfilename: string; classRelative: boolean = false);
     procedure pReplication;
+    function getCurrentFilename: String;
     {$IFDEF UE3_SUPPORT}
     function getUE3DefinitionList(package :TUPackage): TUE3DefinitionList;
     {$ENDIF}
@@ -253,8 +254,23 @@ end;
 
 function TClassAnalyser.GetLogFilename(): string;
 begin
-  if (incFilename = '') then exit;
-  result := ExtractFilePath(uclass.package.path)+incFilename;
+  result := GetCurrentFilename();
+  if (result = '') then exit;
+  result := ExtractFilePath(uclass.package.path)+result;
+end;
+
+function TClassAnalyser.GetCurrentFilename: String;
+begin
+  {$IFDEF UE3_SUPPORT}
+  if (p <> nil) then begin
+    result := p.Filename;
+  end;
+  {$ENDIF}
+  if (incFilename <> '') then result := incFilename;
+  if (CompareText(result, uclass.filename) = 0) then result := '';
+  if (result <> '') then begin
+    uclass.includes.Add(result);
+  end;
 end;
 
 procedure TClassAnalyser.Execute;
@@ -376,7 +392,9 @@ begin
   ppdefs.Define('time', [], FormatDateTime('hh:nn:ss', now()), '_internal_', 0, 0);
   pps := TUE3PreProcessor.create(fs, uclass.package.path, uclass.filename, ppdefs);
   //TODO loadPackageGlobalDefs(ppdefs, pps, uclass.package);
+  pps.LineNumbers := TLineNumberQueue.Create;
   p := TUCParser.Create(pps);
+  p.LineNumbers := pps.LineNumbers;
   {$ELSE}
   p := TUCParser.Create(fs);
   {$ENDIF}
@@ -410,7 +428,14 @@ begin
   finally
     FreeAndNil(p);
     {$IFDEF UE3_SUPPORT}
-    pps.Free;
+    if (pps <> nil) then begin
+      if (pps.LineNumbers <> nil) then begin
+        while (pps.LineNumbers.Count > 0) do begin
+          pps.LineNumbers.Pop.Free;
+        end;
+      end;
+      pps.Free;
+    end;
     {$ENDIF}
     fs.Free;
     includeParsers.Free;
@@ -582,7 +607,7 @@ begin
     result.comment := trim(p.GetCopyData);
     result.name := p.TokenString;
     result.srcline := p.SourceLine;
-    result.definedIn := incFilename;
+    result.definedIn := getCurrentFilename;
     p.NextToken; // =
     if (p.Token <> '=') then begin
       InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': expected "=" got "'+p.tokenString+'"', ltError, CreateLogEntry(GetLogFilename(), p.SourceLine, 0, uclass));
@@ -633,7 +658,7 @@ begin
     last := '';
     result.comment := trim(p.GetCopyData);
     result.srcline := p.SourceLine;
-    result.definedIn := incFilename;
+    result.definedIn := getCurrentFilename();
     guard('searching end token');
     while (p.Token <> ';') do begin
       if (p.Token = toEOF) then begin
@@ -771,7 +796,7 @@ begin
     result.comment := trim(p.GetCopyData);
     result.name := p.TokenString;
     result.srcline := p.SourceLine;
-    result.definedIn := incFilename;
+    result.definedIn := getCurrentFilename();
     p.NextToken; // {
     p.NextToken; // first element
     while (p.Token <> '}') do begin
@@ -808,7 +833,7 @@ begin
     result.comment := trim(p.GetCopyData);
     result.name := p.TokenString;
     result.srcline := p.SourceLine;
-    result.definedIn := incFilename;
+    result.definedIn := getCurrentFilename();
     {$IFDEF UE3_SUPPORT}
     // ignore native type hint
     if (p.Token = '{') then begin
@@ -1005,7 +1030,7 @@ begin
     if (p.Token <> ';') then pCurlyBrackets()
     else p.NextToken; // = } or ;
     result.state := currentState;
-    result.definedIn := incFilename;
+    result.definedIn := getCurrentFilename();
     if (currentState <> nil) then begin
       // package.class.name state
       if (result.comment = '') then begin
@@ -1036,7 +1061,7 @@ begin
     result.comment := trim(p.GetCopyData);
     result.srcline := p.SourceLine;
     result.modifiers := modifiers;
-    result.definedIn := incFilename;
+    result.definedIn := getCurrentFilename();
     p.NextToken; // name
     pBrackets;
     result.name := p.TokenString;
@@ -1083,7 +1108,6 @@ var PADMEM: string =  #$54#$68#$69#$73#$20#$69#$73#$20#$70#$61#$72#$74#$20#$6F#$
 procedure TClassAnalyser.pMacro(Sender: TUCParser);
 var
   macro, args: string;
-  i, j: integer;
 begin
   args := trim(TrimMacro(Sender.TokenString));
   macro := GetToken(args, [' ', #9]);
@@ -1210,21 +1234,6 @@ begin
       InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': UCPP Error: '+trim(args), ltWarn, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
     end;
   end
-  {$IFDEF UE3_SUPPORT}
-  else if (macro = 'LINENUMBER') then begin
-    macro := GetToken(args, [' ', #9]);
-    i := StrToIntDef(macro, -1);
-    macro := GetToken(args, [' ', #9]);
-    j := StrToIntDef(macro, -1);
-    p.SourceLine := i;
-    incFilename := trim(args);
-    if (CompareText(incFilename, uclass.filename) = 0) then incFilename := '';
-    if (incFilename <> '') then begin
-      uclass.includes.Add(incFilename);
-    end;
-    //InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': linenumber= '+incFilename+'('+IntToStr(i)+','+IntToStr(j)+')', ltWarn, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
-  end
-  {$endif}
   else begin
     if (macroIfCnt <> 0) then exit;
     InternalLog(uclass.filename+' #'+IntToStr(p.SourceLine-1)+': Unsupported macro '+macro, ltWarn, CreateLogEntry(GetLogFilename(), p.SourceLine-1, 0, uclass));
@@ -1274,7 +1283,7 @@ var
 begin
   guard('pReplication');
   uclass.replication.srcline := p.SourceLine;
-  uclass.replication.definedIn := incFilename;
+  uclass.replication.definedIn := getCurrentFilename();
   p.NextToken();
   // token {
   assert(p.Token = '{');
@@ -1416,7 +1425,7 @@ begin
     end;
     if (p.TokenSymbolIs(KEYWORD_defaultproperties)) then begin
       uclass.defaultproperties.srcline := p.SourceLine;
-      uclass.defaultproperties.definedIn := incFilename;
+      uclass.defaultproperties.definedIn := getCurrentFilename();
       p.GetCopyData(true);// preflush
       p.NextToken;
       uclass.defaultproperties.data := p.TokenString;
