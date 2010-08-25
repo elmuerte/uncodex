@@ -12,7 +12,7 @@
 
 {
   UnCodeX - UnrealScript source browser & documenter
-  Copyright (C) 2003, 2004  Michiel Hendriks
+  Copyright (C) 2003-2010  Michiel Hendriks
 
   This library is free software; you can redistribute it and/or
   modify it under the terms of the GNU Lesser General Public
@@ -68,6 +68,7 @@ type
     {$IFDEF UE3_SUPPORT}
     procedure AdjustLineNo;
     {$ENDIF}
+    function HandleNewline(var P: PChar): boolean;
   public
     FullCopy: boolean;
     FCIgnoreComments: boolean;
@@ -173,6 +174,31 @@ begin
 end;
 {$ENDIF}
 
+// detect and transform #10#13, #13#10, #13, #10 to -> #10 and inc line number
+function TUCParser.HandleNewline(var P: PChar): boolean;
+begin
+  result := false;
+  if (P^ = #10) then begin
+    // detects: #10; #10#13
+    if ((P+1)^ = #13) then begin
+       P^ := #13;
+       Inc(P);
+       P^ := #10;
+    end;
+    Inc(FSourceLine);
+    result := true;
+  end
+  else if (P^ = #13) then begin
+    // detects: #13, #13#10
+    if ((P+1)^ = #10) then begin
+       Inc(P);
+    end
+    else P^ := #10;
+    Inc(FSourceLine);
+    result := true;
+  end;
+end;
+
 function TUCParser.SkipTo(char: Char): boolean;
 var
   SkipedBlanks: string;
@@ -202,8 +228,6 @@ begin
           FirstBlank := FSourcePtr;
           Continue;
         end;
-      #10:
-        Inc(FSourceLine);
       else begin
         if (FSourcePtr^ = char) then begin
           Inc(FSourcePtr);
@@ -213,6 +237,7 @@ begin
       end;
     end;
     Inc(FSourcePtr);
+    HandleNewline(FSourcePtr);
   end;
   if (FullCopy) then begin
     SetString(SkipedBlanks, FirstBlank, FSourcePtr - FirstBlank);
@@ -237,7 +262,7 @@ var
   {$ENDIF}
   begin
     Inc(P);
-    // TODO: detected and transform #10#13, #13#10, #13, #10 to -> #10 and inc line number
+    //HandleNewline(P);
     {$IFDEF UE3_SUPPORT}
     if ((P^ = toLineNumber) and (lineInfo <> nil)) then begin
       AdjustLineNo;
@@ -325,49 +350,15 @@ begin
     { macro }
     '#':
       begin
-        while not (P^ in [#10, toEOF]) do IncP;
+        while not (P^ in [#10, #13, toEOF]) do IncP;
         if (P^ = toEOF) then begin
           Result := toMacro;
         end
         else begin
           IncP;
-          Inc(FSourceLine); // next line
           Result := toMacro;
         end;
       end;
-    {$IFDEF UE3_SUPPORT}
-    '`': // UE3 preprocessor
-      begin
-        IncP;
-        if (P^ = '{') then begin
-          while not (P^ in ['}', toEOF]) do begin
-            IncP;
-          end;
-          if (P^ <> toEOF) then begin
-            IncP;
-          end;
-          Result := toUE3PP;
-        end
-        else begin
-          while not (P^ in [#10, toEOF]) do begin
-            IncP;
-            if (((P-1)^ = '\') and (P^ in [#13, #10])) then begin
-              IncP;
-              if ((P^ = #10) and ((P-1)^ = #13)) then IncP;
-              Inc(FSourceLine); // next line
-            end;
-          end;
-          if (P^ = toEOF) then begin
-            Result := toUE3PP;
-          end
-          else begin
-            IncP;
-            Inc(FSourceLine); // next line
-            Result := toUE3PP;
-          end;
-        end;
-      end;
-    {$ENDIF}
     { possible comment }
     '/':
       begin
@@ -385,13 +376,13 @@ begin
             end;
           end;
         NextCommentLine: // somewhat dirty hack
-          while not (P^ in [#10, toEOF]) do IncP;
+          while not (P^ in [#10, #13, toEOF]) do IncP;
+          HandleNewline(P);
           if (isComment and (P^ <> toEOF)) then begin
             PX := P;
             IncP; // the #10
             while (P^ in [' ', #9]) do IncP; // find the beginning of the line
             if ((StrLComp(P, '///', 3) = 0) or (StrLComp(P, '//!', 3) = 0)) then begin
-              Inc(FSourceLine); // next line
               goto NextCommentLine;
             end
             else P := PX; // nothing new
@@ -404,7 +395,6 @@ begin
               FCopyStream.WriteString(#10); // or else this would be cut
             end;
             IncP;
-            Inc(FSourceLine); // next line
             Result := toComment;
             if (CopyInitComment or isComment) then begin
               SetString(CommentString, FTokenPtr, P - FTokenPtr);
@@ -424,7 +414,8 @@ begin
           end;
           repeat begin
             IncP;
-            if ((P^ = #0) or (P^ = #0)) then begin
+            HandleNewline(P);
+            if (P^ = #0) then begin
               FSourcePtr := P;
               if (isComment) then begin
                 SetString(CommentString, FTokenPtr, FSourcePtr - FTokenPtr);
@@ -438,12 +429,12 @@ begin
               P := FSourcePtr;
               FTokenPtr := P;
             end;
-            if (P^ = #10) then Inc(FSourceLine); // next line
             if ((P^ ='/') and ((P+1)^ ='*' )) then Inc(commentdepth);
             if ((P^ ='*') and ((P+1)^ ='/' )) then Dec(commentdepth);
           end
           until ((P^ ='*') and ((P+1)^ ='/' ) and (commentdepth <= 0));
-          Inc(P, 2);
+          IncP;
+          IncP;
           if (isComment) then begin
             SetString(CommentString, FTokenPtr, P - FTokenPtr);
             {$IFDEF UE3_SUPPORT}
@@ -523,12 +514,11 @@ begin
           FirstBlank := FSourcePtr;
           Continue;
         end;
-      #10:
-        Inc(FSourceLine);
       #33..#255:
         Break;
     end;
     Inc(FSourcePtr);
+    HandleNewline(FSourcePtr);
   end;
   if (FullCopy) then begin
     SetString(SkipedBlanks, FirstBlank, FSourcePtr - FirstBlank);
