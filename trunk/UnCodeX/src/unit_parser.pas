@@ -101,6 +101,9 @@ const
 
 implementation
 
+uses
+  unit_definitions;
+
 const
   ParseBufSize = 4096;
 
@@ -168,6 +171,7 @@ var
 begin
   if (lineInfo = nil) then exit;
   lineno := lineInfo.Pop;
+  Log('Correcting line from '+FFilename+':'+IntToStr(FSourceLine)+' to '+lineno.Filename+':'+IntToStr(lineno.LineNumber));
   FSourceLine := lineno.LineNumber;
   FFilename := lineno.Filename;
   lineno.Free;
@@ -208,7 +212,7 @@ begin
   FirstBlank := FSourcePtr;
   while True do begin
     {$IFDEF UE3_SUPPORT}
-    if ((FSourcePtr^ = toLineNumber) and (lineInfo <> nil)) then begin
+    while ((FSourcePtr^ = toLineNumber) and (lineInfo <> nil)) do begin
       AdjustLineNo;
       Inc(FSourcePtr);
     end;
@@ -264,7 +268,7 @@ var
     Inc(P);
     //HandleNewline(P);
     {$IFDEF UE3_SUPPORT}
-    if ((P^ = toLineNumber) and (lineInfo <> nil)) then begin
+    while ((P^ = toLineNumber) and (lineInfo <> nil)) do begin
       AdjustLineNo;
       Inc(P);
     end;
@@ -494,7 +498,7 @@ begin
   FirstBlank := FSourcePtr;
   while True do begin
     {$IFDEF UE3_SUPPORT}
-    if ((FSourcePtr^ = toLineNumber) and (lineInfo <> nil)) then begin
+    while ((FSourcePtr^ = toLineNumber) and (lineInfo <> nil)) do begin
       AdjustLineNo;
       Inc(FSourcePtr);
     end;
