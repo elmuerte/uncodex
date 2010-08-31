@@ -675,6 +675,8 @@ begin
             Dec(CommentDepth);
           end;
         end;
+        toLineNumber:
+          P^ := #8;
     else
       IncP;
     end;
