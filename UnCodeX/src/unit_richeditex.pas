@@ -75,7 +75,7 @@ type
 implementation
 
 uses
-  Forms;
+  Forms, Math;
 
 const
   RichEditModuleName = 'RICHED20.DLL';
@@ -295,6 +295,7 @@ begin
     FillRect(Rect(0, 0, FGutterWidth-10, lh));
     while (offset < lines.Count-1) and (r.Top < Height) do begin
       Perform(EM_POSFROMCHAR, Integer(@pt2), Perform(EM_LINEINDEX, offset+1, 0));
+      if (pt2.Y < pt.Y) then pt2.Y := pt.Y + 16;
       {$IFNDEF HIGHLIGHT_TOKEN}
       if (IsHighlighted(offset)) then begin
         bmp.Canvas.FillRect(Rect(0, 0, ClientWidth, pt2.Y-pt.Y));
@@ -349,7 +350,9 @@ begin
       pt := pt2;
     end;
     if (offset = lines.Count-1) then begin   // bottom part
+      {$IFNDEF HIGHLIGHT_TOKEN}
       Perform(EM_POSFROMCHAR, Integer(@pt2), Perform(EM_LINEINDEX, offset+1, 0));
+      if (pt2.Y < pt.Y) then pt2.Y := pt.Y + 16;
       if (IsHighlighted(offset)) then begin
         bmp.Canvas.FillRect(Rect(0, 0, ClientWidth, pt2.Y-pt.Y));
         bmp.Height := pt2.Y-pt.Y;
@@ -366,11 +369,28 @@ begin
         Draw(FGutterWidth, pt.Y, bmp2);
         Brush.Color := clBtnFace;
       end;
+      {$ENDIF}
       r := Rect(0, pt.y, FGutterWidth-10, pt.y+lh);
       l := format('%10d', [offset+1]);
       DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_RIGHT or DT_SINGLELINE);
       DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_RIGHT or DT_SINGLELINE or DT_CALCRECT);
       FillRect(Rect(0, r.Bottom, FGutterWidth-10, height));
+
+      {$IFDEF HIGHLIGHT_TOKEN}
+      if (IsHighlighted(offset)) then begin
+        Font.Name := 'Marlett';
+        Font.Size := 12;
+        Font.Color := fhighlightcolor;
+        l := '4';
+        SetBkMode(Handle, TRANSPARENT);
+        r.Left := FGutterWidth-15;
+        DrawText(Handle, PChar(l), Length(l), r, DT_NOCLIP or DT_SINGLELINE);
+        SetBkMode(Handle, OPAQUE);
+        Font.Name := 'Courier New';
+        Font.Size := 8;
+        Font.Color := clWindowText;
+      end;
+      {$ENDIF}
     end
     else if (lines.Count = 0) then begin
       FillRect(Rect(0, 0, FGutterWidth-10, height));
