@@ -2577,7 +2577,7 @@ end;
 
 procedure Tfrm_UnCodeX.ac_OpenClassExecute(Sender: TObject);
 var
-  filename: string;
+  //filename: string;
   i: integer;
 begin
   if (GUIVars.SelectedUPackage <> nil) then begin
@@ -2594,8 +2594,7 @@ begin
         end;
       end;
     end;
-    filename := GUIVars.SelectedUClass.FullFileName;
-    ExecuteProgram(filename);
+    OpenSourceline(GUIVars.SelectedUClass.FullFileName, 0, 0, GUIVars.SelectedUClass);
   end;
 end;
 
