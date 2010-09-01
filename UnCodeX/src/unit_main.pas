@@ -2433,8 +2433,8 @@ begin
       re_SourceSnoop.Color := re_Preview.Color;
       re_SourceSnoop.HighlightColor := re_Preview.HighlightColor;
 
-      lb_PrimKey.Items.SaveToFile(ExtractFilePath(ParamStr(0))+'keywords1.list');
-      lb_SecKey.Items.SaveToFile(ExtractFilePath(ParamStr(0))+'keywords2.list');
+      lb_PrimKey.Items.SaveToFile(GetDataDirectory+'keywords1.list');
+      lb_SecKey.Items.SaveToFile(GetDataDirectory+'keywords2.list');
       ReloadKeywords;
 
       for i := 0 to lv_HotKeys.Items.Count-1 do begin
