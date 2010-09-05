@@ -96,7 +96,7 @@ PackageDLLOutputDir=
 PackageDCPOutputDir=
 SearchPath=$(DELPHI)\Lib\Debug;..\;..\src\paszlib
 Packages=vcl;rtl;dbrtl;adortl;vcldb;vclx;bdertl;vcldbx;ibxpress;dsnap;cds;bdecds;qrpt;teeui;teedb;tee;dss;teeqr;visualclx;dsnapcrba;dsnapcon;VclSmp;vclshlctrls;vclie;xmlrtl;inet;inetdbbde;inetdbxpress;inetdb;nmfast;webdsnap;websnap;soaprtl;dbexpress;dbxcds;indy;dclOffice2k;visualdbclx;TAC2comps
-Conditionals=DEBUG_BUILD
+Conditionals=
 DebugSourceDirs=
 UsePackages=0
 [Parameters]
@@ -115,7 +115,7 @@ AutoIncBuild=0
 MajorVer=2
 MinorVer=2
 Release=0
-Build=240
+Build=241
 Debug=0
 PreRelease=0
 Special=0
@@ -126,7 +126,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=Michiel 'elmuerte' Hendriks
 FileDescription=
-FileVersion=2.2.0.240
+FileVersion=2.2.0.241
 InternalName=UnCodeX
 LegalCopyright=© 2003-2010 Michiel 'elmuerte' Hendriks
 LegalTrademarks=
