@@ -517,9 +517,7 @@ object frm_Settings: Tfrm_Settings
         Associate = ed_TabsToSpaces
         Min = -1
         Max = 255
-        Position = 0
         TabOrder = 1
-        Wrap = False
       end
       object ed_TemplateDir: TEdit
         Left = 0
@@ -775,7 +773,6 @@ object frm_Settings: Tfrm_Settings
         Position = 5
         TabOrder = 0
         Thousands = False
-        Wrap = False
       end
       object ud_DefInheritDepth: TUpDown
         Left = 409
@@ -784,12 +781,9 @@ object frm_Settings: Tfrm_Settings
         Height = 21
         Anchors = [akTop, akRight]
         Associate = ed_DefInheritanceDepth
-        Min = 0
         Max = 255
-        Position = 0
         TabOrder = 1
         Thousands = False
-        Wrap = False
       end
       object ed_StateFilename: TEdit
         Left = 0
@@ -1422,12 +1416,10 @@ object frm_Settings: Tfrm_Settings
         Width = 16
         Height = 21
         Associate = ed_TabSize
-        Min = 0
         Max = 256
         Position = 4
         TabOrder = 1
         Thousands = False
-        Wrap = False
       end
       object re_Preview: TRichEditEx
         Left = 0
@@ -1683,7 +1675,7 @@ object frm_Settings: Tfrm_Settings
       Tag = 5
       HelpType = htKeyword
       HelpKeyword = 'macrodefinitions'
-      Caption = 'Macro definitions'
+      Caption = 'Preprocessor'
       ImageIndex = 14
       TabVisible = False
       DesignSize = (
@@ -1691,10 +1683,10 @@ object frm_Settings: Tfrm_Settings
         338)
       object lbl_DefDefines: TLabel
         Left = 0
-        Top = 0
+        Top = 56
         Width = 424
-        Height = 26
-        Align = alTop
+        Height = 33
+        Anchors = [akLeft, akTop, akRight]
         Caption = 
           'These definitions will always be defined during parsing of the s' +
           'ource code. Use it to set certain conditional compiler flags.'
@@ -1702,23 +1694,30 @@ object frm_Settings: Tfrm_Settings
       end
       object lbl_DefNam: TLabel
         Left = 0
-        Top = 32
+        Top = 88
         Width = 28
         Height = 13
         Caption = 'Name'
       end
       object lbl_DefValue: TLabel
         Left = 160
-        Top = 32
+        Top = 88
         Width = 27
         Height = 13
         Caption = 'Value'
       end
+      object lblPreProcMode: TLabel
+        Left = 0
+        Top = 0
+        Width = 94
+        Height = 13
+        Caption = 'Pre processor mode'
+      end
       object lb_Defs: TListBox
         Left = 0
-        Top = 72
+        Top = 128
         Width = 393
-        Height = 266
+        Height = 210
         Align = alCustom
         BevelKind = bkSoft
         BorderStyle = bsNone
@@ -1730,7 +1729,7 @@ object frm_Settings: Tfrm_Settings
       end
       object ed_NewDefName: TEdit
         Left = 0
-        Top = 48
+        Top = 104
         Width = 153
         Height = 21
         BevelKind = bkSoft
@@ -1741,7 +1740,7 @@ object frm_Settings: Tfrm_Settings
       end
       object ed_NewDefValue: TEdit
         Left = 160
-        Top = 48
+        Top = 104
         Width = 233
         Height = 21
         Anchors = [akLeft, akTop, akRight]
@@ -1751,7 +1750,7 @@ object frm_Settings: Tfrm_Settings
       end
       object ed_RemoveDef: TBitBtn
         Left = 397
-        Top = 72
+        Top = 128
         Width = 27
         Height = 25
         Hint = 'Remove selected definition'
@@ -1773,7 +1772,7 @@ object frm_Settings: Tfrm_Settings
       end
       object btn_AddDef: TBitBtn
         Left = 397
-        Top = 48
+        Top = 104
         Width = 27
         Height = 21
         Hint = 'Add\overwrite this definition'
@@ -1795,6 +1794,22 @@ object frm_Settings: Tfrm_Settings
           0403204545454505100320545454540000034043545455454503355345354454
           5403234353545545450333343454545454034535433330000002235353522222
           2222352342352222222252235223222222222223422222222222}
+      end
+      object cbPreProcMode: TComboBox
+        Left = 0
+        Top = 16
+        Width = 425
+        Height = 21
+        Style = csDropDownList
+        Anchors = [akLeft, akTop, akRight]
+        ItemHeight = 13
+        ItemIndex = 1
+        TabOrder = 5
+        Text = 'UnrealEngine 3'
+        Items.Strings = (
+          'UnrealEngine 2 or earlier'
+          'UnrealEngine 3'
+          'Unreal Tournament 3')
       end
     end
   end
@@ -1957,8 +1972,6 @@ object frm_Settings: Tfrm_Settings
     Font.Height = -11
     Font.Name = 'MS Sans Serif'
     Font.Style = []
-    MinFontSize = 0
-    MaxFontSize = 0
     Options = [fdForceFontExist]
     Left = 592
     Top = 232

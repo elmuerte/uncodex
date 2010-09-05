@@ -264,7 +264,7 @@ begin
         DeleteFile(uclass.package.path+PathDelim+uclass.filename);
 
         TreeUpdated := true;
-        ClassesHash.Delete(uclass.name);
+        if ClassesHash.Exists(uclass.name) then ClassesHash.Delete(uclass.name);
         uclass.name := ed_NewClass.Text;
         uclass.filename := ed_NewClass.Text+UCEXT;
         if (uclass.treenode <> nil) then TTreeNode(uclass.treenode).Text := uclass.name;

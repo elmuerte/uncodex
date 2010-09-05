@@ -2750,9 +2750,9 @@ begin
       target := CreateOutputStream(htmloutputdir+PATHDELIM+fname);
       currentFile := fname;
       for j := 0 to ClassList[i].includes.Count-1 do begin
-        tmp := IncludeFileLink(ClassList[i].includes[i], ClassList[i].package);
+        tmp := IncludeFileLink(ClassList[i].includes[j], ClassList[i].package);
         if (ProcIncludeFiles.IndexOfName(tmp) > -1) then continue;
-        ProcIncludeFiles.AddObject(tmp+'='+ClassList[i].includes[i], ClassList[i]);
+        ProcIncludeFiles.AddObject(tmp+'='+ClassList[i].includes[j], ClassList[i]);
       end;
       try
         template1.Position := 0;
@@ -2784,8 +2784,12 @@ begin
         template1.Position := 0;
         parseTemplate(template1, target, replaceClass, TUClass(ProcIncludeFiles.Objects[i]));
         if (Self.Terminated) then break;
-        if (not fileexists(ClassList[i].package.path+PATHDELIM+ClassList[i].filename)) then continue;
-        source := TFileStream.Create(ResolveFilename(currentClass, ProcIncludeFiles.Values[fname]), fmOpenRead or fmShareDenyWrite);
+        fname := ResolveFilename(currentClass, ProcIncludeFiles.Values[fname]);
+        if (not fileexists(fname)) then begin
+          fname := ResolveFilename(currentClass, '..'+PathDelim+ProcIncludeFiles.Values[fname]);
+        end;
+        if (not fileexists(fname)) then continue;
+        source := TFileStream.Create(fname, fmOpenRead or fmShareDenyWrite);
         try
           parseCode(source, target);
         finally
