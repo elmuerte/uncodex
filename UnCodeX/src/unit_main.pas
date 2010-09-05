@@ -1722,12 +1722,12 @@ begin
       else begin
         pps := TUE3PreProcessor.create(fs, ExtractFileDir(filename), ExtractFileName(filename), def);
       end;
-      RTFHilightUScript(pps, ms, uclass);
+      RTFHilightUScript(pps, ms, uclass, config.PreProcessorMode);
     end
     else begin
       pps := nil;
       def := nil;
-      RTFHilightUScript(fs, ms, uclass);
+      RTFHilightUScript(fs, ms, uclass, config.PreProcessorMode);
     end;
     {$ELSE}
     RTFHilightUScript(fs, ms, uclass);
@@ -2186,7 +2186,7 @@ begin
       if (ThreadCreate) then begin
         ClearLog;
         LastAnalyseTime := Now;
-        runningthread := TClassAnalyser.Create(TUClass(Selected.Data), config.PackageList, false, nil, config.BaseDefinitions, config.FunctionModifiers);
+        runningthread := TClassAnalyser.Create(TUClass(Selected.Data), config.PackageList, config, false, nil);
         runningthread.OnTerminate := ThreadTerminate;
         TUCXThread(runningthread).StatusMethod := statusReport;
         TUCXThread(runningthread).LogMethod := Log;
@@ -2276,8 +2276,7 @@ begin
     fr_Props.uclass := nil;
     if (fr_Props.Visible) then fr_Props.LoadClass;
 
-    runningthread := TClassAnalyser.Create(config.ClassList, config.PackageList, false,
-                      unit_rtfhilight.ClassesHash, config.BaseDefinitions, config.FunctionModifiers);
+    runningthread := TClassAnalyser.Create(config.ClassList, config.PackageList, config, false, unit_rtfhilight.ClassesHash);
     runningthread.OnTerminate := ThreadTerminate;
     TUCXThread(runningthread).StatusMethod := statusReport;
     TUCXThread(runningthread).LogMethod := Log;
@@ -2359,8 +2358,8 @@ begin
     ed_gpdf.text := config.Comments.Packages;
     ed_ExtCmtFile.Text := config.Comments.Declarations;
     { Defines }
-    for i := 0 to config.BaseDefinitions.Count-1 do
-      lb_Defs.Items.Add(config.BaseDefinitions.Entry[i]);
+    for i := 0 to config.BaseDefinitions.Count-1 do lb_Defs.Items.Add(config.BaseDefinitions.Entry[i]);
+    cbPreProcMode.ItemIndex := Ord(config.PreProcessorMode);
     if (ShowModal = mrOk) then begin
       xguard('ShowModal = mrOk');
       { HTML output }
@@ -2407,6 +2406,7 @@ begin
       config.Comments.Declarations := ed_ExtCmtFile.Text;
       SetExtCommentFile(config.Comments.Declarations);
       { Defines }
+      config.PreProcessorMode := TUEPreProcessorMode(cbPreProcMode.ItemIndex);
       config.BaseDefinitions.Clear;
       for i := 0 to lb_Defs.Items.Count-1 do
         config.BaseDefinitions.AddEntry(lb_Defs.Items[i]);
@@ -3090,7 +3090,7 @@ begin
   if (ThreadCreate) then begin
     ClearLog;
     LastAnalyseTime := Now;
-    runningthread := TClassAnalyser.Create(config.ClassList, config.PackageList, true, unit_rtfhilight.ClassesHash, config.BaseDefinitions, config.FunctionModifiers);
+    runningthread := TClassAnalyser.Create(config.ClassList, config.PackageList, config, true, unit_rtfhilight.ClassesHash);
     runningthread.OnTerminate := ThreadTerminate;
     TUCXThread(runningthread).StatusMethod := statusReport;
     TUCXThread(runningthread).LogMethod := Log;

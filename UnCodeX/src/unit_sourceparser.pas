@@ -75,6 +75,7 @@ type
     FToken: Char;
     IsInMComment: boolean;
     commentdepth: integer;
+    ue3PreProcessor: boolean;
 
     StateStack: TParserState;
 
@@ -89,7 +90,7 @@ type
     MacroCallBack: boolean;
     DoMacro: boolean;
     FullCopy: boolean;
-    constructor Create(Stream, OutStream: TStream; TabIsWhiteSpace: boolean = true);
+    constructor Create(Stream, OutStream: TStream; ue3ppSupport: boolean; TabIsWhiteSpace: boolean = true);
     destructor Destroy; override;
     procedure CopyTokenToOutput;
     function NextToken: Char;
@@ -125,8 +126,9 @@ implementation
 const
   ParseBufSize = 4096;
 
-constructor TSourceParser.Create(Stream, OutStream: TStream; TabIsWhiteSpace: boolean = true);
+constructor TSourceParser.Create(Stream, OutStream: TStream; ue3ppSupport: boolean; TabIsWhiteSpace: boolean = true);
 begin
+  ue3PreProcessor := ue3ppSupport;
   TabIsWS := TabIsWhiteSpace;
   FStream := Stream;
   FOutStream := OutStream;
@@ -357,7 +359,7 @@ begin
         end;
       {$IFDEF UE3_SUPPORT}
       '`':
-        begin
+        if (ue3PreProcessor) then begin
           if (not DoMacro) then begin
             Result := P^;
             Inc(P);
@@ -418,6 +420,13 @@ begin
                 Result := toUE3PP;
               end;
             end;
+          end;
+        end
+        else begin
+          Result := P^;
+          if Result <> toEOF then begin
+            Inc(P);
+            Inc(FLinePos);
           end;
         end;
       {$ENDIF}

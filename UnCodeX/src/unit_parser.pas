@@ -171,7 +171,7 @@ var
 begin
   if (lineInfo = nil) then exit;
   lineno := lineInfo.Pop;
-  Log('Correcting line from '+FFilename+':'+IntToStr(FSourceLine)+' to '+lineno.Filename+':'+IntToStr(lineno.LineNumber));
+  // Log('Correcting line from '+FFilename+':'+IntToStr(FSourceLine)+' to '+lineno.Filename+':'+IntToStr(lineno.LineNumber));
   FSourceLine := lineno.LineNumber;
   FFilename := lineno.Filename;
   lineno.Free;

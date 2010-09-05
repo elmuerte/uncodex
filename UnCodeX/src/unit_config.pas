@@ -41,6 +41,8 @@ uses
   unit_definitionlist;
 
 type
+  TUEPreProcessorMode = (ueppNone, ueppUE3, ueppUT3);
+
   TUCXConfig = class(TObject)
   protected
     ConfigFile: string;
@@ -59,6 +61,7 @@ type
     PackageList:          TUPackageList;
     ClassList:            TUClassList;
     BaseDefinitions:      TDefinitionList;
+    PreProcessorMode:     TUEPreProcessorMode;
 
     PackagesPriority:     TStringList;
     IgnorePackages:       TStringList;
@@ -270,6 +273,7 @@ begin
   PackageList := TUPackageList.Create(true);
   ClassList := TUClassList.Create(true);
   BaseDefinitions := TDefinitionList.Create(nil);
+  PreProcessorMode := ueppUE3;
 
   IncludeConfig.Pre := TStringList.Create;
   IncludeConfig.Post := TStringList.Create;
@@ -428,6 +432,7 @@ begin
   finally
     sl.Free;
   end;
+  PreProcessorMode := TUEPreProcessorMode(ini.ReadInteger('Parser', 'PreProcessorMode', Ord(PreProcessorMode)));
 
   with HTMLOutput do begin
     OutputDir := ini.ReadString('HTMLOutput', 'OutputDir', OutputDir);
@@ -476,6 +481,7 @@ begin
   finally
     sl.Free;
   end;
+  ini.WriteInteger('Parser', 'PreProcessorMode', Ord(PreProcessorMode));
 
   with HTMLOutput do begin
     ini.WriteString('HTMLOutput', 'OutputDir', OutputDir);

@@ -224,6 +224,8 @@ type
     lbl_DefValue: TLabel;
     ed_RemoveDef: TBitBtn;
     btn_AddDef: TBitBtn;
+    lblPreProcMode: TLabel;
+    cbPreProcMode: TComboBox;
     procedure btn_PUpClick(Sender: TObject);
     procedure btn_PDownClick(Sender: TObject);
     procedure btn_SUpClick(Sender: TObject);
@@ -324,7 +326,7 @@ var
 implementation
 
 uses unit_main, unit_rtfhilight, unit_definitions, unit_ucxinifiles,
-  unit_utils;
+  unit_utils, unit_config;
 
 {$R *.dfm}
 
@@ -348,7 +350,7 @@ begin
   rs := TResourceStream.Create(HInstance, 'PREVIEW', 'USCRIPT');
   ms := TMemoryStream.Create;
   try
-    RTFHilightUScript(rs, ms, nil);
+    RTFHilightUScript(rs, ms, nil, ueppUE3);
     re_Preview.ClearHighlights;
     re_Preview.Lines.Clear;
     ms.Position := 0;

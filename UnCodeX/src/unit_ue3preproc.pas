@@ -96,6 +96,9 @@ type
 
     lineInfo: TLineNumberQueue;
 
+    ut3mode: boolean;
+    ut3modeActive: boolean;
+
     CommentDepth: integer;
     procedure IncP;
     procedure Flush;
@@ -115,6 +118,7 @@ type
     function Write(const Buffer; Count: Longint): Longint; override;
     function IncludeFile(const incfile: string; silent: boolean = false): string;
     property LineNumbers: TLineNumberQueue read lineInfo write lineInfo;
+    property useUT3Mode: boolean read ut3mode write ut3mode;
   end;
 
   TUE3Definition = class(TObject)
@@ -677,7 +681,25 @@ begin
         end;
         toLineNumber:
           P^ := #8;
+      '"':
+        if (ut3modeActive) then begin
+          // skip strings when this mode is active.
+          IncP;
+          while not (P^ in ['"', #0]) do begin
+            IncP;
+            if (P^ = '\\') then IncP;
+          end;
+          if (P^ = '"') then IncP;
+        end
+        else begin
+          IncP;
+        end;
     else
+      if (ut3mode and not ut3modeActive) then begin
+        if ((P^ in ['d', 'D']) and ((P+1)^ in ['e', 'E'])) then begin
+          ut3modeActive := StrLIComp(P, 'defaultproperties', 17) = 0;
+        end;
+      end;
       IncP;
     end;
   end;

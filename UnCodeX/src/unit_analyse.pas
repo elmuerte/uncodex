@@ -35,8 +35,8 @@ interface
 
 uses
   SysUtils, Classes, DateUtils, unit_uclasses, unit_parser, unit_outputdefs,
-  unit_definitions, Hashes, Contnrs, unit_ucxthread, unit_definitionlist
-  {$IFDEF UE3_SUPPORT}, unit_ue3preproc{$ENDIF};
+  unit_definitions, Hashes, Contnrs, unit_ucxthread, unit_definitionlist,
+  unit_config {$IFDEF UE3_SUPPORT}, unit_ue3preproc{$ENDIF};
 
 type
   TClassAnalyser = class(TUCXThread)
@@ -59,6 +59,7 @@ type
     BaseDefinitions: TDefinitionList;
     FunctionModifiers: TStringList;
     incFilename: String;
+    config: TUCXConfig;
     {$IFDEF UE3_SUPPORT}
     packageGlobals: TObjectHash;
     {$ENDIF}
@@ -87,8 +88,8 @@ type
     function getUE3DefinitionList(package :TUPackage): TUE3DefinitionList;
     {$ENDIF}
   public
-    constructor Create(classes: TUClassList; upackages: TUPackageList; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil; myFuncMods: TStrings = nil); overload;
-    constructor Create(uclass: TUClass; upackages: TUPackageList; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil; myFuncMods: TStrings = nil); overload;
+    constructor Create(classes: TUClassList; upackages: TUPackageList; myConfig: TUCXConfig; onlynew: boolean = false; myClassList: TObjectHash = nil); overload;
+    constructor Create(uclass: TUClass; upackages: TUPackageList; myConfig: TUCXConfig; onlynew: boolean = false; myClassList: TObjectHash = nil); overload;
     destructor Destroy; override;
     procedure Execute; override;
   end;
@@ -174,8 +175,9 @@ begin
 end;
 
 // Create for a class list
-constructor TClassAnalyser.Create(classes: TUClassList; upackages: TUPackageList; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil; myFuncMods: TStrings = nil);
+constructor TClassAnalyser.Create(classes: TUClassList; upackages: TUPackageList; myConfig: TUCXConfig; onlynew: boolean = false; myClassList: TObjectHash = nil);
 begin
+  config := myConfig;
   self.classes := classes;
   packages := TUPackageList.Create(false);
   packages.Assign(upackages);
@@ -184,18 +186,18 @@ begin
   Self.FreeOnTerminate := true;
   ClassHash := myClassList;
   instate := false;
-  BaseDefinitions := myBaseDefs;
+  BaseDefinitions := config.BaseDefinitions;
   FunctionModifiers := TStringList.Create;
   {$IFNDEF FPC}
   FunctionModifiers.CaseSensitive := false;
   {$ENDIF}
   FunctionModifiers.AddStrings(DefFunctionModifiers);
-  if ((myFuncMods <> nil) and (myFuncMods.Count > 0)) then begin
+  if ((config.FunctionModifiers <> nil) and (config.FunctionModifiers.Count > 0)) then begin
     FunctionModifiers.Clear;
-    FunctionModifiers.AddStrings(myFuncMods);
+    FunctionModifiers.AddStrings(config.FunctionModifiers);
   end
-  else if (myFuncMods <> nil) then begin
-    myFuncMods.AddStrings(DefFunctionModifiers);
+  else if (config.FunctionModifiers <> nil) then begin
+    config.FunctionModifiers.AddStrings(DefFunctionModifiers);
   end;
   {$IFDEF UE3_SUPPORT}
   packageGlobals := TObjectHash.Create(true);
@@ -204,8 +206,9 @@ begin
 end;
 
 // Create for a single class
-constructor TClassAnalyser.Create(uclass: TUClass; upackages: TUPackageList; onlynew: boolean = false; myClassList: TObjectHash = nil; myBaseDefs: TDefinitionList = nil; myFuncMods: TStrings = nil);
+constructor TClassAnalyser.Create(uclass: TUClass; upackages: TUPackageList; myConfig: TUCXConfig; onlynew: boolean = false; myClassList: TObjectHash = nil);
 begin
+  config := myConfig;
   self.classes := nil;
   packages := TUPackageList.Create(false);
   packages.Assign(upackages);
@@ -214,18 +217,18 @@ begin
   Self.onlynew := onlynew;
   Self.FreeOnTerminate := true;
   ClassHash := myClassList;
-  BaseDefinitions := myBaseDefs;
+  BaseDefinitions := config.BaseDefinitions;
   FunctionModifiers := TStringList.Create;
   {$IFNDEF FPC}
   FunctionModifiers.CaseSensitive := false;
   {$ENDIF}
   FunctionModifiers.AddStrings(DefFunctionModifiers);
-  if ((myFuncMods <> nil) and (myFuncMods.Count > 0)) then begin
+  if ((config.FunctionModifiers <> nil) and (config.FunctionModifiers.Count > 0)) then begin
     FunctionModifiers.Clear;
-    FunctionModifiers.AddStrings(myFuncMods);
+    FunctionModifiers.AddStrings(config.FunctionModifiers);
   end
-  else if (myFuncMods <> nil) then begin
-    myFuncMods.AddStrings(DefFunctionModifiers);
+  else if (config.FunctionModifiers <> nil) then begin
+    config.FunctionModifiers.AddStrings(DefFunctionModifiers);
   end;
   {$IFDEF UE3_SUPPORT}
   packageGlobals := TObjectHash.Create(true);
@@ -385,16 +388,22 @@ begin
   includeFiles := TStringList.Create;
   fs := TFileStream.Create(filename, fmOpenRead or fmShareDenyWrite);
   {$IFDEF UE3_SUPPORT}
-  ppdefs := TUE3DefinitionList.Create(getUE3DefinitionList(uclass.package)); // TODO load predef
-  ppdefs.Define('ClassName', [], uclass.Name, '_internal_', 0, 0);
-  ppdefs.Define('PackageName', [], uclass.package.Name, '_internal_', 0, 0);
-  ppdefs.Define('date', [], FormatDateTime('yyyy/mm/dd', now()), '_internal_', 0, 0);
-  ppdefs.Define('time', [], FormatDateTime('hh:nn:ss', now()), '_internal_', 0, 0);
-  pps := TUE3PreProcessor.create(fs, uclass.package.path, uclass.filename, ppdefs);
-  //TODO loadPackageGlobalDefs(ppdefs, pps, uclass.package);
-  pps.LineNumbers := TLineNumberQueue.Create;
-  p := TUCParser.Create(pps);
-  p.LineNumbers := pps.LineNumbers;
+  if (config.PreProcessorMode = ueppNone) then begin
+    p := TUCParser.Create(fs);
+  end
+  else begin
+    ppdefs := TUE3DefinitionList.Create(getUE3DefinitionList(uclass.package)); // TODO load predef
+    ppdefs.Define('ClassName', [], uclass.Name, '_internal_', 0, 0);
+    ppdefs.Define('PackageName', [], uclass.package.Name, '_internal_', 0, 0);
+    ppdefs.Define('date', [], FormatDateTime('yyyy/mm/dd', now()), '_internal_', 0, 0);
+    ppdefs.Define('time', [], FormatDateTime('hh:nn:ss', now()), '_internal_', 0, 0);
+    pps := TUE3PreProcessor.create(fs, uclass.package.path, uclass.filename, ppdefs);
+    pps.useUT3Mode := config.PreProcessorMode = ueppUT3;
+    //TODO loadPackageGlobalDefs(ppdefs, pps, uclass.package);
+    pps.LineNumbers := TLineNumberQueue.Create;
+    p := TUCParser.Create(pps);
+    p.LineNumbers := pps.LineNumbers;
+  end;
   {$ELSE}
   p := TUCParser.Create(fs);
   {$ENDIF}
@@ -468,6 +477,7 @@ begin
       uclass.includes.Add('..'+PathDelim+package.Name+PathDelim+'Globals.uci');
       stream := TStringStream.Create('');
       pps := TUE3PreProcessor.create(stream, package.path, '', result);
+      pps.useUT3Mode := config.PreProcessorMode = ueppUT3;
       try
         pps.IncludeFile('Globals.uci', true);
       finally

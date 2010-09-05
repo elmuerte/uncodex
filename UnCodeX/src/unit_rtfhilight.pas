@@ -34,9 +34,9 @@ unit unit_rtfhilight;
 interface
 
 uses
-  Classes, Graphics, SysUtils, unit_uclasses, Hashes;
+  Classes, Graphics, SysUtils, unit_uclasses, Hashes, unit_config;
 
-  procedure RTFHilightUScript(input, output: TStream; uclass: TUClass);
+  procedure RTFHilightUScript(input, output: TStream; uclass: TUClass;  preProcessorMode: TUEPreProcessorMode);
   procedure RTFHilightUPackage(output: TStream; package: TUPackage);
 
 var
@@ -96,7 +96,7 @@ begin
   result := result+' ';
 end;
 
-procedure RTFHilightUScript(input, output: TStream; uclass: TUClass);
+procedure RTFHilightUScript(input, output: TStream; uclass: TUClass; preProcessorMode: TUEPreProcessorMode);
 var
   p: TSourceParser;
   replacement, tmp: string;
@@ -120,7 +120,7 @@ begin
     colorTable+ // add color table
     '{\f0\fs'+IntToStr(textfont.Size*2)+'\cf1 '; // set default fontsize/color
   Output.WriteBuffer(PChar(replacement)^, Length(replacement));
-  p := TSourceParser.Create(input, output);
+  p := TSourceParser.Create(input, output, preProcessorMode <> ueppNone);
   p.SkipToken(true); // to get the first token
   try
     while (p.Token <> toEOF) do begin
@@ -193,13 +193,13 @@ begin
         replacement := rfMacro+replacement+'}\par ';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
-      else if (p.Token = toUE3PP) then begin
+      else if ((p.Token = toUE3PP) and (preProcessorMode <> ueppNone)) then begin
         replacement := p.TokenString;
         replacement := StringReplace(replacement, '\', '\\', [rfReplaceAll]);
         replacement := StringReplace(replacement, '{', '\{', [rfReplaceAll]);
         replacement := StringReplace(replacement, '}', '\}', [rfReplaceAll]);
         replacement := StringReplace(replacement, #10, '\par ', [rfReplaceAll]);
-        replacement := rfMacro+replacement+'} ';
+        replacement := rfMacro+replacement+'}';
         p.OutputStream.WriteBuffer(PChar(replacement)^, Length(replacement));
       end
       else if (p.Token = toSymbol) then begin
