@@ -1,0 +1,24 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<title>%default_title% - %package_name% classes Overview</title>
+	<meta name="Generator" content="%UNCODEX% %VERSION%" />
+%include:stylesheet.inc%
+</head>
+<body>
+<b><a href="%package_link%" target="content">%package_name%</a></b>
+
+%if:has_interfaces%
+<h3>Interfaces</h3>
+<table class="class_list">
+%interfaces_list%
+</table>
+%endif%
+
+<h3>Classes</h3>
+<table class="class_list">
+%classes_list%
+</table>
+
+</body>
+</html>

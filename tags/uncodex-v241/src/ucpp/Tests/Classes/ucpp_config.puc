@@ -1,0 +1,18 @@
+#pragma ucpp config supportDefine false
+
+// this will be forwarded to the uc AS IS
+#define TEST1
+
+#pragma ucpp config supportDefine
+
+#define TEST2
+
+// start stripping code
+#pragma ucpp config stripCode true
+
+#ifdef TEST1
+	false
+#endif
+#ifdef TEST2
+	true
+#endif

@@ -1,0 +1,45 @@
+#if 1+1
+	true
+#endif
+
+#if 1+1-2
+	false
+#endif
+
+#if (1+1)*0
+	false
+#endif
+
+#if 1+(1*0)
+	true
+#endif
+
+#if 1 || 0
+	true
+#endif
+
+#if 1 && 0
+	false
+#endif
+
+#if (1+1*(1+1)/2)
+	true
+#endif
+
+#define TRUE
+
+#if defined(TRUE)
+	true
+#endif
+
+#if defined(FALSE)
+	false
+#endif
+
+#if (1 && defined(TRUE))
+	true
+#endif
+
+#if !1
+	false
+#endif

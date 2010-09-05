@@ -1,0 +1,17 @@
+#pragma ucpp version
+#ucpp version
+
+
+#if 1
+	true
+#	if 0
+		false
+#	endif
+	true
+#endif
+
+
+#
+#
+# annoy me
+#

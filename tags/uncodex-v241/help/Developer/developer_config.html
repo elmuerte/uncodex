@@ -1,0 +1,232 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+	<title>UnCodeX - Configuration file</title>
+	<link href="../images/default.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="main">
+<div class="head">
+<img src="../images/UnCodeX-icon.gif" alt="UnCodeX" align="top">
+<div class="title"><span class="title_high">UnCodeX</span><span class="title_low">UnCodeX</span><span class="title">UnCodeX</span></div>
+<div class="subject">config</div>
+</div>
+
+<div class="content">
+
+<h1>Configuration file</h1>
+You can use the <code>-config</code> commandline argument to load a diffirent configuration file. Below is the definition of the usefull config parameters.
+
+<h2>Main configuration</h2>
+The main configuration section, this is the most usefull part of the configuration. It's used by both GUI and commandline version of UnCodeX.
+
+<h3>[Include]</h3>
+Files to be included while loading the configuration. Note: the settings introduced by the include files will be saved to the actual config file the next time it's saved.
+
+<table>
+<tr>
+	<th>Name</th>
+	<th>Type</th>
+	<th>Description</th>
+</tr>
+<tr>
+	<td><code>Pre</code></td>
+	<td nowrap="nowrap"><a href="#stringarray">string array</a></td>
+	<td>These files will be included before the rest of the configuration is loaded. Use this to set global defaults.
+	<br /><em>Default:</em> UNIX Commandline Only:<pre>Pre=/etc/uncodexrc
+Pre=~.uncodexrc</pre></td>
+</tr>
+<tr>
+	<td><code>Post</code></td>
+	<td nowrap="nowrap"><a href="#stringarray">string array</a></td>
+	<td>These files will be included after the rest of the configuration is loaded. Use this to force certain settngs.</td>
+</tr>
+</table>
+
+<h3>[Packages]</h3>
+Package configuration settings.
+
+<table>
+<tr>
+	<th>Name</th>
+	<th>Type</th>
+	<th>Description</th>
+</tr>
+<tr>
+	<td><code>EditPackages</code></td>
+	<td nowrap="nowrap"><a href="#stringarray">string array</a></td>
+	<td>Known UnrealScript packages. The order is important and can be used to resolve class mismatch errors. The higher the package in the list the more important the package will be. This is only relevant in case of class name collisions. The class in the package with the highest priority will be used as parent. Note: you should try to avoid creating duplicate class names.</td>
+</tr>
+<tr>
+	<td><code>Tag</code></td>
+	<td nowrap="nowrap"><a href="#stringarray">string array</a></td>
+	<td>These packages (and classes contained within it) will be tagged. This is only used in the GUI to give the tagged packages and classes a different icon.</td>
+</tr>
+<tr>
+	<td><code>IgnorePackage</code></td>
+	<td nowrap="nowrap"><a href="#stringarray">string array</a></td>
+	<td>These packages will completely be ignored by the rest of the system.</td>
+</tr>
+</table>
+
+<h3>[Sources]</h3>
+Configuration for the UnrealScript source code.
+
+<table>
+<tr>
+	<th>Name</th>
+	<th>Type</th>
+	<th>Description</th>
+</tr>
+<tr>
+	<td><code>Path</code></td>
+	<td nowrap="nowrap"><a href="#stringarray">string array</a></td>
+	<td>Locations to directories containing UnrealScript packages.</td>
+</tr>
+</table>
+
+<h3>[HTMLOutput]</h3>
+Configuration for the HTML Documentation generations.
+
+<table>
+<tr>
+	<th>Name</th>
+	<th>Type</th>
+	<th>Description</th>
+</tr>
+<tr>
+	<td><code>OutputDir</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>Target directory for the generated documents.
+	<br /><em>Default:</em> <pre>OutputDir={appdir}\UnCodeX-Output</pre></td>
+</tr>
+<tr>
+	<td><code>TemplateDir</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>Directory to the template to use for creating the documentation
+	<br /><em>Default:</em> <pre>OutputDir={appdir}\Templates\DocStyle2\</pre></td>
+</tr>
+<tr>
+	<td><code>CreateSource</code></td>
+	<td nowrap="nowrap"><a href="#tribool">tribool</a></td>
+	<td>Forces of syntax highlighted source code output in the generated documentation. You shouldn't change this, it's better to create a modified template because the source code might or might not be linked.
+	<br /><em>Default:</em> <pre>CreateSource=Maybe</pre></td>
+</tr>
+<tr>
+	<td><code>TabsToSpaces</code></td>
+	<td nowrap="nowrap"><a href="#int">integer</a></td>
+	<td>Defines the number of spaces to use for tabs. Set to <code>-1</code> to omit conversion of tabs to spaces. <code>0</code> will use the template's setting.
+	<br /><em>Default:</em> <pre>TabsToSpaces=0</pre></td>
+</tr>
+<tr>
+	<td><code>TargetExtention</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>Sets the target extention of the created files. When empty it uses the template's settings.
+	<br /><em>Default:</em> <pre>TargetExtention=</pre></td>
+</tr>
+<tr>
+	<td><code>CommentPreProcessor</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>Path to a comment preprocessor. When set this program will be called to processes the comments for packages, classes, functions, etc. Otherwise the builtin comment processor is used.
+	<br /><em>Default:</em> <pre>CommentPreProcessor=</pre></td>
+</tr>
+<tr>
+	<td><code>DefaultTitle</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>Set's the default title. When empty it will use the template's setting for <code>DefaultTitle</code>, if that is empty to it will use 'UnCodeX'. The value of this setting can be used by templates. It's usefull to change this to a descriptive title like: <code>DefaultTitle=UT2004 UnrealScript</code>
+	<br /><em>Default:</em> <pre>DefaultTitle=</pre></td>
+</tr>
+<tr>
+	<td><code>GZCompress</code></td>
+	<td nowrap="nowrap"><a href="#tribool">tribool</a></td>
+	<td>Forces GZCompression of the output. When set to <code>Maybe</code> it will use the template's setting. It's not recommended to set it to <code>False</code>. When set to <code>True</code> all generates files (with the exception of the index file) will be compressed with the gzip algorithm. This will reduce the size of the output to 33% (on an average basis). The suffic <code>.gz</code> will automatically be added to the <code>TargetExtention</code>, unless it's already present.</code>
+	<br /><em>Default:</em> <pre>GZCompress=Maybe</pre></td>
+</tr>
+</table>
+
+<h3>[HTMLHelp]</h3>
+Settings to create a MS HTML Help document from the HTML output.
+
+<table>
+<tr>
+	<th>Name</th>
+	<th>Type</th>
+	<th>Description</th>
+</tr>
+<tr>
+	<td><code>Compiler</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>Path to the HTML Help compiler.
+	<br /><em>Default:</em> <pre>OutputDir=</pre></td>
+</tr>
+<tr>
+	<td><code>OutputFile</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>Destination file
+	<br /><em>Default:</em> <pre>OutputDir={appdir}\UnCodeX-UnrealScript.chm</pre></td>
+</tr>
+<tr>
+	<td><code>Title</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>Title to use for the HTML Help file, this will be displayed as caption for the help window. When empty it will default to <code>UnCodeX</code>/
+	<br /><em>Default:</em> <pre>Title=</pre></td>
+</tr>
+</table>
+
+<h3>[ExternalComments]</h3>
+These files contain descriptions for various aspects (packages, classes, function, etc). This way it's possible to set a description without editing the source file.
+
+<table>
+<tr>
+	<th>Name</th>
+	<th>Type</th>
+	<th>Description</th>
+</tr>
+<tr>
+	<td><code>Packages</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>File containg package descriptions.
+	<br /><em>Default:</em> <pre>Packages={appdir}\PackageDescriptions.ini</pre></td>
+</tr>
+<tr>
+	<td><code>Declarations</code></td>
+	<td nowrap="nowrap"><a href="#string">string</a></td>
+	<td>File containing comments for classes, functions, etc.
+	<br /><em>Default:</em> <pre>Declarations={appdir}\ExternalComments.ini</pre></td>
+</tr>
+</table>
+
+
+<h2>Configuration types</h2>
+
+<table>
+<tr>
+	<th>Type</th>
+	<th>Description</th>
+</tr>
+<tr>
+	<td nowrap="nowrap"><a name="string"></a>string</td>
+	<td>Normal text</td>
+</tr>
+<tr>
+	<td nowrap="nowrap"><a name="stringarray"></a>string array</td>
+	<td>Multiple string entries with the same key.<br /><pre>Key=Array entry 1
+Key=Array entry 2</pre></td>
+</tr>
+<tr>
+	<td nowrap="nowrap"><a name="integer"></a>integer</td>
+	<td>A normal natural number (without a decimal point)</td>
+</tr>
+<tr>
+	<td nowrap="nowrap"><a name="tribool"></a>tribool</td>
+	<td>A three state boolean value. You can use either the human readable value or the nummeric value:<br />
+	<code>Maybe</code> or <code>-1</code><br />
+	<code>False</code> or <code>0</code><br />
+	<code>True</code> or <code>1</code></td>
+</tr>
+</table>
+
+</div>
+</div>
+</body>
+</html>
