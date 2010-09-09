@@ -557,7 +557,7 @@ begin
     result := p.TokenString;
     p.NextToken;
     {$IFDEF UE3_SUPPORT}
-    if (checkUE3desc and ((p.TokenString = 'DisplayName') or (p.TokenString = 'ToolTip'))) then begin
+    if (checkUE3desc and ((SameText(p.TokenString, 'DisplayName')) or (SameText(p.TokenString, 'ToolTip')))) then begin
       result := '';
       p.SkipTo('>');
       p.NextToken;
@@ -808,6 +808,9 @@ begin
     result.srcline := p.SourceLine;
     result.definedIn := getCurrentFilename();
     p.NextToken; // {
+    if (p.Token = '<') then begin
+      pAngleBrackets(true);
+    end;
     p.NextToken; // first element
     while (p.Token <> '}') do begin
       if (p.Token = toEOF) then begin
@@ -815,6 +818,7 @@ begin
       end;
       result.options := result.options+p.TokenString;
       p.NextToken;
+      pAngleBrackets(true);
     end;
     p.NextToken; // = '}'
     if (p.Token = ';') then p.NextToken; // = ';'
